@@ -220,6 +220,12 @@
           "3": "Geen filter"
         }
       },
+      "getfmt": {
+        "name": "Maximale vulduur (eerste vulling)"
+      },
+      "getfvt": {
+        "name": "Maximaal vulvolume (eerste vulling)"
+      },
       "getiwh": {
         "name": "Ruwwaterhardheid"
       },
@@ -808,6 +814,12 @@
       },
       "getflo": {
         "name": "Waterdoorstroom"
+      },
+      "getfmt": {
+        "name": "Maximale vulduur (eerste vulling)"
+      },
+      "getfvt": {
+        "name": "Maximaal vulvolume (eerste vulling)"
       },
       "gethmd": {
         "name": "Luchtvochtigheid"
@@ -1611,6 +1623,9 @@
           "false": "Uitgeschakeld",
           "true": "Ingeschakeld"
         }
+      },
+      "getifl": {
+        "name": "Eerste vulling"
       },
       "getmfl": {
         "name": "Handmatig vullen"

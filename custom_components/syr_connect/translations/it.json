@@ -220,6 +220,12 @@
           "3": "Nessun filtro"
         }
       },
+      "getfmt": {
+        "name": "Durata massima di riempimento (riempimento iniziale)"
+      },
+      "getfvt": {
+        "name": "Volume massimo di riempimento (riempimento iniziale)"
+      },
       "getiwh": {
         "name": "Durezza acqua grezza"
       },
@@ -808,6 +814,12 @@
       },
       "getflo": {
         "name": "Flusso d'acqua"
+      },
+      "getfmt": {
+        "name": "Durata massima di riempimento (riempimento iniziale)"
+      },
+      "getfvt": {
+        "name": "Volume massimo di riempimento (riempimento iniziale)"
       },
       "gethmd": {
         "name": "Umidità"
@@ -1611,6 +1623,9 @@
           "false": "Disattivato",
           "true": "Attivato"
         }
+      },
+      "getifl": {
+        "name": "Riempimento iniziale"
       },
       "getmfl": {
         "name": "Riempimento manuale"

@@ -220,6 +220,12 @@
           "3": "Brak filtra"
         }
       },
+      "getfmt": {
+        "name": "Maksymalny czas napełniania (pierwsze napełnienie)"
+      },
+      "getfvt": {
+        "name": "Maksymalna objętość napełniania (pierwsze napełnienie)"
+      },
       "getiwh": {
         "name": "Twardość wody surowej"
       },
@@ -808,6 +814,12 @@
       },
       "getflo": {
         "name": "Przepływ wody"
+      },
+      "getfmt": {
+        "name": "Maksymalny czas napełniania (pierwsze napełnienie)"
+      },
+      "getfvt": {
+        "name": "Maksymalna objętość napełniania (pierwsze napełnienie)"
       },
       "gethmd": {
         "name": "Wilgotność"
@@ -1611,6 +1623,9 @@
           "false": "Wyłączony",
           "true": "Włączony"
         }
+      },
+      "getifl": {
+        "name": "Pierwsze napełnienie"
       },
       "getmfl": {
         "name": "Ręczne napełnianie"

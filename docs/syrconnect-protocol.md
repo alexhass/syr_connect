@@ -1201,11 +1201,8 @@ These properties appear in MuCo devices / Conel Clear Pro Fill / Sanibel Leak Pr
 | getCNF2 | "" | | *unknown* |
 | getCNL2 | "" | | *unknown* |
 | getDTX | "" | | *unknown* |
-| getFMT | "" | | *unknown* |
-| getFVT | "" | | *unknown* |
 | getFWURL | "" | | *unknown* — possibly firmware update URL |
 | getHPR | "" | | *unknown* |
-| getIFL | "" | | *unknown* |
 | getLMD | "" | | *unknown* |
 | getLMF | "" | | *unknown* |
 | getLPD | "" | | *unknown* |
@@ -1256,6 +1253,9 @@ The All in One + has these additional properties:
 | getOWH / setOWH | "0" | `getWHU` | Soft water hardness, only visible when the cartridge type is HWE. Range in SYR GUI: 0–12 °dH, 0–16 °e, 0–22 °fH, 0–220 ppm in steps of 10, at most the raw water hardness |
 | getCWL / setCWL | "10" | % | Warning threshold of the remaining capacity. Default=10, Range in SYR GUI: 1–10 % in steps of 1 |
 | getMFL / setMFL | "False" | | Manual filling: True=Active / False=Inactive. Fills the heating system to the target pressure within the maximum filling volume and duration, without counting the filling cycles; stays active until it is switched off. The SYR GUI only allows switching it while the automatic filling mode (`getDFI`) is off. |
+| getIFL / setIFL | "False" | | Initial filling: True=Active / False=Inactive. Fills a new or existing heating system to the target pressure within the maximum volume (`getFVT`) and duration (`getFMT`) of the initial filling, then the device returns to automatic refilling. The SYR GUI only allows starting it while the automatic filling mode (`getDFI`) is off and the device is idle (`getSTA` 0). |
+| getFVT / setFVT | "100" | L | Maximum volume of the initial filling. Default=100, Range in SYR GUI: as `getRVT` |
+| getFMT / setFMT | "60" | min | Maximum duration of the initial filling. Default=60, Range in SYR GUI: 5–20 min in 5 min steps, 30–50 min in 10 min steps, 1 h–25 h in 0.5 h steps |
 
 #### Filling cycles
 

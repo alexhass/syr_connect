@@ -220,6 +220,12 @@
           "3": "No filter"
         }
       },
+      "getfmt": {
+        "name": "Maximum filling duration (initial filling)"
+      },
+      "getfvt": {
+        "name": "Maximum filling volume (initial filling)"
+      },
       "getiwh": {
         "name": "Raw water hardness"
       },
@@ -808,6 +814,12 @@
       },
       "getflo": {
         "name": "Water flow"
+      },
+      "getfmt": {
+        "name": "Maximum filling duration (initial filling)"
+      },
+      "getfvt": {
+        "name": "Maximum filling volume (initial filling)"
       },
       "gethmd": {
         "name": "Humidity"
@@ -1611,6 +1623,9 @@
           "false": "Disabled",
           "true": "Enabled"
         }
+      },
+      "getifl": {
+        "name": "Initial filling"
       },
       "getmfl": {
         "name": "Manual filling"

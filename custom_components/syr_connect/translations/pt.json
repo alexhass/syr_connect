@@ -220,6 +220,12 @@
           "3": "Sem filtro"
         }
       },
+      "getfmt": {
+        "name": "Duração máxima de enchimento (enchimento inicial)"
+      },
+      "getfvt": {
+        "name": "Volume máximo de enchimento (enchimento inicial)"
+      },
       "getiwh": {
         "name": "Dureza da água bruta"
       },
@@ -808,6 +814,12 @@
       },
       "getflo": {
         "name": "Caudal de água"
+      },
+      "getfmt": {
+        "name": "Duração máxima de enchimento (enchimento inicial)"
+      },
+      "getfvt": {
+        "name": "Volume máximo de enchimento (enchimento inicial)"
       },
       "gethmd": {
         "name": "Humidade"
@@ -1611,6 +1623,9 @@
           "false": "Desativado",
           "true": "Ativado"
         }
+      },
+      "getifl": {
+        "name": "Enchimento inicial"
       },
       "getmfl": {
         "name": "Enchimento manual"

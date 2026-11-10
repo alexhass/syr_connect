@@ -16,6 +16,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import (
     _SYR_CONNECT_SELECT_ALD_OPTIONS,
     _SYR_CONNECT_SELECT_CRT_MAP,
+    _SYR_CONNECT_SELECT_FMT_OPTIONS,
     _SYR_CONNECT_SELECT_MIH_MAP,
     _SYR_CONNECT_SELECT_MIT_MAP,
     _SYR_CONNECT_SELECT_MXH_MAP,
@@ -130,6 +131,14 @@ _SYR_CONNECT_SELECT_TYPES: tuple[SyrConnectSelectEntityDescription, ...] = (
         entity_category=EntityCategory.CONFIG,
     ),
     SyrConnectSelectEntityDescription(
+        key="getFMT",  # Maximum duration of the initial filling (min)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getFVT",  # Maximum volume of the initial filling (L)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
         key="getRCD",  # Filling processes period (0=hour, 1=day, 2=week, 3=month)
         entity_category=EntityCategory.CONFIG,
     ),
@@ -211,6 +220,8 @@ _SYR_CONNECT_SELECT_SUPPORTED_KEYS = {
     "getCRT",  # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
     "getCWL",  # Remaining capacity warning threshold (%)
     "getFCS",  # Custom cartridge size (L), used for getCRS 0
+    "getFMT",  # Maximum duration of the initial filling (min)
+    "getFVT",  # Maximum volume of the initial filling (L)
     "getRCD",  # Filling processes period (0=hour, 1=day, 2=week, 3=month)
     "getRMN",  # Filling processes count
     "getRMT",  # Maximum filling duration (min)
@@ -550,6 +561,12 @@ def _add_muco_selects(b: _SyrConnectSelectBuilder) -> None:
         b.add_numeric_steps("getRMT", rmt_options)
     if b.allowed("getRVT"):
         b.add_numeric_steps("getRVT", _SYR_CONNECT_SELECT_RVT_OPTIONS)
+    # Initial filling (All in One +): maximum volume (getFVT, same steps as getRVT) and
+    # maximum duration (getFMT)
+    if b.allowed("getFVT"):
+        b.add_numeric_steps("getFVT", _SYR_CONNECT_SELECT_RVT_OPTIONS)
+    if b.allowed("getFMT"):
+        b.add_numeric_steps("getFMT", _SYR_CONNECT_SELECT_FMT_OPTIONS)
     # Target pressure (getTPR): 0.5-5.0 bar in 0.1 bar steps (raw value is stored as 1/10 bar)
     if b.allowed("getTPR"):
         b.add_numeric("getTPR", 5, 50, scale=10)

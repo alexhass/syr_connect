@@ -4671,3 +4671,47 @@ async def test_crs_select_custom_size_follows_profile(
     if custom:
         assert by_key["getFCS"].options == [f"{value} L" for value in range(1, 101)]
         assert by_key["getFCS"].current_option == "20 L"
+
+
+async def test_allinoneplus_initial_filling_selects(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+) -> None:
+    """The initial filling limits (getFVT, getFMT) offer the steps of the SYR app."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "model": _SYR_CONNECT_TEST_ALLINONEPLUS_MODEL,
+                "status": {"getFMT": "60", "getFVT": "100"},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    by_key = {getattr(e, "_sensor_key", None): e for e in entities}
+    fvt = by_key["getFVT"]
+    fmt = by_key["getFMT"]
+    assert fvt.options[:3] == ["0 L", "10 L", "20 L"]
+    assert fvt.options[-1] == "9900 L"
+    assert fvt.current_option == "100 L"
+    assert fmt.options[:8] == [
+        "5 min",
+        "10 min",
+        "15 min",
+        "20 min",
+        "30 min",
+        "40 min",
+        "50 min",
+        "60 min",
+    ]
+    assert fmt.options[-1] == "1500 min"
+    assert fmt.current_option == "60 min"

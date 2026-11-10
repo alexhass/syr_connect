@@ -1993,6 +1993,18 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     SyrConnectSensorEntityDescription(
+        key="getFMT",  # Maximum duration of the initial filling (min)
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getFVT",  # Maximum volume of the initial filling (L)
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
         key="getLOT",  # Maximum output conductivity (raw x10 µS/cm)
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfConductivity.MICROSIEMENS_PER_CM,

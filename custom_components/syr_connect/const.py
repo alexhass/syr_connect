@@ -418,6 +418,16 @@ _SYR_CONNECT_SELECT_CRT_MAP = {
 #     "31104000": 31104000,
 # }
 
+# Maximum duration of the initial filling (getFMT, All in One +) in minutes: 5-20 in steps
+# of 5, 30-50 in steps of 10, 60-1500 in steps of 30
+_SYR_CONNECT_SELECT_FMT_OPTIONS = sorted(
+    {
+        *range(5, 21, 5),
+        *range(30, 51, 10),
+        *range(60, 1501, 30),
+    }
+)
+
 # Minimum humidity threshold (getMIH): 0-95 % in steps of 5. The lower boundary 0 doubles
 # as "Off" (per docs/syrconnect-protocol.md), so no separate raw sentinel value is needed,
 # unlike getMIT. Options are raw values; display labels (including the "Off" text) come

@@ -220,6 +220,12 @@
           "3": "Ohne Filter"
         }
       },
+      "getfmt": {
+        "name": "Maximale Fülldauer (Erstbefüllung)"
+      },
+      "getfvt": {
+        "name": "Maximale Füllmenge (Erstbefüllung)"
+      },
       "getiwh": {
         "name": "Rohwasserhärte"
       },
@@ -808,6 +814,12 @@
       },
       "getflo": {
         "name": "Wasserdurchfluss"
+      },
+      "getfmt": {
+        "name": "Maximale Fülldauer (Erstbefüllung)"
+      },
+      "getfvt": {
+        "name": "Maximale Füllmenge (Erstbefüllung)"
       },
       "gethmd": {
         "name": "Luftfeuchtigkeit"
@@ -1611,6 +1623,9 @@
           "false": "Deaktiviert",
           "true": "Aktiviert"
         }
+      },
+      "getifl": {
+        "name": "Erstbefüllung"
       },
       "getmfl": {
         "name": "Manuelle Befüllung"

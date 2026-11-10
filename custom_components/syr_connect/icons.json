@@ -68,6 +68,12 @@
       "getffm": {
         "default": "mdi:filter"
       },
+      "getfmt": {
+        "default": "mdi:timer-sand"
+      },
+      "getfvt": {
+        "default": "mdi:cup-water"
+      },
       "getiwh": {
         "default": "mdi:water-percent"
       },
@@ -317,6 +323,12 @@
       },
       "getflo": {
         "default": "mdi:waves-arrow-right"
+      },
+      "getfmt": {
+        "default": "mdi:timer-sand"
+      },
+      "getfvt": {
+        "default": "mdi:cup-water"
       },
       "gethmd": {
         "default": "mdi:water-percent"
@@ -875,6 +887,9 @@
       },
       "getdfi": {
         "default": "mdi:water-sync"
+      },
+      "getifl": {
+        "default": "mdi:water-plus"
       },
       "getmfl": {
         "default": "mdi:hand-water"

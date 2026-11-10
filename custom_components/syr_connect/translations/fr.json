@@ -220,6 +220,12 @@
           "3": "Sans filtre"
         }
       },
+      "getfmt": {
+        "name": "Durée maximale de remplissage (remplissage initial)"
+      },
+      "getfvt": {
+        "name": "Volume maximal de remplissage (remplissage initial)"
+      },
       "getiwh": {
         "name": "Dureté de l'eau brute"
       },
@@ -808,6 +814,12 @@
       },
       "getflo": {
         "name": "Débit d'eau"
+      },
+      "getfmt": {
+        "name": "Durée maximale de remplissage (remplissage initial)"
+      },
+      "getfvt": {
+        "name": "Volume maximal de remplissage (remplissage initial)"
       },
       "gethmd": {
         "name": "Humidité"
@@ -1611,6 +1623,9 @@
           "false": "Désactivé",
           "true": "Activé"
         }
+      },
+      "getifl": {
+        "name": "Remplissage initial"
       },
       "getmfl": {
         "name": "Remplissage manuel"

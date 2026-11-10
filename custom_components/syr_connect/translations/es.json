@@ -220,6 +220,12 @@
           "3": "Sin filtro"
         }
       },
+      "getfmt": {
+        "name": "Duración máxima de llenado (llenado inicial)"
+      },
+      "getfvt": {
+        "name": "Volumen máximo de llenado (llenado inicial)"
+      },
       "getiwh": {
         "name": "Dureza del agua cruda"
       },
@@ -808,6 +814,12 @@
       },
       "getflo": {
         "name": "Caudal de agua"
+      },
+      "getfmt": {
+        "name": "Duración máxima de llenado (llenado inicial)"
+      },
+      "getfvt": {
+        "name": "Volumen máximo de llenado (llenado inicial)"
       },
       "gethmd": {
         "name": "Humedad"
@@ -1611,6 +1623,9 @@
           "false": "Desactivado",
           "true": "Activado"
         }
+      },
+      "getifl": {
+        "name": "Llenado inicial"
       },
       "getmfl": {
         "name": "Llenado manual"
