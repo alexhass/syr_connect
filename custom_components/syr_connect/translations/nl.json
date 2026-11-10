@@ -185,6 +185,9 @@
           "none": "Geen"
         }
       },
+      "getcwl": {
+        "name": "Waarschuwingsdrempel resterende capaciteit"
+      },
       "getfcd": {
         "name": "Filterterugspoelinterval",
         "state": {
@@ -680,6 +683,9 @@
       },
       "getcs3": {
         "name": "Resterende harscapaciteit in tank 3"
+      },
+      "getcwl": {
+        "name": "Waarschuwingsdrempel resterende capaciteit"
       },
       "getcyn": {
         "name": "Regeneratiecyclusteller"

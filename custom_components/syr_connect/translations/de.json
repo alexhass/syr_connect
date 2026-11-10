@@ -185,6 +185,9 @@
           "none": "Ohne"
         }
       },
+      "getcwl": {
+        "name": "Warnschwelle der Restkapazität"
+      },
       "getfcd": {
         "name": "Filterspülintervall",
         "state": {
@@ -680,6 +683,9 @@
       },
       "getcs3": {
         "name": "Restkapazität des Harzes in Behälter 3"
+      },
+      "getcwl": {
+        "name": "Warnschwelle der Restkapazität"
       },
       "getcyn": {
         "name": "Regenerationszyklen (Anzahl)"

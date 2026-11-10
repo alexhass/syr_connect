@@ -13,6 +13,7 @@ Differences to muco_filling:
 - getFFM, getLOT, getSRO: not included, the device has no filter type, no
   conductivity limit and no display rotation.
 - getRMT: other steps for the maximum filling duration (SELECT_RMT_OPTIONS).
+- getCWL: the warning threshold of the remaining capacity, only on this device.
 
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists of the platforms which have to
@@ -68,6 +69,7 @@ SENSOR_SUPPORTED_KEYS = {
     # --- Water treatment / Filling ---
     "getCRS",
     "getCRT",
+    "getCWL",
     "getLRC",
     "getPRC",
     "getRCC",
@@ -90,6 +92,7 @@ SENSOR_SUPPORTED_KEYS = {
 SELECT_SUPPORTED_KEYS = {
     "getCRS",
     "getCRT",
+    "getCWL",
     "getOWH",
     "getRCD",
     "getRMN",

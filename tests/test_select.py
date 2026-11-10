@@ -4524,3 +4524,32 @@ async def test_rmt_select_options_follow_profile(
     assert rmt.options[:7] == first_options
     assert rmt.options[-1] == "720 min"
     assert rmt.current_option == "30 min"
+
+
+async def test_allinoneplus_cwl_select(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+) -> None:
+    """The remaining capacity warning threshold (getCWL) offers 1-10 %."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "model": _SYR_CONNECT_TEST_ALLINONEPLUS_MODEL,
+                "status": {"getCWL": "10"},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    cwl = next(e for e in entities if getattr(e, "_sensor_key", None) == "getCWL")
+    assert cwl.options == [f"{value} %" for value in range(1, 11)]
+    assert cwl.current_option == "10 %"

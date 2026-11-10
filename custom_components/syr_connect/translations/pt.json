@@ -185,6 +185,9 @@
           "none": "Nenhum"
         }
       },
+      "getcwl": {
+        "name": "Limiar de aviso da capacidade restante"
+      },
       "getfcd": {
         "name": "Intervalo de retrolavagem do filtro",
         "state": {
@@ -680,6 +683,9 @@
       },
       "getcs3": {
         "name": "Capacidade restante da resina no reservatório 3"
+      },
+      "getcwl": {
+        "name": "Limiar de aviso da capacidade restante"
       },
       "getcyn": {
         "name": "Contador de ciclos de regeneração"

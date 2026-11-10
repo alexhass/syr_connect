@@ -185,6 +185,9 @@
           "none": "Brak"
         }
       },
+      "getcwl": {
+        "name": "Próg ostrzeżenia o pozostałej pojemności"
+      },
       "getfcd": {
         "name": "Interwał płukania zwrotnego filtra",
         "state": {
@@ -680,6 +683,9 @@
       },
       "getcs3": {
         "name": "Pozostała pojemność żywicy w zbiorniku 3"
+      },
+      "getcwl": {
+        "name": "Próg ostrzeżenia o pozostałej pojemności"
       },
       "getcyn": {
         "name": "Licznik cykli regeneracji"

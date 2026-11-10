@@ -121,6 +121,10 @@ _SYR_CONNECT_SELECT_TYPES: tuple[SyrConnectSelectEntityDescription, ...] = (
         entity_category=EntityCategory.CONFIG,
     ),
     SyrConnectSelectEntityDescription(
+        key="getCWL",  # Remaining capacity warning threshold (%)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
         key="getRCD",  # Filling processes period (0=hour, 1=day, 2=week, 3=month)
         entity_category=EntityCategory.CONFIG,
     ),
@@ -200,6 +204,7 @@ _SYR_CONNECT_SELECT_SUPPORTED_KEYS = {
     # --- Water treatment / Filling (Conel Clear Pro Fill) ---
     "getCRS",  # Cartridge size (raw 1-5, mapped to liters)
     "getCRT",  # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
+    "getCWL",  # Remaining capacity warning threshold (%)
     "getRCD",  # Filling processes period (0=hour, 1=day, 2=week, 3=month)
     "getRMN",  # Filling processes count
     "getRMT",  # Maximum filling duration (min)
@@ -498,6 +503,9 @@ def _add_muco_selects(b: _SyrConnectSelectBuilder) -> None:
         b.add_discrete("getCRT", _SYR_CONNECT_SELECT_CRT_MAP)
     if "getRCD" in b.supported_select_keys and "getRCD" in b.status:
         b.add_discrete("getRCD", _SYR_CONNECT_SELECT_RCD_MAP)
+    # Remaining capacity warning threshold (getCWL): 1-10 % in steps of 1
+    if b.allowed("getCWL"):
+        b.add_numeric_steps("getCWL", list(range(1, 11)))
     # Filling processes count (getRMN): 1-10
     if b.allowed("getRMN"):
         b.add_numeric("getRMN", 1, 10)

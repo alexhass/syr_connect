@@ -1974,6 +1974,12 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         value_fn=_value_crt,
     ),
     SyrConnectSensorEntityDescription(
+        key="getCWL",  # Remaining capacity warning threshold (%)
+        native_unit_of_measurement=UnitOfRatio.PERCENTAGE,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
         key="getLOT",  # Maximum output conductivity (raw x10 µS/cm)
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfConductivity.MICROSIEMENS_PER_CM,

@@ -185,6 +185,9 @@
           "none": "None"
         }
       },
+      "getcwl": {
+        "name": "Remaining capacity warning threshold"
+      },
       "getfcd": {
         "name": "Filter backwash interval",
         "state": {
@@ -680,6 +683,9 @@
       },
       "getcs3": {
         "name": "Remaining resin capacity in tank 3"
+      },
+      "getcwl": {
+        "name": "Remaining capacity warning threshold"
       },
       "getcyn": {
         "name": "Regeneration cycle counter"

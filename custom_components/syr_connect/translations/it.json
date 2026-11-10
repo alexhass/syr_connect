@@ -185,6 +185,9 @@
           "none": "Nessuno"
         }
       },
+      "getcwl": {
+        "name": "Soglia di avviso della capacità residua"
+      },
       "getfcd": {
         "name": "Intervallo di controlavaggio del filtro",
         "state": {
@@ -680,6 +683,9 @@
       },
       "getcs3": {
         "name": "Capacità residua della resina nel serbatoio 3"
+      },
+      "getcwl": {
+        "name": "Soglia di avviso della capacità residua"
       },
       "getcyn": {
         "name": "Contatore cicli di rigenerazione"

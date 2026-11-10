@@ -56,6 +56,9 @@
       "getcrt": {
         "default": "mdi:filter-variant"
       },
+      "getcwl": {
+        "default": "mdi:gauge-low"
+      },
       "getfcd": {
         "default": "mdi:calendar-filter-outline"
       },
@@ -239,6 +242,9 @@
       },
       "getcs3": {
         "default": "mdi:beaker"
+      },
+      "getcwl": {
+        "default": "mdi:gauge-low"
       },
       "getcyn": {
         "default": "mdi:numeric"
