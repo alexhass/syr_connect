@@ -1603,6 +1603,9 @@
           "true": "Activado"
         }
       },
+      "getmfl": {
+        "name": "Llenado manual"
+      },
       "getssa": {
         "name": "Retrolavado automático",
         "state": {

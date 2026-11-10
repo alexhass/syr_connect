@@ -1603,6 +1603,9 @@
           "true": "Ingeschakeld"
         }
       },
+      "getmfl": {
+        "name": "Handmatig vullen"
+      },
       "getssa": {
         "name": "Automatische terugspoeling",
         "state": {

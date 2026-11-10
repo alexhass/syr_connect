@@ -870,6 +870,9 @@
       "getdfi": {
         "default": "mdi:water-sync"
       },
+      "getmfl": {
+        "default": "mdi:hand-water"
+      },
       "getssa": {
         "default": "mdi:autorenew"
       },

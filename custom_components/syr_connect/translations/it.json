@@ -1603,6 +1603,9 @@
           "true": "Attivato"
         }
       },
+      "getmfl": {
+        "name": "Riempimento manuale"
+      },
       "getssa": {
         "name": "Controlavaggio automatico",
         "state": {

@@ -1603,6 +1603,9 @@
           "true": "Enabled"
         }
       },
+      "getmfl": {
+        "name": "Manual filling"
+      },
       "getssa": {
         "name": "Automatic backwash",
         "state": {

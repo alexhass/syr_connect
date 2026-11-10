@@ -1603,6 +1603,9 @@
           "true": "Włączony"
         }
       },
+      "getmfl": {
+        "name": "Ręczne napełnianie"
+      },
       "getssa": {
         "name": "Automatyczne płukanie zwrotne",
         "state": {

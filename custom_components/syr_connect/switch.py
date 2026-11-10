@@ -43,6 +43,10 @@ _SYR_CONNECT_SWITCH_TYPES: tuple[SwitchEntityDescription, ...] = (
         entity_category=EntityCategory.CONFIG,
     ),
     SwitchEntityDescription(
+        key="getMFL",  # Manual filling active flag (All in One +)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SwitchEntityDescription(
         key="getSSA",  # Automatic backwash enabled flag (RSA)
         entity_category=EntityCategory.CONFIG,
     ),

@@ -12,6 +12,7 @@ import pytest
 
 from custom_components.syr_connect.const import DOMAIN
 from custom_components.syr_connect.exceptions import SyrConnectConnectionError
+from custom_components.syr_connect.models import MODEL_SIGNATURES
 from custom_components.syr_connect.response_parser import ResponseParser
 import custom_components.syr_connect.switch as switch_mod
 from custom_components.syr_connect.switch import (
@@ -492,3 +493,42 @@ def test_is_on_missing_value_returns_none() -> None:
 
     sw = SyrConnectBooleanSwitch(mock_coordinator, "SN700", "Missing", "getBUZ")
     assert sw.is_on is None
+
+
+async def test_async_setup_entry_creates_allinoneplus_manual_filling(
+    hass: HomeAssistant,
+) -> None:
+    """The All in One + gets the manual filling switch (getMFL)."""
+    config_entry = ConfigEntry(
+        version=1,
+        minor_version=0,
+        domain=DOMAIN,
+        title="TestManualFilling",
+        data={CONF_USERNAME: "test", CONF_PASSWORD: "test"},
+        source="user",
+        entry_id="test_entry_mfl",
+        unique_id="test_unique_id_mfl",
+        discovery_keys=MappingProxyType({}),
+        options={},
+        subentries_data={},
+    )
+    model = next(model for model in MODEL_SIGNATURES if model.name == "allinoneplus")
+    device = {
+        "id": "SN401",
+        "name": "AllInOnePlus",
+        "model": model,
+        "status": {"getDFI": "False", "getMFL": "True"},
+    }
+    mock_coordinator = MagicMock()
+    mock_coordinator.data = {"devices": [device]}
+    config_entry.runtime_data = mock_coordinator
+
+    mock_add_entities = MagicMock()
+
+    await async_setup_entry(hass, config_entry, mock_add_entities)
+
+    switches = {
+        getattr(e, "_sensor_key", None): e for e in mock_add_entities.call_args[0][0]
+    }
+    assert set(switches) == {"getDFI", "getMFL"}
+    assert switches["getMFL"].is_on is True

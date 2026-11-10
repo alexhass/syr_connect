@@ -1210,7 +1210,6 @@ These properties appear in MuCo devices / Conel Clear Pro Fill / Sanibel Leak Pr
 | getLMD | "" | | *unknown* |
 | getLMF | "" | | *unknown* |
 | getLPD | "" | | *unknown* |
-| getMFL | "" | | *unknown* |
 | getMPR | "" | | *unknown* — possibly set water pressure (excluded when empty) |
 | getNPL | "" | | *unknown* |
 | getPBC | "" | | *unknown* |
@@ -1253,6 +1252,7 @@ The All in One + has these additional properties:
 | Property | Example | Unit | Description |
 | ------ | ------ | ------ | ------ |
 | getCWL / setCWL | "10" | % | Warning threshold of the remaining capacity. Default=10, Range in SYR GUI: 1–10 % in steps of 1 |
+| getMFL / setMFL | "False" | | Manual filling: True=Active / False=Inactive. Fills the heating system to the target pressure within the maximum filling volume and duration, without counting the filling cycles; stays active until it is switched off. The SYR GUI only allows switching it while the automatic filling mode (`getDFI`) is off. |
 
 #### Filling cycles
 

@@ -1603,6 +1603,9 @@
           "true": "Aktiviert"
         }
       },
+      "getmfl": {
+        "name": "Manuelle Befüllung"
+      },
       "getssa": {
         "name": "Automatische Rückspülung",
         "state": {

@@ -1603,6 +1603,9 @@
           "true": "Ativado"
         }
       },
+      "getmfl": {
+        "name": "Enchimento manual"
+      },
       "getssa": {
         "name": "Retrolavagem automática",
         "state": {

@@ -1603,6 +1603,9 @@
           "true": "Activé"
         }
       },
+      "getmfl": {
+        "name": "Remplissage manuel"
+      },
       "getssa": {
         "name": "Contre-lavage automatique",
         "state": {
