@@ -730,7 +730,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         key="getCFV",  # Current filling volume (l)
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfVolume.LITERS,
-        suggested_display_precision=0,
+        suggested_display_precision=2,
     ),
     SyrConnectSensorEntityDescription(
         key="getHMD",  # Ambient humidity (%)
@@ -1763,7 +1763,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
     SyrConnectSensorEntityDescription(
         key="getLFV",  # Last refilled volume (l)
         native_unit_of_measurement=UnitOfVolume.LITERS,
-        suggested_display_precision=0,
+        suggested_display_precision=2,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     SyrConnectSensorEntityDescription(
@@ -1801,7 +1801,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         key="getTRV",  # Cumulative refilled volume (l)
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfVolume.LITERS,
-        suggested_display_precision=0,
+        suggested_display_precision=2,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     # --- Display ---
@@ -2656,22 +2656,28 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
                 self._attr_translation_key = "getbap"
 
         # A device may report a key in another scale than its description, e.g. milliliters
-        # instead of liters or l/min instead of l/h. The extra decimals of a larger divisor
-        # keep the resolution of the raw value.
+        # instead of liters or l/min instead of l/h. The value keeps the unit of the
+        # description, and with it its display precision.
         profile = self.device_model.device_profile
         if profile is not None:
             description = self.entity_description
-            divide_by = profile.sensor_divide_by.get(sensor_key, description.divide_by)
-            if sensor_key in ("getIWH", "getOWH"):
-                divide_by *= get_whu_divide_by(
-                    self.device_model, self._status.get("getWHU")
-                )
+            whu_divide_by = (
+                get_whu_divide_by(self.device_model, self._status.get("getWHU"))
+                if sensor_key in ("getIWH", "getOWH")
+                else 1
+            )
+            divide_by = (
+                profile.sensor_divide_by.get(sensor_key, description.divide_by)
+                * whu_divide_by
+            )
             multiply_by = profile.sensor_multiply_by.get(
                 sensor_key, description.multiply_by
             )
+            # The water hardness takes the unit of getWHU instead, which can need decimals
+            # the description does not have (tenths of mmol/l)
             precision = description.suggested_display_precision
-            if precision is not None and divide_by > description.divide_by:
-                precision += math.ceil(math.log10(divide_by / description.divide_by))
+            if precision is not None and whu_divide_by > 1:
+                precision += math.ceil(math.log10(whu_divide_by))
             if (divide_by, multiply_by) != (
                 description.divide_by,
                 description.multiply_by,

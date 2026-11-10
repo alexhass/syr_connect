@@ -8215,12 +8215,13 @@ def test_sensor_flo_unit_depends_on_model(
 @pytest.mark.parametrize(
     ("key", "raw", "expected", "precision"),
     [
-        # The profile reports getLFV in milliliters
-        ("getLFV", "6600", 6.6, 3),
-        ("getLFV", 6600, 6.6, 3),
-        ("getLFV", "1", 0.001, 3),
+        # The profile reports getLFV in milliliters; liters keep two decimals
+        ("getLFV", "6600", 6.6, 2),
+        ("getLFV", 6600, 6.6, 2),
+        ("getLFV", "10", 0.01, 2),
+        ("getLFV", "6604", 6.6, 2),
         # Keys without a profile divisor keep the scale of their description
-        ("getCFV", "4", 4, 0),
+        ("getCFV", "4", 4, 2),
         ("getCEL", "215", 21.5, 1),
     ],
 )
