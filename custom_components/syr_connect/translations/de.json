@@ -588,8 +588,8 @@
           "alarm_safet_microleakage_detected": "Mikroleckage erkannt. Grenzwert überschritten",
           "alarm_safet_turbine_no_signal": "Kein Turbinen-Signal",
           "alarm_safet_valve_cannot_be_operated": "Absperrung kann nicht betätigt werden",
-          "alarm_salt_supply_empty": "Salz leer",
-          "alarm_salt_supply_low": "Salz gering",
+          "alarm_salt_supply_empty": "Salzvorrat leer",
+          "alarm_salt_supply_low": "Salzvorrat gering",
           "alarm_target_pressure_unreachable": "Solldruck kann nicht erreicht werden!",
           "alarm_temperature_sensor_faulty": "Temperatursensor fehlerhaft!",
           "alarm_turbine_blocked": "Turbine blockiert!",
@@ -647,8 +647,8 @@
           "alarm_safet_microleakage_detected": "Mikroleckage erkannt. Grenzwert überschritten",
           "alarm_safet_turbine_no_signal": "Kein Turbinen-Signal",
           "alarm_safet_valve_cannot_be_operated": "Absperrung kann nicht betätigt werden",
-          "alarm_salt_supply_empty": "Salz leer",
-          "alarm_salt_supply_low": "Salz gering",
+          "alarm_salt_supply_empty": "Salzvorrat leer",
+          "alarm_salt_supply_low": "Salzvorrat gering",
           "alarm_target_pressure_unreachable": "Solldruck kann nicht erreicht werden!",
           "alarm_temperature_sensor_faulty": "Temperatursensor fehlerhaft!",
           "alarm_turbine_blocked": "Turbine blockiert!",
@@ -1647,7 +1647,7 @@
           "no_warning": "Keine Warnung",
           "outlet_pressure_too_high": "Ausgangsdruck zu hoch",
           "power_outage": "Stromunterbrechung",
-          "salt_supply_low": "Salzvorrat geht zur Neige"
+          "salt_supply_low": "Salzvorrat gering"
         }
       }
     },

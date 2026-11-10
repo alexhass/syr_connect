@@ -588,8 +588,8 @@
           "alarm_safet_microleakage_detected": "Microfuite détectée. Valeur limite dépassée",
           "alarm_safet_turbine_no_signal": "Aucun signal de turbine",
           "alarm_safet_valve_cannot_be_operated": "La vanne ne peut pas être actionnée",
-          "alarm_salt_supply_empty": "Pas de sel",
-          "alarm_salt_supply_low": "Sel faible",
+          "alarm_salt_supply_empty": "Réserve de sel vide",
+          "alarm_salt_supply_low": "Réserve de sel faible",
           "alarm_target_pressure_unreachable": "Impossible d'atteindre la pression cible",
           "alarm_temperature_sensor_faulty": "Capteur de température défectueux",
           "alarm_turbine_blocked": "Turbine bloquée",
@@ -647,8 +647,8 @@
           "alarm_safet_microleakage_detected": "Microfuite détectée. Valeur limite dépassée",
           "alarm_safet_turbine_no_signal": "Aucun signal de turbine",
           "alarm_safet_valve_cannot_be_operated": "La vanne ne peut pas être actionnée",
-          "alarm_salt_supply_empty": "Pas de sel",
-          "alarm_salt_supply_low": "Sel faible",
+          "alarm_salt_supply_empty": "Réserve de sel vide",
+          "alarm_salt_supply_low": "Réserve de sel faible",
           "alarm_target_pressure_unreachable": "Impossible d'atteindre la pression cible",
           "alarm_temperature_sensor_faulty": "Capteur de température défectueux",
           "alarm_turbine_blocked": "Turbine bloquée",
@@ -1647,7 +1647,7 @@
           "no_warning": "Aucun avertissement",
           "outlet_pressure_too_high": "Pression de sortie trop élevée",
           "power_outage": "Coupure de courant",
-          "salt_supply_low": "Faible approvisionnement en sel"
+          "salt_supply_low": "Réserve de sel faible"
         }
       }
     },
