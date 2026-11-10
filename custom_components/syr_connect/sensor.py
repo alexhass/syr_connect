@@ -1,9 +1,10 @@
 """Sensor platform for SYR Connect."""
 
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta
 import logging
+import math
 import re
 from typing import Any, Literal, override
 
@@ -2616,6 +2617,21 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
                 self._attr_device_class = SensorDeviceClass.BATTERY
                 self._attr_suggested_display_precision = 0
                 self._attr_translation_key = "getbap"
+
+        # A device may report a key in another scale than its description, e.g. milliliters
+        # instead of liters. The extra decimals keep the resolution of the raw value.
+        profile = self.device_model.device_profile
+        divide_by = (
+            None if profile is None else profile.sensor_divide_by.get(sensor_key)
+        )
+        if divide_by is not None:
+            description = self.entity_description
+            precision = description.suggested_display_precision
+            if precision is not None and divide_by > description.divide_by:
+                precision += math.ceil(math.log10(divide_by / description.divide_by))
+            self.entity_description = replace(
+                description, divide_by=divide_by, suggested_display_precision=precision
+            )
 
         # Cache last non-None native value to avoid writing None when API omits values
         self._last_native_value: str | int | float | datetime | None = None

@@ -1281,11 +1281,11 @@ available per model) alongside the confirmed descriptions.
 | BUZ | bool | Buzzer on/off on alarm | true/false | ✓ | ✓ |
 | CEL | int | Temperature in °C | 0–1000 | ✓ | X |
 | CFT | int | Current filling duration in s | - | ✓ | X |
-| CFV | int | Current filling volume in liters | - | ✓ | X |
+| CFV | int | Current filling volume in liters (All in One +: milliliters) | - | ✓ | X |
 | CND | int | Conductivity in µS/cm | 0–5000 | ✓ | X |
 | FLO | int | Current flow rate in l/h | 0–5000 | ✓ | X |
 | LFT | int | Last refill duration in s | - | ✓ | X |
-| LFV | int | Last refilled volume in liters | - | ✓ | X |
+| LFV | int | Last refilled volume in liters (All in One +: milliliters) | - | ✓ | X |
 | LTV | int | Last tapped volume in liters | - | ✓ | X |
 | NMS | long | No valve movement since, in s | - | ✓ | X |
 | NMT | int | Time in days until valve self-test becomes active | 1–61 | ✓ | ✓ |
@@ -1331,6 +1331,8 @@ available per model) alongside the confirmed descriptions.
 | VPS2 | X | X | X | X | X | X | X | X | ✓ |
 
 The BAR and BAR2 rows for SafeTech+ are corrected here: the official matrix lists BAR2, but the devices report BAR (see issue 9 in [known_issues_json_api.md](known_issues_json_api.md)).
+
+The All in One + (dk 160, not part of the matrix) reports the filling volumes CFV and LFV in milliliters instead of liters, e.g. LFV "6600" for a refill of 6.6 l (see issue 10 in [known_issues_json_api.md](known_issues_json_api.md)). The MultiController filling controllers report liters.
 
 ## Statistics web services
 

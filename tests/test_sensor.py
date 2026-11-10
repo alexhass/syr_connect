@@ -18,7 +18,8 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.syr_connect import sensor as sensor_mod, sensor as sensor_module
 from custom_components.syr_connect.const import DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
-from custom_components.syr_connect.models import detect_model
+from custom_components.syr_connect.devices import SyrConnectDeviceProfile
+from custom_components.syr_connect.models import UNKNOWN_MODEL, detect_model
 from custom_components.syr_connect.response_parser import ResponseParser
 from custom_components.syr_connect.sensor import (
     _SYR_CONNECT_SENSOR_DESCRIPTIONS,
@@ -8187,6 +8188,55 @@ def test_sensor_flo_unit_depends_on_model(
 
     assert sensor.native_unit_of_measurement == UnitOfVolumeFlowRate.LITERS_PER_HOUR
     assert sensor.native_value == expected
+
+
+@pytest.mark.parametrize(
+    ("key", "raw", "expected", "precision"),
+    [
+        # The profile reports getLFV in milliliters
+        ("getLFV", "6600", 6.6, 3),
+        ("getLFV", 6600, 6.6, 3),
+        ("getLFV", "1", 0.001, 3),
+        # Keys without a profile divisor keep the scale of their description
+        ("getCFV", "4", 4, 0),
+        ("getCEL", "215", 21.5, 1),
+    ],
+)
+def test_sensor_profile_divide_by_replaces_description_scale(
+    create_mock_coordinator: Callable[..., MagicMock],
+    key: str,
+    raw: Any,
+    expected: float,
+    precision: int,
+) -> None:
+    """A device profile can report a key in another scale than its description."""
+    model = replace(
+        UNKNOWN_MODEL,
+        name="testml",
+        device_profile=SyrConnectDeviceProfile(
+            binary_sensor=set(),
+            button=set(),
+            select=set(),
+            sensor={
+                "getCEL",
+                "getCFV",
+                "getLFV",
+            },
+            sensor_divide_by={
+                "getLFV": 1000,
+            },
+            switch=set(),
+            valve=set(),
+        ),
+    )
+    data = {
+        "devices": [{"id": "d1", "name": "D1", "model": model, "status": {key: raw}}]
+    }
+    sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", key)
+
+    assert sensor.native_value == expected
+    assert sensor.suggested_display_precision == precision
+    assert _SYR_CONNECT_SENSOR_DESCRIPTIONS["getLFV"].divide_by == 1
 
 
 @pytest.mark.parametrize(

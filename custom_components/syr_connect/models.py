@@ -10,6 +10,7 @@ import logging
 
 from .devices import (
     SyrConnectDeviceProfile,
+    allinoneplus,
     lex,
     lexplus10s,
     lexplus10sl,
@@ -751,6 +752,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     # ── Specialty devices (dk=160/180/190) ───────────────────────────────────────
     SyrConnectModel(
         base_path="/all-in-one",
+        device_profile=allinoneplus.PROFILE,
         display_name="All in One +",
         dk=160,
         dkv=36,

@@ -18,7 +18,7 @@ in the platform modules (sensor.py, select.py, ...).
 """
 
 from collections.abc import Mapping, Set as AbstractSet
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -59,6 +59,10 @@ class SyrConnectDeviceProfile:
     flo_per_minute: bool = False
     select: AbstractSet[str]
     sensor: AbstractSet[str]
+    # Sensor keys the device reports in another scale than the entity description:
+    # key -> divisor that replaces the description's divide_by, e.g. 1000 for
+    # milliliters instead of liters
+    sensor_divide_by: Mapping[str, int] = field(default_factory=dict)
     # Measurement history series the cloud keeps for the device; empty means none
     statistics: tuple[SyrConnectStatistic, ...] = ()
     switch: AbstractSet[str]
