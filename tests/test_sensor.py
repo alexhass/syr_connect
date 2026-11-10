@@ -8738,3 +8738,33 @@ def test_conductivity_factor(
     data = {"devices": [{"id": "d1", "name": "D1", "status": status}]}
     sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", "getCNF")
     assert sensor.native_value == expected
+
+
+@pytest.mark.parametrize(
+    ("crt", "expected"),
+    [
+        pytest.param("0", {"getOWH"}, id="hwe"),
+        pytest.param("1", set(), id="hve"),
+    ],
+)
+def test_allinoneplus_owh_sensor_only_for_hwe_cartridge(
+    crt: str, expected: set[str]
+) -> None:
+    """On the All in One +, getOWH is the soft water hardness of the HWE cartridge."""
+    status = {"getCRT": crt, "getOWH": "5", "getLOT": "7", "getOHW": "3"}
+    model = _signature("allinoneplus")
+
+    keys = sensor_module.sensor_keys_for_status(status, model)
+
+    assert set(keys) & {"getOWH", "getLOT", "getOHW"} == expected
+    assert sensor_module.is_sensor_visible(status, "getOWH", "5") == bool(expected)
+
+
+def test_owh_sensor_without_cartridge_type_always_applies() -> None:
+    """A softener reports getOWH without getCRT, there it is the outlet water hardness."""
+    status = {"getOWH": "7", "getWHU": "0"}
+
+    keys = sensor_module.sensor_keys_for_status(status, _signature("lex30"))
+
+    assert keys.count("getOWH") == 1
+    assert "getOWH" not in sensor_module._hidden_sensor_keys(status)

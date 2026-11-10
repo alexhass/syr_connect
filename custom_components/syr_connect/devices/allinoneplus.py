@@ -10,6 +10,9 @@ Differences to muco_filling:
 - getDFM: not included, it is the role of a MultiController (dk 1500-1506).
 - getCFV, getLFV, getTRV: reported in milliliters instead of liters (see issue 10
   in docs/known_issues_json_api.md).
+- getOWH instead of getOHW: the soft water hardness of the HWE cartridge.
+- getFFM, getLOT, getSRO: not included, the device has no filter type, no
+  conductivity limit and no display rotation.
 
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists of the platforms which have to
@@ -44,12 +47,8 @@ SENSOR_SUPPORTED_KEYS = {
     "getCND",
     "getCNF",
     "getIWH",
-    "getOHW",
+    "getOWH",
     "getWHU",
-    # --- Filter ---
-    "getFFM",
-    # --- Display ---
-    "getSRO",
     # --- Device Info & Diagnostics ---
     "getEGW",
     "getEIP",
@@ -69,7 +68,6 @@ SENSOR_SUPPORTED_KEYS = {
     # --- Water treatment / Filling ---
     "getCRS",
     "getCRT",
-    "getLOT",
     "getLRC",
     "getPRC",
     "getRCC",
@@ -90,12 +88,9 @@ SENSOR_SUPPORTED_KEYS = {
 }
 
 SELECT_SUPPORTED_KEYS = {
-    "getSRO",
-    "getFFM",
     "getCRS",
     "getCRT",
-    "getLOT",
-    "getOHW",
+    "getOWH",
     "getRCD",
     "getRMN",
     "getRMT",

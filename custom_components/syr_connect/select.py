@@ -35,10 +35,12 @@ from .entity import SyrConnectEntity, async_add_device_entities
 from .exceptions import SyrConnectError
 from .helpers import (
     find_entity_id,
+    get_cartridge_key,
     get_device_model,
     get_model_supported_keys,
     get_sensor_rtm_value,
     get_whu_unit,
+    is_cartridge_key,
     is_value_true,
     registry_cleanup,
     set_sensor_rtm_value,
@@ -456,8 +458,10 @@ def _add_softener_selects(b: _SyrConnectSelectBuilder) -> None:
 
     # Raw water hardness (getIWH, 1-100) and outlet/soft water hardness (getOWH, 0-100), plain LEX
     # family only (see docs/syrconnect-protocol.md). The unit suffix follows the device's getWHU setting.
+    # On a device with a cartridge type, getOWH is the soft water hardness of the HWE cartridge,
+    # added by _async_setup_muco_conditional_selects instead.
     for hardness_key, hardness_min in (("getIWH", 1), ("getOWH", 0)):
-        if b.allowed(hardness_key):
+        if b.allowed(hardness_key) and not is_cartridge_key(status, hardness_key):
             b.entities.append(
                 SyrConnectHardnessSelect(
                     b.coordinator,
@@ -566,8 +570,8 @@ def _async_setup_muco_conditional_selects(
 ) -> None:
     """Dynamically add/remove the getLOT/getOHW select depending on the cartridge type.
 
-    getLOT (HVE/HVE+) and getOHW (HWE) are mutually exclusive: only one ever applies for a
-    given cartridge type (getCRT). Instead of creating both and showing the inapplicable one
+    getLOT (HVE/HVE+) and the soft water hardness (HWE; getOHW, getOWH on the All in One +)
+    are mutually exclusive: only one ever applies for a given cartridge type (getCRT). Instead of creating both and showing the inapplicable one
     as permanently grayed-out "unavailable", only the currently-relevant entity is added; the
     other is removed from the entity registry. Re-evaluated on every coordinator update, so
     switching getCRT (which optimistically updates coordinator.data immediately) swaps the
@@ -577,21 +581,13 @@ def _async_setup_muco_conditional_selects(
     live_keys: dict[str, set[str]] = {}
 
     def _wanted_key(status: dict[str, Any], model: SyrConnectModel) -> str | None:
-        crt_value = status.get("getCRT")
-        crt = str(crt_value).strip() if crt_value is not None else ""
-        if crt in ("1", "2") and status.get("getLOT") not in (None, ""):
-            key = "getLOT"
-        elif crt == "0" and status.get("getOHW") not in (None, ""):
-            key = "getOHW"
-        else:
-            return None
-        # Only for models that list the key (MuCo filling). Leak-protection and TrioLock devices
-        # also report getCRT/getLOT/getOHW but deliberately do not expose them; a select there
-        # would even write setOHW/setLOT.
+        # Only for models that list the key (MuCo filling, All in One +). Leak-protection and
+        # TrioLock devices also report getCRT/getLOT/getOHW but deliberately do not expose
+        # them; a select there would even write setOHW/setLOT.
         supported_select_keys = get_model_supported_keys(
             model, "select", _SYR_CONNECT_SELECT_SUPPORTED_KEYS
         )
-        return key if key in supported_select_keys else None
+        return get_cartridge_key(status, supported_select_keys)
 
     def _build_entity(
         device_id: str, device_name: str, key: str
@@ -601,6 +597,10 @@ def _async_setup_muco_conditional_selects(
             lot_map = {f"{raw * 10} {lot_unit}": raw for raw in range(21)}
             return SyrConnectDiscreteSelect(
                 coordinator, device_id, device_name, "getLOT", lot_map
+            )
+        if key == "getOWH":
+            return SyrConnectHardnessSelect(
+                coordinator, device_id, device_name, "getOWH", 0, 12, 1
             )
         return SyrConnectNumericSelect(
             coordinator, device_id, device_name, "getOHW", 0, 12, 1

@@ -1316,6 +1316,59 @@ def _whu_code(raw_code: Any) -> int | None:
         return None
 
 
+def is_cartridge_key(status: dict[str, Any], key: str) -> bool:
+    """Return True if the key only applies to one cartridge type (getCRT).
+
+    The maximum output conductivity (getLOT) applies to HVE/HVE+ cartridges, the soft
+    water hardness to HWE cartridges. MuCo reports the soft water hardness as getOHW,
+    the All in One + as getOWH. Softeners report getOWH without a cartridge type, there
+    it is the outlet water hardness and always applies.
+
+    Args:
+        status: The flattened device status.
+        key: The status key, e.g. "getOWH".
+
+    Returns:
+        True for getLOT, getOHW and getOWH of a device with a cartridge type.
+    """
+    return key in ("getLOT", "getOHW") or (key == "getOWH" and "getCRT" in status)
+
+
+def get_cartridge_key(
+    status: dict[str, Any], supported_keys: AbstractSet[str]
+) -> str | None:
+    """Return the cartridge key (see `is_cartridge_key`) that applies to getCRT, or None.
+
+    Formats:
+    - HVE/HVE+ (getCRT "1"/"2"): getLOT
+    - HWE (getCRT "0"): getOHW, or getOWH on the All in One +
+
+    Args:
+        status: The flattened device status.
+        supported_keys: The keys the model lists for the platform.
+
+    Returns:
+        The key, or None if the cartridge type is unknown, or the model does not list
+        its key, or the key has no value.
+    """
+    crt_value = status.get("getCRT")
+    crt = str(crt_value).strip() if crt_value is not None else ""
+    if crt in ("1", "2"):
+        keys: tuple[str, ...] = ("getLOT",)
+    elif crt == "0":
+        keys = ("getOHW", "getOWH")
+    else:
+        return None
+    return next(
+        (
+            key
+            for key in keys
+            if key in supported_keys and status.get(key) not in (None, "")
+        ),
+        None,
+    )
+
+
 def get_sensor_not_map(model: SyrConnectModel, raw_code: Any) -> tuple[str | None, str]:
     """Map raw getNOT notification code to internal translation key.
 

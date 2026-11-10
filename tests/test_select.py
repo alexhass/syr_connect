@@ -4410,3 +4410,60 @@ async def test_selects_infinite_value_counts_as_invalid(hass: HomeAssistant) -> 
     assert rotation.current_option is None
     assert discrete.current_option is None
     assert prf.current_option is None
+
+
+_SYR_CONNECT_TEST_ALLINONEPLUS_MODEL = next(
+    model for model in MODEL_SIGNATURES if model.name == "allinoneplus"
+)
+
+
+@pytest.mark.parametrize(
+    ("crt", "expected"),
+    [
+        pytest.param("0", {"getOWH"}, id="hwe"),
+        pytest.param("1", set(), id="hve"),
+    ],
+)
+async def test_allinoneplus_owh_select_only_for_hwe_cartridge(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+    crt: str,
+    expected: set[str],
+) -> None:
+    """On the All in One +, getOWH is the soft water hardness of the HWE cartridge (0-12)."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "model": _SYR_CONNECT_TEST_ALLINONEPLUS_MODEL,
+                "status": {
+                    "getCRT": crt,
+                    "getOWH": "5",
+                    "getLOT": "7",
+                    "getOHW": "3",
+                    "getWHU": "0",
+                },
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    cartridge_selects = [
+        e
+        for e in entities
+        if getattr(e, "_sensor_key", None) in ("getOWH", "getLOT", "getOHW")
+    ]
+    assert {e._sensor_key for e in cartridge_selects} == expected
+    for select in cartridge_selects:
+        assert isinstance(select, SyrConnectHardnessSelect)
+        assert select.options[0] == "0 °dH"
+        assert select.options[-1] == "12 °dH"
+        assert select.current_option == "5 °dH"

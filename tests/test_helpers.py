@@ -2624,3 +2624,87 @@ def test_empty_ip_hides_sensor_and_skips_mac() -> None:
         "getMAC2": "CC:DD",
     }
     assert helpers.get_current_mac(status) == "CC:DD"
+
+
+@pytest.mark.parametrize(
+    ("status", "key", "expected"),
+    [
+        pytest.param({}, "getLOT", True, id="lot"),
+        pytest.param({}, "getOHW", True, id="ohw"),
+        pytest.param({"getCRT": "0"}, "getOWH", True, id="owh-with-cartridge"),
+        pytest.param({}, "getOWH", False, id="owh-of-softener"),
+        pytest.param({"getCRT": "0"}, "getIWH", False, id="other-key"),
+    ],
+)
+def test_is_cartridge_key(status: dict[str, Any], key: str, expected: bool) -> None:
+    """The soft water hardness getOWH only depends on a reported cartridge type."""
+    assert helpers.is_cartridge_key(status, key) is expected
+
+
+_SYR_CONNECT_TEST_CARTRIDGE_KEYS = {"getLOT", "getOHW", "getOWH"}
+
+
+@pytest.mark.parametrize(
+    ("status", "supported_keys", "expected"),
+    [
+        pytest.param(
+            {"getCRT": "1", "getLOT": "7"},
+            _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
+            "getLOT",
+            id="hve",
+        ),
+        pytest.param(
+            {"getCRT": 2, "getLOT": "7"},
+            _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
+            "getLOT",
+            id="hve-plus",
+        ),
+        pytest.param(
+            {"getCRT": "0", "getOHW": "3", "getOWH": "5"},
+            {"getLOT", "getOHW"},
+            "getOHW",
+            id="hwe-muco",
+        ),
+        pytest.param(
+            {"getCRT": "0", "getOHW": "3", "getOWH": "5"},
+            {"getOWH"},
+            "getOWH",
+            id="hwe-allinoneplus",
+        ),
+        pytest.param(
+            {"getCRT": "1", "getLOT": "7"},
+            {"getOWH"},
+            None,
+            id="not-listed",
+        ),
+        pytest.param(
+            {"getCRT": "0", "getOHW": ""},
+            _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
+            None,
+            id="hwe-empty",
+        ),
+        pytest.param(
+            {"getCRT": "1", "getLOT": None},
+            _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
+            None,
+            id="hve-missing",
+        ),
+        pytest.param(
+            {"getCRT": "", "getOHW": "3"},
+            _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
+            None,
+            id="no-cartridge",
+        ),
+        pytest.param(
+            {"getOHW": "3"},
+            _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
+            None,
+            id="no-crt",
+        ),
+    ],
+)
+def test_get_cartridge_key(
+    status: dict[str, Any], supported_keys: set[str], expected: str | None
+) -> None:
+    """The key that applies to the cartridge type, if the model lists it and it has a value."""
+    assert helpers.get_cartridge_key(status, supported_keys) == expected
