@@ -23,6 +23,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers.translation import async_get_translations
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import dt as dt_util
 
 from .api_json import SyrConnectJsonAPI
 from .api_xml import SyrConnectXmlAPI
@@ -57,6 +58,11 @@ from .repairs import delete_issue
 _LOGGER = logging.getLogger(__name__)
 
 type SyrConnectConfigEntry = ConfigEntry[SyrConnectDataUpdateCoordinator]
+
+# The device list of a cloud project (devices, names, UTC offset) rarely changes. It is
+# fetched with the first update after a start or reload and then once per hour, the
+# updates in between only fetch the status of the devices.
+_SYR_CONNECT_COORDINATOR_DEVICE_LIST_INTERVAL = timedelta(hours=1)
 
 
 class SyrConnectDataUpdateCoordinator(
@@ -178,6 +184,11 @@ class SyrConnectDataUpdateCoordinator(
         # last update; devices missing from the data are then not known to be deleted.
         self.device_list_complete = False
 
+        # Device lists of the cloud projects: project ID -> (time of the fetch, devices)
+        self._device_lists: dict[str, tuple[datetime, list[SyrConnectDevice]]] = {}
+        # Project list the device lists belong to; a login replaces it
+        self._device_lists_projects: list[dict[str, Any]] | None = None
+
         # Failures (of the whole update, a project or a device) already logged as a
         # warning: repeats are logged at debug level, the recovery once at info level
         self._failures: set[str] = set()
@@ -259,7 +270,7 @@ class SyrConnectDataUpdateCoordinator(
 
         # Get devices from all projects in parallel
         device_tasks = [
-            self.api.get_devices(project["id"]) for project in self.api.projects
+            self._async_get_project_devices(project) for project in self.api.projects
         ]
 
         # Gather device lists for all projects. We use `return_exceptions=True`
@@ -334,6 +345,63 @@ class SyrConnectDataUpdateCoordinator(
 
         _LOGGER.debug("Update cycle completed: %d device(s) total", len(all_devices))
         return all_devices
+
+    async def _async_get_project_devices(
+        self, project: dict[str, Any]
+    ) -> list[SyrConnectDevice]:
+        """Return the devices of a project, fetching the list from the cloud once per hour.
+
+        A login can change the projects, so the lists are fetched again after it. If the
+        hourly fetch fails, the last list stays in use and the next update tries again.
+
+        Args:
+            project: Project dictionary of the API client
+
+        Returns:
+            Copies of the device dictionaries, as the status is added to them
+
+        Raises:
+            SyrConnectAuthError: If the session expired and the re-login fails
+            SyrConnectError: If the list can not be fetched and there is no last list
+        """
+        project_id: str = project["id"]
+        if self._api_type == API_TYPE_JSON:
+            # The device list of the local API is its status request
+            return await self.api.get_devices(project_id)
+
+        if self.api.projects is not self._device_lists_projects:
+            self._device_lists.clear()
+            self._device_lists_projects = self.api.projects
+        cached = self._device_lists.get(project_id)
+        now = dt_util.utcnow()
+        if (
+            cached is not None
+            and now - cached[0] < _SYR_CONNECT_COORDINATOR_DEVICE_LIST_INTERVAL
+        ):
+            devices = cached[1]
+        else:
+            try:
+                devices = await self.api.get_devices(project_id)
+            except SyrConnectAuthError:
+                raise
+            except SyrConnectError as err:
+                if cached is None:
+                    raise
+                self._log_failure(
+                    f"device_list:{project_id}",
+                    "Failed to get devices for project %s, keeping the last device list: %s",
+                    project["name"],
+                    err,
+                )
+                devices = cached[1]
+            else:
+                self._log_recovery(
+                    f"device_list:{project_id}",
+                    "Device list of project %s fetched again",
+                    project["name"],
+                )
+                self._device_lists[project_id] = (now, devices)
+        return [device.copy() for device in devices]
 
     def _log_failure(self, key: str, message: str, *args: Any) -> None:
         """Log a failure as warning the first time, then at debug level until it recovers.

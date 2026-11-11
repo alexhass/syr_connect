@@ -1309,25 +1309,27 @@ async def test_coordinator_unexpected_exception_in_update(
 
 async def test_async_update_data_gather_raises(hass: HomeAssistant) -> None:
     """If asyncio.gather raises, coordinator should raise UpdateFailed (lines 154-156)."""
+
+    def _failing_gather(*args: Any, **kwargs: Any) -> Any:
+        # Close the passed coroutines so they don't trigger unawaited warnings.
+        for arg in args:
+            arg.close()
+        raise RuntimeError("gather failed")
+
     with (
         patch(
             "custom_components.syr_connect.coordinator.SyrConnectXmlAPI"
         ) as mock_api_class,
         patch(
             "custom_components.syr_connect.coordinator.asyncio.gather",
-            side_effect=Exception("gather failed"),
+            new=_failing_gather,
         ),
     ):
         mock_api = MagicMock()
         mock_api.session_data = "test_session"
         mock_api.is_session_valid = MagicMock(return_value=True)
         mock_api.projects = [{"id": "p1", "name": "P1"}]
-        # Use MagicMock (not AsyncMock) so calling get_devices() returns a plain
-        # MagicMock object instead of a coroutine. asyncio.gather is patched to
-        # raise before it ever awaits anything, so the tasks don't need to be real
-        # coroutines — and a plain MagicMock won't trigger an unawaited-coroutine
-        # RuntimeWarning when it is garbage-collected.
-        mock_api.get_devices = MagicMock(
+        mock_api.get_devices = AsyncMock(
             return_value=[{"id": "d1", "dclg": "d1", "project_id": "p1"}]
         )
         mock_api_class.return_value = mock_api
@@ -1444,6 +1446,8 @@ async def test_async_update_data_failed_project_keeps_previous_devices(
         assert coordinator.device_list_complete is True
         previous_p2 = coordinator.data["devices"][1]
 
+        # A login replaces the project list, so the device lists are fetched again
+        mock_api.projects = list(mock_api.projects)
         failing.add("p2")
         result = await coordinator._async_update_data()
 
@@ -1472,6 +1476,8 @@ async def test_async_update_data_all_projects_failed_keeps_previous_devices(
         )
         coordinator.data = await coordinator._async_update_data()
 
+        # A login replaces the project list, so the device lists are fetched again
+        mock_api.projects = list(mock_api.projects)
         failing.update({"p1", "p2"})
         result = await coordinator._async_update_data()
 
@@ -1507,6 +1513,159 @@ async def test_failed_relogin_keeps_previous_data(hass: HomeAssistant) -> None:
         assert coordinator.last_update_success is True  # entities stay available
         assert coordinator.data is previous
         assert coordinator.device_list_complete is False
+
+
+async def test_async_update_data_first_update_skips_failed_project(
+    hass: HomeAssistant,
+) -> None:
+    """Without a last update, a failed project has no devices; the list is marked incomplete."""
+
+    mock_api = _two_project_api({"p2"})
+    with patch(
+        "custom_components.syr_connect.coordinator.SyrConnectXmlAPI",
+        new=lambda *_a, **_kw: mock_api,
+    ):
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            cast(Any, SimpleNamespace()),
+            {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
+            60,
+        )
+        result = await coordinator._async_update_data()
+
+        assert [d["id"] for d in result["devices"]] == ["d_p1"]
+        assert coordinator.device_list_complete is False
+
+
+async def test_device_list_fetched_once_per_hour(hass: HomeAssistant) -> None:
+    """The device lists are fetched with the first update and then once per hour."""
+
+    mock_api = _two_project_api(set())
+    mock_api.get_devices = AsyncMock(side_effect=mock_api.get_devices)
+    mock_api.get_device_status = AsyncMock(side_effect=mock_api.get_device_status)
+    start = datetime(2026, 11, 11, 12, 0, tzinfo=UTC)
+    with (
+        patch(
+            "custom_components.syr_connect.coordinator.SyrConnectXmlAPI",
+            new=lambda *_a, **_kw: mock_api,
+        ),
+        patch(
+            "custom_components.syr_connect.coordinator.dt_util.utcnow"
+        ) as mock_utcnow,
+    ):
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            cast(Any, SimpleNamespace()),
+            {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
+            60,
+        )
+        mock_utcnow.return_value = start
+        first = await coordinator._async_update_data()
+        coordinator.data = first
+        assert mock_api.get_devices.await_count == 2
+
+        # Within the hour only the status is fetched, into new device dictionaries
+        mock_utcnow.return_value = start + timedelta(minutes=59)
+        second = await coordinator._async_update_data()
+        assert mock_api.get_devices.await_count == 2
+        assert mock_api.get_device_status.await_count == 4
+        assert [d["id"] for d in second["devices"]] == ["d_p1", "d_p2"]
+        assert second["devices"][0] is not first["devices"][0]
+        assert coordinator.device_list_complete is True
+
+        mock_utcnow.return_value = start + timedelta(hours=1)
+        await coordinator._async_update_data()
+        assert mock_api.get_devices.await_count == 4
+
+        # A login replaces the project list, so the device lists are fetched again
+        mock_api.projects = list(mock_api.projects)
+        await coordinator._async_update_data()
+        assert mock_api.get_devices.await_count == 6
+
+
+async def test_device_list_failed_refresh_keeps_last_list(
+    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
+) -> None:
+    """If the hourly fetch fails, the status is fetched with the last list and the fetch is repeated."""
+
+    failing: set[str] = set()
+    mock_api = _two_project_api(failing)
+    mock_api.get_devices = AsyncMock(side_effect=mock_api.get_devices)
+    mock_api.get_device_status = AsyncMock(side_effect=mock_api.get_device_status)
+    start = datetime(2026, 11, 11, 12, 0, tzinfo=UTC)
+    with (
+        patch(
+            "custom_components.syr_connect.coordinator.SyrConnectXmlAPI",
+            new=lambda *_a, **_kw: mock_api,
+        ),
+        patch(
+            "custom_components.syr_connect.coordinator.dt_util.utcnow"
+        ) as mock_utcnow,
+    ):
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            cast(Any, SimpleNamespace()),
+            {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
+            60,
+        )
+        mock_utcnow.return_value = start
+        coordinator.data = await coordinator._async_update_data()
+
+        failing.add("p2")
+        mock_utcnow.return_value = start + timedelta(hours=1)
+        with caplog.at_level(logging.INFO):
+            result = await coordinator._async_update_data()
+        assert [d["id"] for d in result["devices"]] == ["d_p1", "d_p2"]
+        assert mock_api.get_device_status.await_count == 4
+        assert coordinator.device_list_complete is True
+        assert "keeping the last device list" in caplog.text
+
+        # The next update tries again, not only after another hour
+        failing.clear()
+        mock_utcnow.return_value = start + timedelta(hours=1, minutes=1)
+        with caplog.at_level(logging.INFO):
+            await coordinator._async_update_data()
+        assert mock_api.get_devices.await_count == 5
+        assert "Device list of project P2 fetched again" in caplog.text
+
+        mock_utcnow.return_value = start + timedelta(hours=1, minutes=2)
+        await coordinator._async_update_data()
+        assert mock_api.get_devices.await_count == 5
+
+
+async def test_device_list_of_json_api_fetched_with_every_update(
+    hass: HomeAssistant,
+) -> None:
+    """The device list of the local API is its status request and is fetched every time."""
+
+    mock_api = SimpleNamespace(
+        is_session_valid=lambda: True,
+        projects=[{"id": "local", "name": "Local JSON API"}],
+        get_devices=AsyncMock(
+            side_effect=lambda _project_id: [
+                {"id": "d1", "dclg": "d1", "name": "d1", "project_id": "local"}
+            ]
+        ),
+        get_device_status=AsyncMock(return_value={"getSRN": "d1"}),
+    )
+    with patch(
+        "custom_components.syr_connect.coordinator.SyrConnectJsonAPI",
+        new=lambda *_a, **_kw: mock_api,
+    ):
+        coordinator = SyrConnectDataUpdateCoordinator(
+            hass,
+            cast(Any, SimpleNamespace()),
+            {
+                CONF_API_TYPE: API_TYPE_JSON,
+                CONF_MODEL: "safetechplus",
+                CONF_HOST: "192.168.1.100",
+            },
+            60,
+        )
+        coordinator.data = await coordinator._async_update_data()
+        await coordinator._async_update_data()
+
+        assert mock_api.get_devices.await_count == 2
 
 
 async def test_coordinator_init_json_api(hass: HomeAssistant) -> None:
