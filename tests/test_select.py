@@ -8,13 +8,14 @@ from dataclasses import replace
 import json
 from pathlib import Path
 from typing import Any, NoReturn, cast, override
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, Mock, call, patch
 
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect import select as select_module
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+from custom_components.syr_connect.exceptions import SyrConnectError
 from custom_components.syr_connect.models import (
     MODEL_SIGNATURES,
     UNKNOWN_MODEL,
@@ -4715,3 +4716,221 @@ async def test_allinoneplus_initial_filling_selects(
     ]
     assert fmt.options[-1] == "1500 min"
     assert fmt.current_option == "60 min"
+
+
+@pytest.mark.parametrize(
+    ("whu", "iwh", "iwh_options", "ohw_options", "iwh_current", "ohw_current"),
+    [
+        pytest.param(
+            "0",
+            "18",
+            [f"{value} °dH" for value in range(1, 51)],
+            [f"{value} °dH" for value in range(13)],
+            "18 °dH",
+            "5 °dH",
+            id="dh",
+        ),
+        pytest.param(
+            "1",
+            "18",
+            [f"{value} °e" for value in range(1, 66)],
+            [f"{value} °e" for value in range(17)],
+            "23 °e",
+            "6 °e",
+            id="e",
+        ),
+        pytest.param(
+            "1",
+            "5",
+            [f"{value} °e" for value in range(1, 66)],
+            [f"{value} °e" for value in range(7)],
+            "6 °e",
+            "6 °e",
+            id="e-limited-by-raw-water",
+        ),
+        pytest.param(
+            "2",
+            "18",
+            [f"{value} °fH" for value in range(1, 91)],
+            [f"{value} °fH" for value in range(23)],
+            "32 °fH",
+            "9 °fH",
+            id="fh",
+        ),
+        pytest.param(
+            "3",
+            "18",
+            [f"{value} ppm" for value in range(10, 901, 10)],
+            [f"{value} ppm" for value in range(0, 221, 10)],
+            "320 ppm",
+            "80 ppm",
+            id="ppm-step-below",
+        ),
+        pytest.param("7", "18", [], [], "18", "5", id="unknown-unit"),
+    ],
+)
+async def test_muco_filling_hardness_selects_convert_from_dh(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+    whu: str,
+    iwh: str,
+    iwh_options: list[str],
+    ohw_options: list[str],
+    iwh_current: str,
+    ohw_current: str,
+) -> None:
+    """The MuCo filling keeps the water hardness in °dH and shows it in the unit."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "model": _SYR_CONNECT_TEST_MUCO_FILLING_MODEL,
+                "status": {
+                    "getCRT": "0",
+                    "getIWH": iwh,
+                    "getOHW": "5",
+                    "getWHU": whu,
+                },
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    by_key = {getattr(e, "_sensor_key", None): e for e in entities}
+    assert isinstance(by_key["getIWH"], SyrConnectRangedHardnessSelect)
+    assert isinstance(by_key["getOHW"], SyrConnectRangedHardnessSelect)
+    assert by_key["getIWH"].options == iwh_options
+    assert by_key["getOHW"].options == ohw_options
+    assert by_key["getIWH"].current_option == iwh_current
+    assert by_key["getOHW"].current_option == ohw_current
+
+
+@pytest.mark.parametrize(
+    ("whu", "key", "option", "set_key", "expected"),
+    [
+        pytest.param("0", "getIWH", "18 °dH", "setIWH", 18, id="dh"),
+        pytest.param("1", "getIWH", "23 °e", "setIWH", 18, id="e"),
+        pytest.param("2", "getOHW", "9 °fH", "setOHW", 5, id="fh"),
+        pytest.param("3", "getIWH", "320 ppm", "setIWH", 18, id="ppm"),
+        pytest.param("3", "getOHW", "80 ppm", "setOHW", 4, id="ppm-step-below"),
+    ],
+)
+async def test_muco_filling_hardness_select_writes_dh(
+    hass: HomeAssistant, whu: str, key: str, option: str, set_key: str, expected: int
+) -> None:
+    """An option in the unit of the display is written to the MuCo filling in °dH."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "model": _SYR_CONNECT_TEST_MUCO_FILLING_MODEL,
+                "status": {"getIWH": "18", "getOHW": "5", "getWHU": whu},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+
+    select = SyrConnectRangedHardnessSelect(coordinator, "device1", "Device 1", key)
+    await select.async_select_option(option)
+
+    coordinator.async_set_device_value.assert_called_once_with(
+        "device1", set_key, expected
+    )
+
+
+@pytest.mark.parametrize(
+    ("model_name", "status", "option", "calls"),
+    [
+        pytest.param(
+            "conelclearprofill",
+            {"getIWH": "18", "getOHW": "8", "getWHU": "1"},
+            "6 °e",
+            [("setIWH", 5), ("setOHW", 5)],
+            id="muco-filling-lowers-soft-water",
+        ),
+        pytest.param(
+            "conelclearprofill",
+            {"getIWH": "18", "getOHW": "5", "getWHU": "0"},
+            "5 °dH",
+            [("setIWH", 5)],
+            id="muco-filling-soft-water-fits",
+        ),
+        pytest.param(
+            "conelclearprofill",
+            {"getIWH": "18", "getOHW": "", "getWHU": "0"},
+            "5 °dH",
+            [("setIWH", 5)],
+            id="muco-filling-no-soft-water",
+        ),
+        pytest.param(
+            "allinoneplus",
+            {"getIWH": "200", "getOWH": "150", "getWHU": "3"},
+            "100 ppm",
+            [("setIWH", 100), ("setOWH", 100)],
+            id="allinoneplus-lowers-soft-water",
+        ),
+    ],
+)
+async def test_ranged_hardness_select_lowers_soft_water_hardness(
+    hass: HomeAssistant,
+    model_name: str,
+    status: dict[str, str],
+    option: str,
+    calls: list[tuple[str, int]],
+) -> None:
+    """A raw water hardness below the soft water hardness lowers that one too."""
+    model = next(model for model in MODEL_SIGNATURES if model.name == model_name)
+    data = {
+        "devices": [
+            {"id": "device1", "name": "Device 1", "model": model, "status": status}
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock()
+
+    select = SyrConnectRangedHardnessSelect(
+        coordinator, "device1", "Device 1", "getIWH"
+    )
+    await select.async_select_option(option)
+
+    assert coordinator.async_set_device_value.call_args_list == [
+        call("device1", set_key, value) for set_key, value in calls
+    ]
+
+
+async def test_ranged_hardness_select_lowering_soft_water_hardness_fails(
+    hass: HomeAssistant,
+) -> None:
+    """A failed write of the lowered soft water hardness is reported to the user."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "model": _SYR_CONNECT_TEST_MUCO_FILLING_MODEL,
+                "status": {"getIWH": "18", "getOHW": "8", "getWHU": "0"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_value = AsyncMock(
+        side_effect=[None, SyrConnectError("failed")]
+    )
+
+    select = SyrConnectRangedHardnessSelect(
+        coordinator, "device1", "Device 1", "getIWH"
+    )
+    with pytest.raises(HomeAssistantError) as err:
+        await select.async_select_option("5 °dH")
+
+    assert err.value.translation_key == "set_value_failed"

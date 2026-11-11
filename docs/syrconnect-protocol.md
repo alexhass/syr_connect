@@ -1247,9 +1247,10 @@ These properties are documented on MuCo devices that expose water treatment (car
 | getCRS / setCRS | "1" | L | Water treatment: Cartridge size: 1=2.5L, 2=4L, 3=7L, 4=14L, 5=30L |
 | getCRT / setCRT | "1" | | Water treatment: Cartridge type: 0=HWE, 1=HVE, 2=HVE+, ""=none installed |
 | getDFI / setDFI | "True" | | Automatic filling mode: True=Enabled / False=Disabled |
+| getIWH / setIWH | "18" | °dH | Water treatment: Raw water hardness, always in °dH; `getWHU` is only the unit of the display. Range in SYR GUI: 1–50 °dH, 1–65 °e, 1–90 °fH, 10–900 ppm in steps of 10, converted to °dH and rounded. A value below the soft water hardness lowers that one too. |
 | getLOT / setLOT | "8" | ×10 µS/cm | Water treatment: Maximum output conductivity (e.g. `8` = 80 µS/cm). Range in SYR GUI: 0=off, 10–200 µS/cm in 10 µS/cm steps. Only visible when cartridge type is HVE or HVE+. |
 | getLRC | "173" | L | Liter(s) Remaining Capacity — remaining softening capacity in liters |
-| getOHW / setOHW | "0" | °dH | Water treatment: Soft water hardness. Default=0, Range in SYR GUI: 0–12 °dH, Only visible when cartridge type is HWE. |
+| getOHW / setOHW | "0" | °dH | Water treatment: Soft water hardness, always in °dH; `getWHU` is only the unit of the display. Default=0, Range in SYR GUI: 0–12 °dH, 0–16 °e, 0–22 °fH, 0–220 ppm in steps of 10, at most the raw water hardness, converted to °dH and rounded. Only visible when cartridge type is HWE. |
 | getPRC | "97" | % | Percent Remaining Capacity — remaining softening capacity in percent |
 | getRCD / setRCD | "1" | | Filling mode: Filling processes period: ""=undefined, 0=hour, 1=day, 2=week, 3=month |
 | getRMN / setRMN | "5" | | Filling mode: Filling processes. Range in SYR GUI: 1–10 in steps of 1 |
@@ -1257,7 +1258,7 @@ These properties are documented on MuCo devices that expose water treatment (car
 | getRVT / setRVT | "100" | L | Leak Protection: Maximum filling charges. Value range: 0-9900. Range in SYR GUI: 0=off, 10–100 in steps of 10, 100–1000 in steps of 50, 1000–9900 in steps of 100 |
 | getTPR / setTPR | "18" | 1/10 bar | Water treatment: Target pressure — water pressure setpoint (e.g. `18` = 1.8 bar). Range in SYR GUI: 0.5–5.0 bar in 0.1 bar steps |
 
-The All in One + (dk 160) uses the same cartridge and filling mode properties, with these differences: the soft water hardness is `getOWH` / `setOWH` instead of `getOHW` / `setOHW` (only visible when the cartridge type is HWE, unit from `getWHU`), and the device has no maximum output conductivity (`getLOT`). The maximum filling duration (`getRMT`) has other steps in the SYR GUI: 5–20 min in 5 min steps, 30–50 min in 10 min steps, 1 h–12 h in 0.5 h steps.
+The All in One + (dk 160) uses the same cartridge and filling mode properties, with these differences: the soft water hardness is `getOWH` / `setOWH` instead of `getOHW` / `setOHW` (only visible when the cartridge type is HWE, reported in the unit of `getWHU` instead of °dH), and the device has no maximum output conductivity (`getLOT`). The maximum filling duration (`getRMT`) has other steps in the SYR GUI: 5–20 min in 5 min steps, 30–50 min in 10 min steps, 1 h–12 h in 0.5 h steps.
 
 The All in One + has these additional properties:
 
@@ -1265,7 +1266,7 @@ The All in One + has these additional properties:
 | ------ | ------ | ------ | ------ |
 | getCRS / setCRS | "0" | L | Cartridge size as on MuCo, plus 0=custom size from `getFCS` |
 | getFCS / setFCS | "20" | L | Custom cartridge size, used when `getCRS` is 0. Range in SYR GUI: 1–100 L |
-| getIWH / setIWH | "20" | `getWHU` | Raw water hardness. Default=20, Range in SYR GUI: 1–50 °dH, 1–65 °e, 1–90 °fH, 10–900 ppm in steps of 10 |
+| getIWH / setIWH | "20" | `getWHU` | Raw water hardness. Default=20, Range in SYR GUI: 1–50 °dH, 1–65 °e, 1–90 °fH, 10–900 ppm in steps of 10. A value below the soft water hardness lowers that one too |
 | getOWH / setOWH | "0" | `getWHU` | Soft water hardness, only visible when the cartridge type is HWE. Range in SYR GUI: 0–12 °dH, 0–16 °e, 0–22 °fH, 0–220 ppm in steps of 10, at most the raw water hardness |
 | getCWL / setCWL | "10" | % | Warning threshold of the remaining capacity. Default=10, Range in SYR GUI: 1–10 % in steps of 1 |
 | getMFL / setMFL | "False" | | Manual filling: True=Active / False=Inactive. Fills the heating system to the target pressure within the maximum filling volume and duration, without counting the filling cycles; stays active until it is switched off. The SYR GUI only allows switching it while the automatic filling mode (`getDFI`) is off. |

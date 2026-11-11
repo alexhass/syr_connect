@@ -2784,3 +2784,37 @@ def test_get_hardness_range(
     signature = UNKNOWN_MODEL if model == "unknown" else _signature(model)
 
     assert helpers.get_hardness_range(signature, key, raw_code) == expected
+
+
+@pytest.mark.parametrize(
+    ("model", "raw_code", "expected"),
+    [
+        pytest.param("conelclearprofill", "0", 1.0, id="dh"),
+        pytest.param("conelclearprofill", 1, 1.25216338, id="e"),
+        pytest.param("conelclearprofill", "2.0", 1.78480457, id="fh"),
+        pytest.param("conelclearprofill", "3", 17.8480457, id="ppm"),
+        pytest.param("conelclearprofill", "7", 1.0, id="unknown-unit"),
+        pytest.param("conelclearprofill", None, 1.0, id="no-unit"),
+        pytest.param("allinoneplus", "3", 1.0, id="values-in-the-unit"),
+        pytest.param("unknown", "3", 1.0, id="no-profile"),
+    ],
+)
+def test_get_hardness_factor(model: str, raw_code: Any, expected: float) -> None:
+    """Only a device that keeps the water hardness in °dH converts it to the unit."""
+    signature = UNKNOWN_MODEL if model == "unknown" else _signature(model)
+
+    assert helpers.get_hardness_factor(signature, raw_code) == expected
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        (0.0, 0),
+        (4.48, 4),
+        (2.5, 3),
+        (3.5, 4),
+    ],
+)
+def test_round_hardness(value: float, expected: int) -> None:
+    """A converted water hardness is rounded to a whole number, halves up."""
+    assert helpers.round_hardness(value) == expected

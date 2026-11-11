@@ -4,6 +4,7 @@ from collections.abc import Callable, Mapping, Set as AbstractSet
 import contextlib
 import ipaddress
 import logging
+import math
 import re
 from typing import Any
 
@@ -31,6 +32,7 @@ from .const import (
     DOMAIN,
 )
 from .data import SyrConnectCoordinatorData, SyrConnectDevice
+from .devices import WHU_FACTORS_FROM_DH
 from .models import MODEL_SIGNATURES, UNKNOWN_MODEL, SyrConnectModel, detect_model
 
 _LOGGER = logging.getLogger(__name__)
@@ -1327,6 +1329,34 @@ def get_hardness_range(
     if profile is None or code is None:
         return None
     return profile.hardness_ranges.get(key, {}).get(code)
+
+
+def get_hardness_factor(model: SyrConnectModel, raw_code: Any) -> float:
+    """Factor from the water hardness the device keeps to the unit of the display (getWHU).
+
+    Formats:
+    - MuCo filling, °fH (getWHU 2): 1.78480457 (the device keeps °dH)
+    - Other models, and a missing or unknown unit: 1.0 (the device keeps the unit)
+
+    Args:
+        model: Detected model of the device (its profile tells the unit of the values).
+        raw_code: Raw getWHU value from the API (e.g. 0, "1", "2.0").
+
+    Returns:
+        The number of display units per unit of the device value.
+    """
+    profile = model.device_profile
+    if profile is None or not profile.hardness_in_dh:
+        return 1.0
+    unit = get_whu_unit(model, raw_code)
+    if unit is None:
+        return 1.0
+    return WHU_FACTORS_FROM_DH.get(unit, 1.0)
+
+
+def round_hardness(value: float) -> int:
+    """Round a converted water hardness to a whole number, halves up."""
+    return math.floor(value + 0.5)
 
 
 def _whu_code(raw_code: Any) -> int | None:

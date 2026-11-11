@@ -8786,3 +8786,38 @@ def test_owh_sensor_without_cartridge_type_always_applies() -> None:
 def test_crs_sensor_custom_size(status: dict[str, Any], expected: float | None) -> None:
     """The custom cartridge size (getCRS 0) of the All in One + is the liters of getFCS."""
     assert sensor_module._value_crs(MagicMock(), status, status["getCRS"]) == expected
+
+
+@pytest.mark.parametrize(
+    ("model", "key", "whu", "raw", "expected", "unit"),
+    [
+        # The MuCo filling keeps °dH; getWHU is only the unit of the display
+        ("conelclearprofill", "getIWH", "0", "18", 18, "°dH"),
+        ("conelclearprofill", "getIWH", "1", "18", 23, "°e"),
+        ("conelclearprofill", "getOHW", "2", "5", 9, "°fH"),
+        ("conelclearprofill", "getOHW", 3, 5, 89, "ppm"),
+        ("conelclearprofill", "getOHW", "7", "5", 5, "°dH"),
+        # Other families report the value in the unit
+        ("allinoneplus", "getIWH", "1", "18", 18, "°e"),
+    ],
+)
+def test_sensor_hardness_converted_from_dh(
+    create_mock_coordinator: Callable[..., MagicMock],
+    model: str,
+    key: str,
+    whu: Any,
+    raw: Any,
+    expected: int,
+    unit: str,
+) -> None:
+    """A device that keeps the water hardness in °dH shows it in the unit of getWHU."""
+    status = {key: raw, "getWHU": whu}
+    data = {
+        "devices": [
+            {"id": "d1", "name": "D1", "model": _signature(model), "status": status}
+        ]
+    }
+    sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", key)
+
+    assert sensor.native_value == expected
+    assert sensor.native_unit_of_measurement == unit

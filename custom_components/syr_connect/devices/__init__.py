@@ -43,6 +43,15 @@ WHU_UNITS_NEOSOFT = {
     2: "°fH",
 }
 
+# Water hardness units as multiples of 1 °dH, for devices that keep the water hardness
+# in °dH and use getWHU only for the display (hardness_in_dh)
+WHU_FACTORS_FROM_DH = {
+    "°dH": 1.0,
+    "°e": 1.25216338,
+    "°fH": 1.78480457,
+    "ppm": 17.8480457,
+}
+
 
 @dataclass(frozen=True, kw_only=True)
 class SyrConnectStatistic:
@@ -81,6 +90,9 @@ class SyrConnectDeviceProfile:
     # Keys that only apply to one cartridge type (getCRT): cartridge type code -> key;
     # only the key of the reported cartridge type becomes an entity
     cartridge_keys: Mapping[str, str] = field(default_factory=dict)
+    # The device reports and takes the water hardness (getIWH, getOHW) in °dH whatever
+    # getWHU is set to; getWHU is only the unit of the display, the values are converted
+    hardness_in_dh: bool = False
     # Water hardness selects (getIWH, getOWH) whose range depends on the unit: key ->
     # getWHU code -> (lowest, highest, step) in that unit
     hardness_ranges: Mapping[str, Mapping[int, tuple[int, int, int]]] = field(

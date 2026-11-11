@@ -119,6 +119,7 @@ SELECT_SUPPORTED_KEYS = {
     "getFFM",
     "getCRS",
     "getCRT",
+    "getIWH",
     "getLOT",
     "getOHW",
     "getRCD",
@@ -152,6 +153,25 @@ BUTTON_SUPPORTED_KEYS = {
 VALVE_SUPPORTED_KEYS: set[str] = set()
 
 
+# Water hardness ranges per unit: getWHU code -> (lowest, highest, step) in that unit.
+# The device keeps both values in °dH (hardness_in_dh), getWHU is only the unit of the
+# display. The soft water hardness (getOHW) can be at most the raw water hardness (getIWH).
+HARDNESS_RANGES = {
+    "getIWH": {
+        0: (1, 50, 1),  # °dH
+        1: (1, 65, 1),  # °e
+        2: (1, 90, 1),  # °fH
+        3: (10, 900, 10),  # ppm
+    },
+    "getOHW": {
+        0: (0, 12, 1),  # °dH
+        1: (0, 16, 1),  # °e
+        2: (0, 22, 1),  # °fH
+        3: (0, 220, 10),  # ppm
+    },
+}
+
+
 PROFILE = SyrConnectDeviceProfile(
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
@@ -160,6 +180,8 @@ PROFILE = SyrConnectDeviceProfile(
         "1": "getLOT",
         "2": "getLOT",
     },
+    hardness_in_dh=True,
+    hardness_ranges=HARDNESS_RANGES,
     select=SELECT_SUPPORTED_KEYS,
     sensor=SENSOR_SUPPORTED_KEYS,
     switch=SWITCH_SUPPORTED_KEYS,

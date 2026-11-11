@@ -54,6 +54,7 @@ from .helpers import (
     get_cartridge_keys,
     get_cartridge_type_key,
     get_device_model,
+    get_hardness_factor,
     get_model_supported_keys,
     get_sensor_ab_value,
     get_sensor_ala_map,
@@ -2639,6 +2640,9 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
     # number arrives again
     _non_numeric_logged = False
 
+    # Factor from the water hardness the device keeps to the unit of getWHU
+    _hardness_factor = 1.0
+
     def __init__(
         self,
         coordinator: SyrConnectDataUpdateCoordinator,
@@ -2661,6 +2665,16 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
             self._attr_native_unit_of_measurement = get_whu_unit(
                 self.device_model, self._status.get("getWHU")
             )
+
+        # A device that keeps the water hardness in °dH shows it in the unit of getWHU
+        if sensor_key in ("getIWH", "getOHW"):
+            self._hardness_factor = get_hardness_factor(
+                self.device_model, self._status.get("getWHU")
+            )
+            if self._hardness_factor != 1:
+                self._attr_native_unit_of_measurement = get_whu_unit(
+                    self.device_model, self._status.get("getWHU")
+                )
 
         # Override getBAT attributes for devices that report battery as percentage (SafeFloor).
         # The name follows the unit: "Battery level" like getBAP instead of "Battery voltage".
@@ -2721,6 +2735,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         # Apply the sensor-specific scale (e.g. 1/10 °C -> °C, liters -> m³)
         description = self.entity_description
         value = value / description.divide_by * description.multiply_by
+        value *= self._hardness_factor
 
         # Apply configured precision if available
         precision = self.entity_description.suggested_display_precision

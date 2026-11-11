@@ -39,12 +39,14 @@ from .helpers import (
     get_cartridge_key,
     get_cartridge_keys,
     get_device_model,
+    get_hardness_factor,
     get_hardness_range,
     get_model_supported_keys,
     get_sensor_rtm_value,
     get_whu_unit,
     is_value_true,
     registry_cleanup,
+    round_hardness,
     set_sensor_rtm_value,
 )
 from .models import SyrConnectModel
@@ -482,9 +484,10 @@ def _add_softener_selects(b: _SyrConnectSelectBuilder) -> None:
         b.add_numeric("getRPD", 1, max_rpd)
 
     # Raw water hardness (getIWH, 1-100) and outlet/soft water hardness (getOWH, 0-100), plain LEX
-    # family and All in One + (see docs/syrconnect-protocol.md). The unit suffix follows the
-    # device's getWHU setting. On the All in One +, the ranges depend on the unit, and getOWH is the
-    # soft water hardness of the HWE cartridge, added by _async_setup_muco_conditional_selects.
+    # family, MuCo filling and All in One + (see docs/syrconnect-protocol.md). The unit suffix
+    # follows the device's getWHU setting. On the MuCo filling and the All in One +, the ranges
+    # depend on the unit, and the soft water hardness (getOHW, getOWH) is that of the HWE
+    # cartridge, added by _async_setup_muco_conditional_selects.
     profile = b.model_info.device_profile
     for hardness_key, hardness_min in (("getIWH", 1), ("getOWH", 0)):
         if not b.allowed(hardness_key) or hardness_key in get_cartridge_keys(
@@ -658,13 +661,7 @@ def _async_setup_muco_conditional_selects(
             return SyrConnectDiscreteSelect(
                 coordinator, device_id, device_name, "getLOT", lot_map
             )
-        if key == "getOWH":
-            return SyrConnectRangedHardnessSelect(
-                coordinator, device_id, device_name, "getOWH"
-            )
-        return SyrConnectNumericSelect(
-            coordinator, device_id, device_name, "getOHW", 0, 12, 1
-        )
+        return SyrConnectRangedHardnessSelect(coordinator, device_id, device_name, key)
 
     @callback
     def _sync() -> None:
@@ -917,13 +914,17 @@ class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
         else:
             return label
 
+    def _raw_value(self, value: float) -> int:
+        """Return the raw device value of the number of an option."""
+        return round(value * self._scale)
+
     @override
     async def async_select_option(self, option: str) -> None:
         """Write the selected option to the device."""
         try:
             # Option may include a unit suffix (e.g., '2 days'), so parse first token
             token = str(option).split()[0]
-            val = round(float(token) * self._scale)
+            val = self._raw_value(float(token))
         except (IndexError, OverflowError, ValueError) as err:
             raise ServiceValidationError(
                 translation_domain=DOMAIN,
@@ -987,10 +988,12 @@ class SyrConnectHardnessSelect(SyrConnectNumericSelect):
 
 
 class SyrConnectRangedHardnessSelect(SyrConnectHardnessSelect):
-    """Water hardness select whose range follows the live `getWHU` unit (All in One +).
+    """Water hardness select whose range follows the live `getWHU` unit.
 
     The ranges come from the device profile (`hardness_ranges`). The soft water hardness
-    (getOWH) can be at most the raw water hardness (getIWH).
+    (getOWH, getOHW on the MuCo) can be at most the raw water hardness (getIWH) and is
+    lowered with it. The MuCo keeps the values in °dH (`hardness_in_dh`); they are
+    converted to the unit and back.
     """
 
     def __init__(
@@ -1015,13 +1018,80 @@ class SyrConnectRangedHardnessSelect(SyrConnectHardnessSelect):
         if hardness_range is None:
             return []
         lowest, highest, step = hardness_range
-        if self._sensor_key == "getOWH" and _is_integer(self._status.get("getIWH")):
-            highest = min(highest, int(float(self._status["getIWH"])))
+        if self._sensor_key != "getIWH" and _is_integer(self._status.get("getIWH")):
+            raw_water = int(float(self._status["getIWH"]))
+            highest = min(highest, round_hardness(raw_water * self._factor()))
         unit = self._unit_label()
         return [
             f"{value} {unit}" if unit else str(value)
             for value in range(lowest, highest + 1, step)
         ]
+
+    @property
+    @override
+    def current_option(self) -> str | None:
+        """Return the currently selected option."""
+        factor = self._factor()
+        hardness_range = get_hardness_range(
+            self.device_model, self._sensor_key, self._status.get("getWHU")
+        )
+        raw = self._status.get(self._sensor_key)
+        if factor == 1 or hardness_range is None or raw is None or not _is_number(raw):
+            return super().current_option
+        lowest, _, step = hardness_range
+        value = round_hardness(float(raw) * factor)
+        # A converted value can lie between two steps of the unit (ppm): the step below
+        value = lowest + max(value - lowest, 0) // step * step
+        return f"{value} {self._unit_label()}"
+
+    def _factor(self) -> float:
+        return get_hardness_factor(self.device_model, self._status.get("getWHU"))
+
+    @override
+    def _raw_value(self, value: float) -> int:
+        """Return the raw device value of the number of an option."""
+        return round_hardness(value / self._factor())
+
+    @override
+    async def async_select_option(self, option: str) -> None:
+        """Write the selected option to the device.
+
+        A raw water hardness (getIWH) below the soft water hardness lowers the soft
+        water hardness to the same value.
+        """
+        await super().async_select_option(option)
+        if self._sensor_key != "getIWH":
+            return
+        raw_water = self._raw_value(float(option.split(maxsplit=1)[0]))
+        for soft_key in ("getOHW", "getOWH"):
+            soft = self._status.get(soft_key)
+            if (
+                get_hardness_range(
+                    self.device_model, soft_key, self._status.get("getWHU")
+                )
+                is None
+                or soft is None
+                or not _is_integer(soft)
+                or int(float(soft)) <= raw_water
+            ):
+                continue
+            set_key = f"set{soft_key[3:]}"
+            try:
+                await self.coordinator.async_set_device_value(
+                    self._device_id, set_key, raw_water
+                )
+            except (SyrConnectError, ValueError, TypeError, KeyError) as err:
+                _LOGGER.error(
+                    "Failed to set %s for device %s: %s", set_key, self._device_id, err
+                )
+                raise HomeAssistantError(
+                    translation_domain=DOMAIN,
+                    translation_key="set_value_failed",
+                    translation_placeholders={
+                        "device": self._device_name,
+                        "entity": self._entity_name,
+                    },
+                ) from err
 
 
 class SyrConnectRotationSelect(SyrConnectEntity, SelectEntity):
