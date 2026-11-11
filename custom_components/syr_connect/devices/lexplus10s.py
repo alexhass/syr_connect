@@ -123,7 +123,7 @@ PROFILE = SyrConnectDeviceProfile(
     button=BUTTON_SUPPORTED_KEYS,
     select=SELECT_SUPPORTED_KEYS,
     sensor=SENSOR_SUPPORTED_KEYS,
-    sensor_multiply_by={
+    sensor_factors={
         "getFLO": 60,
     },
     switch=SWITCH_SUPPORTED_KEYS,

@@ -179,7 +179,7 @@ Actual (expected) device response:
 - Tentatively be considered a documentation defect.
 - Description: The official documentation gives the filling volumes `getCFV` (current filling volume), `getLFV` (last refilled volume) and `getTRV` (cumulative refilled volume) in liters. The All in One + (firmware `All-in-One+ V4.05`) reports them in milliliters, for example `getLFV` "6600" for a refill of 6.6 l, which took 159 s (`getLFT`). The later MultiController filling controllers report liters.
 - Impact: Read as liters, the All in One + shows refills 1000 times too large.
-- Mitigation in this project: The All in One + profile in `custom_components/syr_connect/devices/allinoneplus.py` divides `getCFV`, `getLFV` and `getTRV` by 1000 (`sensor_divide_by`).
+- Mitigation in this project: The All in One + profile in `custom_components/syr_connect/devices/allinoneplus.py` divides `getCFV`, `getLFV` and `getTRV` by 1000 (`sensor_divisors`).
 - Evidence / references:
   - Report: [issue #64](https://github.com/alexhass/syr_connect/issues/64)
 

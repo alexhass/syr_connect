@@ -90,6 +90,10 @@ class SyrConnectDeviceProfile:
     # Keys that only apply to one cartridge type (getCRT): cartridge type code -> key;
     # only the key of the reported cartridge type becomes an entity
     cartridge_keys: Mapping[str, str] = field(default_factory=dict)
+    # Water hardness values (getIWH, getOWH) the device reports in another scale for a
+    # getWHU code: code -> divisor, e.g. 10 for tenths of mmol/l; the display gets one
+    # decimal more per factor 10
+    hardness_divisors: Mapping[int, int] = field(default_factory=dict)
     # The device reports and takes the water hardness (getIWH, getOHW) in °dH whatever
     # getWHU is set to; getWHU is only the unit of the display, the values are converted
     hardness_in_dh: bool = False
@@ -106,21 +110,17 @@ class SyrConnectDeviceProfile:
     # Sensor keys the device reports in another scale than the entity description:
     # key -> divisor that replaces the description's divide_by, e.g. 1000 for
     # milliliters instead of liters
-    sensor_divide_by: Mapping[str, int] = field(default_factory=dict)
+    sensor_divisors: Mapping[str, int] = field(default_factory=dict)
     # Sensor keys the device reports in another scale than the entity description:
     # key -> factor that replaces the description's multiply_by, e.g. 60 for a flow
     # in l/min instead of l/h
-    sensor_multiply_by: Mapping[str, int] = field(default_factory=dict)
+    sensor_factors: Mapping[str, int] = field(default_factory=dict)
     # Measurement history series the cloud keeps for the device; empty means none
     statistics: tuple[SyrConnectStatistic, ...] = ()
     switch: AbstractSet[str]
     # None means the global allowlist of the platform
     update: AbstractSet[str] | None = None
     valve: AbstractSet[str]
-    # Water hardness values (getIWH, getOWH) the device reports in another scale for a
-    # getWHU code: code -> divisor, e.g. 10 for tenths of mmol/l; the display gets one
-    # decimal more per factor 10
-    whu_divide_by: Mapping[int, int] = field(default_factory=dict)
     # Water hardness unit codes (getWHU) of the device family: code -> unit; None means
     # the device has no water hardness unit
     whu_units: Mapping[int, str] | None = None

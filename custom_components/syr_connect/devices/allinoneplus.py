@@ -174,7 +174,7 @@ PROFILE = SyrConnectDeviceProfile(
         "getRMT": SELECT_RMT_OPTIONS,
     },
     sensor=SENSOR_SUPPORTED_KEYS,
-    sensor_divide_by={
+    sensor_divisors={
         "getCFV": 1000,
         "getLFV": 1000,
         "getTRV": 1000,

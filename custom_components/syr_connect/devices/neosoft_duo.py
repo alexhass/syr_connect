@@ -129,12 +129,12 @@ VALVE_SUPPORTED_KEYS: set[str] = set()
 PROFILE = SyrConnectDeviceProfile(
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
+    hardness_divisors={
+        1: 10,
+    },
     select=SELECT_SUPPORTED_KEYS,
     sensor=SENSOR_SUPPORTED_KEYS,
     switch=SWITCH_SUPPORTED_KEYS,
     valve=VALVE_SUPPORTED_KEYS,
-    whu_divide_by={
-        1: 10,
-    },
     whu_units=WHU_UNITS_NEOSOFT,
 )

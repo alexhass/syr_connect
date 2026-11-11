@@ -1289,7 +1289,7 @@ def get_whu_unit(model: SyrConnectModel, raw_code: Any) -> str | None:
     return profile.whu_units.get(code)
 
 
-def get_whu_divide_by(model: SyrConnectModel, raw_code: Any) -> int:
+def get_hardness_divisor(model: SyrConnectModel, raw_code: Any) -> int:
     """Divisor of the water hardness values (getIWH, getOWH) for a getWHU code.
 
     Formats:
@@ -1307,7 +1307,7 @@ def get_whu_divide_by(model: SyrConnectModel, raw_code: Any) -> int:
     code = _whu_code(raw_code)
     if code is None or profile is None:
         return 1
-    return profile.whu_divide_by.get(code, 1)
+    return profile.hardness_divisors.get(code, 1)
 
 
 def get_hardness_range(

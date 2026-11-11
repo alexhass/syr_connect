@@ -54,6 +54,7 @@ from .helpers import (
     get_cartridge_keys,
     get_cartridge_type_key,
     get_device_model,
+    get_hardness_divisor,
     get_hardness_factor,
     get_model_supported_keys,
     get_sensor_ab_value,
@@ -67,7 +68,6 @@ from .helpers import (
     get_sensor_rtm_value,
     get_sensor_vol_value,
     get_sensor_wrn_map,
-    get_whu_divide_by,
     get_whu_unit,
     is_empty_ip,
     is_value_true,
@@ -2692,23 +2692,23 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         profile = self.device_model.device_profile
         if profile is not None:
             description = self.entity_description
-            whu_divide_by = (
-                get_whu_divide_by(self.device_model, self._status.get("getWHU"))
+            hardness_divisor = (
+                get_hardness_divisor(self.device_model, self._status.get("getWHU"))
                 if sensor_key in ("getIWH", "getOWH")
                 else 1
             )
             divide_by = (
-                profile.sensor_divide_by.get(sensor_key, description.divide_by)
-                * whu_divide_by
+                profile.sensor_divisors.get(sensor_key, description.divide_by)
+                * hardness_divisor
             )
-            multiply_by = profile.sensor_multiply_by.get(
+            multiply_by = profile.sensor_factors.get(
                 sensor_key, description.multiply_by
             )
             # The water hardness takes the unit of getWHU instead, which can need decimals
             # the description does not have (tenths of mmol/l)
             precision = description.suggested_display_precision
-            if precision is not None and whu_divide_by > 1:
-                precision += math.ceil(math.log10(whu_divide_by))
+            if precision is not None and hardness_divisor > 1:
+                precision += math.ceil(math.log10(hardness_divisor))
             if (divide_by, multiply_by) != (
                 description.divide_by,
                 description.multiply_by,

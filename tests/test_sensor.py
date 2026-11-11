@@ -8246,7 +8246,7 @@ def test_sensor_profile_divide_by_replaces_description_scale(
                 "getCFV",
                 "getLFV",
             },
-            sensor_divide_by={
+            sensor_divisors={
                 "getLFV": 1000,
             },
             switch=set(),
