@@ -83,6 +83,7 @@ import logging
 from pathlib import Path
 import sys
 from typing import Any, NoReturn
+from xml.etree import ElementTree as ET
 
 # ---------------------------------------------------------------------------
 # Make the custom_components package importable when running from repo root
@@ -128,6 +129,7 @@ def _exit_missing_dependency(err: ModuleNotFoundError) -> NoReturn:
 
 try:
     import aiohttp
+    import defusedxml.ElementTree as DefusedET
 
     from custom_components.syr_connect.checksum import SyrChecksum
     from custom_components.syr_connect.const import (
@@ -198,6 +200,19 @@ _LOGGER = logging.getLogger("debug_cli")
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+
+def _mask_login_password(xml_data: str) -> str:
+    """Return a login payload with the password replaced by "***".
+
+    The payload is parsed instead of searched: the XML escapes & < > and ", so the
+    plain password is not always found in it.
+    """
+    declaration = xml_data[: xml_data.index("?>") + 2]
+    root = DefusedET.fromstring(xml_data)
+    for usr in root.iter("usr"):
+        usr.set("v", "***")
+    return declaration + ET.tostring(root, encoding="unicode")
 
 
 def _parse_set_value(raw: str) -> Any:
@@ -301,11 +316,7 @@ class DebugXmlClient:
         xml_data = self.payload_builder.build_login_payload(
             self.username, self.password
         )
-        # Guard against replace("", ...) corrupting the XML when password is empty
-        if self.show_password or not self.password:
-            log_payload = xml_data
-        else:
-            log_payload = xml_data.replace(self.password, "***")
+        log_payload = xml_data if self.show_password else _mask_login_password(xml_data)
         _LOGGER.debug("--- Login request payload ---\n%s", log_payload)
 
         _LOGGER.info("POST %s", self.login_url)
