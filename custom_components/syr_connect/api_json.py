@@ -64,6 +64,21 @@ def _format_host_for_url(host: str) -> str:
     return host
 
 
+def _raise_for_redirect(resp: aiohttp.ClientResponse) -> None:
+    """Raise for a redirect, which is not followed.
+
+    Raises:
+        aiohttp.ClientResponseError: If the status is 3xx
+    """
+    if 300 <= resp.status < 400:
+        raise aiohttp.ClientResponseError(
+            resp.request_info,
+            resp.history,
+            status=resp.status,
+            message="Redirect not followed",
+        )
+
+
 class SyrConnectJsonAPI:
     """Client for the local JSON API served by some SYR devices.
 
@@ -318,7 +333,11 @@ class SyrConnectJsonAPI:
         _LOGGER.debug("JSON API: %s - URL: %s", operation, url)
         try:
             timeout_obj = aiohttp.ClientTimeout(total=timeout)
-            async with self._session.get(url, timeout=timeout_obj) as resp:
+            # Redirects are not followed: the local API is unencrypted, and a redirect
+            # could send Home Assistant to any address
+            async with self._session.get(
+                url, timeout=timeout_obj, allow_redirects=False
+            ) as resp:
                 _LOGGER.debug(
                     "JSON API: %s - Response status: %s", operation, resp.status
                 )
@@ -343,6 +362,7 @@ class SyrConnectJsonAPI:
 
                 # Raise exception on HTTP errors (4xx, 5xx)
                 resp.raise_for_status()
+                _raise_for_redirect(resp)
 
                 # --- Parse and Validate JSON Response ---
                 # Note: SYR devices return JSON without proper Content-Type header (application/json).

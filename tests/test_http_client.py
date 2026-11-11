@@ -129,6 +129,27 @@ async def test_http_client_post_success() -> None:
     assert mock_session.post.call_count == 1
 
 
+async def test_http_client_post_does_not_follow_redirects() -> None:
+    """A redirect is not followed and fails the request."""
+    mock_session = MagicMock(spec=aiohttp.ClientSession)
+    mock_response = AsyncMock()
+    mock_response.status = 307
+    mock_response.raise_for_status = MagicMock()
+
+    mock_context = AsyncMock()
+    mock_context.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_context.__aexit__ = AsyncMock(return_value=None)
+    mock_session.post = MagicMock(return_value=mock_context)
+
+    client = HTTPClient(mock_session, "TestAgent/1.0")
+
+    with pytest.raises(aiohttp.ClientError, match="Redirect not followed"):
+        await client.post("https://example.com/api", {"key": "value"})
+
+    assert mock_session.post.call_args.kwargs["allow_redirects"] is False
+    mock_response.text.assert_not_called()
+
+
 async def test_http_client_post_with_string_data() -> None:
     """Test HTTP POST request with string data."""
     mock_session = MagicMock(spec=aiohttp.ClientSession)

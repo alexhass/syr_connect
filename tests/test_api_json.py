@@ -981,6 +981,27 @@ async def test_execute_http_get_404_error() -> None:
         await client._execute_http_get("http://test:5333/api/missing")
 
 
+async def test_execute_http_get_does_not_follow_redirects() -> None:
+    """A redirect is not followed and fails the request."""
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status = 302
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json = AsyncMock(return_value={"getSRN": "12345"})
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(sess, base_url="http://test:5333/api/")
+
+    with pytest.raises(SyrConnectHTTPError, match="Redirect not followed") as excinfo:
+        await client._execute_http_get("http://test:5333/api/get/all")
+
+    assert excinfo.value.status == 302
+    assert sess.get.call_args.kwargs["allow_redirects"] is False
+    mock_response.json.assert_not_called()
+
+
 async def test_execute_http_get_timeout_error() -> None:
     """Test _execute_http_get raises SyrConnectConnectionError on timeout."""
 

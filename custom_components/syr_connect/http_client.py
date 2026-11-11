@@ -85,11 +85,24 @@ class HTTPClient:
         # tries again, and a repeated set command could be executed twice
         try:
             _LOGGER.debug("Making POST request to %s", url)
+            # Redirects are not followed: the request carries the password or the
+            # session token, which must not be sent to another address
             async with self.session.post(
-                url, data=data, headers=headers, timeout=timeout
+                url,
+                data=data,
+                headers=headers,
+                timeout=timeout,
+                allow_redirects=False,
             ) as response:
                 _LOGGER.debug("Response status: %d", response.status)
                 response.raise_for_status()
+                if 300 <= response.status < 400:
+                    raise aiohttp.ClientResponseError(
+                        response.request_info,
+                        response.history,
+                        status=response.status,
+                        message="Redirect not followed",
+                    )
                 text = await response.text()
                 _LOGGER.debug("Response received (length: %d)", len(text))
                 return text
