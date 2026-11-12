@@ -469,7 +469,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         self.hass,
                         {
                             **user_input,
-                            CONF_SERVICE: entry.data.get(CONF_SERVICE),
+                            CONF_SERVICE: entry.data[CONF_SERVICE],
                         },
                     )
                     new_data = {
@@ -568,7 +568,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         new_data[CONF_LOGIN_REQUIRED] = bool(info["login_required"])
                 else:
                     # Use the existing configured service; do not allow changing it here.
-                    service = entry.data.get(CONF_SERVICE)
+                    service = entry.data[CONF_SERVICE]
                     await validate_input_xml(
                         self.hass, {**user_input, CONF_SERVICE: service}
                     )

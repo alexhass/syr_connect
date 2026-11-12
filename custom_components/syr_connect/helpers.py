@@ -19,7 +19,6 @@ from homeassistant.util import slugify
 from .const import (
     _SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT,
     _SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT,
-    _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
     _SYR_CONNECT_SCAN_INTERVAL_CONF,
     _SYR_CONNECT_SENSOR_ALA_CODES_GENERIC,
     _SYR_CONNECT_SENSOR_CND_PER_DH,
@@ -319,8 +318,7 @@ def build_entry_unique_id(api_type: str, data: Mapping[str, Any]) -> str:
     """
     if api_type == API_TYPE_JSON:
         return f"{API_TYPE_JSON}_{data[CONF_HOST]}"
-    service = data.get(CONF_SERVICE) or _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER
-    return f"{API_TYPE_XML}_{service}_{data[CONF_USERNAME]}"
+    return f"{API_TYPE_XML}_{data[CONF_SERVICE]}_{data[CONF_USERNAME]}"
 
 
 def build_statistic_id(device_id: str, key: str) -> str:

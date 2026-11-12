@@ -2276,7 +2276,7 @@ async def test_coordinator_init_xml_api_unknown_service(
         CONF_SERVICE: service,
     }
 
-    with pytest.raises(ValueError, match="Unknown cloud service"):
+    with pytest.raises(KeyError):
         SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
 
 

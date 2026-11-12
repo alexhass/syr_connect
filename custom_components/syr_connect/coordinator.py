@@ -154,10 +154,8 @@ class SyrConnectDataUpdateCoordinator(
             password = config_data[CONF_PASSWORD]
 
             # Look up the service from CONF_SERVICE (cf_bundle_identifier)
-            conf_service = config_data.get(CONF_SERVICE)
-            svc = _SYR_CONNECT_API_SERVICES.get(conf_service) if conf_service else None
-            if svc is None:
-                raise ValueError(f"Unknown cloud service {conf_service}")
+            conf_service = config_data[CONF_SERVICE]
+            svc = _SYR_CONNECT_API_SERVICES[conf_service]
 
             self.api = SyrConnectXmlAPI(
                 session,

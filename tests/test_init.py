@@ -615,12 +615,6 @@ async def test_async_migrate_entry_v8_to_v9(hass: HomeAssistant) -> None:
             "xml_me@example.com",
             "xml_de.consoft.gc.conel.connect_me@example.com",
         ),
-        # Without a service (before multi-service support): SYR Connect
-        (
-            {CONF_API_TYPE: API_TYPE_XML, CONF_USERNAME: "me@example.com"},
-            "xml_me@example.com",
-            "xml_de.consoft.syr.connect_me@example.com",
-        ),
         # Local entries keep their unique_id
         (
             {CONF_API_TYPE: API_TYPE_JSON, CONF_HOST: "10.0.0.2"},

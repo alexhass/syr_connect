@@ -1013,12 +1013,6 @@ async def test_reauth_reconfigure_abort_if_username_used_by_other_entry(
 @pytest.mark.parametrize(
     ("api_type", "data", "expected"),
     [
-        # Without a service (entries from before multi-service support): SYR Connect
-        (
-            API_TYPE_XML,
-            {CONF_USERNAME: "user@example.com"},
-            "xml_de.consoft.syr.connect_user@example.com",
-        ),
         (
             API_TYPE_XML,
             {
