@@ -210,7 +210,6 @@ SENSOR_SUPPORTED_KEYS = {
 SELECT_SUPPORTED_KEYS = {
     "getPRF",
     "getSRO",
-    "getFFM",
 }
 
 # getDFI (Conel Clear Pro Fill filling mode) deliberately excluded - belongs to the

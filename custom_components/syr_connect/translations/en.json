@@ -211,15 +211,6 @@
       "getfcs": {
         "name": "Cartridge size (custom)"
       },
-      "getffm": {
-        "name": "Filter type",
-        "state": {
-          "0": "Unknown",
-          "1": "Backwash filter",
-          "2": "Replaceable filter",
-          "3": "No filter"
-        }
-      },
       "getfmt": {
         "name": "Maximum filling duration (initial filling)"
       },

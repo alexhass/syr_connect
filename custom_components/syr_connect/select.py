@@ -108,10 +108,6 @@ _SYR_CONNECT_SELECT_TYPES: tuple[SyrConnectSelectEntityDescription, ...] = (
         entity_category=EntityCategory.CONFIG,
     ),
     SyrConnectSelectEntityDescription(
-        key="getFFM",  # Filter type (backwash / replaceable / none)
-        entity_category=EntityCategory.CONFIG,
-    ),
-    SyrConnectSelectEntityDescription(
         key="getRMO",  # Regeneration mode (Standard / ECO / Power / Automatic)
         entity_category=EntityCategory.CONFIG,
     ),
@@ -215,7 +211,6 @@ _SYR_CONNECT_SELECT_SUPPORTED_KEYS = {
     "getSV2",  # Salt amount container 2
     "getSV3",  # Salt amount container 3
     "getRPD",  # Regeneration interval (days)
-    "getFFM",  # Filter type (1..3)
     "getRMO",  # Regeneration mode (Standard / ECO / Power / Automatic)
     # --- Water treatment / Filling (Conel Clear Pro Fill) ---
     "getCRS",  # Cartridge size (raw 1-5, mapped to liters)
@@ -512,11 +507,6 @@ def _add_softener_selects(b: _SyrConnectSelectBuilder) -> None:
                     1,
                 )
             )
-
-    # Filter type (getFFM): types 1-3, only for a value >= 1. Raw numeric options so the frontend
-    # translates the state. Not limited to the allowlist.
-    if _is_number(status.get("getFFM")) and float(status["getFFM"]) >= 1:
-        b.add_numeric("getFFM", 1, 3, options=["1", "2", "3"])
 
     # Regeneration mode (getRMO), only for a value >= 1. Not limited to the allowlist.
     if _is_integer(status.get("getRMO")) and int(float(status["getRMO"])) >= 1:

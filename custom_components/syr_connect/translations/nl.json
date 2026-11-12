@@ -211,15 +211,6 @@
       "getfcs": {
         "name": "Cartridgegrootte (aangepast)"
       },
-      "getffm": {
-        "name": "Filtertype",
-        "state": {
-          "0": "Onbekend",
-          "1": "Terugspoelfilter",
-          "2": "Vervangbaar filter",
-          "3": "Geen filter"
-        }
-      },
       "getfmt": {
         "name": "Maximale vulduur (eerste vulling)"
       },

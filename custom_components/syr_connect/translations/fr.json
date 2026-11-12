@@ -211,15 +211,6 @@
       "getfcs": {
         "name": "Taille de la cartouche (personnalisée)"
       },
-      "getffm": {
-        "name": "Type de filtre",
-        "state": {
-          "0": "Inconnu",
-          "1": "Filtre à contre-lavage",
-          "2": "Filtre remplaçable",
-          "3": "Sans filtre"
-        }
-      },
       "getfmt": {
         "name": "Durée maximale de remplissage (remplissage initial)"
       },

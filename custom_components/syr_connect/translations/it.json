@@ -211,15 +211,6 @@
       "getfcs": {
         "name": "Dimensione cartuccia (personalizzata)"
       },
-      "getffm": {
-        "name": "Tipo di filtro",
-        "state": {
-          "0": "Sconosciuto",
-          "1": "Filtro a controlavaggio",
-          "2": "Filtro sostituibile",
-          "3": "Nessun filtro"
-        }
-      },
       "getfmt": {
         "name": "Durata massima di riempimento (riempimento iniziale)"
       },

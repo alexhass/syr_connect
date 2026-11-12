@@ -211,15 +211,6 @@
       "getfcs": {
         "name": "Tamanho do cartucho (personalizado)"
       },
-      "getffm": {
-        "name": "Tipo de filtro",
-        "state": {
-          "0": "Desconhecido",
-          "1": "Filtro de retrolavagem",
-          "2": "Filtro substituível",
-          "3": "Sem filtro"
-        }
-      },
       "getfmt": {
         "name": "Duração máxima de enchimento (enchimento inicial)"
       },

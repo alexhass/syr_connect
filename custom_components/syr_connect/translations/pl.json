@@ -211,15 +211,6 @@
       "getfcs": {
         "name": "Rozmiar wkładu (niestandardowy)"
       },
-      "getffm": {
-        "name": "Typ filtra",
-        "state": {
-          "0": "Nieznany",
-          "1": "Filtr z płukaniem zwrotnym",
-          "2": "Filtr wymienny",
-          "3": "Brak filtra"
-        }
-      },
       "getfmt": {
         "name": "Maksymalny czas napełniania (pierwsze napełnienie)"
       },
