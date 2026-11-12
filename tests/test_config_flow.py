@@ -124,6 +124,7 @@ async def test_reauth_confirm_update_entry_exception(hass: HomeAssistant) -> Non
         unique_id="xml_reauth_update_exception@example.com",
         data={
             CONF_API_TYPE: API_TYPE_XML,
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "old_password",
         },
@@ -192,6 +193,7 @@ async def test_form_api_xml_already_configured(hass: HomeAssistant) -> None:
         domain=DOMAIN,
         unique_id="xml_de.consoft.syr.connect_test@example.com",
         data={
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "test_password",
             CONF_API_TYPE: API_TYPE_XML,
@@ -534,6 +536,7 @@ async def test_reauth_confirm_xml_homeassistant_error_sets_unknown(
         unique_id="xml_reauth@example.com",
         data={
             CONF_API_TYPE: API_TYPE_XML,
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "user@example.com",
             CONF_PASSWORD: "old",
         },
@@ -686,6 +689,7 @@ async def test_options_flow(hass: HomeAssistant) -> None:
         domain=DOMAIN,
         unique_id="xml_test@example.com",
         data={
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "test_password",
             CONF_API_TYPE: API_TYPE_XML,
@@ -730,6 +734,7 @@ async def test_options_flow_no_entry(hass: HomeAssistant) -> None:
         domain=DOMAIN,
         unique_id="xml_test@example.com",
         data={
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "test_password",
             CONF_API_TYPE: API_TYPE_XML,
@@ -751,6 +756,7 @@ async def test_reauth_flow(hass: HomeAssistant) -> None:
         domain=DOMAIN,
         unique_id="xml_test@example.com",
         data={
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "old_password",
             CONF_API_TYPE: API_TYPE_XML,
@@ -794,6 +800,7 @@ async def test_reauth_flow_invalid_auth(hass: HomeAssistant) -> None:
         domain=DOMAIN,
         unique_id="xml_test@example.com",
         data={
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "old_password",
             CONF_API_TYPE: API_TYPE_XML,
@@ -832,6 +839,7 @@ async def test_reauth_flow_cannot_connect(hass: HomeAssistant) -> None:
         domain=DOMAIN,
         unique_id="xml_test@example.com",
         data={
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "old_password",
             CONF_API_TYPE: API_TYPE_XML,
@@ -870,6 +878,7 @@ async def test_reauth_flow_unknown_error(hass: HomeAssistant) -> None:
         domain=DOMAIN,
         unique_id="xml_test@example.com",
         data={
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "old_password",
             CONF_API_TYPE: API_TYPE_XML,
@@ -909,6 +918,7 @@ async def test_reconfigure_flow(hass: HomeAssistant) -> None:
         domain=DOMAIN,
         unique_id="xml_test@example.com",
         data={
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "old_password",
             CONF_API_TYPE: API_TYPE_XML,
@@ -959,6 +969,7 @@ async def test_reauth_reconfigure_abort_if_username_used_by_other_entry(
         domain=DOMAIN,
         unique_id="xml_de.consoft.syr.connect_alice@example.com",
         data={
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "alice@example.com",
             CONF_PASSWORD: "pw",
             CONF_API_TYPE: API_TYPE_XML,
@@ -969,6 +980,7 @@ async def test_reauth_reconfigure_abort_if_username_used_by_other_entry(
         domain=DOMAIN,
         unique_id="xml_de.consoft.syr.connect_bob@example.com",
         data={
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "bob@example.com",
             CONF_PASSWORD: "pw",
             CONF_API_TYPE: API_TYPE_XML,
@@ -1030,6 +1042,7 @@ async def test_reconfigure_flow_invalid_auth(hass: HomeAssistant) -> None:
         domain=DOMAIN,
         unique_id="xml_test@example.com",
         data={
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "old_password",
             CONF_API_TYPE: API_TYPE_XML,
@@ -1067,6 +1080,7 @@ async def test_reconfigure_flow_cannot_connect(hass: HomeAssistant) -> None:
         domain=DOMAIN,
         unique_id="xml_test@example.com",
         data={
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "old_password",
             CONF_API_TYPE: API_TYPE_XML,
@@ -1104,6 +1118,7 @@ async def test_reconfigure_flow_unknown_error(hass: HomeAssistant) -> None:
         domain=DOMAIN,
         unique_id="test@example.com",
         data={
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "old_password",
         },
@@ -1155,7 +1170,11 @@ async def test_validate_input_xml_auth_error(
     ):
         await validate_input_xml(
             hass,
-            {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "wrong"},
+            {
+                CONF_SERVICE: "de.consoft.syr.connect",
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "wrong",
+            },
         )
 
 
@@ -1171,7 +1190,11 @@ async def test_validate_input_xml_connection_error(hass: HomeAssistant) -> None:
     ):
         await validate_input_xml(
             hass,
-            {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test"},
+            {
+                CONF_SERVICE: "de.consoft.syr.connect",
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "test",
+            },
         )
 
 
@@ -1187,8 +1210,35 @@ async def test_validate_input_xml_unexpected_error(hass: HomeAssistant) -> None:
     ):
         await validate_input_xml(
             hass,
-            {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test"},
+            {
+                CONF_SERVICE: "de.consoft.syr.connect",
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "test",
+            },
         )
+
+
+async def test_validate_input_xml_uses_the_selected_service(
+    hass: HomeAssistant,
+) -> None:
+    """The login is tested with the selected service, which also names the entry."""
+    svc = _SYR_CONNECT_API_SERVICES["de.consoft.rwc.connect"]
+
+    with patch(
+        "custom_components.syr_connect.config_flow.SyrConnectXmlAPI"
+    ) as mock_xml_api_class:
+        mock_xml_api_class.return_value.login = AsyncMock()
+        result = await validate_input_xml(
+            hass,
+            {
+                CONF_SERVICE: svc.cf_bundle_identifier,
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "test",
+            },
+        )
+
+    assert mock_xml_api_class.call_args.kwargs["service"] is svc
+    assert result == {"title": "RWC MultiSafe (test@example.com)"}
 
 
 async def test_validate_input_json_connection_error(hass: HomeAssistant) -> None:
@@ -1290,6 +1340,7 @@ async def test_options_flow_with_existing_interval(hass: HomeAssistant) -> None:
         domain=DOMAIN,
         unique_id="xml_test@example.com",
         data={
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "test_password",
             CONF_API_TYPE: API_TYPE_XML,
@@ -1416,6 +1467,7 @@ async def test_reconfigure_flow_update_entry_exception(hass: HomeAssistant) -> N
         domain=DOMAIN,
         unique_id="xml_test@example.com",
         data={
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "old_password",
             CONF_API_TYPE: API_TYPE_XML,
@@ -1679,6 +1731,7 @@ async def test_reconfigure_homeassistant_error_xml_shows_unknown(
         unique_id="xml_reconfigure_direct@example.com",
         data={
             CONF_API_TYPE: API_TYPE_XML,
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "reconfigure_direct@example.com",
             CONF_PASSWORD: "old",
         },
@@ -1855,6 +1908,7 @@ async def test_async_get_options_flow(hass: HomeAssistant) -> None:
         title="SYR Connect Device",
         data={
             CONF_API_TYPE: API_TYPE_XML,
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "test_password",
         },
@@ -1879,6 +1933,7 @@ async def test_async_step_reauth(hass: HomeAssistant) -> None:
         title="SYR Connect Device",
         data={
             CONF_API_TYPE: API_TYPE_XML,
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "test_password",
         },
@@ -2147,6 +2202,7 @@ async def test_reauth_confirm_unexpected_exception(hass: HomeAssistant) -> None:
         domain=DOMAIN,
         unique_id="xml_reauth_unknown@example.com",
         data={
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "old_password",
             CONF_API_TYPE: API_TYPE_XML,
@@ -2273,6 +2329,7 @@ async def test_reconfigure_unexpected_exception(hass: HomeAssistant) -> None:
         domain=DOMAIN,
         unique_id="xml_reconfigure_unknown@example.com",
         data={
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "old_password",
             CONF_API_TYPE: API_TYPE_XML,

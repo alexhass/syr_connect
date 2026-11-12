@@ -14,6 +14,7 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect import select as select_module
+from custom_components.syr_connect.const import CONF_SERVICE
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.exceptions import SyrConnectError
 from custom_components.syr_connect.models import (
@@ -70,6 +71,7 @@ def test_option_unit_without_unit_raises() -> None:
 def _build_coordinator(hass: HomeAssistant, data: dict) -> Any:
     """Build a real coordinator; typed Any because tests replace its methods with mocks."""
     config_data = {
+        CONF_SERVICE: "de.consoft.syr.connect",
         CONF_USERNAME: "test@example.com",
         CONF_PASSWORD: "password",
     }
@@ -2405,6 +2407,7 @@ async def test_prf_select_async_select_option_with_none_pa(hass: HomeAssistant) 
 def _build_coordinator_local(hass: HomeAssistant, data: dict) -> Any:
     """Local helper to build a coordinator for the appended tests."""
     config_data = {
+        CONF_SERVICE: "de.consoft.syr.connect",
         CONF_USERNAME: "test@example.com",
         CONF_PASSWORD: "password",
     }

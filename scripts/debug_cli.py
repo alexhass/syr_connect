@@ -9,7 +9,8 @@ Options:
     --password PASSWORD         API account password
     --base-url URL              API base URL (default: https://syrconnect.de)
     --api-app-name STRING       App name in login XML payload (default: "SYR Connect")
-    --api-package-name STRING   Package name in app-version string (default: de.consoft.syr.connect)
+    --api-package-name STRING   Package name in app-version string; also selects the key of the login
+                                response (default: de.consoft.syr.connect)
     --user-agent STRING         HTTP User-Agent header (default: from const.py)
     --get-devices               Fetch device list for every project after login (continue running)
     --get-status                Fetch device status for every device (implies --get-devices)
@@ -133,18 +134,17 @@ try:
 
     from custom_components.syr_connect.checksum import SyrChecksum
     from custom_components.syr_connect.const import (
+        _SYR_CONNECT_API_SERVICES,
         _SYR_CONNECT_API_XML_DEVICE_SERVICE_PATH,
-        _SYR_CONNECT_CLIENT_CF_BUNDLE_IDENTIFIER,
         _SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION,
         _SYR_CONNECT_CLIENT_CHECKSUM_KEY1,
         _SYR_CONNECT_CLIENT_CHECKSUM_KEY2,
-        _SYR_CONNECT_CLIENT_ENCRYPTION_IV,
-        _SYR_CONNECT_CLIENT_ENCRYPTION_KEY,
         _SYR_CONNECT_CLIENT_OS_LANGUAGE,
         _SYR_CONNECT_CLIENT_OS_MODEL,
         _SYR_CONNECT_CLIENT_OS_NAME,
         _SYR_CONNECT_CLIENT_OS_VERSION,
         _SYR_CONNECT_CLIENT_USER_AGENT,
+        _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
     )
     from custom_components.syr_connect.data import SyrConnectDevice
     from custom_components.syr_connect.devices import SyrConnectStatistic
@@ -251,7 +251,7 @@ class DebugXmlClient:
         base_url: str,
         app_version: str,
         app_name: str,
-        api_package_name: str,  # embedded in app_version by caller; accepted here only for logging
+        api_package_name: str,  # embedded in app_version by caller; selects the service key
         user_agent: str,
         skip_decrypt: bool = False,
         show_password: bool = False,
@@ -277,10 +277,12 @@ class DebugXmlClient:
         self.session_data: str = ""
         self.projects: list[dict[str, Any]] = []
 
-        self.encryption = SyrEncryption(
-            _SYR_CONNECT_CLIENT_ENCRYPTION_KEY,
-            _SYR_CONNECT_CLIENT_ENCRYPTION_IV,
+        # Key and IV of the service of the package name, SYR Connect if unknown
+        svc = _SYR_CONNECT_API_SERVICES.get(
+            api_package_name,
+            _SYR_CONNECT_API_SERVICES[_SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER],
         )
+        self.encryption = SyrEncryption(svc.crypt_key, svc.crypt_vector)
         checksum = SyrChecksum(
             _SYR_CONNECT_CLIENT_CHECKSUM_KEY1,
             _SYR_CONNECT_CLIENT_CHECKSUM_KEY2,
@@ -568,7 +570,7 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--api-package-name",
-        default=_SYR_CONNECT_CLIENT_CF_BUNDLE_IDENTIFIER,
+        default=_SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
         help="Package name embedded in the app-version string (default: %(default)s)",
     )
     parser.add_argument(

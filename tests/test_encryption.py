@@ -6,25 +6,58 @@ from typing import Any
 from Cryptodome.Cipher import AES
 import pytest
 
+from custom_components.syr_connect.const import (
+    _SYR_CONNECT_API_SERVICES,
+    _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
+)
 from custom_components.syr_connect.encryption import SyrEncryption
+
+_SYR_KEY = "d805a5c409dc354b6ccf03a2c29a5825851cf31979abf526ede72570c52cf954"
+_SYR_IV = "408a42beb8a1cefad990098584ed51a5"
+_SYR_SERVICE = _SYR_CONNECT_API_SERVICES[_SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER]
 
 
 @pytest.fixture
 def encryption() -> Any:
-    """Create an encryption instance with test keys."""
-    key = "d805a5c409dc354b6ccf03a2c29a5825851cf31979abf526ede72570c52cf954"
-    iv = "408a42beb8a1cefad990098584ed51a5"
-    return SyrEncryption(key, iv)
+    """Create an encryption instance with the SYR Connect key."""
+    return SyrEncryption(_SYR_SERVICE.crypt_key, _SYR_SERVICE.crypt_vector)
 
 
-def test_encryption_initialization() -> None:
-    """Test encryption initialization with hex keys."""
-    key = "d805a5c409dc354b6ccf03a2c29a5825851cf31979abf526ede72570c52cf954"
-    iv = "408a42beb8a1cefad990098584ed51a5"
-    enc = SyrEncryption(key, iv)
+def test_encryption_initialization(encryption: SyrEncryption) -> None:
+    """The crypt values of SYR Connect decrypt to its AES-256 key and IV."""
+    assert encryption.key.hex() == _SYR_KEY
+    assert encryption.iv.hex() == _SYR_IV
 
-    assert len(enc.key) == 32  # 256 bits
-    assert len(enc.iv) == 16  # 128 bits
+
+@pytest.mark.parametrize(
+    ("bundle_id", "key", "iv"),
+    [
+        ("de.consoft.syr.connect", _SYR_KEY, _SYR_IV),
+        ("de.consoft.gc.conel.connect", _SYR_KEY, _SYR_IV),
+        ("de.consoft.gsh.comfort.connect", _SYR_KEY, _SYR_IV),
+        ("de.consoft.isg.concept.connect", _SYR_KEY, _SYR_IV),
+        ("de.consoft.sanitaerunion.ditech.connect", _SYR_KEY, _SYR_IV),
+        ("de.consoft.isg.optima.connect", _SYR_KEY, _SYR_IV),
+        (
+            "de.consoft.rwc.connect",
+            "ecb1552e674668f493c8be1792cfc299ec335d34fe6a9289729a0daf7c210b17",
+            "2482879480e5c67a09888a7526f33a70",
+        ),
+        (
+            "de.consoft.polygonvatro.connect",
+            "d86dace397d434ac7ae3a8fcf5ce32f8fa15d683dac02ebf7eebaf0a300be97c",
+            "4d5ab24c4bc18e544c8804e921ca451a",
+        ),
+    ],
+)
+def test_service_crypt_values(bundle_id: str, key: str, iv: str) -> None:
+    """The crypt values of every service decrypt to its key and IV."""
+    svc = _SYR_CONNECT_API_SERVICES[bundle_id]
+
+    enc = SyrEncryption(svc.crypt_key, svc.crypt_vector)
+
+    assert enc.key.hex() == key
+    assert enc.iv.hex() == iv
 
 
 def test_decrypt_empty_string(encryption: SyrEncryption) -> None:
@@ -106,14 +139,11 @@ def test_decrypt_invalid_utf8(encryption: SyrEncryption) -> None:
 def test_decrypt_wrong_key() -> None:
     """Test decryption with wrong key produces garbled output or error."""
     # Create encryption with one key
-    key1 = "d805a5c409dc354b6ccf03a2c29a5825851cf31979abf526ede72570c52cf954"
-    iv1 = "408a42beb8a1cefad990098584ed51a5"
-    enc1 = SyrEncryption(key1, iv1)
+    enc1 = SyrEncryption(_SYR_SERVICE.crypt_key, _SYR_SERVICE.crypt_vector)
 
-    # Encrypt with different key
-    key2 = "0000000000000000000000000000000000000000000000000000000000000000"
-    iv2 = "00000000000000000000000000000000"
-    enc2 = SyrEncryption(key2, iv2)
+    # Encrypt with the different key of another service
+    svc = _SYR_CONNECT_API_SERVICES["de.consoft.rwc.connect"]
+    enc2 = SyrEncryption(svc.crypt_key, svc.crypt_vector)
 
     plaintext = "secret message"
     padded = plaintext.ljust(16, "\x00")

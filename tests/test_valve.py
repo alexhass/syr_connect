@@ -14,6 +14,7 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect.api_json import SyrConnectJsonAPI
+from custom_components.syr_connect.const import CONF_SERVICE
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.helpers import build_set_ab_command
 from custom_components.syr_connect.response_parser import ResponseParser
@@ -50,6 +51,7 @@ def _build_coordinator(
     hass: HomeAssistant, data: dict
 ) -> SyrConnectDataUpdateCoordinator:
     config_data = {
+        CONF_SERVICE: "de.consoft.syr.connect",
         CONF_USERNAME: "test@example.com",
         CONF_PASSWORD: "password",
     }

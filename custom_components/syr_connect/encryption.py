@@ -4,22 +4,44 @@ import base64
 import logging
 
 from Cryptodome.Cipher import AES
+from Cryptodome.Util.Padding import unpad
+
+from .const import _SYR_CONNECT_CLIENT_SECURE_KEY, _SYR_CONNECT_CLIENT_SECURE_VECTOR
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _decrypt_crypt_value(value: str) -> bytes:
+    """Return the raw bytes of an encrypted crypt_key or crypt_vector.
+
+    Args:
+        value: Base64 text of the AES-CBC encrypted base64 text of the raw bytes
+
+    Returns:
+        Raw key or IV bytes
+    """
+    cipher = AES.new(
+        base64.b64decode(_SYR_CONNECT_CLIENT_SECURE_KEY),
+        AES.MODE_CBC,
+        base64.b64decode(_SYR_CONNECT_CLIENT_SECURE_VECTOR),
+    )
+    return base64.b64decode(
+        unpad(cipher.decrypt(base64.b64decode(value)), AES.block_size)
+    )
 
 
 class SyrEncryption:
     """Handle encryption and decryption for SYR Connect API."""
 
-    def __init__(self, key: str, iv: str) -> None:
+    def __init__(self, crypt_key: str, crypt_vector: str) -> None:
         """Initialize encryption handler.
 
         Args:
-            key: Hexadecimal encryption key
-            iv: Hexadecimal initialization vector
+            crypt_key: Encrypted key of the service (SyrConnectService.crypt_key)
+            crypt_vector: Encrypted IV of the service (SyrConnectService.crypt_vector)
 
         Note:
-            Both ``key`` and ``iv`` are fixed constants defined by the SYR Connect
+            Both values are fixed constants of the service in the SYR Connect
             cloud API protocol. Using a static IV with AES-CBC is a known weakness:
             identical plaintext blocks produce identical ciphertext, which can leak
             patterns to an observer. This is an API constraint that cannot be
@@ -28,8 +50,8 @@ class SyrEncryption:
             encrypt user-controlled data, and each response carries a unique
             session token that varies per login.
         """
-        self.key = bytes.fromhex(key)
-        self.iv = bytes.fromhex(iv)
+        self.key = _decrypt_crypt_value(crypt_key)
+        self.iv = _decrypt_crypt_value(crypt_vector)
 
     def decrypt(self, encrypted_payload: str) -> str:
         """Decrypt an encrypted payload.

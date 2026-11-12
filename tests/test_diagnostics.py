@@ -19,9 +19,10 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.syr_connect import diagnostics as diag
 from custom_components.syr_connect.api_json import SyrConnectJsonAPI
 from custom_components.syr_connect.const import (
-    _SYR_CONNECT_API_XML_BASE_URL,
+    _SYR_CONNECT_API_SERVICES,
     _SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL,
     _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL,
+    _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
@@ -2038,12 +2039,12 @@ async def test_diagnostics_xml_raw_collection_and_masking_additional(
             self.payload_builder = FakePayloadBuilder()
             self.http_client = FakeHttpClient()
             self.response_parser = FakeResponseParser()
-            self.device_list_url = (
-                _SYR_CONNECT_API_XML_BASE_URL + _SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL
-            )
+            base_url = _SYR_CONNECT_API_SERVICES[
+                _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER
+            ].api_base_url
+            self.device_list_url = base_url + _SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL
             self.device_get_status_url = (
-                _SYR_CONNECT_API_XML_BASE_URL
-                + _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL
+                base_url + _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL
             )
 
         def is_session_valid(self) -> Any:

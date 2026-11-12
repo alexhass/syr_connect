@@ -32,24 +32,20 @@ import aiohttp
 
 from .checksum import SyrChecksum
 from .const import (
-    _SYR_CONNECT_API_XML_BASE_URL,
     _SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL,
     _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL,
     _SYR_CONNECT_API_XML_DEVICE_SERVICE_PATH,
     _SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL,
     _SYR_CONNECT_API_XML_LOGIN_URL,
-    _SYR_CONNECT_CLIENT_APP_NAME,
-    _SYR_CONNECT_CLIENT_CF_BUNDLE_IDENTIFIER,
     _SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION,
     _SYR_CONNECT_CLIENT_CHECKSUM_KEY1,
     _SYR_CONNECT_CLIENT_CHECKSUM_KEY2,
-    _SYR_CONNECT_CLIENT_ENCRYPTION_IV,
-    _SYR_CONNECT_CLIENT_ENCRYPTION_KEY,
     _SYR_CONNECT_CLIENT_OS_LANGUAGE,
     _SYR_CONNECT_CLIENT_OS_MODEL,
     _SYR_CONNECT_CLIENT_OS_NAME,
     _SYR_CONNECT_CLIENT_OS_VERSION,
     _SYR_CONNECT_CLIENT_USER_AGENT,
+    SyrConnectService,
 )
 from .data import SyrConnectDevice
 from .devices import SyrConnectStatistic
@@ -83,9 +79,7 @@ class SyrConnectXmlAPI:
         username: str,
         password: str,
         *,
-        api_app_name: str | None = None,
-        api_base_url: str | None = None,
-        cf_bundle_identifier: str | None = None,
+        service: SyrConnectService,
         language: str = _SYR_CONNECT_CLIENT_OS_LANGUAGE,
     ) -> None:
         """Initialize the cloud API client.
@@ -94,12 +88,8 @@ class SyrConnectXmlAPI:
             session: aiohttp ClientSession provided by Home Assistant
             username: SYR Connect cloud account email address
             password: SYR Connect cloud account password
-            api_app_name: Application name sent in the login payload "<nfo v=...>" (from _SYR_CONNECT_API_SERVICES).
-                Defaults to _SYR_CONNECT_CLIENT_APP_NAME ("SYR Connect").
-            api_base_url: Cloud API base URL override (from _SYR_CONNECT_API_SERVICES), must end with "/".
-                Defaults to _SYR_CONNECT_API_XML_BASE_URL ("https://syrconnect.de/").
-            cf_bundle_identifier: iOS bundle identifier override (from _SYR_CONNECT_API_SERVICES).
-                Defaults to _SYR_CONNECT_CLIENT_CF_BUNDLE_IDENTIFIER ("de.consoft.syr.connect").
+            service: Cloud API service of the account (from _SYR_CONNECT_API_SERVICES):
+                app name, base URL, bundle identifier and the key of the login response
             language: Locale like "de-DE" (from helpers.get_api_locale) sent in the app version string
                 "<si v=...>", as lng/reg at login, lg/rg in statistics requests and in the
                 Accept-Language header. Defaults to _SYR_CONNECT_CLIENT_OS_LANGUAGE ("en-US").
@@ -119,10 +109,10 @@ class SyrConnectXmlAPI:
         # Each login returns a list of projects the user has access to
         self.projects: list[dict[str, Any]] = []
 
-        # --- URL overrides (config entry-specific) ---
-        _app_name = api_app_name or _SYR_CONNECT_CLIENT_APP_NAME
-        _base = api_base_url or _SYR_CONNECT_API_XML_BASE_URL
-        _bundle_id = cf_bundle_identifier or _SYR_CONNECT_CLIENT_CF_BUNDLE_IDENTIFIER
+        # --- Service endpoints (config entry-specific) ---
+        _app_name = service.api_app_name
+        _base = service.api_base_url
+        _bundle_id = service.cf_bundle_identifier
         self._login_url = _base + _SYR_CONNECT_API_XML_LOGIN_URL
         self._device_list_url = _base + _SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL
         self._device_get_status_url = _base + _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL
@@ -145,9 +135,7 @@ class SyrConnectXmlAPI:
         # These handle the low-level details of the SYR protocol
 
         # AES encryption for login response decryption
-        self.encryption = SyrEncryption(
-            _SYR_CONNECT_CLIENT_ENCRYPTION_KEY, _SYR_CONNECT_CLIENT_ENCRYPTION_IV
-        )
+        self.encryption = SyrEncryption(service.crypt_key, service.crypt_vector)
 
         # Request checksum required by the webservice (proprietary, two keys; not an HMAC)
         self.checksum = SyrChecksum(

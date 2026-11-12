@@ -518,6 +518,27 @@ async def test_async_migrate_entry_v2_to_v3(hass: HomeAssistant) -> None:
     mock_update.assert_called_once_with(config_entry, version=3)
 
 
+async def test_async_migrate_entry_v3_to_v4_adds_service(hass: HomeAssistant) -> None:
+    """Test v3->v4 migration gives an XML entry without service the SYR Connect service."""
+    config_entry = MockConfigEntry(
+        version=3,
+        domain=DOMAIN,
+        title="V3 Entry",
+        data={
+            CONF_API_TYPE: API_TYPE_XML,
+            "username": "v3user@example.com",
+            "password": "password",
+        },
+        entry_id="v3_entry",
+    )
+    config_entry.add_to_hass(hass)
+
+    assert await async_migrate_entry(hass, config_entry) is True
+
+    assert config_entry.version == 10
+    assert config_entry.data[CONF_SERVICE] == "de.consoft.syr.connect"
+
+
 async def test_async_migrate_entry_v7_to_v8(hass: HomeAssistant) -> None:
     """Test v7->v8 migration renames the Optima T2.3 local model, then migrates to v10."""
     local_entry = MockConfigEntry(

@@ -29,7 +29,7 @@ class PayloadBuilder:
         self,
         app_version: str,
         checksum_calculator: SyrChecksum,
-        app_name: str = "SYR Connect",
+        app_name: str,
         language: str = _SYR_CONNECT_CLIENT_OS_LANGUAGE,
     ) -> None:
         """Initialize payload builder.

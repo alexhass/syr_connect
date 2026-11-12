@@ -121,6 +121,7 @@ async def test_coordinator_update_success(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -137,8 +138,8 @@ async def test_coordinator_update_success(
         assert "devices" in coordinator.data
         assert len(coordinator.data["devices"]) == 1
         assert coordinator.data["devices"][0]["id"] == "device1"
-        # No CONF_SERVICE in the config data: no cloud service for the branding
-        assert coordinator.data["service"] is None
+        # The service of the config entry is passed on for the branding
+        assert coordinator.data["service"] == "de.consoft.syr.connect"
 
 
 async def test_coordinator_update_no_session(
@@ -157,6 +158,7 @@ async def test_coordinator_update_no_session(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -201,6 +203,7 @@ async def test_coordinator_set_device_value(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -248,7 +251,11 @@ async def test_set_device_status_api_raises_propagates(
         mock_api.set_device_status = AsyncMock(side_effect=Exception("set failed"))
         mock_api_class.return_value = mock_api
 
-        config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}
+        config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        }
         coordinator = SyrConnectDataUpdateCoordinator(
             hass, MagicMock(), config_data, 60
         )
@@ -289,7 +296,11 @@ async def test_invalid_command_no_optimistic_update(
         mock_api.is_session_valid = MagicMock(return_value=True)
         mock_api_class.return_value = mock_api
 
-        config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}
+        config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        }
         coordinator = SyrConnectDataUpdateCoordinator(
             hass, MagicMock(), config_data, 60
         )
@@ -335,6 +346,7 @@ async def test_coordinator_optimistic_update(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -381,6 +393,7 @@ async def test_coordinator_optimistic_update_detects_model_again(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -416,6 +429,7 @@ async def test_coordinator_device_not_found_error(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -448,6 +462,7 @@ async def test_coordinator_no_data_error(hass: HomeAssistant) -> None:
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -495,6 +510,7 @@ async def test_coordinator_device_fetch_exception(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -529,6 +545,7 @@ async def test_coordinator_non_list_device_result(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -570,6 +587,7 @@ async def test_coordinator_device_status_none(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -619,6 +637,7 @@ async def test_coordinator_device_status_none_reuses_previous(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -668,6 +687,7 @@ async def test_coordinator_device_status_exception(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -741,6 +761,7 @@ async def test_coordinator_device_status_exception_result(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -774,6 +795,7 @@ async def test_coordinator_project_devices_auth_error(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -809,6 +831,7 @@ async def test_coordinator_device_status_poll_auth_error(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -849,6 +872,7 @@ async def test_coordinator_auth_error_during_login(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "wrong_password",
         }
@@ -882,6 +906,7 @@ async def test_coordinator_connection_error_during_login(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -914,6 +939,7 @@ async def test_coordinator_general_exception_during_update(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -959,6 +985,7 @@ async def test_coordinator_delete_offline_issue_on_recovery(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -996,6 +1023,7 @@ async def test_coordinator_optimistic_update_exception_handling(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -1042,6 +1070,7 @@ async def test_coordinator_refresh_schedule_exception_handling(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -1087,6 +1116,7 @@ async def test_coordinator_device_without_dclg_uses_id(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -1126,6 +1156,7 @@ async def test_coordinator_set_value_device_without_dclg(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -1170,6 +1201,7 @@ async def test_coordinator_gather_returns_exception(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -1204,6 +1236,7 @@ async def test_coordinator_data_structure_with_empty_devices(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -1237,7 +1270,11 @@ async def test_fetch_device_status_no_ignore_key_keeps_status(
         mock_api.get_device_status = AsyncMock(return_value={"getPRS": "75"})
         mock_api_class.return_value = mock_api
 
-        config_data = {"username": "u", "password": "p"}
+        config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
+            "username": "u",
+            "password": "p",
+        }
         coord = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
 
         device = {"id": "dev1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479"}
@@ -1263,7 +1300,11 @@ async def test_fetch_device_status_stores_detected_model(
         mock_api.get_device_status = AsyncMock(return_value={"getCNA": "LEXplus10"})
         mock_api_class.return_value = mock_api
 
-        config_data = {"username": "u", "password": "p"}
+        config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
+            "username": "u",
+            "password": "p",
+        }
         coord = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
 
         device = {"id": "dev1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479"}
@@ -1291,6 +1332,7 @@ async def test_coordinator_unexpected_exception_in_update(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -1335,6 +1377,7 @@ async def test_async_update_data_gather_raises(hass: HomeAssistant) -> None:
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -1384,6 +1427,7 @@ async def test_async_update_data_gather_returns_exception_result(
         ),
     ):
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -1439,7 +1483,11 @@ async def test_async_update_data_failed_project_keeps_previous_devices(
         coordinator = SyrConnectDataUpdateCoordinator(
             hass,
             cast(Any, SimpleNamespace()),
-            {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
+            {
+                CONF_SERVICE: "de.consoft.syr.connect",
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "password",
+            },
             60,
         )
         coordinator.data = await coordinator._async_update_data()
@@ -1471,7 +1519,11 @@ async def test_async_update_data_all_projects_failed_keeps_previous_devices(
         coordinator = SyrConnectDataUpdateCoordinator(
             hass,
             cast(Any, SimpleNamespace()),
-            {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
+            {
+                CONF_SERVICE: "de.consoft.syr.connect",
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "password",
+            },
             60,
         )
         coordinator.data = await coordinator._async_update_data()
@@ -1496,7 +1548,11 @@ async def test_failed_relogin_keeps_previous_data(hass: HomeAssistant) -> None:
         coordinator = SyrConnectDataUpdateCoordinator(
             hass,
             cast(Any, SimpleNamespace()),
-            {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
+            {
+                CONF_SERVICE: "de.consoft.syr.connect",
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "password",
+            },
             60,
         )
         await coordinator.async_refresh()
@@ -1528,7 +1584,11 @@ async def test_async_update_data_first_update_skips_failed_project(
         coordinator = SyrConnectDataUpdateCoordinator(
             hass,
             cast(Any, SimpleNamespace()),
-            {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
+            {
+                CONF_SERVICE: "de.consoft.syr.connect",
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "password",
+            },
             60,
         )
         result = await coordinator._async_update_data()
@@ -1556,7 +1616,11 @@ async def test_device_list_fetched_once_per_hour(hass: HomeAssistant) -> None:
         coordinator = SyrConnectDataUpdateCoordinator(
             hass,
             cast(Any, SimpleNamespace()),
-            {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
+            {
+                CONF_SERVICE: "de.consoft.syr.connect",
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "password",
+            },
             60,
         )
         mock_utcnow.return_value = start
@@ -1605,7 +1669,11 @@ async def test_device_list_failed_refresh_keeps_last_list(
         coordinator = SyrConnectDataUpdateCoordinator(
             hass,
             cast(Any, SimpleNamespace()),
-            {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
+            {
+                CONF_SERVICE: "de.consoft.syr.connect",
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "password",
+            },
             60,
         )
         mock_utcnow.return_value = start
@@ -1753,6 +1821,7 @@ async def test_coordinator_init_defaults_to_xml_api(hass: HomeAssistant) -> None
 
         # No CONF_API_TYPE specified
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -1776,6 +1845,7 @@ async def test_coordinator_init_default_scan_interval(hass: HomeAssistant) -> No
     ) as mock_api_class:
         mock_api_class.return_value = MagicMock()
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -1797,7 +1867,11 @@ async def test_resolve_device_dclg_returns_none_when_device_not_found(
         "custom_components.syr_connect.coordinator.SyrConnectXmlAPI"
     ) as mock_api_class:
         mock_api_class.return_value = MagicMock()
-        config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}
+        config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        }
         coordinator = SyrConnectDataUpdateCoordinator(
             hass, MagicMock(), config_data, 60
         )
@@ -1827,7 +1901,11 @@ async def test_resolve_device_dclg_returns_none_when_no_data(
         "custom_components.syr_connect.coordinator.SyrConnectXmlAPI"
     ) as mock_api_class:
         mock_api_class.return_value = MagicMock()
-        config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}
+        config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        }
         coordinator = SyrConnectDataUpdateCoordinator(
             hass, MagicMock(), config_data, 60
         )
@@ -1851,7 +1929,11 @@ async def test_fetch_device_status_propagates_auth_error(hass: HomeAssistant) ->
         )
         mock_api_class.return_value = mock_api
 
-        config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}
+        config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        }
         coord = SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
 
         with pytest.raises(SyrConnectAuthError):
@@ -1883,6 +1965,7 @@ async def test_coordinator_device_status_result_is_exception(
         mock_api_class.return_value = mock_api
 
         config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",
         }
@@ -1936,7 +2019,11 @@ async def test_fetch_device_status_iwh_compute_error_is_logged(
         mock_api.get_device_status = AsyncMock(return_value={"getCND": "bad"})
         mock_api_class.return_value = mock_api
 
-        config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}
+        config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        }
         coordinator = SyrConnectDataUpdateCoordinator(
             hass, MagicMock(), config_data, 60
         )
@@ -1977,7 +2064,11 @@ async def test_coordinator_device_marked_unavailable_when_dst_is_0_or_1(
         )
         mock_api_class.return_value = mock_api
 
-        config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}
+        config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        }
         coordinator = SyrConnectDataUpdateCoordinator(
             hass, MagicMock(), config_data, 60
         )
@@ -2016,7 +2107,11 @@ async def test_coordinator_device_marked_unavailable_when_dst_is_0(
         )
         mock_api_class.return_value = mock_api
 
-        config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}
+        config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        }
         coordinator = SyrConnectDataUpdateCoordinator(
             hass, MagicMock(), config_data, 60
         )
@@ -2054,7 +2149,11 @@ async def test_coordinator_device_available_when_dst_is_2(
         )
         mock_api_class.return_value = mock_api
 
-        config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}
+        config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        }
         coordinator = SyrConnectDataUpdateCoordinator(
             hass, MagicMock(), config_data, 60
         )
@@ -2085,7 +2184,11 @@ async def test_async_clear_device_alarm_xml_api_sends_clr_command(
         mock_api.get_device_status = AsyncMock(return_value={})
         mock_api_class.return_value = mock_api
 
-        config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}
+        config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        }
         coordinator = SyrConnectDataUpdateCoordinator(
             hass, MagicMock(), config_data, 60
         )
@@ -2123,7 +2226,11 @@ async def test_async_clear_device_alarm_json_api_success(hass: HomeAssistant) ->
     ) as mock_xml_api_class:
         mock_xml_api_class.return_value = MagicMock()
 
-        config_data = {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"}
+        config_data = {
+            CONF_SERVICE: "de.consoft.syr.connect",
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        }
         coordinator = SyrConnectDataUpdateCoordinator(
             hass, MagicMock(), config_data, 60
         )
@@ -2154,11 +2261,23 @@ async def test_coordinator_init_xml_api_with_conf_service(hass: HomeAssistant) -
             hass, MagicMock(), config_data, 60
         )
 
-        call_kwargs = mock_xml_api_class.call_args.kwargs
-        assert call_kwargs["api_app_name"] == svc.api_app_name
-        assert call_kwargs["api_base_url"] == svc.api_base_url
-        assert call_kwargs["cf_bundle_identifier"] == svc.cf_bundle_identifier
+        assert mock_xml_api_class.call_args.kwargs["service"] is svc
         assert coordinator._service == svc.cf_bundle_identifier
+
+
+@pytest.mark.parametrize("service", [None, "de.consoft.unknown.connect"])
+async def test_coordinator_init_xml_api_unknown_service(
+    hass: HomeAssistant, service: str | None
+) -> None:
+    """A missing or unknown CONF_SERVICE has no service to log in with."""
+    config_data = {
+        CONF_USERNAME: "test@example.com",
+        CONF_PASSWORD: "password",
+        CONF_SERVICE: service,
+    }
+
+    with pytest.raises(ValueError, match="Unknown cloud service"):
+        SyrConnectDataUpdateCoordinator(hass, MagicMock(), config_data, 60)
 
 
 async def test_coordinator_takes_config_entry_from_constructor(
@@ -2171,7 +2290,11 @@ async def test_coordinator_takes_config_entry_from_constructor(
     coordinator = SyrConnectDataUpdateCoordinator(
         hass,
         MagicMock(),
-        {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
+        {
+            CONF_SERVICE: "de.consoft.syr.connect",
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+        },
         60,
         config_entry=entry,
     )
@@ -2452,7 +2575,11 @@ async def test_device_failure_is_logged_once_and_its_recovery(
         coordinator = SyrConnectDataUpdateCoordinator(
             hass,
             MagicMock(),
-            {CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
+            {
+                CONF_SERVICE: "de.consoft.syr.connect",
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "password",
+            },
             60,
         )
 

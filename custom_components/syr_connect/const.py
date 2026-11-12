@@ -28,7 +28,6 @@ _SYR_CONNECT_API_SCAN_INTERVAL_MAXIMUM = 600  # seconds
 _SYR_CONNECT_SESSION_TIMEOUT_MINUTES = 30
 
 # API URLs (internal)
-_SYR_CONNECT_API_XML_BASE_URL = "https://syrconnect.de/"
 _SYR_CONNECT_API_XML_LOGIN_URL = "WebServices/Api/SyrApiService.svc/REST/GetProjects"
 _SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL = (
     "WebServices/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"
@@ -42,11 +41,10 @@ _SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL = (
 # Path of the device web services; the statistics method of a device family is appended
 _SYR_CONNECT_API_XML_DEVICE_SERVICE_PATH = "WebServices/SyrControlWebServiceTest2.asmx/"
 
-# Encryption keys (from original adapter) - internal
-_SYR_CONNECT_CLIENT_ENCRYPTION_KEY = (
-    "d805a5c409dc354b6ccf03a2c29a5825851cf31979abf526ede72570c52cf954"
-)
-_SYR_CONNECT_CLIENT_ENCRYPTION_IV = "408a42beb8a1cefad990098584ed51a5"
+# Encryption of the login response - internal
+# Key and IV that crypt_key and crypt_vector of every service are encrypted with
+_SYR_CONNECT_CLIENT_SECURE_KEY = "v6XrGwdRGjcUNlM5BPYEPDEWExpNB4jWdmlMjtGljZ4="
+_SYR_CONNECT_CLIENT_SECURE_VECTOR = "4zfS5TBSqLpnRlKwOZt/CQ=="
 
 # Checksum keys - internal
 _SYR_CONNECT_CLIENT_CHECKSUM_KEY1 = "L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP"
@@ -62,8 +60,6 @@ _SYR_CONNECT_CLIENT_OS_NAME = "iOS"
 _SYR_CONNECT_CLIENT_OS_VERSION = "27.0.0"
 _SYR_CONNECT_CLIENT_OS_MODEL = "iPhone"
 _SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION = "3.9.7"
-_SYR_CONNECT_CLIENT_CF_BUNDLE_IDENTIFIER = "de.consoft.syr.connect"
-_SYR_CONNECT_CLIENT_APP_NAME = "SYR Connect"
 
 # Example: "SYR/485 CFNetwork/3896.100.1.2.1 Darwin/27.0.0"
 _SYR_CONNECT_CLIENT_SYR_BUNDLE_NAME = "SYR"
@@ -88,6 +84,11 @@ class SyrConnectService:
     cf_bundle_identifier: str
     # User-facing URL in the HA device info card, may differ from api_base_url
     configuration_url: str
+    # AES-256 key and IV of the login response, each AES-CBC encrypted with
+    # _SYR_CONNECT_CLIENT_SECURE_KEY/_VECTOR (PKCS7) around the base64 text of
+    # the raw bytes, and base64 encoded. They differ per service.
+    crypt_key: str
+    crypt_vector: str
     # Name of the service in the config flow
     display_name: str
 
@@ -100,6 +101,8 @@ _SYR_CONNECT_API_SERVICES: dict[str, SyrConnectService] = {
         api_base_url="https://syrconnect.de/",
         cf_bundle_identifier="de.consoft.syr.connect",
         configuration_url="https://syrconnect.de/",
+        crypt_key="TQh4nNlMG04Po2HyOgiL1064MK5mMOvkrMucUCBALIZKA4sIcgJ+pjj2Y1g3n+45",
+        crypt_vector="bPOhrL7NhCZwb1E4CFEpzq1Ds6iTUpMF5XRpHwqDJNo=",
         display_name="SYR Connect",
     ),
     "de.consoft.gc.conel.connect": SyrConnectService(
@@ -107,6 +110,8 @@ _SYR_CONNECT_API_SERVICES: dict[str, SyrConnectService] = {
         api_base_url="https://api.conelclearpro.de/",
         cf_bundle_identifier="de.consoft.gc.conel.connect",
         configuration_url="https://conelclearpro.de/",
+        crypt_key="TQh4nNlMG04Po2HyOgiL1064MK5mMOvkrMucUCBALIZKA4sIcgJ+pjj2Y1g3n+45",
+        crypt_vector="bPOhrL7NhCZwb1E4CFEpzq1Ds6iTUpMF5XRpHwqDJNo=",
         display_name="CONEL CLEAR PRO",
     ),
     "de.consoft.gsh.comfort.connect": SyrConnectService(
@@ -114,6 +119,8 @@ _SYR_CONNECT_API_SERVICES: dict[str, SyrConnectService] = {
         api_base_url="https://syrconnect.de/",
         cf_bundle_identifier="de.consoft.gsh.comfort.connect",
         configuration_url="https://syrconnect.de/",
+        crypt_key="TQh4nNlMG04Po2HyOgiL1064MK5mMOvkrMucUCBALIZKA4sIcgJ+pjj2Y1g3n+45",
+        crypt_vector="bPOhrL7NhCZwb1E4CFEpzq1Ds6iTUpMF5XRpHwqDJNo=",
         display_name="Sanibel comfort CONNECT",
     ),
     "de.consoft.isg.concept.connect": SyrConnectService(
@@ -121,6 +128,8 @@ _SYR_CONNECT_API_SERVICES: dict[str, SyrConnectService] = {
         api_base_url="https://syrconnect.de/",
         cf_bundle_identifier="de.consoft.isg.concept.connect",
         configuration_url="https://syrconnect.de/",
+        crypt_key="TQh4nNlMG04Po2HyOgiL1064MK5mMOvkrMucUCBALIZKA4sIcgJ+pjj2Y1g3n+45",
+        crypt_vector="bPOhrL7NhCZwb1E4CFEpzq1Ds6iTUpMF5XRpHwqDJNo=",
         display_name="concept CONNECT",
     ),
     "de.consoft.sanitaerunion.ditech.connect": SyrConnectService(
@@ -128,6 +137,8 @@ _SYR_CONNECT_API_SERVICES: dict[str, SyrConnectService] = {
         api_base_url="https://syrconnect.de/",
         cf_bundle_identifier="de.consoft.sanitaerunion.ditech.connect",
         configuration_url="https://syrconnect.de/",
+        crypt_key="TQh4nNlMG04Po2HyOgiL1064MK5mMOvkrMucUCBALIZKA4sIcgJ+pjj2Y1g3n+45",
+        crypt_vector="bPOhrL7NhCZwb1E4CFEpzq1Ds6iTUpMF5XRpHwqDJNo=",
         display_name="DITECH Haustechnik",
     ),
     "de.consoft.isg.optima.connect": SyrConnectService(
@@ -135,6 +146,8 @@ _SYR_CONNECT_API_SERVICES: dict[str, SyrConnectService] = {
         api_base_url="https://syrconnect.de/",
         cf_bundle_identifier="de.consoft.isg.optima.connect",
         configuration_url="https://syrconnect.de/",
+        crypt_key="TQh4nNlMG04Po2HyOgiL1064MK5mMOvkrMucUCBALIZKA4sIcgJ+pjj2Y1g3n+45",
+        crypt_vector="bPOhrL7NhCZwb1E4CFEpzq1Ds6iTUpMF5XRpHwqDJNo=",
         display_name="Optima CONNECT",
     ),
     "de.consoft.rwc.connect": SyrConnectService(
@@ -142,6 +155,8 @@ _SYR_CONNECT_API_SERVICES: dict[str, SyrConnectService] = {
         api_base_url="https://rwcmultisafe.com/",
         cf_bundle_identifier="de.consoft.rwc.connect",
         configuration_url="https://rwcmultisafe.com/",
+        crypt_key="/Kw4BYbtziKm86EgdCvydMB1wc0ewZ8Da2ySHuUatZDWtWlLllF5ICV6/rS03/ii",
+        crypt_vector="fSsr1qI0JFuCXbxLHdBT/R0AbFDQNvKGimWmrmGNVvU=",
         display_name="RWC MultiSafe",
     ),
     "de.consoft.polygonvatro.connect": SyrConnectService(
@@ -149,6 +164,8 @@ _SYR_CONNECT_API_SERVICES: dict[str, SyrConnectService] = {
         api_base_url="https://polygonvatro-connect.de/",
         cf_bundle_identifier="de.consoft.polygonvatro.connect",
         configuration_url="https://polygonvatro-connect.de/",
+        crypt_key="yNKCPje+GkPWJ/wvQC71JcH6ee2Q1hhSORbi1Der+uV/oFXOr0U6qZzB9ysysFBq",
+        crypt_vector="CqBWdQ1PJSqhhWV4sGAFkJxuuBvtjdav+/ScxgBnYH0=",
         display_name="POLYGONVATRO Connect",
     ),
 }

@@ -16,7 +16,7 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.syr_connect import sensor as sensor_mod, sensor as sensor_module
-from custom_components.syr_connect.const import DOMAIN
+from custom_components.syr_connect.const import CONF_SERVICE, DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.devices import SyrConnectDeviceProfile
 from custom_components.syr_connect.models import (
@@ -55,6 +55,7 @@ def _build_coordinator(
     hass: HomeAssistant, data: dict
 ) -> SyrConnectDataUpdateCoordinator:
     config_data = {
+        CONF_SERVICE: "de.consoft.syr.connect",
         CONF_USERNAME: "test@example.com",
         CONF_PASSWORD: "password",
     }

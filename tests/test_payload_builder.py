@@ -26,7 +26,7 @@ _TEMPERATURE, _HUMIDITY = safefloor.STATISTICS
 
 def test_compute_locale_lang_reg_from_getlocale() -> None:
     """Locale parsing returns language and region from instance `language`."""
-    pb = PayloadBuilder("1.0", MagicMock())
+    pb = PayloadBuilder("1.0", MagicMock(), "SYR Connect")
     pb.language = "de_DE"
     lang, reg = pb._compute_locale_lang_reg()
 
@@ -36,7 +36,7 @@ def test_compute_locale_lang_reg_from_getlocale() -> None:
 
 def test_compute_locale_lang_reg_from_env() -> None:
     """When instance language is set from an env-like value, return language and region."""
-    pb = PayloadBuilder("1.0", MagicMock())
+    pb = PayloadBuilder("1.0", MagicMock(), "SYR Connect")
     pb.language = "fr_FR"
     lang, reg = pb._compute_locale_lang_reg()
 
@@ -46,14 +46,14 @@ def test_compute_locale_lang_reg_from_env() -> None:
 
 def test_compute_locale_lang_reg_default() -> None:
     """Without a language argument, the default en-US is used."""
-    pb = PayloadBuilder("1.0", MagicMock())
+    pb = PayloadBuilder("1.0", MagicMock(), "SYR Connect")
 
     assert pb._compute_locale_lang_reg() == ("en", "US")
 
 
 def test_compute_locale_lang_reg_from_constructor() -> None:
     """The language passed to the constructor is used."""
-    pb = PayloadBuilder("1.0", MagicMock(), language="en-DE")
+    pb = PayloadBuilder("1.0", MagicMock(), "SYR Connect", language="en-DE")
 
     assert pb._compute_locale_lang_reg() == ("en", "DE")
 
@@ -74,7 +74,7 @@ _ATTR_SPECIAL_VALUES = [
 @pytest.mark.parametrize("value", _ATTR_SPECIAL_VALUES)
 def test_login_payload_roundtrips_special_characters(value: str) -> None:
     """Credentials with quotes/markup/whitespace arrive unchanged and cannot inject attributes."""
-    pb = PayloadBuilder("1.2.3", MagicMock())
+    pb = PayloadBuilder("1.2.3", MagicMock(), "SYR Connect")
 
     payload = pb.build_login_payload(value, value)
 
@@ -90,7 +90,7 @@ def test_set_status_payload_roundtrips_special_characters(value: str) -> None:
     """Command name/value and ids are escaped for attribute context."""
     fake_checksum = MagicMock()
     fake_checksum.compute_element_checksum.return_value = "CHK"
-    pb = PayloadBuilder("1.2.3", fake_checksum)
+    pb = PayloadBuilder("1.2.3", fake_checksum, "SYR Connect")
 
     payload = pb.build_device_set_status_payload(value, value, [("setAB", value)])
 
@@ -113,7 +113,7 @@ def test_session_and_device_payloads_roundtrip_special_characters(value: str) ->
     """Session, project and device ids are escaped in every payload builder."""
     fake_checksum = MagicMock()
     fake_checksum.compute_element_checksum.return_value = "CHK"
-    pb = PayloadBuilder("1.2.3", fake_checksum)
+    pb = PayloadBuilder("1.2.3", fake_checksum, "SYR Connect")
 
     device_list = DefusedET.fromstring(pb.build_device_get_list_payload(value, value))
     assert device_list.find(".//us").attrib["ug"] == value
@@ -132,7 +132,7 @@ def test_session_and_device_payloads_roundtrip_special_characters(value: str) ->
 
 def test_none_attribute_value_raises_instead_of_sending_none_string() -> None:
     """A missing id must fail fast rather than be sent as ``"None"``."""
-    pb = PayloadBuilder("1.2.3", MagicMock())
+    pb = PayloadBuilder("1.2.3", MagicMock(), "SYR Connect")
 
     with pytest.raises(TypeError, match="ug"):
         pb.build_device_get_list_payload(None, "p")  # type: ignore[arg-type]
@@ -153,7 +153,7 @@ def test_checksum_is_computed_without_cs_and_appended_as_last_element() -> None:
 
     fake_checksum = MagicMock()
     fake_checksum.compute_element_checksum.side_effect = record_tags
-    pb = PayloadBuilder("1.2.3", fake_checksum)
+    pb = PayloadBuilder("1.2.3", fake_checksum, "SYR Connect")
 
     payload = pb.build_device_get_status_payload("sess", "dev")
 
@@ -170,6 +170,7 @@ def test_add_checksum_is_idempotent() -> None:
         SyrChecksum(
             _SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2
         ),
+        "SYR Connect",
     )
     root = pb._new_request("sess")
 
@@ -204,6 +205,7 @@ def _build_reference_payloads() -> dict[str, str]:
         SyrChecksum(
             _SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2
         ),
+        "SYR Connect",
     )
     with (
         patch.object(
@@ -246,7 +248,7 @@ def test_build_login_payload_escapes_and_includes_tzo_lang() -> None:
     """Login payload should include escaped credentials and computed tzo/lang/reg."""
     fake_checksum = MagicMock()
     fake_checksum.compute_element_checksum.return_value = "CHK"
-    pb = PayloadBuilder("1.2.3", fake_checksum)
+    pb = PayloadBuilder("1.2.3", fake_checksum, "SYR Connect")
 
     with (
         patch.object(PayloadBuilder, "_compute_local_tzo", return_value="01:00:00"),
@@ -268,7 +270,7 @@ def test_build_device_get_statistics_payload_uses_series_checksum_and_lang() -> 
     """The <sh> element carries the series attributes and the locale; a checksum is added."""
     fake_checksum = MagicMock()
     fake_checksum.compute_element_checksum.return_value = "CHK"
-    pb = PayloadBuilder("1.2.3", fake_checksum)
+    pb = PayloadBuilder("1.2.3", fake_checksum, "SYR Connect")
 
     with patch.object(
         PayloadBuilder, "_compute_locale_lang_reg", return_value=("it", "IT")
@@ -309,7 +311,7 @@ def test_compute_local_tzo_uses_ha_time_zone(
 
 def test_compute_locale_lang_reg_dash_and_single() -> None:
     """Locale parsing handles dash-separated and single-part locales."""
-    pb = PayloadBuilder("1.0", MagicMock())
+    pb = PayloadBuilder("1.0", MagicMock(), "SYR Connect")
 
     # dash-separated
     pb.language = "en-US"
@@ -328,7 +330,7 @@ def test_compute_locale_lang_reg_dash_and_single() -> None:
 def payload_builder() -> Any:
     """Create a payload builder instance."""
     checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
-    return PayloadBuilder("App-3.9.7-de-DE-iOS-iPhone", checksum)
+    return PayloadBuilder("App-3.9.7-de-DE-iOS-iPhone", checksum, "SYR Connect")
 
 
 def test_build_login_payload(payload_builder: PayloadBuilder) -> None:
@@ -521,7 +523,7 @@ def test_app_version_escaping_in_payloads(payload_builder: PayloadBuilder) -> No
     """Test that app version is escaped in payloads."""
     # Create builder with special characters in app version
     checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
-    builder = PayloadBuilder("App&Version<Test>", checksum)
+    builder = PayloadBuilder("App&Version<Test>", checksum, "SYR Connect")
 
     payload = builder.build_device_get_list_payload("sess", "proj")
 

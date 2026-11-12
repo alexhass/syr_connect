@@ -9,6 +9,7 @@ from custom_components.syr_connect.binary_sensor import (
     async_setup_entry as async_setup_binary_sensor,
 )
 from custom_components.syr_connect.button import async_setup_entry as async_setup_button
+from custom_components.syr_connect.const import CONF_SERVICE
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.select import (
     SyrConnectNumericSelect,
@@ -23,6 +24,7 @@ def _build_coordinator(
     hass: HomeAssistant, data: dict
 ) -> SyrConnectDataUpdateCoordinator:
     config_data = {
+        CONF_SERVICE: "de.consoft.syr.connect",
         CONF_USERNAME: "test@example.com",
         CONF_PASSWORD: "password",
     }

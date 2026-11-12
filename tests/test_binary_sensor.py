@@ -12,7 +12,7 @@ from custom_components.syr_connect.binary_sensor import (
     SyrConnectBinarySensor,
     async_setup_entry,
 )
-from custom_components.syr_connect.const import DOMAIN
+from custom_components.syr_connect.const import CONF_SERVICE, DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.models import MODEL_SIGNATURES
 from custom_components.syr_connect.response_parser import ResponseParser
@@ -26,6 +26,7 @@ def _build_coordinator(
     hass: HomeAssistant, data: dict
 ) -> SyrConnectDataUpdateCoordinator:
     config_data = {
+        CONF_SERVICE: "de.consoft.syr.connect",
         CONF_USERNAME: "test@example.com",
         CONF_PASSWORD: "password",
     }

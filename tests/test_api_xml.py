@@ -13,6 +13,10 @@ import aiohttp
 import pytest
 
 from custom_components.syr_connect.api_xml import SyrConnectXmlAPI
+from custom_components.syr_connect.const import (
+    _SYR_CONNECT_API_SERVICES,
+    _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
+)
 from custom_components.syr_connect.devices import safefloor
 from custom_components.syr_connect.exceptions import (
     SyrConnectAuthError,
@@ -20,6 +24,8 @@ from custom_components.syr_connect.exceptions import (
     SyrConnectLoginFailedError,
     SyrConnectSessionExpiredError,
 )
+
+_SYR_SERVICE = _SYR_CONNECT_API_SERVICES[_SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER]
 
 
 @pytest.fixture
@@ -31,23 +37,43 @@ def mock_session() -> Any:
 @pytest.fixture
 def api_client(mock_session: MagicMock) -> Any:
     """Create an API client instance."""
-    return SyrConnectXmlAPI(mock_session, "test@example.com", "testpassword")
+    return SyrConnectXmlAPI(
+        mock_session, "test@example.com", "testpassword", service=_SYR_SERVICE
+    )
 
 
-def test_request_urls_use_the_base_url(mock_session: MagicMock) -> None:
-    """The device list and status URLs are built from the configured base URL."""
+def test_request_urls_and_app_identity_come_from_the_service(
+    mock_session: MagicMock,
+) -> None:
+    """The URLs, the app name and the bundle identifier are those of the service."""
+    svc = _SYR_CONNECT_API_SERVICES["de.consoft.gc.conel.connect"]
     api = SyrConnectXmlAPI(
-        mock_session,
-        "test@example.com",
-        "testpassword",
-        api_base_url="https://example.invalid/",
+        mock_session, "test@example.com", "testpassword", service=svc
     )
 
     assert (
         api.device_list_url
-        == "https://example.invalid/WebServices/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"
+        == "https://api.conelclearpro.de/WebServices/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"
     )
-    assert api.device_get_status_url.startswith("https://example.invalid/WebServices/")
+    assert api.device_get_status_url.startswith(
+        "https://api.conelclearpro.de/WebServices/"
+    )
+    assert api.payload_builder.app_name == "CLEAR PRO"
+    assert api.payload_builder.app_version.endswith("-de.consoft.gc.conel.connect")
+
+
+def test_crypt_values_select_the_login_response_key(mock_session: MagicMock) -> None:
+    """The login response is decrypted with the key and IV of the service."""
+    svc = _SYR_CONNECT_API_SERVICES["de.consoft.rwc.connect"]
+    api = SyrConnectXmlAPI(
+        mock_session, "test@example.com", "testpassword", service=svc
+    )
+
+    assert (
+        api.encryption.key.hex()
+        == "ecb1552e674668f493c8be1792cfc299ec335d34fe6a9289729a0daf7c210b17"
+    )
+    assert api.encryption.iv.hex() == "2482879480e5c67a09888a7526f33a70"
 
 
 async def test_login_does_not_log_payload(
@@ -55,7 +81,11 @@ async def test_login_does_not_log_payload(
 ) -> None:
     """The login payload is not logged, only its size, so the password never reaches the log."""
     api = SyrConnectXmlAPI(
-        mock_session, "user@example.com", "s3cr3t!", language="en-DE"
+        mock_session,
+        "user@example.com",
+        "s3cr3t!",
+        service=_SYR_SERVICE,
+        language="en-DE",
     )
     caplog.set_level("DEBUG", logger="custom_components.syr_connect.api_xml")
 
@@ -77,7 +107,11 @@ def test_language_is_passed_to_payload_builder_and_http_client(
 ) -> None:
     """The locale reaches the login/statistics payloads and the Accept-Language header."""
     api = SyrConnectXmlAPI(
-        mock_session, "test@example.com", "testpassword", language="en-DE"
+        mock_session,
+        "test@example.com",
+        "testpassword",
+        service=_SYR_SERVICE,
+        language="en-DE",
     )
 
     assert api.payload_builder.app_version.startswith("App-3.9.7-en-DE-iOS-")

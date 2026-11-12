@@ -132,21 +132,14 @@ async def validate_input_xml(
     _LOGGER.debug("Validating XML API credentials for user: %s", data[CONF_USERNAME])
     session = async_get_clientsession(hass)
 
-    # Look up backend-specific parameters from _SYR_CONNECT_API_SERVICES
-    conf_service = data.get(CONF_SERVICE)
-    svc = _SYR_CONNECT_API_SERVICES.get(conf_service) if conf_service else None
-    api_app_name = svc.api_app_name if svc else None
-    api_base_url = svc.api_base_url if svc else None
-    cf_bundle_identifier = svc.cf_bundle_identifier if svc else None
-    display_name = svc.display_name if svc else None
+    # The schema only offers services of _SYR_CONNECT_API_SERVICES
+    svc = _SYR_CONNECT_API_SERVICES[data[CONF_SERVICE]]
 
     api = SyrConnectXmlAPI(
         session,
         data[CONF_USERNAME],
         data[CONF_PASSWORD],
-        api_app_name=api_app_name,
-        api_base_url=api_base_url,
-        cf_bundle_identifier=cf_bundle_identifier,
+        service=svc,
         language=get_api_locale(hass.config.language, hass.config.country),
     )
 
@@ -170,8 +163,7 @@ async def validate_input_xml(
         "XML API: authentication successful for user: %s", data[CONF_USERNAME]
     )
 
-    title_label = display_name or "SYR Connect"
-    return {"title": f"{title_label} ({data[CONF_USERNAME]})"}
+    return {"title": f"{svc.display_name} ({data[CONF_USERNAME]})"}
 
 
 async def _async_validate_json_device(api: SyrConnectJsonAPI) -> None:
