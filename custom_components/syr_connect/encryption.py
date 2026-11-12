@@ -56,8 +56,8 @@ class SyrEncryption:
 
             # The cloud pads the plaintext with null bytes (\x00) to the AES
             # block size (zero padding), not with PKCS7, so standard unpadding
-            # would fail. The null bytes are stripped first because XML does
-            # not allow them; trailing whitespace before them is stripped as
+            # would fail. The null bytes must be removed because XML does not
+            # allow them; any trailing whitespace before them is stripped as
             # well, it is not part of the XML content.
             result = decrypted.decode("utf-8").rstrip("\x00").rstrip()
             _LOGGER.debug(
