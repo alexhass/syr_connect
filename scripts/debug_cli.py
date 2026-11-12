@@ -10,7 +10,8 @@ Options:
     --base-url URL              API base URL (default: https://syrconnect.de)
     --api-app-name STRING       App name in login XML payload (default: "SYR Connect")
     --api-package-name STRING   Package name in app-version string (default: de.consoft.syr.connect)
-    --user-agent STRING         HTTP User-Agent header (default: from const.py)
+    --user-agent STRING         HTTP User-Agent header (default: as sent by the integration,
+                                with the current year and month as Home Assistant version)
     --get-devices               Fetch device list for every project after login (continue running)
     --get-status                Fetch device status for every device (implies --get-devices)
     --list-devices              List devices after login (prints id/dclg/name) and exit
@@ -79,6 +80,7 @@ Example (CLEAR PRO):
 
 import argparse
 import asyncio
+import json
 import logging
 from pathlib import Path
 import sys
@@ -142,18 +144,31 @@ try:
         _SYR_CONNECT_CLIENT_OS_MODEL,
         _SYR_CONNECT_CLIENT_OS_NAME,
         _SYR_CONNECT_CLIENT_OS_VERSION,
-        _SYR_CONNECT_CLIENT_USER_AGENT,
         _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
     )
     from custom_components.syr_connect.data import SyrConnectDevice
     from custom_components.syr_connect.devices import SyrConnectStatistic
     from custom_components.syr_connect.encryption import SyrEncryption
+    from custom_components.syr_connect.helpers import (
+        build_user_agent,
+        get_month_version,
+    )
     from custom_components.syr_connect.http_client import HTTPClient
     from custom_components.syr_connect.models import detect_model
     from custom_components.syr_connect.payload_builder import PayloadBuilder
     from custom_components.syr_connect.response_parser import ResponseParser
 except ModuleNotFoundError as err:
     _exit_missing_dependency(err)
+
+# Without a Home Assistant instance, get_integration_version() cannot be used:
+# the version is read from the manifest, and the current year and month are sent
+# as the Home Assistant version.
+_INTEGRATION_VERSION: str = json.loads(
+    (_REPO_ROOT / "custom_components" / "syr_connect" / "manifest.json").read_text(
+        encoding="utf-8"
+    )
+)["version"]
+_HA_VERSION = get_month_version()
 
 # ---------------------------------------------------------------------------
 # Logging setup -- maximum verbosity on every relevant logger
@@ -559,7 +574,7 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--user-agent",
-        default=_SYR_CONNECT_CLIENT_USER_AGENT,
+        default=build_user_agent(_INTEGRATION_VERSION, _HA_VERSION),
         help="HTTP User-Agent header (default: %(default)s)",
     )
     parser.add_argument(
