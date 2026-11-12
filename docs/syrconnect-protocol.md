@@ -526,6 +526,7 @@ Some further data about the device
 | getALM | "" | | SERVICE | | Alarm code (e.g. `NoSalt`, `LowSalt`), a human readable message can be received via getSTA()<br>Newer systems show list of last 8 error codes. Alarm memory (SafeTech): the last eight alarms, `->` before the current alarm, FF = empty slot, e.g. "Alarms:->A4 A4 AF AF A3 AF A3 AF" |
 | clrALM | "" | | SERVICE | | Clears the alarm memory (eight alarms) (write-only) |
 | getDEN | "1" | | | | Device enabled/disabled flag (1 = enabled, 0 = disabled) |
+| getLOCK | "False" | | | | Shut-off lock during a filter change: True = a filter change of a replaceable filter is running, and the shut-off is locked so that it cannot be moved. Read it for display only, never set it (issue #23). Reported by Trio DFR/LS and SafeTech |
 | setNOT | "255" | | | | 255 = acknowledges the current notification (write-only) |
 | getNOT | "" | | | | Current notification code (e.g. `new_software_available`, `annual_maintenance`). |
 | getSTA | "Bitte Salz nachfüllen"<br>"Płukanie wsteczne"<br>"Płukanie regenerantem"<br>"Płukanie wolne"<br>"Płukanie szybkie"<br>"Napełnianie" | | | | Status messages of the regeneration, in this case in German: "Please refill salt". Polish strings are not localized.<br>Newer models (Syr AC 3200, AC 3228 / SYR MultiController) report this as an integer instead: 0 = Standby, 1 = Initial filling, 2 = Automatic filling, 3 = Manual filling. |
@@ -728,10 +729,10 @@ These settings can be set by the user.
 | getDTR | "[0,0,0,0,0,0,0,0]" | | | | Daily time-range configuration — 8-element array, paired with getDTT (Trio DFR/LS, Sanibel) |
 | getDWF / setDWF | "200" | L | | | Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start |
 | getFCD / setFCD | "15552000" | s | | | Filter backwash interval. No longer supported and must not be used; the device resets a new value (issue #23) |
+| getFCM | "0" | | | | No longer supported and must not be used (issue #23). Reported by the JSON API of the SafeTech |
 | getFCO / setFCO | "0" | ppm | | | Iron content (always 0?) |
 | getIWH / setIWH | "14" | getWHU | | | Raw water hardness (of the untreated water), can be set from 1-100 °dH. NeoSoft: 1–85 °dH, read-only. Unit: see the water hardness unit codes below |
 | getLNG / setLNG | "0" | | USER | 0 | Language setting: 0 = German, 1 = English, 2 = Spanish, 3 = Italian, 4 = Polish |
-| getLOCK | "False" | | | | Device keypad/remote lock flag (Trio DFR/LS, SafeTech) |
 | getMIH / setMIH | "5" | % | | | Minimum huminity; Values: 0=Off, 0-95% (5% steps) |
 | getMIT / setMIT | "-40" | 1/10 | | | Minimum temperature, Value "-40" = "-4 degree"; Values: Off="-400", -300 = "-30 degree" to 490 = "49 degree" (1 degree steps) |
 | getMPR / setMPR | "40" | 1/10 bar | | | The set water pressure |
@@ -1135,7 +1136,6 @@ The NeoSoft family measures the salt amount (getSV1) with a built-in salt level 
 | Property | Example | Unit | Description |
 | --- | --- | --- | --- |
 | getCEN | "true" | | *unknown* — possibly cloud-event notifications enable (JSON API only) |
-| getFCM | "0" | | *unknown* (JSON API only) |
 | getMM | "2" | | *unknown* (JSON API only) |
 | getSMC | "0" | | *unknown* (JSON API only) |
 
