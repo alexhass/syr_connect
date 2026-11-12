@@ -45,9 +45,6 @@ _SYR_CONNECT_VALVE_DESCRIPTIONS: dict[str, ValveEntityDescription] = {
     description.key: description for description in _SYR_CONNECT_VALVE_TYPES
 }
 
-# Supported keys for the valve platform — used by registry_cleanup to remove stale entries.
-_SYR_CONNECT_VALVE_SUPPORTED_KEYS = set(_SYR_CONNECT_VALVE_DESCRIPTIONS)
-
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -70,7 +67,7 @@ async def async_setup_entry(
         hass,
         coordinator.data,
         "valve",
-        allowed_keys=_SYR_CONNECT_VALVE_SUPPORTED_KEYS,
+        allowed_keys=set(),
         entry_id=coordinator.entry_id,
     )
 
@@ -96,7 +93,7 @@ def _build_device_valves(
     # `getVLV` is a read-only status sensor and is handled exclusively
     # by the sensor platform.
     supported_valve_keys = get_model_supported_keys(
-        get_device_model(device), "valve", _SYR_CONNECT_VALVE_SUPPORTED_KEYS
+        get_device_model(device), "valve", set()
     )
     ab_value = status.get("getAB") if "getAB" in supported_valve_keys else None
     create = False

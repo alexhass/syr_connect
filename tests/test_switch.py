@@ -2,6 +2,8 @@
 
 # mypy: disable-error-code="method-assign, misc"
 
+# The unit tests in this module check private helpers and attributes directly.
+
 import logging
 from pathlib import Path
 from types import MappingProxyType
@@ -24,6 +26,11 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity import EntityCategory
+
+# SafeTech: leak protection profiles, rotation, buzzer, valve
+_SYR_CONNECT_TEST_SAFETECH_MODEL = next(
+    model for model in MODEL_SIGNATURES if model.name == "safetech"
+)
 
 
 async def test_async_setup_entry_no_entities(hass: HomeAssistant) -> None:
@@ -173,7 +180,12 @@ async def test_async_setup_entry_creates_entity(hass: HomeAssistant) -> None:
         subentries_data={},
     )
 
-    device = {"id": "SN400", "name": "CreateDevice", "status": {"getBUZ": True}}
+    device = {
+        "id": "SN400",
+        "name": "CreateDevice",
+        "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
+        "status": {"getBUZ": True},
+    }
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [device]}
     config_entry.runtime_data = mock_coordinator
@@ -282,7 +294,12 @@ async def test_async_setup_entry_handles_instantiation_error(
     )
 
     # Device contains getBUZ so code will attempt to instantiate
-    device = {"id": "SN800", "name": "ErrDevice", "status": {"getBUZ": 1}}
+    device = {
+        "id": "SN800",
+        "name": "ErrDevice",
+        "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
+        "status": {"getBUZ": 1},
+    }
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [device]}
     config_entry.runtime_data = mock_coordinator
@@ -316,7 +333,12 @@ async def test_async_setup_entry_device_without_getbuz(hass: HomeAssistant) -> N
         subentries_data={},
     )
 
-    device = {"id": "SN900", "name": "NoBuz", "status": {"getXYZ": 1}}
+    device = {
+        "id": "SN900",
+        "name": "NoBuz",
+        "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
+        "status": {"getXYZ": 1},
+    }
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [device]}
     config_entry.runtime_data = mock_coordinator

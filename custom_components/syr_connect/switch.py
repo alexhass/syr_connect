@@ -64,9 +64,6 @@ _SYR_CONNECT_SWITCH_DESCRIPTIONS: dict[str, SwitchEntityDescription] = {
     description.key: description for description in _SYR_CONNECT_SWITCH_TYPES
 }
 
-# Supported keys for the switch platform — used by registry_cleanup to remove stale entries.
-_SYR_CONNECT_SWITCH_SUPPORTED_KEYS = set(_SYR_CONNECT_SWITCH_DESCRIPTIONS)
-
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -84,7 +81,7 @@ async def async_setup_entry(
         hass,
         coordinator.data,
         "switch",
-        allowed_keys=_SYR_CONNECT_SWITCH_SUPPORTED_KEYS,
+        allowed_keys=set(),
         entry_id=coordinator.entry_id,
     )
 
@@ -111,10 +108,10 @@ def _build_device_switches(
         list(status.keys()),
     )
 
-    # Scope to the detected model (falls back to the global allowlist for
-    # models that haven't opted into per-model key lists).
+    # Only the switches of the device file of the detected model; a model without
+    # one has no switches.
     supported_switch_keys = get_model_supported_keys(
-        get_device_model(device), "switch", _SYR_CONNECT_SWITCH_SUPPORTED_KEYS
+        get_device_model(device), "switch", set()
     )
 
     for sensor_key in sorted(supported_switch_keys):

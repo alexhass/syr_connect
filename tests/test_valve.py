@@ -17,12 +17,18 @@ from custom_components.syr_connect.api_json import SyrConnectJsonAPI
 from custom_components.syr_connect.const import CONF_SERVICE
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.helpers import build_set_ab_command
+from custom_components.syr_connect.models import MODEL_SIGNATURES
 from custom_components.syr_connect.response_parser import ResponseParser
 from custom_components.syr_connect.valve import SyrConnectValve, async_setup_entry
 from homeassistant.components.valve import ValveEntityFeature
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
+
+# SafeTech: leak protection profiles, rotation, buzzer, valve
+_SYR_CONNECT_TEST_SAFETECH_MODEL = next(
+    model for model in MODEL_SIGNATURES if model.name == "safetech"
+)
 
 
 def _consume_coro_return_task(coro: Any) -> Any:
@@ -129,6 +135,7 @@ async def test_async_setup_entry_creates_valve(
                 "id": "device1",
                 "name": "Test Device",
                 "project_id": "project1",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "status": {"getAB": "1"},
             }
         ]
@@ -204,12 +211,14 @@ async def test_async_setup_entry_creates_valves(hass: HomeAssistant) -> None:
                 "id": "d1",
                 "name": "Device 1",
                 "project_id": "p1",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "status": {"getAB": "1"},
             },
             {
                 "id": "d2",
                 "name": "Device 2",
                 "project_id": "p1",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "status": {"getVLV": "10"},
             },
         ]
@@ -476,6 +485,7 @@ async def test_async_setup_entry_skips_invalid_values(hass: HomeAssistant) -> No
         "devices": [
             {
                 "id": "bad",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "name": "Bad",
                 "project_id": "p",
                 "status": {"getAB": "3", "getVLV": "5"},
@@ -499,6 +509,7 @@ async def test_async_setup_entry_skips_infinite_getab(hass: HomeAssistant) -> No
         "devices": [
             {
                 "id": "inf",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "name": "Inf",
                 "project_id": "p",
                 "status": {"getAB": "inf"},
@@ -556,12 +567,14 @@ async def test_async_setup_entry_empty_string_values(hass: HomeAssistant) -> Non
         "devices": [
             {
                 "id": "empty1",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "name": "Empty1",
                 "project_id": "p1",
                 "status": {"getAB": ""},  # Empty string
             },
             {
                 "id": "empty2",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "name": "Empty2",
                 "project_id": "p1",
                 "status": {"getVLV": ""},  # Empty string
@@ -585,12 +598,14 @@ async def test_async_setup_entry_typeerror_values(hass: HomeAssistant) -> None:
         "devices": [
             {
                 "id": "type1",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "name": "Type1",
                 "project_id": "p1",
                 "status": {"getAB": None},  # Will cause TypeError
             },
             {
                 "id": "type2",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "name": "Type2",
                 "project_id": "p1",
                 "status": {"getVLV": ["list"]},  # Will cause TypeError/ValueError
@@ -614,6 +629,7 @@ async def test_async_setup_entry_getab_value_3_not_valid(hass: HomeAssistant) ->
         "devices": [
             {
                 "id": "ab3",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "name": "AB3",
                 "project_id": "p1",
                 "status": {"getAB": "3"},
@@ -637,6 +653,7 @@ async def test_async_setup_entry_getvlv_value_5_not_valid(hass: HomeAssistant) -
         "devices": [
             {
                 "id": "vlv5",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "name": "VLV5",
                 "project_id": "p1",
                 "status": {"getVLV": "5"},
@@ -932,10 +949,30 @@ async def test_async_setup_entry_getvlv_all_valid_codes(hass: HomeAssistant) -> 
     """Test that Pontos-Base devices with only getVLV (no getAB) do not create valve entities."""
     data = {
         "devices": [
-            {"id": "v10", "name": "V10", "status": {"getVLV": "10"}},  # closed
-            {"id": "v11", "name": "V11", "status": {"getVLV": "11"}},  # closing
-            {"id": "v20", "name": "V20", "status": {"getVLV": "20"}},  # open
-            {"id": "v21", "name": "V21", "status": {"getVLV": "21"}},  # opening
+            {
+                "id": "v10",
+                "name": "V10",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
+                "status": {"getVLV": "10"},
+            },  # closed
+            {
+                "id": "v11",
+                "name": "V11",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
+                "status": {"getVLV": "11"},
+            },  # closing
+            {
+                "id": "v20",
+                "name": "V20",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
+                "status": {"getVLV": "20"},
+            },  # open
+            {
+                "id": "v21",
+                "name": "V21",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
+                "status": {"getVLV": "21"},
+            },  # opening
         ]
     }
     coordinator = _build_coordinator(hass, data)
@@ -955,8 +992,18 @@ async def test_async_setup_entry_getab_valid_values_1_and_2(
     """Test async_setup_entry creates valves for getAB values 1 and 2."""
     data = {
         "devices": [
-            {"id": "ab1", "name": "AB1", "status": {"getAB": "1"}},
-            {"id": "ab2", "name": "AB2", "status": {"getAB": "2"}},
+            {
+                "id": "ab1",
+                "name": "AB1",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
+                "status": {"getAB": "1"},
+            },
+            {
+                "id": "ab2",
+                "name": "AB2",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
+                "status": {"getAB": "2"},
+            },
         ]
     }
     coordinator = _build_coordinator(hass, data)
@@ -978,10 +1025,30 @@ async def test_async_setup_entry_boolean_and_boolean_string(
     """Test that native boolean and boolean-string getAB values create valves."""
     data = {
         "devices": [
-            {"id": "btrue", "name": "BTrue", "status": {"getAB": True}},
-            {"id": "bfalse", "name": "BFalse", "status": {"getAB": False}},
-            {"id": "strtrue", "name": "StrTrue", "status": {"getAB": "true"}},
-            {"id": "strfalse", "name": "StrFalse", "status": {"getAB": "false"}},
+            {
+                "id": "btrue",
+                "name": "BTrue",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
+                "status": {"getAB": True},
+            },
+            {
+                "id": "bfalse",
+                "name": "BFalse",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
+                "status": {"getAB": False},
+            },
+            {
+                "id": "strtrue",
+                "name": "StrTrue",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
+                "status": {"getAB": "true"},
+            },
+            {
+                "id": "strfalse",
+                "name": "StrFalse",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
+                "status": {"getAB": "false"},
+            },
         ]
     }
     coordinator = _build_coordinator(hass, data)
@@ -1080,7 +1147,14 @@ async def test_setup_getab_invalid_value_hits_except_branch(
     The entity must NOT be created (create stays False).
     """
     data = {
-        "devices": [{"id": "bad", "name": "Bad", "status": {"getAB": "not_a_number"}}]
+        "devices": [
+            {
+                "id": "bad",
+                "name": "Bad",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
+                "status": {"getAB": "not_a_number"},
+            }
+        ]
     }
     coordinator = _build_coordinator(hass, data)
 

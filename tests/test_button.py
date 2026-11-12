@@ -15,11 +15,21 @@ from custom_components.syr_connect.api_json import SyrConnectJsonAPI
 from custom_components.syr_connect.button import SyrConnectButton, async_setup_entry
 from custom_components.syr_connect.const import CONF_SERVICE, DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+from custom_components.syr_connect.models import MODEL_SIGNATURES
 from custom_components.syr_connect.response_parser import ResponseParser
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import entity_registry as er
+
+# NeoSoft 2500: regeneration mode, no water hardness selects
+_SYR_CONNECT_TEST_NEOSOFT_MODEL = next(
+    model for model in MODEL_SIGNATURES if model.name == "neosoft2500"
+)
+# SafeTech: leak protection profiles, rotation, buzzer, valve
+_SYR_CONNECT_TEST_SAFETECH_MODEL = next(
+    model for model in MODEL_SIGNATURES if model.name == "safetech"
+)
 
 
 def _build_coordinator(
@@ -395,6 +405,7 @@ async def test_async_setup_entry_skip_setsir_when_getsir_missing(
         "devices": [
             {
                 "id": "device1",
+                "model": _SYR_CONNECT_TEST_NEOSOFT_MODEL,
                 "name": "Test Device",
                 "project_id": "project1",
                 "status": {
@@ -537,6 +548,7 @@ async def test_async_setup_entry_removes_stale_setsir_from_registry(
         "devices": [
             {
                 "id": "device1",
+                "model": _SYR_CONNECT_TEST_NEOSOFT_MODEL,
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
@@ -594,6 +606,7 @@ async def test_async_setup_entry_registry_cleanup_skips_other_device_entries(
         "devices": [
             {
                 "id": "device1",
+                "model": _SYR_CONNECT_TEST_NEOSOFT_MODEL,
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
@@ -625,6 +638,7 @@ async def test_async_setup_entry_registry_cleanup_skips_other_config_entry(
         "devices": [
             {
                 "id": "device1",
+                "model": _SYR_CONNECT_TEST_NEOSOFT_MODEL,
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
@@ -656,6 +670,7 @@ async def test_async_setup_entry_registry_cleanup_exception_is_caught(
         "devices": [
             {
                 "id": "device1",
+                "model": _SYR_CONNECT_TEST_NEOSOFT_MODEL,
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {"getSIR": "false"},
@@ -1100,6 +1115,7 @@ async def test_async_setup_entry_creates_setdex_when_getdsv_present(
                 "id": "device_trio",
                 "name": "Trio DFR/LS",
                 "project_id": "project1",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "status": {"getDSV": "0", "getTYP": "215"},
             }
         ]
@@ -1126,6 +1142,7 @@ async def test_async_setup_entry_skips_setdex_on_xml_api(
         "devices": [
             {
                 "id": "device_xml",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "name": "XML Device",
                 "project_id": "project1",
                 "status": {"getDSV": "0", "getTYP": "40"},

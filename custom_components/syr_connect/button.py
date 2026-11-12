@@ -73,9 +73,6 @@ _SYR_CONNECT_BUTTON_DESCRIPTIONS: dict[str, ButtonEntityDescription] = {
     description.key: description for description in _SYR_CONNECT_BUTTON_TYPES
 }
 
-# Supported keys for the button platform — used by registry_cleanup to remove stale entries.
-_SYR_CONNECT_BUTTON_SUPPORTED_KEYS = set(_SYR_CONNECT_BUTTON_DESCRIPTIONS)
-
 # Icons of the reset buttons while there is something to reset; otherwise the
 # icons.json default is shown
 _SYR_CONNECT_BUTTON_ACTIVE_ICONS = {
@@ -129,7 +126,7 @@ async def async_setup_entry(
         hass,
         coordinator.data,
         "button",
-        allowed_keys=_SYR_CONNECT_BUTTON_SUPPORTED_KEYS,
+        allowed_keys=set(),
         entry_id=coordinator.entry_id,
     )
 
@@ -156,11 +153,9 @@ def _build_device_buttons(
 
     model_info = get_device_model(device)
 
-    # Scope to the detected model (falls back to the global allowlist for
-    # models that haven't opted into per-model key lists).
-    supported_button_keys = get_model_supported_keys(
-        model_info, "button", _SYR_CONNECT_BUTTON_SUPPORTED_KEYS
-    )
+    # Only the buttons of the device file of the detected model; a model without
+    # one has no buttons.
+    supported_button_keys = get_model_supported_keys(model_info, "button", set())
 
     for description in _SYR_CONNECT_BUTTON_TYPES:
         command = description.key
@@ -188,12 +183,6 @@ def _build_device_buttons(
         if get_key not in status:
             continue
 
-        # setSIR (manual regeneration trigger) is only meaningful for
-        # softener models that actually support scheduled regeneration.
-        # Workaround for https://github.com/alexhass/syr_connect/issues/24
-        if command == "setSIR" and model_info.maximum_regeneration_interval is None:
-            continue
-
         entities.append(
             SyrConnectButton(
                 coordinator,
@@ -207,8 +196,8 @@ def _build_device_buttons(
 
     # Remove any previously-registered button that is no longer being created
     # for this device (e.g. a command whose get-key disappeared from the status).
-    # These buttons are in _SYR_CONNECT_BUTTON_SUPPORTED_KEYS and therefore survive
-    # the global registry_cleanup; they must be removed individually here. A device
+    # These buttons are in the allowlist of the device file and therefore survive
+    # the registry_cleanup; they must be removed individually here. A device
     # without a status (not fetched yet) is not passed here (async_add_device_entities).
     try:
         registry = er.async_get(hass)

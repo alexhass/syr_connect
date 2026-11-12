@@ -199,32 +199,6 @@ _SYR_CONNECT_SELECT_DESCRIPTIONS: dict[str, SyrConnectSelectEntityDescription] =
     description.key: description for description in _SYR_CONNECT_SELECT_TYPES
 }
 
-# Supported keys for the select platform — used by registry_cleanup to remove stale entries.
-# The global fallback for models without a device file; some selects (SafeFloor thresholds,
-# LEX water hardness) are only enabled by the SELECT_SUPPORTED_KEYS of their device file.
-_SYR_CONNECT_SELECT_SUPPORTED_KEYS = {
-    "getRTM",  # Regeneration time (HH:MM combined or minutes)
-    "getPRF",  # Active leak-protection profile
-    "getSRO",  # Display rotation (0 / 90 / 180 / 270 °)
-    "getSV1",  # Salt amount container 1
-    "getSV2",  # Salt amount container 2
-    "getSV3",  # Salt amount container 3
-    "getRPD",  # Regeneration interval (days)
-    "getRMO",  # Regeneration mode (Standard / ECO / Power / Automatic)
-    # --- Water treatment / Filling (Conel Clear Pro Fill) ---
-    "getCRS",  # Cartridge size (raw 1-5, mapped to liters)
-    "getCRT",  # Cartridge type (0=HWE, 1=HVE, 2=HVE+)
-    "getCWL",  # Remaining capacity warning threshold (%)
-    "getFCS",  # Custom cartridge size (L), used for getCRS 0
-    "getFMT",  # Maximum duration of the initial filling (min)
-    "getFVT",  # Maximum volume of the initial filling (L)
-    "getRCD",  # Filling processes period (0=hour, 1=day, 2=week, 3=month)
-    "getRMN",  # Filling processes count
-    "getRMT",  # Maximum filling duration (min)
-    "getRVT",  # Maximum filling charges
-    "getTPR",  # Target pressure (1/10 bar)
-}
-
 
 def _option_unit(key: str) -> str:
     """Return the unit of a key for select option labels, from its sensor description.
@@ -346,11 +320,11 @@ class _SyrConnectSelectBuilder:
         self.device_id = device["id"]
         self.device_name = device["name"]
         self.status: dict[str, Any] = device.get("status", {})
-        # Scope to the detected model (falls back to the global allowlist for
-        # models that haven't opted into per-model key lists).
+        # Only the selects of the device file of the detected model; a model without
+        # one has no selects.
         self.model_info = get_device_model(device)
         self.supported_select_keys = get_model_supported_keys(
-            self.model_info, "select", _SYR_CONNECT_SELECT_SUPPORTED_KEYS
+            self.model_info, "select", set()
         )
         self.entities: list[SelectEntity] = []
 
@@ -468,13 +442,8 @@ def _add_softener_selects(b: _SyrConnectSelectBuilder) -> None:
 
     # Regeneration interval in days (getRPD): the maximum depends on the model; models without
     # regeneration have none. 0 means no interval regeneration, so no select is created.
-    # Not limited to the allowlist.
     max_rpd = b.model_info.maximum_regeneration_interval
-    if (
-        max_rpd is not None
-        and _is_number(status.get("getRPD"))
-        and float(status["getRPD"]) != 0
-    ):
+    if max_rpd is not None and b.allowed("getRPD") and float(status["getRPD"]) != 0:
         b.add_numeric("getRPD", 1, max_rpd)
 
     # Raw water hardness (getIWH, 1-100) and outlet/soft water hardness (getOWH, 0-100), plain LEX
@@ -507,8 +476,8 @@ def _add_softener_selects(b: _SyrConnectSelectBuilder) -> None:
                 )
             )
 
-    # Regeneration mode (getRMO), only for a value >= 1. Not limited to the allowlist.
-    if _is_integer(status.get("getRMO")) and int(float(status["getRMO"])) >= 1:
+    # Regeneration mode (getRMO), only for a value >= 1
+    if b.allowed("getRMO", _is_integer) and int(float(status["getRMO"])) >= 1:
         b.add_discrete("getRMO", _SYR_CONNECT_SELECT_RMO_MAP)
 
 
@@ -600,7 +569,7 @@ async def async_setup_entry(
         hass,
         coordinator.data,
         "select",
-        allowed_keys=_SYR_CONNECT_SELECT_SUPPORTED_KEYS,
+        allowed_keys=set(),
         entry_id=coordinator.entry_id,
     )
 
@@ -636,9 +605,7 @@ def _async_setup_muco_conditional_selects(
         # Only for models whose profile maps the cartridge types to keys (MuCo filling, All
         # in One +). Leak-protection and TrioLock devices also report getCRT/getLOT/getOHW
         # but deliberately do not expose them; a select there would even write setOHW/setLOT.
-        supported_select_keys = get_model_supported_keys(
-            model, "select", _SYR_CONNECT_SELECT_SUPPORTED_KEYS
-        )
+        supported_select_keys = get_model_supported_keys(model, "select", set())
         return get_cartridge_key(model, status, supported_select_keys)
 
     def _build_entity(

@@ -16,10 +16,12 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.syr_connect import select as select_module
 from custom_components.syr_connect.const import CONF_SERVICE
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+from custom_components.syr_connect.devices import SyrConnectDeviceProfile
 from custom_components.syr_connect.exceptions import SyrConnectError
 from custom_components.syr_connect.models import (
     MODEL_SIGNATURES,
     UNKNOWN_MODEL,
+    SyrConnectModel,
     detect_model,
 )
 from custom_components.syr_connect.response_parser import ResponseParser
@@ -38,6 +40,15 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, EntityCategory, Un
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 
+# NeoSoft 2500: regeneration mode, no water hardness selects
+_SYR_CONNECT_TEST_NEOSOFT_MODEL = next(
+    model for model in MODEL_SIGNATURES if model.name == "neosoft2500"
+)
+# SafeTech: leak protection profiles, rotation, buzzer, valve
+_SYR_CONNECT_TEST_SAFETECH_MODEL = next(
+    model for model in MODEL_SIGNATURES if model.name == "safetech"
+)
+
 
 def _patch_sensor_description(key: str, **changes: Any) -> Any:
     """Patch fields of the sensor description of `key` (the selects read its unit)."""
@@ -51,11 +62,58 @@ def _patch_select_description(key: str, **changes: Any) -> Any:
     return patch.dict(descriptions, {key: replace(descriptions[key], **changes)})
 
 
+def _select_model(*keys: str, **changes: Any) -> SyrConnectModel:
+    """Return a synthetic model whose device file lists the given select keys."""
+    return replace(
+        UNKNOWN_MODEL,
+        name="testselect",
+        device_profile=SyrConnectDeviceProfile(
+            binary_sensor=set(),
+            button=set(),
+            select=set(keys),
+            sensor=set(),
+            switch=set(),
+            valve=set(),
+        ),
+        **changes,
+    )
+
+
+async def test_async_setup_entry_no_selects_without_device_file(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+) -> None:
+    """A model without a device file has no selects, whatever keys it reports."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {
+                    "getRTM": "02:30",
+                    "getSRO": "90",
+                    "getRMO": "2",
+                    "getRMT": "30",
+                },
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    assert entities == []
+
+
 def test_select_descriptions_have_unique_keys() -> None:
     """Every select key is described once; a duplicate would silently replace the first one."""
     keys = [d.key for d in select_module._SYR_CONNECT_SELECT_TYPES]
     assert len(keys) == len(set(keys))
-    assert set(keys) >= select_module._SYR_CONNECT_SELECT_SUPPORTED_KEYS
 
 
 def test_option_unit_without_unit_raises() -> None:
@@ -267,6 +325,7 @@ async def test_async_setup_entry_no_entities(
         "devices": [
             {
                 "id": "device1",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "name": "Test Device",
                 "project_id": "project1",
                 "status": {},
@@ -294,6 +353,7 @@ async def test_async_setup_entry_no_prf_when_all_pa_false(
         "devices": [
             {
                 "id": "device1",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "name": "Test Device",
                 "project_id": "project1",
                 "status": {
@@ -641,6 +701,7 @@ async def test_async_setup_entry_registry_exception(
                 "id": "device1",
                 "name": "Test Device",
                 "project_id": "project1",
+                "model": _SYR_CONNECT_TEST_LEX_MODEL,
                 "status": {
                     "getRTH": "2",
                     "getRTM": "30",
@@ -1294,6 +1355,7 @@ async def test_async_setup_entry_skip_none_sv_values(
         "devices": [
             {
                 "id": "device1",
+                "model": _SYR_CONNECT_TEST_LEX_MODEL,
                 "name": "Test Device",
                 "project_id": "project1",
                 "status": {
@@ -1366,6 +1428,7 @@ async def test_async_setup_entry_skip_zero_rpd(
         "devices": [
             {
                 "id": "device1",
+                "model": _SYR_CONNECT_TEST_LEX_MODEL,
                 "name": "Test Device",
                 "project_id": "project1",
                 "status": {
@@ -1398,6 +1461,7 @@ async def test_async_setup_entry_skip_empty_rpd(
         "devices": [
             {
                 "id": "device1",
+                "model": _SYR_CONNECT_TEST_LEX_MODEL,
                 "name": "Test Device",
                 "project_id": "project1",
                 "status": {
@@ -1430,6 +1494,7 @@ async def test_async_setup_entry_skip_none_rpd(
         "devices": [
             {
                 "id": "device1",
+                "model": _SYR_CONNECT_TEST_LEX_MODEL,
                 "name": "Test Device",
                 "project_id": "project1",
                 "status": {
@@ -1818,7 +1883,14 @@ async def test_async_setup_entry_removes_excluded_from_registry(
 
     device_id = "device_del"
     data = {
-        "devices": [{"id": device_id, "name": "Device Del", "status": {"getFLO": "5"}}]
+        "devices": [
+            {
+                "id": device_id,
+                "name": "Device Del",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
+                "status": {"getFLO": "5"},
+            }
+        ]
     }
     mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
     mock_coordinator.entry_id = "entry"
@@ -2271,6 +2343,7 @@ async def test_async_setup_entry_with_none_pa_values(
                 "id": "device1",
                 "name": "Test Device",
                 "project_id": "project1",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "status": {
                     "getRTM": "02:30",
                     "getPA1": "true",
@@ -2509,6 +2582,7 @@ async def test_async_setup_entry_creates_no_ffm_select(
         "devices": [
             {
                 "id": "device1",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "name": "Test Device",
                 "project_id": "project1",
                 "status": {
@@ -2582,6 +2656,7 @@ async def test_async_setup_entry_adds_rotation_select(
                 "id": "device1",
                 "name": "Test Device",
                 "project_id": "project1",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "status": {
                     "getSRO": "90",
                 },
@@ -2639,16 +2714,15 @@ async def test_async_setup_entry_creates_sv_select_for_srn_detected_model(
 ) -> None:
     """Test async_setup_entry creates SV1 select when model is detected via SRN prefix.
 
-    Uses a synthetic signature (no `device_profile`) instead of a real srn_prefix
-    from models.py, so this stays independent of per-model SELECT_SUPPORTED_KEYS
-    overrides in devices/*.py (e.g. neosoft.py deliberately excludes getSV1).
+    Uses a synthetic signature instead of a real srn_prefix from models.py, so this
+    stays independent of the SELECT_SUPPORTED_KEYS in devices/*.py (e.g. neosoft.py
+    deliberately excludes getSV1).
     """
     test_sig = [
-        replace(
-            UNKNOWN_MODEL,
+        _select_model(
+            "getSV1",
             display_name="Test Model",
             base_path="test",
-            name="testmodel",
             srn_prefix="999",
             maximum_salt_volume=25,
         )
@@ -2695,6 +2769,7 @@ async def test_async_setup_entry_skips_invalid_sro_value(
         "devices": [
             {
                 "id": "device1",
+                "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "name": "D1",
                 "project_id": "p1",
                 "status": {"getSRO": "not_a_number"},
@@ -2980,6 +3055,7 @@ async def test_async_setup_entry_creates_rmo_select(
                 "id": "device1",
                 "name": "Test Device",
                 "project_id": "project1",
+                "model": _SYR_CONNECT_TEST_NEOSOFT_MODEL,
                 "status": {"getRMO": "2"},
             }
         ]
@@ -3008,6 +3084,7 @@ async def test_async_setup_entry_no_rmo_select_when_missing(
         "devices": [
             {
                 "id": "device1",
+                "model": _SYR_CONNECT_TEST_NEOSOFT_MODEL,
                 "name": "Test Device",
                 "project_id": "project1",
                 "status": {},
@@ -3037,6 +3114,7 @@ async def test_async_setup_entry_no_rmo_select_when_zero(
         "devices": [
             {
                 "id": "device1",
+                "model": _SYR_CONNECT_TEST_NEOSOFT_MODEL,
                 "name": "Test Device",
                 "project_id": "project1",
                 "status": {"getRMO": "0"},
@@ -3066,6 +3144,7 @@ async def test_async_setup_entry_no_rmo_select_when_none(
         "devices": [
             {
                 "id": "device1",
+                "model": _SYR_CONNECT_TEST_NEOSOFT_MODEL,
                 "name": "Test Device",
                 "project_id": "project1",
                 "status": {"getRMO": None},
@@ -3095,6 +3174,7 @@ async def test_async_setup_entry_no_rmo_select_when_empty(
         "devices": [
             {
                 "id": "device1",
+                "model": _SYR_CONNECT_TEST_NEOSOFT_MODEL,
                 "name": "Test Device",
                 "project_id": "project1",
                 "status": {"getRMO": ""},
@@ -3124,6 +3204,7 @@ async def test_async_setup_entry_no_rmo_select_when_invalid(
         "devices": [
             {
                 "id": "device1",
+                "model": _SYR_CONNECT_TEST_NEOSOFT_MODEL,
                 "name": "Test Device",
                 "project_id": "project1",
                 "status": {"getRMO": "invalid"},
@@ -3199,6 +3280,7 @@ async def test_async_setup_entry_skips_invalid_muco_numeric_values(
         "devices": [
             {
                 "id": "device1",
+                "model": _SYR_CONNECT_TEST_MUCO_FILLING_MODEL,
                 "name": "Test Device",
                 "project_id": "project1",
                 "status": {
@@ -3828,6 +3910,7 @@ async def test_rmt_select_options_use_ha_minutes_unit(
                 "id": "device1",
                 "name": "Test Device",
                 "project_id": "project1",
+                "model": _SYR_CONNECT_TEST_MUCO_FILLING_MODEL,
                 "status": {"getRMT": "30"},
             }
         ]
@@ -4155,6 +4238,7 @@ async def test_async_setup_entry_skips_hardness_selects_for_other_models(
         "devices": [
             {
                 "id": "device1",
+                "model": _SYR_CONNECT_TEST_NEOSOFT_MODEL,
                 "name": "Test Device",
                 "project_id": "project1",
                 "status": status,
