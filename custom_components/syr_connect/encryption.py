@@ -54,12 +54,11 @@ class SyrEncryption:
             cipher = AES.new(self.key, AES.MODE_CBC, self.iv)
             decrypted = cipher.decrypt(encrypted_data)
 
-            # Remove padding manually due to non-standard padding scheme
-            # SYR devices use a custom padding approach where the plaintext
-            # may be padded with null bytes (\x00) followed by spaces.
-            # Standard PKCS7 unpadding would fail, so we manually strip:
-            # 1. Null bytes (\x00) - may be present at the end
-            # 2. Whitespace - may be used as additional padding
+            # The cloud pads the plaintext with null bytes (\x00) to the AES
+            # block size (zero padding), not with PKCS7, so standard unpadding
+            # would fail. The null bytes are stripped first because XML does
+            # not allow them; trailing whitespace before them is stripped as
+            # well, it is not part of the XML content.
             result = decrypted.decode("utf-8").rstrip("\x00").rstrip()
             _LOGGER.debug(
                 "Decryption successful (result length: %d chars)", len(result)
