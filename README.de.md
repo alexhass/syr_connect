@@ -248,6 +248,7 @@ Die Integration bietet eine umfangreiche Überwachung der Geräte:
 #### Filter (NeoSoft)
 
 - Rückspülzähler des Filters
+- Filtertyp
 - Eisengehaltsmessung
 
 #### Wartung
@@ -297,7 +298,6 @@ Die Integration bietet eine umfangreiche Überwachung der Geräte:
 - **Salzmenge in Behälter 1–3**: Salzmenge je Behälter einstellen (je nach Modell, bis zu 3 Behälter).
 - **Regenerationsintervall**: Regenerationshäufigkeit einstellen (modellabhängig: 1–4 Tage).
 - **Display-Orientierung**: Ausrichtung des Displays einstellen (0 / 90 / 180 / 270 Grad, für Geräte mit Display).
-- **Filtertyp**: Installierten Filtertyp auswählen (für NeoSoft-Geräte).
 - **Regenerationsmodus**: Standard / ECO / Power / Automatisch auswählen (für Geräte, die dies unterstützen).
 - **Rohwasserhärte**, **Weichwasserhärte**: Rohwasser- und Weichwasserhärte einstellen (nur LEX-Familie). Die Einheit folgt der am Gerät eingestellten Härteeinheit (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l oder mval/l).
 - **Wasseraufbereitung und Befüllung** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect): Kartuschengröße und -typ, Weichwasserhärte oder maximale Ausgangsleitfähigkeit (je nach Kartusche), Zeitraum der Füllungen, Anzahl der Füllzyklen, maximale Fülldauer und -menge, Solldruck.
@@ -402,7 +402,6 @@ Die Cloud hält nur die Messungen der letzten 6 Tage vor. Das Synchronisationsin
 - **Cloud-Abhängigkeit**: Die Cloud-API benötigt eine aktive Internetverbindung und den funktionierenden Cloud-Dienst.
 - **Aktualisierungsintervall**: Die Cloud-API erlaubt ein Aktualisierungsintervall von mindestens 60 Sekunden, die lokale API von mindestens 10 Sekunden.
 - **Eingeschränkter Schreibzugriff**: Konfigurationsänderungen (Regenerationszeit, Salzmengen, Intervalle) und Steuerungsaktionen (Regeneration, Ventilsteuerung) werden unterstützt, aber einige erweiterte Einstellungen sind möglicherweise nur über die SYR Connect-App verfügbar.
-- **Filterspülintervall**: Die Auswahl für diese Einstellung ist vorübergehend deaktiviert, weil das Gerät den Wert nach dem Schreiben wieder zurücksetzt; der aktuelle Wert wird weiterhin als Sensor angezeigt.
 - **Unterstützung der lokalen API**: Nicht jedes Modell bietet eine lokale JSON-API. LEX 1500, LEXplus, i-LEX, Safe-T, SafeFloor, HVA, Hygienemodule und ältere SafeTech-Varianten benötigen den Cloud-API-Zugriff.
 
 ## Anwendungsbeispiele

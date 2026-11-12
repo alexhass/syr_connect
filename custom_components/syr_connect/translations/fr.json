@@ -191,23 +191,6 @@
       "getcwl": {
         "name": "Seuil d'avertissement de capacité restante"
       },
-      "getfcd": {
-        "name": "Intervalle de contre-lavage du filtre",
-        "state": {
-          "10368000": "4 mois",
-          "12960000": "5 mois",
-          "15552000": "6 mois",
-          "18144000": "7 mois",
-          "20736000": "8 mois",
-          "23328000": "9 mois",
-          "2592000": "1 mois",
-          "25920000": "10 mois",
-          "28512000": "11 mois",
-          "31104000": "12 mois",
-          "5184000": "2 mois",
-          "7776000": "3 mois"
-        }
-      },
       "getfcs": {
         "name": "Taille de la cartouche (personnalisée)"
       },
@@ -816,23 +799,6 @@
       },
       "geteip": {
         "name": "Adresse IP (LAN)"
-      },
-      "getfcd": {
-        "name": "Intervalle de contre-lavage du filtre",
-        "state": {
-          "10368000": "4 mois",
-          "12960000": "5 mois",
-          "15552000": "6 mois",
-          "18144000": "7 mois",
-          "20736000": "8 mois",
-          "23328000": "9 mois",
-          "2592000": "1 mois",
-          "25920000": "10 mois",
-          "28512000": "11 mois",
-          "31104000": "12 mois",
-          "5184000": "2 mois",
-          "7776000": "3 mois"
-        }
       },
       "getfco": {
         "name": "Teneur en fer"

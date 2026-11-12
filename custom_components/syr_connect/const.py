@@ -416,25 +416,6 @@ _SYR_CONNECT_SELECT_CRT_MAP = {
     "2": 2,
 }
 
-# TODO: Temporarily disabled - getFCD select (filter backwash interval).
-# Known bug: After writing a new value, the server resets the setting back to its previous value.
-# Root cause is unknown. Re-enable once the write-back issue is resolved, with this option map
-# and a getFCD block in _build_device_selects:
-# _SYR_CONNECT_SELECT_FCD_MAP = {
-#     "2592000": 2592000,
-#     "5184000": 5184000,
-#     "7776000": 7776000,
-#     "10368000": 10368000,
-#     "12960000": 12960000,
-#     "15552000": 15552000,
-#     "18144000": 18144000,
-#     "20736000": 20736000,
-#     "23328000": 23328000,
-#     "25920000": 25920000,
-#     "28512000": 28512000,
-#     "31104000": 31104000,
-# }
-
 # Maximum duration of the initial filling (getFMT, All in One +) in minutes: 5-20 in steps
 # of 5, 30-50 in steps of 10, 60-1500 in steps of 30
 _SYR_CONNECT_SELECT_FMT_OPTIONS = sorted(

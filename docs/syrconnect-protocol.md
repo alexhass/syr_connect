@@ -727,6 +727,7 @@ These settings can be set by the user.
 | getCSD / setCSD | "0"<br>"True" | | USER / FACTORY | 0 | Conductivity sensor setting. Value meaning depends on the API, see note below |
 | getDTR | "[0,0,0,0,0,0,0,0]" | | | | Daily time-range configuration — 8-element array, paired with getDTT (Trio DFR/LS, Sanibel) |
 | getDWF / setDWF | "200" | L | | | Expected daily water consumption. If at the regeneration time getRES() < getDWF() a regeneration will start |
+| getFCD / setFCD | "15552000" | s | | | Filter backwash interval. No longer supported and must not be used; the device resets a new value (issue #23) |
 | getFCO / setFCO | "0" | ppm | | | Iron content (always 0?) |
 | getIWH / setIWH | "14" | getWHU | | | Raw water hardness (of the untreated water), can be set from 1-100 °dH. NeoSoft: 1–85 °dH, read-only. Unit: see the water hardness unit codes below |
 | getLNG / setLNG | "0" | | USER | 0 | Language setting: 0 = German, 1 = English, 2 = Spanish, 3 = Italian, 4 = Polish |

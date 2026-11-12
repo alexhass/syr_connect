@@ -59,9 +59,6 @@
       "getcwl": {
         "default": "mdi:gauge-low"
       },
-      "getfcd": {
-        "default": "mdi:calendar-filter-outline"
-      },
       "getfcs": {
         "default": "mdi:filter-cog"
       },

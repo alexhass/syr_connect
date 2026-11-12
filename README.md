@@ -248,6 +248,7 @@ The integration provides comprehensive monitoring of the devices:
 #### Filter (NeoSoft)
 
 - Filter backwash countdown
+- Filter type
 - Iron content measurement
 
 #### Maintenance
@@ -297,7 +298,6 @@ The integration provides comprehensive monitoring of the devices:
 - **Salt volume in container 1–3**: Set the salt volume per container (varies by model, up to 3 containers).
 - **Regeneration interval**: Set how often regeneration occurs (model dependent: 1–4 days).
 - **Display orientation**: Set the display orientation (0 / 90 / 180 / 270 degrees, for devices with a display).
-- **Filter type**: Select the installed filter type (for NeoSoft devices).
 - **Regeneration mode**: Select Standard / ECO / Power / Automatic (for devices that support it).
 - **Raw water hardness**, **Soft water hardness**: Set the raw and softened water hardness (LEX family only). The unit follows the hardness unit configured on the device (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l or mval/l).
 - **Water treatment and filling** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect): Cartridge size and type, soft water hardness or maximum output conductivity (depending on the cartridge), filling period, number of filling cycles, maximum filling duration and amount, target pressure.
@@ -402,7 +402,6 @@ The cloud keeps the measurements of the last 6 days only. Keep the synchronizati
 - **Cloud dependency**: The cloud API requires an active internet connection and functioning cloud service.
 - **Update interval**: The cloud API allows an update interval of at least 60 seconds, the local API of at least 10 seconds.
 - **Limited write access**: Configuration changes (regeneration time, salt amounts, intervals) and control actions (regeneration, valve control) are supported, but some advanced settings may only be available through the SYR Connect App.
-- **Filter backwash interval**: The select for this setting is temporarily disabled because the device resets the value after writing it; the current value is still shown as a sensor.
 - **Local API support**: Not every model provides a local JSON API. LEX 1500, LEXplus, i-LEX, Safe-T, SafeFloor, HVA, hygiene modules and older SafeTech variants require cloud API access.
 
 ## Use cases & examples

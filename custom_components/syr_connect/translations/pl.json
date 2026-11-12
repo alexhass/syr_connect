@@ -191,23 +191,6 @@
       "getcwl": {
         "name": "Próg ostrzeżenia o pozostałej pojemności"
       },
-      "getfcd": {
-        "name": "Interwał płukania zwrotnego filtra",
-        "state": {
-          "10368000": "4 miesiące",
-          "12960000": "5 miesięcy",
-          "15552000": "6 miesięcy",
-          "18144000": "7 miesięcy",
-          "20736000": "8 miesięcy",
-          "23328000": "9 miesięcy",
-          "2592000": "1 miesiąc",
-          "25920000": "10 miesięcy",
-          "28512000": "11 miesięcy",
-          "31104000": "12 miesięcy",
-          "5184000": "2 miesiące",
-          "7776000": "3 miesiące"
-        }
-      },
       "getfcs": {
         "name": "Rozmiar wkładu (niestandardowy)"
       },
@@ -816,23 +799,6 @@
       },
       "geteip": {
         "name": "Adres IP (LAN)"
-      },
-      "getfcd": {
-        "name": "Interwał płukania zwrotnego filtra",
-        "state": {
-          "10368000": "4 miesiące",
-          "12960000": "5 miesięcy",
-          "15552000": "6 miesięcy",
-          "18144000": "7 miesięcy",
-          "20736000": "8 miesięcy",
-          "23328000": "9 miesięcy",
-          "2592000": "1 miesiąc",
-          "25920000": "10 miesięcy",
-          "28512000": "11 miesięcy",
-          "31104000": "12 miesięcy",
-          "5184000": "2 miesiące",
-          "7776000": "3 miesiące"
-        }
       },
       "getfco": {
         "name": "Zawartość żelaza"

@@ -1619,12 +1619,6 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
     ),
     # --- Filter (NeoSoft) ---
     SyrConnectSensorEntityDescription(
-        key="getFCD",  # Filter flush interval (issue #23)
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        hidden_when="always",
-    ),
-    SyrConnectSensorEntityDescription(
         key="getFCO",  # Iron content (ppm)
         native_unit_of_measurement="ppm",
         suggested_display_precision=0,

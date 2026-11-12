@@ -191,23 +191,6 @@
       "getcwl": {
         "name": "Soglia di avviso della capacità residua"
       },
-      "getfcd": {
-        "name": "Intervallo di controlavaggio del filtro",
-        "state": {
-          "10368000": "4 mesi",
-          "12960000": "5 mesi",
-          "15552000": "6 mesi",
-          "18144000": "7 mesi",
-          "20736000": "8 mesi",
-          "23328000": "9 mesi",
-          "2592000": "1 mese",
-          "25920000": "10 mesi",
-          "28512000": "11 mesi",
-          "31104000": "12 mesi",
-          "5184000": "2 mesi",
-          "7776000": "3 mesi"
-        }
-      },
       "getfcs": {
         "name": "Dimensione cartuccia (personalizzata)"
       },
@@ -816,23 +799,6 @@
       },
       "geteip": {
         "name": "Indirizzo IP (LAN)"
-      },
-      "getfcd": {
-        "name": "Intervallo di controlavaggio del filtro",
-        "state": {
-          "10368000": "4 mesi",
-          "12960000": "5 mesi",
-          "15552000": "6 mesi",
-          "18144000": "7 mesi",
-          "20736000": "8 mesi",
-          "23328000": "9 mesi",
-          "2592000": "1 mese",
-          "25920000": "10 mesi",
-          "28512000": "11 mesi",
-          "31104000": "12 mesi",
-          "5184000": "2 mesi",
-          "7776000": "3 mesi"
-        }
       },
       "getfco": {
         "name": "Contenuto di ferro"

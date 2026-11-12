@@ -191,23 +191,6 @@
       "getcwl": {
         "name": "Waarschuwingsdrempel resterende capaciteit"
       },
-      "getfcd": {
-        "name": "Filterterugspoelinterval",
-        "state": {
-          "10368000": "4 maanden",
-          "12960000": "5 maanden",
-          "15552000": "6 maanden",
-          "18144000": "7 maanden",
-          "20736000": "8 maanden",
-          "23328000": "9 maanden",
-          "2592000": "1 maand",
-          "25920000": "10 maanden",
-          "28512000": "11 maanden",
-          "31104000": "12 maanden",
-          "5184000": "2 maanden",
-          "7776000": "3 maanden"
-        }
-      },
       "getfcs": {
         "name": "Cartridgegrootte (aangepast)"
       },
@@ -816,23 +799,6 @@
       },
       "geteip": {
         "name": "IP-adres (LAN)"
-      },
-      "getfcd": {
-        "name": "Filterterugspoelinterval",
-        "state": {
-          "10368000": "4 maanden",
-          "12960000": "5 maanden",
-          "15552000": "6 maanden",
-          "18144000": "7 maanden",
-          "20736000": "8 maanden",
-          "23328000": "9 maanden",
-          "2592000": "1 maand",
-          "25920000": "10 maanden",
-          "28512000": "11 maanden",
-          "31104000": "12 maanden",
-          "5184000": "2 maanden",
-          "7776000": "3 maanden"
-        }
       },
       "getfco": {
         "name": "IJzergehalte"

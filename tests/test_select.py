@@ -2497,43 +2497,6 @@ async def test_discrete_select_invalid_and_exception(hass: HomeAssistant) -> Non
         await select.async_select_option("opt_two")
 
 
-@pytest.mark.xfail(
-    reason="getFCD select is temporarily disabled (write-back bug: server resets value after change)"
-)
-async def test_async_setup_entry_creates_fcd_select(
-    hass: HomeAssistant,
-    create_mock_entry_with_coordinator: Callable[
-        ..., tuple[MockConfigEntry, MagicMock]
-    ],
-    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
-) -> None:
-    """Test async_setup_entry creates a discrete select for getFCD values."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Test Device",
-                "project_id": "project1",
-                "status": {
-                    "getFCD": "2592000",
-                },
-            }
-        ]
-    }
-    mock_config_entry, _mock_coordinator = create_mock_entry_with_coordinator(data)
-    entities, async_add_entities = mock_add_entities()
-
-    await async_setup_entry(hass, mock_config_entry, async_add_entities)
-
-    # Should create a discrete select for getFCD with string options
-    fcd_entities = [
-        e for e in entities if hasattr(e, "_sensor_key") and e._sensor_key == "getFCD"
-    ]
-    assert len(fcd_entities) == 1
-    # Options should include the raw mapping key as string
-    assert "2592000" in fcd_entities[0].options
-
-
 async def test_async_setup_entry_creates_no_ffm_select(
     hass: HomeAssistant,
     create_mock_entry_with_coordinator: Callable[
@@ -2745,35 +2708,6 @@ async def test_async_setup_entry_skips_invalid_sro_value(
 
     rot_entities = [e for e in entities if isinstance(e, SyrConnectRotationSelect)]
     assert len(rot_entities) == 0
-
-
-async def test_async_setup_entry_skips_invalid_fcd_value(
-    hass: HomeAssistant,
-    create_mock_entry_with_coordinator: Callable[
-        ..., tuple[MockConfigEntry, MagicMock]
-    ],
-    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
-) -> None:
-    """Invalid getFCD triggers except-continue branch; no DiscreteSelect created (lines 133-134)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "D1",
-                "project_id": "p1",
-                "status": {"getFCD": "not_a_number"},
-            }
-        ]
-    }
-    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
-    entities, async_add_entities = mock_add_entities()
-
-    await async_setup_entry(hass, mock_config_entry, async_add_entities)
-
-    fcd_entities = [
-        e for e in entities if hasattr(e, "_sensor_key") and e._sensor_key == "getFCD"
-    ]
-    assert len(fcd_entities) == 0
 
 
 # ---------------------------------------------------------------------------

@@ -206,7 +206,6 @@ _SYR_CONNECT_SELECT_SUPPORTED_KEYS = {
     "getRTM",  # Regeneration time (HH:MM combined or minutes)
     "getPRF",  # Active leak-protection profile
     "getSRO",  # Display rotation (0 / 90 / 180 / 270 °)
-    # "getFCD",   # Filter backwash interval
     "getSV1",  # Salt amount container 1
     "getSV2",  # Salt amount container 2
     "getSV3",  # Salt amount container 3
@@ -1184,7 +1183,7 @@ class SyrConnectRotationSelect(SyrConnectEntity, SelectEntity):
 
 
 class SyrConnectDiscreteSelect(SyrConnectEntity, SelectEntity):
-    """Select entity for discrete, non-sequential option maps (e.g., getFCD)."""
+    """Select entity for discrete, non-sequential option maps (e.g., getRMO)."""
 
     def __init__(
         self,
