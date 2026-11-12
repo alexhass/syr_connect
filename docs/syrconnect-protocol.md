@@ -344,7 +344,7 @@ Newer devices also offer a local HTTP API, documented officially by SYR (see [Fu
 - RSA = Rückspülautomatik
 - DM = Druckminderer
 - LS = Leckageschutz
-- DFM = role of a MultiController (`getDFM`). With DFM 1 (Leckageschutz) `getFFM` is also read: 1 = Rückspülfilter, 2 = Wechselfilter.
+- DFM = role of a MultiController (`getDFM`). With DFM 1 (Leckageschutz) `getFFM` is also read: 1 = Rückspülfilter, 2 = Wechselfilter, 3 = kein Filter.
 - DFR = Druckminderer mit Rückspülfilter
 
 | dkv | Device name | Brand | Brand product name | Notes |
@@ -498,6 +498,7 @@ Some further data about the device
 | getDAT | "1694635165" | | | | Current time as UNIX timestamp (seconds since 1.1.1970) |
 | getDKI / setDKI | "35" | | USER / FACTORY | 35 | Device kind ID. Range: 1–255, 0 = return to the default value; not changeable with the default settings. Possibly the dkv (see "deviceKindVersions" table), as the SafeTech default 35 matches its dkv. Not confirmed: a SafeTech V4 capture (`getVER` "Safe-Tech V4.08", `getTYP` 140) reports 36, although dkv 36 is the All in One +. So either getDKI is not the dkv, or the device or the capture is wrong. The SafeTech V4 is treated as dkv 35 |
 | getENV | "PROD" | | | | Deployment environment identifier (Trio DFR/LS, NeoSoft, Sanibel) |
+| getFFM | "1" | | | | Filter type, for display only. Read it, never set it: 0 = not defined, 1 = backwash filter, 2 = replaceable filter, 3 = no filter (issue #23) |
 | getFIR | "SLPS" | | | | Firmware name. Used to find the correct firmware file during firmware update |
 | getFRN | "A25032111217" | | | | Factory reference number — used internally as device ID fallback (NeoSoft, Sanibel) |
 | getHWV | "V1"<br>"35" | | USER | | Hardware version variant (NeoSoft 2500/5000, SafeTech, SafeTech+). SafeTech: version without dot, e.g. 35 = v3.5 |

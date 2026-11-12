@@ -1672,7 +1672,7 @@ async def test_async_setup_entry_creates_triolock_selects_from_real_fixture(
     ],
     mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
-    """SYR TRIO Lock Connect (muco_triolock) real fixture creates getPRF/getSRO/getFFM selects."""
+    """SYR TRIO Lock Connect (muco_triolock) real fixture creates getPRF/getSRO selects, no getFFM select."""
     xml = (
         Path(__file__).parent / "fixtures/xml/SyrTrioLock_GetDeviceCollectionStatus.xml"
     ).read_text(encoding="utf-8")
@@ -1697,7 +1697,7 @@ async def test_async_setup_entry_creates_triolock_selects_from_real_fixture(
     assert any(isinstance(e, SyrConnectPrfSelect) for e in entities)
     assert any(isinstance(e, SyrConnectRotationSelect) for e in entities)
     keys = {getattr(e, "_sensor_key", None) for e in entities}
-    assert "getFFM" in keys
+    assert "getFFM" not in keys
 
 
 async def test_numeric_select_unit_exception_handling(hass: HomeAssistant) -> None:
@@ -2534,14 +2534,14 @@ async def test_async_setup_entry_creates_fcd_select(
     assert "2592000" in fcd_entities[0].options
 
 
-async def test_async_setup_entry_creates_ffm_numeric_select(
+async def test_async_setup_entry_creates_no_ffm_select(
     hass: HomeAssistant,
     create_mock_entry_with_coordinator: Callable[
         ..., tuple[MockConfigEntry, MagicMock]
     ],
     mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
-    """Test async_setup_entry creates a numeric select for getFFM when >=1."""
+    """The filter type (getFFM) is read-only: it never becomes a select."""
     data = {
         "devices": [
             {
@@ -2562,9 +2562,7 @@ async def test_async_setup_entry_creates_ffm_numeric_select(
     ffm_entities = [
         e for e in entities if hasattr(e, "_sensor_key") and e._sensor_key == "getFFM"
     ]
-    assert len(ffm_entities) == 1
-    # The numeric select for getFFM should expose string options '1','2','3'
-    assert ffm_entities[0].options == ["1", "2", "3"]
+    assert ffm_entities == []
 
 
 async def test_rotation_select_entity_category_when_configured(
@@ -2593,65 +2591,6 @@ async def test_discrete_select_entity_category_when_configured(
         coordinator, "device1", "Device 1", "getRMO", mapping
     )
     assert sel.entity_category == EntityCategory.CONFIG
-
-
-async def test_async_setup_entry_skips_ffm_zero(
-    hass: HomeAssistant,
-    create_mock_entry_with_coordinator: Callable[
-        ..., tuple[MockConfigEntry, MagicMock]
-    ],
-    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
-) -> None:
-    """Ensure getFFM == 0 does not create a select entity."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getFFM": "0"},
-            }
-        ]
-    }
-    mock_config_entry, _mock_coordinator = create_mock_entry_with_coordinator(data)
-    entities, async_add_entities = mock_add_entities()
-
-    await async_setup_entry(hass, mock_config_entry, async_add_entities)
-
-    ffm_entities = [
-        e for e in entities if hasattr(e, "_sensor_key") and e._sensor_key == "getFFM"
-    ]
-    assert len(ffm_entities) == 0
-
-
-@pytest.mark.parametrize("ffm_value", ["0", "not_a_number"])
-async def test_async_setup_entry_ffm_skip_does_not_skip_rmo(
-    hass: HomeAssistant,
-    create_mock_entry_with_coordinator: Callable[
-        ..., tuple[MockConfigEntry, MagicMock]
-    ],
-    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
-    ffm_value: str,
-) -> None:
-    """A getFFM of 0 or an invalid value only omits the FFM select, not the device's other selects."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getFFM": ffm_value, "getRMO": "4"},
-            }
-        ]
-    }
-    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
-    entities, async_add_entities = mock_add_entities()
-
-    await async_setup_entry(hass, mock_config_entry, async_add_entities)
-
-    keys = [getattr(e, "_sensor_key", None) for e in entities]
-    assert "getFFM" not in keys
-    assert "getRMO" in keys
 
 
 async def test_discrete_select_current_option_no_match(hass: HomeAssistant) -> None:
@@ -2835,35 +2774,6 @@ async def test_async_setup_entry_skips_invalid_fcd_value(
         e for e in entities if hasattr(e, "_sensor_key") and e._sensor_key == "getFCD"
     ]
     assert len(fcd_entities) == 0
-
-
-async def test_async_setup_entry_skips_invalid_ffm_value(
-    hass: HomeAssistant,
-    create_mock_entry_with_coordinator: Callable[
-        ..., tuple[MockConfigEntry, MagicMock]
-    ],
-    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
-) -> None:
-    """Invalid getFFM triggers except-continue branch; no FFM select created (lines 180-181)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "D1",
-                "project_id": "p1",
-                "status": {"getFFM": "not_a_number"},
-            }
-        ]
-    }
-    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
-    entities, async_add_entities = mock_add_entities()
-
-    await async_setup_entry(hass, mock_config_entry, async_add_entities)
-
-    ffm_entities = [
-        e for e in entities if hasattr(e, "_sensor_key") and e._sensor_key == "getFFM"
-    ]
-    assert len(ffm_entities) == 0
 
 
 # ---------------------------------------------------------------------------

@@ -116,7 +116,6 @@ SENSOR_SUPPORTED_KEYS = {
 # controller with no regeneration/resin/salt containers and no leak-protection profiles.
 SELECT_SUPPORTED_KEYS = {
     "getSRO",
-    "getFFM",
     "getCRS",
     "getCRT",
     "getIWH",

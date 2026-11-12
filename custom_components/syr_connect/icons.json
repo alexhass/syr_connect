@@ -65,9 +65,6 @@
       "getfcs": {
         "default": "mdi:filter-cog"
       },
-      "getffm": {
-        "default": "mdi:filter"
-      },
       "getfmt": {
         "default": "mdi:timer-sand"
       },

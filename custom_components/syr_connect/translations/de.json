@@ -211,15 +211,6 @@
       "getfcs": {
         "name": "Kartuschengröße (Benutzerdefiniert)"
       },
-      "getffm": {
-        "name": "Filtertyp",
-        "state": {
-          "0": "Unbekannt",
-          "1": "Rückspülfilter",
-          "2": "Wechselfilter",
-          "3": "Ohne Filter"
-        }
-      },
       "getfmt": {
         "name": "Maximale Fülldauer (Erstbefüllung)"
       },
