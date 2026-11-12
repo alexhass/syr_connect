@@ -149,7 +149,7 @@ Other devices are also of interest, but may need to be integrated or at least te
 - Sanibel Softwater DUO A25
 - SYR AC 3200 Connect
 - SYR AC All-in-One 3228 Connect
-- SYR All in One +
+- SYR All-in-One+
 - SYR CONTROLICmini
 - SYR HVA
 - SYR HygBox Connect
@@ -328,7 +328,7 @@ The integration supports two API modes:
 
 #### Local API (JSON-based)
 
-- **Supported by**: Newer models with a built-in local API, for example NeoSoft, Trio DFR/LS, TRIO Lock, SafeTech Lock, AC 3200, RSA, Pontos Base, All in One +, HygBox and newer SafeTech variants, also from other brands. The model selection in the setup lists all supported models.
+- **Supported by**: Newer models with a built-in local API, for example NeoSoft, Trio DFR/LS, TRIO Lock, SafeTech Lock, AC 3200, RSA, Pontos Base, All-in-One+, HygBox and newer SafeTech variants, also from other brands. The model selection in the setup lists all supported models.
 - **Connection**: Direct to device via local network (port 5333).
 - **Authentication**: No credentials required.
 - **Advantages**: No internet dependency, faster response times, no cloud rate limits.

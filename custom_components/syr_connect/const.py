@@ -416,7 +416,7 @@ _SYR_CONNECT_SELECT_CRT_MAP = {
     "2": 2,
 }
 
-# Maximum duration of the initial filling (getFMT, All in One +) in minutes: 5-20 in steps
+# Maximum duration of the initial filling (getFMT, All-in-One+) in minutes: 5-20 in steps
 # of 5, 30-50 in steps of 10, 60-1500 in steps of 30
 _SYR_CONNECT_SELECT_FMT_OPTIONS = sorted(
     {

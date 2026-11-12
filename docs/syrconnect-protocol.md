@@ -304,7 +304,7 @@ Newer devices also offer a local HTTP API, documented officially by SYR (see [Fu
 | 141 | SafeTech | | |
 | 142 | SafeTech+ | | |
 | 145 | SafeTech | | |
-| 160 | All in One + | | |
+| 160 | All-in-One+ | | |
 | 180 | HygBox | | |
 | 190 | Dosing Pump | | |
 | 1100 | Trio LS | | alarm_clear_via_set (alarmClearViaSet) |
@@ -373,7 +373,7 @@ Newer devices also offer a local HTTP API, documented officially by SYR (see [Fu
 | 27 | CONTROLICmini | | | |
 | 34 | SafeFloor | | | WiFi-AP: `Floorsensor[…]` |
 | 35 | SafeTech | | | WiFi-AP: `Safe-Tec[…]` |
-| 36 | All in One + | | | WiFi-AP: `All-in-One+[…]` |
+| 36 | All-in-One+ | | | WiFi-AP: `All-in-One+[…]` |
 | 37 | HygBox | | | WiFi-AP: `HygBox[…]` |
 | 38 | SafeTech (Polygonvatro) | | | ref=35 |
 | 39 | SafeTech+ | | | ref=35 |
@@ -423,7 +423,7 @@ Note: A `dkv` entry with `ref=XX` refers to `dkv` `XX` and uses the same Wi-Fi a
 | 38 | SafeTech (Polygonvatro) (ref=35) | Safe-Tec[…] |
 | 39 | SafeTech+ (ref=35) | Safe-Tec[…] |
 | 42 | SafeTech (RWC) (ref=35) | Safe-Tec[…] |
-| 36 | All in One + | All-in-One+[…] |
+| 36 | All-in-One+ | All-in-One+[…] |
 | 37 | HygBox | HygBox[…] |
 | 44 | Dosing Pump | DosingPump[…] |
 | 100 | Trio LS | SYR |
@@ -496,7 +496,7 @@ Some further data about the device
 | getCFW | "176" | | | | Connected firmware component version (Trio DFR/LS, Sanibel) |
 | getCNO | "XXXXXXXXXXXXXXXX" | | USER | | Code number (16 characters) printed on a label on the device; it registers the device to a SYR Connect account (Safe-T+, LEXplus10SL, SafeFloor, SafeTech). Deliberately not exposed by the integration and redacted in diagnostics |
 | getDAT | "1694635165" | | | | Current time as UNIX timestamp (seconds since 1.1.1970) |
-| getDKI / setDKI | "35" | | USER / FACTORY | 35 | Device kind ID. Range: 1–255, 0 = return to the default value; not changeable with the default settings. Possibly the dkv (see "deviceKindVersions" table), as the SafeTech default 35 matches its dkv. Not confirmed: a SafeTech V4 capture (`getVER` "Safe-Tech V4.08", `getTYP` 140) reports 36, although dkv 36 is the All in One +. So either getDKI is not the dkv, or the device or the capture is wrong. The SafeTech V4 is treated as dkv 35 |
+| getDKI / setDKI | "35" | | USER / FACTORY | 35 | Device kind ID. Range: 1–255, 0 = return to the default value; not changeable with the default settings. Possibly the dkv (see "deviceKindVersions" table), as the SafeTech default 35 matches its dkv. Not confirmed: a SafeTech V4 capture (`getVER` "Safe-Tech V4.08", `getTYP` 140) reports 36, although dkv 36 is the All-in-One+. So either getDKI is not the dkv, or the device or the capture is wrong. The SafeTech V4 is treated as dkv 35 |
 | getENV | "PROD" | | | | Deployment environment identifier (Trio DFR/LS, NeoSoft, Sanibel) |
 | getFFM | "1" | | | | Filter type, for display only. Read it, never set it: 0 = not defined, 1 = backwash filter, 2 = replaceable filter, 3 = no filter (issue #23) |
 | getFIR | "SLPS" | | | | Firmware name. Used to find the correct firmware file during firmware update |
@@ -757,7 +757,7 @@ These settings can be set by the user.
 
 Water hardness unit codes (`getWHU`) per device family. Other device kinds have no water hardness unit. In mmol/l, the NeoSoft family reports the water hardness (`getIWH`, `getOWH`) in tenths: "15" = 1.5 mmol/l.
 
-| Code | LEX, LEXplus (dk 40, 80) | MultiController, All in One + (dk 1500–1506, 160) | NeoSoft family (dk 1200–1222) |
+| Code | LEX, LEXplus (dk 40, 80) | MultiController, All-in-One+ (dk 1500–1506, 160) | NeoSoft family (dk 1200–1222) |
 | ------ | ------ | ------ | ------ |
 | 0 | °dH | °dH | °dH |
 | 1 | °fH | °e | mmol/l |
@@ -1260,9 +1260,9 @@ These properties are documented on MuCo devices that expose water treatment (car
 | getRVT / setRVT | "100" | L | Leak Protection: Maximum filling charges. Value range: 0-9900. Range in SYR GUI: 0=off, 10–100 in steps of 10, 100–1000 in steps of 50, 1000–9900 in steps of 100 |
 | getTPR / setTPR | "18" | 1/10 bar | Water treatment: Target pressure — water pressure setpoint (e.g. `18` = 1.8 bar). Range in SYR GUI: 0.5–5.0 bar in 0.1 bar steps |
 
-The All in One + (dk 160) uses the same cartridge and filling mode properties, with these differences: the soft water hardness is `getOWH` / `setOWH` instead of `getOHW` / `setOHW` (only visible when the cartridge type is HWE, reported in the unit of `getWHU` instead of °dH), and the device has no maximum output conductivity (`getLOT`). The maximum filling duration (`getRMT`) has other steps in the SYR GUI: 5–20 min in 5 min steps, 30–50 min in 10 min steps, 1 h–12 h in 0.5 h steps.
+The All-in-One+ (dk 160) uses the same cartridge and filling mode properties, with these differences: the soft water hardness is `getOWH` / `setOWH` instead of `getOHW` / `setOHW` (only visible when the cartridge type is HWE, reported in the unit of `getWHU` instead of °dH), and the device has no maximum output conductivity (`getLOT`). The maximum filling duration (`getRMT`) has other steps in the SYR GUI: 5–20 min in 5 min steps, 30–50 min in 10 min steps, 1 h–12 h in 0.5 h steps.
 
-The All in One + has these additional properties:
+The All-in-One+ has these additional properties:
 
 | Property | Example | Unit | Description |
 | ------ | ------ | ------ | ------ |
@@ -1322,11 +1322,11 @@ available per model) alongside the confirmed descriptions.
 | BUZ | bool | Buzzer on/off on alarm | true/false | ✓ | ✓ |
 | CEL | int | Temperature in °C | 0–1000 | ✓ | X |
 | CFT | int | Current filling duration in s | - | ✓ | X |
-| CFV | int | Current filling volume in liters (All in One +: milliliters) | - | ✓ | X |
+| CFV | int | Current filling volume in liters (All-in-One+: milliliters) | - | ✓ | X |
 | CND | int | Conductivity in µS/cm | 0–5000 | ✓ | X |
 | FLO | int | Current flow rate in l/h | 0–5000 | ✓ | X |
 | LFT | int | Last refill duration in s | - | ✓ | X |
-| LFV | int | Last refilled volume in liters (All in One +: milliliters) | - | ✓ | X |
+| LFV | int | Last refilled volume in liters (All-in-One+: milliliters) | - | ✓ | X |
 | LTV | int | Last tapped volume in liters | - | ✓ | X |
 | NMS | long | No valve movement since, in s | - | ✓ | X |
 | NMT | int | Time in days until valve self-test becomes active | 1–61 | ✓ | ✓ |
@@ -1335,7 +1335,7 @@ available per model) alongside the confirmed descriptions.
 | NRT | int | No refill since, in s | - | ✓ | X |
 | SRN | string | Serial number of the device | - | ✓ | X |
 | TRT | int | Cumulative refill time in s | - | ✓ | X |
-| TRV | int | Cumulative refilled volume in liters (All in One +: milliliters) | - | ✓ | X |
+| TRV | int | Cumulative refilled volume in liters (All-in-One+: milliliters) | - | ✓ | X |
 | VER | string | Firmware version of the device | - | ✓ | X |
 | VOL | int | Cumulative volume in liters | - | ✓ | X |
 | VPS1 | int | No turbine pulses on control head 1 since, in s | - | ✓ | X |
@@ -1373,7 +1373,7 @@ available per model) alongside the confirmed descriptions.
 
 The BAR and BAR2 rows for SafeTech+ are corrected here: the official matrix lists BAR2, but the devices report BAR (see issue 9 in [known_issues_json_api.md](known_issues_json_api.md)).
 
-The All in One + (dk 160, not part of the matrix) reports the filling volumes CFV, LFV and TRV in milliliters instead of liters, e.g. LFV "6600" for a refill of 6.6 l (see issue 10 in [known_issues_json_api.md](known_issues_json_api.md)). The MultiController filling controllers report liters.
+The All-in-One+ (dk 160, not part of the matrix) reports the filling volumes CFV, LFV and TRV and the last tapped volume LTV in milliliters instead of liters, e.g. LFV "6600" for a refill of 6.6 l (see issue 10 in [known_issues_json_api.md](known_issues_json_api.md)). The MultiController filling controllers report liters.
 
 ## Statistics web services
 

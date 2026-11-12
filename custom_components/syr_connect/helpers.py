@@ -1372,7 +1372,7 @@ def get_cartridge_keys(model: SyrConnectModel) -> set[str]:
 
     The device profile maps each cartridge type to its key (`cartridge_keys`):
     - MuCo filling: HWE -> getOHW, HVE/HVE+ -> getLOT
-    - All in One +: HWE -> getOWH
+    - All-in-One+: HWE -> getOWH
 
     Args:
         model: Detected model of the device.

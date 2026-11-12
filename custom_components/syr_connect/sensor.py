@@ -510,7 +510,7 @@ def _value_crs(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
 
     Formats:
     - Fixed size: "3" -> 7 L
-    - Custom size (All in One +): "0" -> the liters of getFCS
+    - Custom size (All-in-One+): "0" -> the liters of getFCS
     """
     if value is None or value == "":
         return None

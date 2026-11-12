@@ -256,7 +256,7 @@ def test_version_match_prefix_only() -> None:
 
 
 def test_allinoneplus_detected_by_version() -> None:
-    """The All in One + is detected by its firmware version, not by its serial number."""
+    """The All-in-One+ is detected by its firmware version, not by its serial number."""
     assert detect_model({"getVER": "All-in-One+ V4.05"}).name == "allinoneplus"
     assert detect_model({"getSRN": "36AAA12345"}).name == "unknown"
 

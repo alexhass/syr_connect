@@ -753,9 +753,10 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     # ── Specialty devices (dk=160/180/190) ───────────────────────────────────────
     SyrConnectModel(
+        # Product number: 3228.15.015
         base_path="/all-in-one",
         device_profile=allinoneplus.PROFILE,
-        display_name="All in One +",
+        display_name="All-in-One+",
         dk=160,
         dkv=36,
         manufacturer="SYR",

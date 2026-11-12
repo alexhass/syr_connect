@@ -498,7 +498,7 @@ def test_is_on_missing_value_returns_none() -> None:
 async def test_async_setup_entry_creates_allinoneplus_manual_filling(
     hass: HomeAssistant,
 ) -> None:
-    """The All in One + gets the initial (getIFL) and manual (getMFL) filling switches."""
+    """The All-in-One+ gets the initial (getIFL) and manual (getMFL) filling switches."""
     config_entry = ConfigEntry(
         version=1,
         minor_version=0,

@@ -371,7 +371,7 @@ def _signature(name: str) -> SyrConnectModel:
         ("lex30", "4", "ppm"),
         ("lex30", "5", "mmol/l"),
         ("lex30", "6", "mval/l"),
-        # MultiController and All in One +
+        # MultiController and All-in-One+
         ("conelclearprofill", "0", "°dH"),
         ("conelclearprofill", "1", "°e"),
         ("conelclearprofill", "2", "°fH"),
@@ -8214,6 +8214,26 @@ def test_sensor_flo_unit_depends_on_model(
     assert sensor.native_value == expected
 
 
+def test_allinoneplus_last_tapped_volume_in_milliliters(
+    create_mock_coordinator: Callable[..., MagicMock],
+) -> None:
+    """The All-in-One+ reports the last tapped volume (getLTV) in milliliters."""
+    data = {
+        "devices": [
+            {
+                "id": "d1",
+                "name": "D1",
+                "model": _signature("allinoneplus"),
+                "status": {"getLTV": "12000"},
+            }
+        ]
+    }
+    sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", "getLTV")
+
+    assert sensor.native_value == 12
+    assert sensor.native_unit_of_measurement == UnitOfVolume.LITERS
+
+
 @pytest.mark.parametrize(
     ("key", "raw", "expected", "precision"),
     [
@@ -8752,7 +8772,7 @@ def test_conductivity_factor(
 def test_allinoneplus_owh_sensor_only_for_hwe_cartridge(
     crt: str, expected: set[str]
 ) -> None:
-    """On the All in One +, getOWH is the soft water hardness of the HWE cartridge."""
+    """On the All-in-One+, getOWH is the soft water hardness of the HWE cartridge."""
     status = {"getCRT": crt, "getOWH": "5", "getLOT": "7", "getOHW": "3"}
     model = _signature("allinoneplus")
 
@@ -8785,7 +8805,7 @@ def test_owh_sensor_without_cartridge_type_always_applies() -> None:
     ],
 )
 def test_crs_sensor_custom_size(status: dict[str, Any], expected: float | None) -> None:
-    """The custom cartridge size (getCRS 0) of the All in One + is the liters of getFCS."""
+    """The custom cartridge size (getCRS 0) of the All-in-One+ is the liters of getFCS."""
     assert sensor_module._value_crs(MagicMock(), status, status["getCRS"]) == expected
 
 

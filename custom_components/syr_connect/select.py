@@ -250,7 +250,7 @@ _SYR_CONNECT_SELECT_CRS_MAP = {
     f"{v:g} {_option_unit('getCRS')}": k
     for k, v in _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.items()
 }
-# All in One +: also "custom" (raw 0), whose size in liters is getFCS
+# All-in-One+: also "custom" (raw 0), whose size in liters is getFCS
 _SYR_CONNECT_SELECT_CRS_CUSTOM_MAP = {
     **_SYR_CONNECT_SELECT_CRS_MAP,
     "custom": 0,
@@ -478,8 +478,8 @@ def _add_softener_selects(b: _SyrConnectSelectBuilder) -> None:
         b.add_numeric("getRPD", 1, max_rpd)
 
     # Raw water hardness (getIWH, 1-100) and outlet/soft water hardness (getOWH, 0-100), plain LEX
-    # family, MuCo filling and All in One + (see docs/syrconnect-protocol.md). The unit suffix
-    # follows the device's getWHU setting. On the MuCo filling and the All in One +, the ranges
+    # family, MuCo filling and All-in-One+ (see docs/syrconnect-protocol.md). The unit suffix
+    # follows the device's getWHU setting. On the MuCo filling and the All-in-One+, the ranges
     # depend on the unit, and the soft water hardness (getOHW, getOWH) is that of the HWE
     # cartridge, added by _async_setup_muco_conditional_selects.
     profile = b.model_info.device_profile
@@ -542,7 +542,7 @@ def _add_muco_selects(b: _SyrConnectSelectBuilder) -> None:
     if b.allowed("getRMN"):
         b.add_numeric("getRMN", 1, 10)
     # Maximum filling duration (getRMT) and charges (getRVT): non-uniform minute/liter steps
-    # (see docs/syrconnect-protocol.md); the All in One + has other getRMT steps
+    # (see docs/syrconnect-protocol.md); the All-in-One+ has other getRMT steps
     if b.allowed("getRMT"):
         profile = b.model_info.device_profile
         rmt_options = (
@@ -553,7 +553,7 @@ def _add_muco_selects(b: _SyrConnectSelectBuilder) -> None:
         b.add_numeric_steps("getRMT", rmt_options)
     if b.allowed("getRVT"):
         b.add_numeric_steps("getRVT", _SYR_CONNECT_SELECT_RVT_OPTIONS)
-    # Initial filling (All in One +): maximum volume (getFVT, same steps as getRVT) and
+    # Initial filling (All-in-One+): maximum volume (getFVT, same steps as getRVT) and
     # maximum duration (getFMT)
     if b.allowed("getFVT"):
         b.add_numeric_steps("getFVT", _SYR_CONNECT_SELECT_RVT_OPTIONS)
@@ -622,7 +622,7 @@ def _async_setup_muco_conditional_selects(
 ) -> None:
     """Dynamically add/remove the getLOT/getOHW select depending on the cartridge type.
 
-    getLOT (HVE/HVE+) and the soft water hardness (HWE; getOHW, getOWH on the All in One +)
+    getLOT (HVE/HVE+) and the soft water hardness (HWE; getOHW, getOWH on the All-in-One+)
     are mutually exclusive: only one ever applies for a given cartridge type (getCRT). Instead of creating both and showing the inapplicable one
     as permanently grayed-out "unavailable", only the currently-relevant entity is added; the
     other is removed from the entity registry. Re-evaluated on every coordinator update, so

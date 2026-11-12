@@ -4291,7 +4291,7 @@ async def test_allinoneplus_owh_select_only_for_hwe_cartridge(
     crt: str,
     expected: set[str],
 ) -> None:
-    """On the All in One +, getOWH is the soft water hardness of the HWE cartridge (0-12)."""
+    """On the All-in-One+, getOWH is the soft water hardness of the HWE cartridge (0-12)."""
     data = {
         "devices": [
             {
@@ -4351,7 +4351,7 @@ async def test_rmt_select_options_follow_profile(
     model_name: str,
     first_options: list[str],
 ) -> None:
-    """The All in One + offers other maximum filling durations (getRMT) than MuCo."""
+    """The All-in-One+ offers other maximum filling durations (getRMT) than MuCo."""
     model = next(model for model in MODEL_SIGNATURES if model.name == model_name)
     data = {
         "devices": [
@@ -4449,7 +4449,7 @@ async def test_allinoneplus_hardness_selects_follow_unit(
     iwh_options: list[str],
     owh_options: list[str],
 ) -> None:
-    """The hardness ranges of the All in One + follow the unit; getOWH is at most getIWH."""
+    """The hardness ranges of the All-in-One+ follow the unit; getOWH is at most getIWH."""
     data = {
         "devices": [
             {

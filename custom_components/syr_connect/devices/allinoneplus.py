@@ -1,4 +1,4 @@
-"""Entity allowlist override for the allinoneplus model (All in One +, dk=160).
+"""Entity allowlist override for the allinoneplus model (All-in-One+, dk=160).
 
 Model type: Filling the Heating System
 
@@ -9,6 +9,7 @@ filling controller, and must be checked against a capture of a real device.
 Differences to muco_filling:
 - getCFV, getLFV, getTRV: reported in milliliters instead of liters (see issue 10
   in docs/known_issues_json_api.md).
+- getLTV: included, also in milliliters.
 - getOWH instead of getOHW: the soft water hardness of the HWE cartridge.
 - getFFM, getLOT, getSRO: not included, the device has no filter type, no
   conductivity limit and no display rotation.
@@ -32,6 +33,8 @@ SENSOR_SUPPORTED_KEYS = {
     # --- Valve & Flow ---
     "getFLO",
     "getVLV",
+    # --- Water Consumption & Volume ---
+    "getLTV",
     # --- Alarm / Notification / Warning ---
     "getALA",
     "getALM",
@@ -177,6 +180,7 @@ PROFILE = SyrConnectDeviceProfile(
     sensor_divisors={
         "getCFV": 1000,
         "getLFV": 1000,
+        "getLTV": 1000,
         "getTRV": 1000,
     },
     switch=SWITCH_SUPPORTED_KEYS,
