@@ -9,8 +9,7 @@ Options:
     --password PASSWORD         API account password
     --base-url URL              API base URL (default: https://syrconnect.de)
     --api-app-name STRING       App name in login XML payload (default: "SYR Connect")
-    --api-package-name STRING   Package name in app-version string; also selects the key of the login
-                                response (default: de.consoft.syr.connect)
+    --api-package-name STRING   Package name in app-version string (default: de.consoft.syr.connect)
     --user-agent STRING         HTTP User-Agent header (default: from const.py)
     --get-devices               Fetch device list for every project after login (continue running)
     --get-status                Fetch device status for every device (implies --get-devices)

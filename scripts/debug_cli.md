@@ -19,7 +19,7 @@ Or activate the virtualenv first (`.venv\Scripts\activate.bat` in cmd, `.venv\Sc
 | `--show-password` | - | Show password in log output (default: masked as `***`) |
 | `--base-url URL` | `https://syrconnect.de` | API base URL |
 | `--api-app-name STRING` | `SYR Connect` | API app name for login payload. Login fails if value is wrong. |
-| `--api-package-name STRING` | `de.consoft.syr.connect` | Package name appended to the app-version string. It also selects the key of the login response; an unknown name uses the SYR Connect key. |
+| `--api-package-name STRING` | `de.consoft.syr.connect` | Package name appended to the app-version string. |
 | `--user-agent STRING` | `_SYR_CONNECT_CLIENT_USER_AGENT` from `const.py` | HTTP User-Agent header |
 | `--list-devices` | - | List devices after login (prints `Project`, `id`, `dclg`, `name`) and exit |
 | `--identity DEVICE` | - | Target device identifier (matches `id`, `dclg`, `serial_number` or `name`) for a one-shot set command |
