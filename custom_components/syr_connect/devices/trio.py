@@ -1,5 +1,13 @@
 """Entity allowlist override for the trio model (Trio DFR/LS Connect, dk=1113/dkv=113).
 
+Also used by the devices of the same dkv family (ref=100 in the dkv table of
+docs/syrconnect-protocol.md):
+- Trio LS Connect (triols, dk=1100/dkv=100), the base device
+- concept 200 Replacement Filter (concept200replacementfilter, dk=1110/dkv=110)
+- Optima T Replacement Filter (optimatreplacementfilter, dk=1111/dkv=111)
+Provisional: no fixture of these devices exists yet; the allowlists must be checked
+against a capture of a real device.
+
 Derived from BOTH tests/fixtures/json/SyrTrioDFRLS_get_all.json (JSON API) and
 tests/fixtures/xml/SyrTrioDFRLS_GetDeviceCollectionStatus.xml (XML API) - the two
 agree on every key discussed below. (SyrTrioDFRLS_GetDeviceCollectionStatus_Bug1.xml

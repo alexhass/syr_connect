@@ -797,6 +797,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/trio",
+        device_profile=trio.PROFILE,
         display_name="Trio LS Connect",
         dk=1100,
         dkv=100,
@@ -808,6 +809,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/trio",
+        device_profile=trio.PROFILE,
         display_name="concept 200 Replacement Filter",
         dk=1110,
         dkv=110,
@@ -819,6 +821,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     SyrConnectModel(
         alarm_clear_via_set=True,
         base_path="/trio",
+        device_profile=trio.PROFILE,
         display_name="Optima T Replacement Filter",
         dk=1111,
         dkv=111,
