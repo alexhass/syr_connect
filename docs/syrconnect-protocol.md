@@ -287,7 +287,7 @@ Newer devices also offer a local HTTP API, documented officially by SYR (see [Fu
 | 1 | Safe-T stand-alone | | |
 | 2 | Safe-T Master | | |
 | 3 | Safe-T Slave | | |
-| 4 | Safe-T Slave | | |
+| 4 | Hygiene module | | dkv 5, 11, 15 (Safe-T Hygiene module); not a Safe-T Slave, the in-wall Safe-T Slave (dkv 4) is dk 3 |
 | 5 | Safe-T Communication module | | |
 | 20 | HVA | | |
 | 25 | Inliner-HWA 3300 | | |

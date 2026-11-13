@@ -660,6 +660,14 @@ def test_detect_model_unique_device_kind_needs_no_status() -> None:
     assert detect_model(None, dk=141, dkv=35).name == "safetech141"
 
 
+def test_detect_model_safet_slave_in_wall_is_device_kind_3() -> None:
+    """The in-wall Safe-T Slave (dkv 4) is a Safe-T Slave (dk 3), not dk 4."""
+    assert detect_model({}, dk=3, dkv=3).name == "safetslave"
+    assert detect_model({}, dk=3, dkv=4).name == "safetslaveinwall"
+    # dk 4 is the Safe-T Hygiene module, which has no signature
+    assert detect_model({}, dk=4, dkv=5) is UNKNOWN_MODEL
+
+
 def test_detect_model_subtype_selects_the_signature() -> None:
     """The subtype (sbt) selects one of the signatures with the same dk/dkv."""
     assert detect_model({}, dk=80, dkv=25, sbt=2).name == "lexplus10s"
