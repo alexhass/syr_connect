@@ -11,7 +11,9 @@ import logging
 from .devices import (
     SyrConnectDeviceProfile,
     allinoneplus,
+    dosingpump,
     hva,
+    hygbox,
     lex,
     lexplus10s,
     lexplus10sl,
@@ -766,6 +768,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         base_path="/hygbox",
+        device_profile=hygbox.PROFILE,
         display_name="HygBox",
         dk=180,
         dkv=37,
@@ -783,6 +786,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         base_path="/dosing-pump",
+        device_profile=dosingpump.PROFILE,
         display_name="Dosing Pump",
         dk=190,
         dkv=44,

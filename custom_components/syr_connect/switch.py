@@ -1,5 +1,6 @@
 """Switch platform for SYR Connect integration."""
 
+from dataclasses import dataclass
 import logging
 from typing import Any, override
 
@@ -28,39 +29,63 @@ _LOGGER = logging.getLogger(__name__)
 PARALLEL_UPDATES = 1
 
 
+@dataclass(frozen=True, kw_only=True)
+class SyrConnectSwitchEntityDescription(SwitchEntityDescription):
+    """Describes a SYR Connect switch; `key` is the status key (e.g. "getBUZ")."""
+
+    # The device reports the opposite of the switch: True means the function is
+    # disabled (getFD1-3, HygBox)
+    inverted: bool = False
+
+
 # Descriptions of all switches (boolean get<KEY>/set<KEY> settings)
-_SYR_CONNECT_SWITCH_TYPES: tuple[SwitchEntityDescription, ...] = (
-    SwitchEntityDescription(
+_SYR_CONNECT_SWITCH_TYPES: tuple[SyrConnectSwitchEntityDescription, ...] = (
+    SyrConnectSwitchEntityDescription(
         key="getBPB",  # Profile change by button allowed (0 = blocked, 1 = allowed)
         entity_category=EntityCategory.CONFIG,
     ),
-    SwitchEntityDescription(
+    SyrConnectSwitchEntityDescription(
         key="getBUZ",  # Buzzer on/off
         entity_category=EntityCategory.CONFIG,
     ),
-    SwitchEntityDescription(
+    SyrConnectSwitchEntityDescription(
         key="getDFI",  # Filling mode enabled flag (Conel Clear Pro Fill)
         entity_category=EntityCategory.CONFIG,
     ),
-    SwitchEntityDescription(
+    SyrConnectSwitchEntityDescription(
+        key="getFD1",  # Stagnation flushing disabled flag (HygBox)
+        entity_category=EntityCategory.CONFIG,
+        inverted=True,
+    ),
+    SyrConnectSwitchEntityDescription(
+        key="getFD2",  # Temperature flushing disabled flag (HygBox)
+        entity_category=EntityCategory.CONFIG,
+        inverted=True,
+    ),
+    SyrConnectSwitchEntityDescription(
+        key="getFD3",  # Periodic flushing disabled flag (HygBox)
+        entity_category=EntityCategory.CONFIG,
+        inverted=True,
+    ),
+    SyrConnectSwitchEntityDescription(
         key="getIFL",  # Initial filling active flag (All-in-One+)
         entity_category=EntityCategory.CONFIG,
     ),
-    SwitchEntityDescription(
+    SyrConnectSwitchEntityDescription(
         key="getMFL",  # Manual filling active flag (All-in-One+)
         entity_category=EntityCategory.CONFIG,
     ),
-    SwitchEntityDescription(
+    SyrConnectSwitchEntityDescription(
         key="getSSA",  # Automatic backwash enabled flag (RSA)
         entity_category=EntityCategory.CONFIG,
     ),
-    SwitchEntityDescription(
+    SyrConnectSwitchEntityDescription(
         key="getSSE",  # Backwash reminder enabled flag (RSA)
         entity_category=EntityCategory.CONFIG,
     ),
 )
 
-_SYR_CONNECT_SWITCH_DESCRIPTIONS: dict[str, SwitchEntityDescription] = {
+_SYR_CONNECT_SWITCH_DESCRIPTIONS: dict[str, SyrConnectSwitchEntityDescription] = {
     description.key: description for description in _SYR_CONNECT_SWITCH_TYPES
 }
 
@@ -150,6 +175,8 @@ def _build_device_switches(
 class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
     """Generic switch entity for boolean get<KEY>/set<KEY> settings (e.g. getBUZ, getDFI)."""
 
+    entity_description: SyrConnectSwitchEntityDescription
+
     def __init__(
         self,
         coordinator: SyrConnectDataUpdateCoordinator,
@@ -188,7 +215,8 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
         if value is None:
             return None
         # A reported but unknown value (e.g. empty) is shown as off
-        return is_value_true(value)
+        enabled = is_value_true(value)
+        return not enabled if self.entity_description.inverted else enabled
 
     @override
     async def async_turn_on(self, **kwargs: Any) -> None:
@@ -202,6 +230,8 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
 
     async def _set_value(self, state: bool) -> None:
         """Set the boolean value via API."""
+        if self.entity_description.inverted:
+            state = not state
         # Mirror the exact type of the current getter value so the setter
         # uses the same format the device expects.
         current = self._status.get(self._sensor_key)

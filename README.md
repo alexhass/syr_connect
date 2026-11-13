@@ -290,6 +290,7 @@ The integration provides comprehensive monitoring of the devices:
 - **Filling mode**: Enable or disable the automatic filling (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect).
 - **Automatic backwash**: Enable or disable the automatic backwash (automatic backwash RSA).
 - **Backwash reminder**: Enable or disable the backwash reminder (automatic backwash RSA).
+- **Stagnation flushing**, **Temperature flushing**, **Periodic flushing**: Enable or disable the three flushing functions (HygBox).
 
 #### Selects (configuration)
 
@@ -302,6 +303,8 @@ The integration provides comprehensive monitoring of the devices:
 - **Raw water hardness**, **Soft water hardness**: Set the raw and softened water hardness (LEX family only). The unit follows the hardness unit configured on the device (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l or mval/l).
 - **Water treatment and filling** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect): Cartridge size and type, soft water hardness or maximum output conductivity (depending on the cartridge), filling period, number of filling cycles, maximum filling duration and amount, target pressure.
 - **Floor sensor** (SafeFloor): Alarm duration, minimum and maximum humidity and temperature thresholds ("Off" disables a threshold), measurement interval and settings synchronization interval.
+- **Hygiene flushing** (HygBox): Water type, stagnation time and flushing volume, start and stop temperature, maximum flushing duration and flushings per day, interval and flushing volume of the periodic flushing, settings synchronization interval.
+- **Dosing** (NeoDos Connect): Canister size, dosing liquid and operating mode.
 
 #### Valve control
 

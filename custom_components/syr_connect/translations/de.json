@@ -173,6 +173,9 @@
       "getald": {
         "name": "Alarmdauer"
       },
+      "getcas": {
+        "name": "Gebindegröße"
+      },
       "getcrs": {
         "name": "Kartuschengröße",
         "state": {
@@ -190,6 +193,34 @@
       },
       "getcwl": {
         "name": "Warnschwelle der Restkapazität"
+      },
+      "getdmo": {
+        "name": "Betriebsart",
+        "state": {
+          "0": "Automatik",
+          "1": "Einlaufphase",
+          "2": "Desinfektion",
+          "3": "Niedrig"
+        }
+      },
+      "getdsl": {
+        "name": "Dosiermittel",
+        "state": {
+          "1": "Dosiermittel 1",
+          "2": "Dosiermittel 2"
+        }
+      },
+      "getf2t": {
+        "name": "Maximale Spüldauer"
+      },
+      "getf2w": {
+        "name": "Temperatur (Spülstopp)"
+      },
+      "getf3p": {
+        "name": "Spülintervall"
+      },
+      "getf3v": {
+        "name": "Spülmenge (Periodisch)"
       },
       "getfcs": {
         "name": "Kartuschengröße (Benutzerdefiniert)"
@@ -316,6 +347,9 @@
           "minus_90": "-9 °C",
           "off": "Aus"
         }
+      },
+      "getmtf": {
+        "name": "Maximale Spülungen pro Tag"
       },
       "getmxh": {
         "name": "Luftfeuchtigkeit (Maximal)",
@@ -474,6 +508,12 @@
           "90": "90°"
         }
       },
+      "getstp": {
+        "name": "Stagnationszeit"
+      },
+      "getstv": {
+        "name": "Spülmenge (Stagnation)"
+      },
       "getsv1": {
         "name": "Salzmenge in Behälter 1"
       },
@@ -485,6 +525,9 @@
       },
       "gettpr": {
         "name": "Solldruck"
+      },
+      "getttt": {
+        "name": "Temperatur (Spülstart)"
       },
       "getwmp": {
         "name": "Messintervall",
@@ -498,6 +541,13 @@
           "600": "10 Minuten",
           "7200": "2 Stunden",
           "900": "15 Minuten"
+        }
+      },
+      "getwty": {
+        "name": "Wasserart",
+        "state": {
+          "1": "Kaltwasser",
+          "2": "Warmwasser"
         }
       }
     },
@@ -657,6 +707,9 @@
       "getbat": {
         "name": "Batteriespannung"
       },
+      "getcas": {
+        "name": "Gebindegröße"
+      },
       "getcel": {
         "name": "Temperatur"
       },
@@ -728,6 +781,9 @@
       "getcyt": {
         "name": "Regenerationszyklus (Restzeit)"
       },
+      "getdam": {
+        "name": "Dosiermenge"
+      },
       "getdbd": {
         "name": "Druckabfall beim Lecktest"
       },
@@ -758,6 +814,16 @@
           "2": "Alarm"
         }
       },
+      "getdmo": {
+        "name": "Betriebsart",
+        "state": {
+          "0": "Automatik",
+          "1": "Einlaufphase",
+          "2": "Desinfektion",
+          "255": "Unbekannt",
+          "3": "Niedrig"
+        }
+      },
       "getdom": {
         "name": "Mikroleckage-Test-Öffnungszeit"
       },
@@ -771,6 +837,14 @@
           "1": "Täglich",
           "2": "Wöchentlich",
           "3": "Monatlich"
+        }
+      },
+      "getdsl": {
+        "name": "Dosiermittel",
+        "state": {
+          "0": "Nicht festgelegt",
+          "1": "Dosiermittel 1",
+          "2": "Dosiermittel 2"
         }
       },
       "getdst": {
@@ -799,6 +873,18 @@
       },
       "geteip": {
         "name": "IP-Adresse (LAN)"
+      },
+      "getf2t": {
+        "name": "Maximale Spüldauer"
+      },
+      "getf2w": {
+        "name": "Temperatur (Spülstopp)"
+      },
+      "getf3p": {
+        "name": "Spülintervall"
+      },
+      "getf3v": {
+        "name": "Spülmenge (Periodisch)"
       },
       "getfco": {
         "name": "Eisengehalt"
@@ -898,6 +984,9 @@
       },
       "getmit": {
         "name": "Temperatur (Minimal)"
+      },
+      "getmtf": {
+        "name": "Maximale Spülungen pro Tag"
       },
       "getmxh": {
         "name": "Luftfeuchtigkeit (Maximal)"
@@ -1491,6 +1580,12 @@
           "status_standby": "Standby"
         }
       },
+      "getstp": {
+        "name": "Stagnationszeit"
+      },
+      "getstv": {
+        "name": "Spülmenge (Stagnation)"
+      },
       "getsv1": {
         "name": "Salzmenge in Behälter 1"
       },
@@ -1526,6 +1621,9 @@
       },
       "getttm": {
         "name": "Maximale Zeit ohne Turbinenimpulse"
+      },
+      "getttt": {
+        "name": "Temperatur (Spülstart)"
       },
       "gettyp": {
         "name": "Gerätetyp"
@@ -1606,6 +1704,14 @@
           "power_outage": "Stromunterbrechung",
           "salt_supply_low": "Salzvorrat gering"
         }
+      },
+      "getwty": {
+        "name": "Wasserart",
+        "state": {
+          "0": "Nicht festgelegt",
+          "1": "Kaltwasser",
+          "2": "Warmwasser"
+        }
       }
     },
     "switch": {
@@ -1629,6 +1735,15 @@
           "false": "Deaktiviert",
           "true": "Aktiviert"
         }
+      },
+      "getfd1": {
+        "name": "Stagnationsspülung"
+      },
+      "getfd2": {
+        "name": "Temperaturspülung"
+      },
+      "getfd3": {
+        "name": "Periodische Spülung"
       },
       "getifl": {
         "name": "Erstbefüllung"

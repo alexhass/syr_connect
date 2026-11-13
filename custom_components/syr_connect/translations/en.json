@@ -173,6 +173,9 @@
       "getald": {
         "name": "Alarm duration"
       },
+      "getcas": {
+        "name": "Canister size"
+      },
       "getcrs": {
         "name": "Cartridge size",
         "state": {
@@ -190,6 +193,34 @@
       },
       "getcwl": {
         "name": "Remaining capacity warning threshold"
+      },
+      "getdmo": {
+        "name": "Operating mode",
+        "state": {
+          "0": "Automatic",
+          "1": "Running-in",
+          "2": "Disinfection",
+          "3": "Low"
+        }
+      },
+      "getdsl": {
+        "name": "Dosing liquid",
+        "state": {
+          "1": "Dosing liquid 1",
+          "2": "Dosing liquid 2"
+        }
+      },
+      "getf2t": {
+        "name": "Maximum flushing duration"
+      },
+      "getf2w": {
+        "name": "Temperature (flushing stop)"
+      },
+      "getf3p": {
+        "name": "Flushing interval"
+      },
+      "getf3v": {
+        "name": "Flushing volume (periodic)"
       },
       "getfcs": {
         "name": "Cartridge size (custom)"
@@ -316,6 +347,9 @@
           "minus_90": "-9 °C",
           "off": "Off"
         }
+      },
+      "getmtf": {
+        "name": "Maximum flushings per day"
       },
       "getmxh": {
         "name": "Humidity (maximum)",
@@ -474,6 +508,12 @@
           "90": "90°"
         }
       },
+      "getstp": {
+        "name": "Stagnation time"
+      },
+      "getstv": {
+        "name": "Flushing volume (stagnation)"
+      },
       "getsv1": {
         "name": "Salt volume in container 1"
       },
@@ -485,6 +525,9 @@
       },
       "gettpr": {
         "name": "Target pressure"
+      },
+      "getttt": {
+        "name": "Temperature (flushing start)"
       },
       "getwmp": {
         "name": "Measurement interval",
@@ -498,6 +541,13 @@
           "600": "10 minutes",
           "7200": "2 hours",
           "900": "15 minutes"
+        }
+      },
+      "getwty": {
+        "name": "Water type",
+        "state": {
+          "1": "Cold water",
+          "2": "Hot water"
         }
       }
     },
@@ -657,6 +707,9 @@
       "getbat": {
         "name": "Battery voltage"
       },
+      "getcas": {
+        "name": "Canister size"
+      },
       "getcel": {
         "name": "Temperature"
       },
@@ -728,6 +781,9 @@
       "getcyt": {
         "name": "Remaining regeneration cycle time"
       },
+      "getdam": {
+        "name": "Dosing amount"
+      },
       "getdbd": {
         "name": "Leak test pressure drop"
       },
@@ -758,6 +814,16 @@
           "2": "Alarm"
         }
       },
+      "getdmo": {
+        "name": "Operating mode",
+        "state": {
+          "0": "Automatic",
+          "1": "Running-in",
+          "2": "Disinfection",
+          "255": "Unknown",
+          "3": "Low"
+        }
+      },
       "getdom": {
         "name": "Microleakage test valve open time"
       },
@@ -771,6 +837,14 @@
           "1": "Daily",
           "2": "Weekly",
           "3": "Monthly"
+        }
+      },
+      "getdsl": {
+        "name": "Dosing liquid",
+        "state": {
+          "0": "Undefined",
+          "1": "Dosing liquid 1",
+          "2": "Dosing liquid 2"
         }
       },
       "getdst": {
@@ -799,6 +873,18 @@
       },
       "geteip": {
         "name": "IP address (LAN)"
+      },
+      "getf2t": {
+        "name": "Maximum flushing duration"
+      },
+      "getf2w": {
+        "name": "Temperature (flushing stop)"
+      },
+      "getf3p": {
+        "name": "Flushing interval"
+      },
+      "getf3v": {
+        "name": "Flushing volume (periodic)"
       },
       "getfco": {
         "name": "Iron content"
@@ -898,6 +984,9 @@
       },
       "getmit": {
         "name": "Temperature (minimum)"
+      },
+      "getmtf": {
+        "name": "Maximum flushings per day"
       },
       "getmxh": {
         "name": "Humidity (maximum)"
@@ -1491,6 +1580,12 @@
           "status_standby": "Standby"
         }
       },
+      "getstp": {
+        "name": "Stagnation time"
+      },
+      "getstv": {
+        "name": "Flushing volume (stagnation)"
+      },
       "getsv1": {
         "name": "Salt volume in container 1"
       },
@@ -1526,6 +1621,9 @@
       },
       "getttm": {
         "name": "Maximum time without turbine pulses"
+      },
+      "getttt": {
+        "name": "Temperature (flushing start)"
       },
       "gettyp": {
         "name": "Device type"
@@ -1606,6 +1704,14 @@
           "power_outage": "Power outage",
           "salt_supply_low": "Salt supply low"
         }
+      },
+      "getwty": {
+        "name": "Water type",
+        "state": {
+          "0": "Undefined",
+          "1": "Cold water",
+          "2": "Hot water"
+        }
       }
     },
     "switch": {
@@ -1629,6 +1735,15 @@
           "false": "Disabled",
           "true": "Enabled"
         }
+      },
+      "getfd1": {
+        "name": "Stagnation flushing"
+      },
+      "getfd2": {
+        "name": "Temperature flushing"
+      },
+      "getfd3": {
+        "name": "Periodic flushing"
       },
       "getifl": {
         "name": "Initial filling"

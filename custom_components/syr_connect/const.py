@@ -291,6 +291,13 @@ _SYR_CONNECT_SENSOR_LE_VALUE_MAP = {
 # the hardness from the conductivity
 _SYR_CONNECT_SENSOR_CND_PER_DH = 35
 
+# Mapping for getCAS sensor values (canister size of the dosing pump)
+# Maps raw API value (integer) -> display value in liters
+_SYR_CONNECT_SENSOR_CAS_VALUE_MAP = {
+    1: 5,
+    2: 10,
+}
+
 # Mapping for getCRS sensor values (Cartridge size)
 # Maps raw API value (integer) -> display value in liters
 _SYR_CONNECT_SENSOR_CRS_VALUE_MAP = {
@@ -416,6 +423,49 @@ _SYR_CONNECT_SELECT_CRT_MAP = {
     "2": 2,
 }
 
+# Operating mode of the dosing pump (getDMO): 0=automatic, 1=running-in, 2=disinfection,
+# 3=low
+_SYR_CONNECT_SELECT_DMO_MAP = {
+    "0": 0,
+    "1": 1,
+    "2": 2,
+    "3": 3,
+}
+
+# Dosing liquid of the dosing pump (getDSL): 1 and 2 (0 = not set is not selectable)
+_SYR_CONNECT_SELECT_DSL_MAP = {
+    "1": 1,
+    "2": 2,
+}
+
+# Maximum flushing duration of the temperature flushing (getF2T, HygBox) in seconds: 30-600
+# in steps of 30
+_SYR_CONNECT_SELECT_F2T_OPTIONS = list(range(30, 601, 30))
+
+# Interval of the periodic flushing (getF3P, HygBox) in minutes: 1-23 hours in steps of
+# 1 hour, then 1-12 days in steps of 1 day
+_SYR_CONNECT_SELECT_F3P_OPTIONS = sorted(
+    {
+        *range(60, 1381, 60),
+        *range(1440, 17281, 1440),
+    }
+)
+
+# Smallest distance between the start and the stop temperature of the temperature
+# flushing (getTTT, getF2W, HygBox) in °C
+_SYR_CONNECT_SELECT_FLUSHING_TEMPERATURE_GAP = 2
+
+# Range of the start and the stop temperature of the temperature flushing (getTTT,
+# getF2W, HygBox) in °C per water type (getWTY): 1=cold water, 2=hot water
+_SYR_CONNECT_SELECT_FLUSHING_TEMPERATURE_RANGES = {
+    1: (10, 25),
+    2: (50, 60),
+}
+
+# Flushing volume of the stagnation and the periodic flushing (getSTV, getF3V, HygBox) in
+# liters: 1-100 in steps of 1
+_SYR_CONNECT_SELECT_FLUSHING_VOLUME_OPTIONS = list(range(1, 101))
+
 # Maximum duration of the initial filling (getFMT, All-in-One+) in minutes: 5-20 in steps
 # of 5, 30-50 in steps of 10, 60-1500 in steps of 30
 _SYR_CONNECT_SELECT_FMT_OPTIONS = sorted(
@@ -509,6 +559,15 @@ _SYR_CONNECT_SELECT_RVT_OPTIONS = sorted(
     }
 )
 
+# Stagnation time of the stagnation flushing (getSTP, HygBox) in minutes: 1-23 hours in
+# steps of 1 hour, then 1-30 days in steps of 1 day
+_SYR_CONNECT_SELECT_STP_OPTIONS = sorted(
+    {
+        *range(60, 1381, 60),
+        *range(1440, 43201, 1440),
+    }
+)
+
 # Measurement interval (getWMP) in seconds: non-uniform duration steps as documented in
 # docs/syrconnect-protocol.md. Display labels come from the select.getwmp translation "state" map.
 _SYR_CONNECT_SELECT_WMP_MAP = {
@@ -521,4 +580,11 @@ _SYR_CONNECT_SELECT_WMP_MAP = {
     "10800": 10800,
     "21600": 21600,
     "43200": 43200,
+}
+
+# Water type of the HygBox (getWTY): 1=cold water, 2=hot water (0 = undefined is not
+# selectable)
+_SYR_CONNECT_SELECT_WTY_MAP = {
+    "1": 1,
+    "2": 2,
 }

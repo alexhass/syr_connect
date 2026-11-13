@@ -290,6 +290,7 @@ Die Integration bietet eine umfangreiche Überwachung der Geräte:
 - **Füllmodus**: Automatische Befüllung aktivieren oder deaktivieren (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect).
 - **Automatische Rückspülung**: Automatische Rückspülung aktivieren oder deaktivieren (Rückspülautomatik RSA).
 - **Rückspülerinnerung**: Erinnerung an die Rückspülung aktivieren oder deaktivieren (Rückspülautomatik RSA).
+- **Stagnationsspülung**, **Temperaturspülung**, **Periodische Spülung**: Die drei Spülfunktionen aktivieren oder deaktivieren (HygBox).
 
 #### Auswahlfelder (Konfiguration)
 
@@ -302,6 +303,8 @@ Die Integration bietet eine umfangreiche Überwachung der Geräte:
 - **Rohwasserhärte**, **Weichwasserhärte**: Rohwasser- und Weichwasserhärte einstellen (nur LEX-Familie). Die Einheit folgt der am Gerät eingestellten Härteeinheit (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l oder mval/l).
 - **Wasseraufbereitung und Befüllung** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect): Kartuschengröße und -typ, Weichwasserhärte oder maximale Ausgangsleitfähigkeit (je nach Kartusche), Zeitraum der Füllungen, Anzahl der Füllzyklen, maximale Fülldauer und -menge, Solldruck.
 - **Bodensensor** (SafeFloor): Alarmdauer, minimale und maximale Schwellwerte für Luftfeuchtigkeit und Temperatur („Aus“ deaktiviert einen Schwellwert), Messintervall und Synchronisationsintervall der Einstellungen.
+- **Hygienespülung** (HygBox): Wasserart, Stagnationszeit und Spülmenge, Start- und Stopptemperatur, maximale Spüldauer und Spülungen pro Tag, Intervall und Spülmenge der periodischen Spülung, Synchronisationsintervall der Einstellungen.
+- **Dosierung** (NeoDos Connect): Gebindegröße, Dosiermittel und Betriebsart.
 
 #### Ventilsteuerung
 

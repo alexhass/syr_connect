@@ -38,6 +38,7 @@ from homeassistant.util import dt as dt_util
 from .binary_sensor import _SYR_CONNECT_BINARY_SENSOR_SUPPORTED_KEYS
 from .const import (
     _SYR_CONNECT_SENSOR_ALM_VALUE_MAP,
+    _SYR_CONNECT_SENSOR_CAS_VALUE_MAP,
     _SYR_CONNECT_SENSOR_CND_PER_DH,
     _SYR_CONNECT_SENSOR_CRS_VALUE_MAP,
     _SYR_CONNECT_SENSOR_LE_VALUE_MAP,
@@ -503,6 +504,22 @@ def _value_tmz(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
 def _value_ul(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
     """Leak protection volume limit, absent profile (getUL): raw value -> liters."""
     return _map_int(_SYR_CONNECT_SENSOR_UL_VALUE_MAP, value, 1)
+
+
+def _value_cas(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+    """Canister size (getCAS, dosing pump): raw value -> liters.
+
+    Formats:
+    - Known size: "2" -> 10 L
+    - Not defined: "0" -> None
+    """
+    if value is None or value == "":
+        return None
+    try:
+        raw = int(float(value))
+    except ValueError, TypeError, OverflowError:
+        return None
+    return _SYR_CONNECT_SENSOR_CAS_VALUE_MAP.get(raw)
 
 
 def _value_crs(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
@@ -1809,6 +1826,83 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         suggested_display_precision=2,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
+    # --- Hygiene flushing (HygBox) ---
+    SyrConnectSensorEntityDescription(
+        key="getF2T",  # Maximum flushing duration of the temperature flushing (s)
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getF2W",  # Stop temperature of the temperature flushing (°C)
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getF3P",  # Interval of the periodic flushing (min)
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getF3V",  # Flushing volume of the periodic flushing (l)
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getMTF",  # Maximum number of temperature flushings per day
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getSTP",  # Stagnation time of the stagnation flushing (min)
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getSTV",  # Flushing volume of the stagnation flushing (l)
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getTTT",  # Start temperature of the temperature flushing (°C)
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getWTY",  # Water type (0=undefined, 1=cold water, 2=hot water)
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    # --- Dosing (Dosing Pump) ---
+    SyrConnectSensorEntityDescription(
+        key="getCAS",  # Canister size (raw 1-2, mapped to liters)
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_cas,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getDAM",  # Current dosing amount (ml/m³)
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="mL/m³",
+        suggested_display_precision=0,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getDMO",  # Operating mode (0=automatic, 1=running-in, 2=disinfection, 3=low)
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getDSL",  # Dosing liquid (0=not set, 1, 2)
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
     # --- Display ---
     SyrConnectSensorEntityDescription(
         key="getSRO",  # Display rotation / orientation (0 / 90 / 180 / 270 degrees)
@@ -2079,12 +2173,26 @@ _SYR_CONNECT_SENSOR_DESCRIPTIONS: dict[str, SyrConnectSensorEntityDescription] =
 }
 
 # Sensors that only a device profile enables: computed values that the device does not
-# report itself and that apply to one family only, and the keys of one cartridge type
-# (cartridge_keys of the profile)
+# report itself and that apply to one family only, the keys of one cartridge type
+# (cartridge_keys of the profile), and the keys of the HygBox and the dosing pump, which
+# other devices report with another meaning (getDMO, getMTF)
 _SYR_CONNECT_SENSOR_PROFILE_ONLY_KEYS = {
+    "getCAS",
     "getCND_class",
+    "getDAM",
+    "getDMO",
+    "getDSL",
+    "getF2T",
+    "getF2W",
+    "getF3P",
+    "getF3V",
     "getLOT",
+    "getMTF",
     "getOHW",
+    "getSTP",
+    "getSTV",
+    "getTTT",
+    "getWTY",
 }
 
 # Allowlist of known sensor keys, the global fallback for get_model_supported_keys()

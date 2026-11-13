@@ -173,6 +173,9 @@
       "getald": {
         "name": "Durée de l'alarme"
       },
+      "getcas": {
+        "name": "Taille du bidon"
+      },
       "getcrs": {
         "name": "Taille de la cartouche",
         "state": {
@@ -190,6 +193,34 @@
       },
       "getcwl": {
         "name": "Seuil d'avertissement de capacité restante"
+      },
+      "getdmo": {
+        "name": "Mode de fonctionnement",
+        "state": {
+          "0": "Automatique",
+          "1": "Rodage",
+          "2": "Désinfection",
+          "3": "Faible"
+        }
+      },
+      "getdsl": {
+        "name": "Produit de dosage",
+        "state": {
+          "1": "Produit de dosage 1",
+          "2": "Produit de dosage 2"
+        }
+      },
+      "getf2t": {
+        "name": "Durée maximale de rinçage"
+      },
+      "getf2w": {
+        "name": "Température (fin du rinçage)"
+      },
+      "getf3p": {
+        "name": "Intervalle de rinçage"
+      },
+      "getf3v": {
+        "name": "Volume de rinçage (périodique)"
       },
       "getfcs": {
         "name": "Taille de la cartouche (personnalisée)"
@@ -316,6 +347,9 @@
           "minus_90": "-9 °C",
           "off": "Désactivé"
         }
+      },
+      "getmtf": {
+        "name": "Rinçages maximum par jour"
       },
       "getmxh": {
         "name": "Humidité (maximale)",
@@ -474,6 +508,12 @@
           "90": "90°"
         }
       },
+      "getstp": {
+        "name": "Durée de stagnation"
+      },
+      "getstv": {
+        "name": "Volume de rinçage (stagnation)"
+      },
       "getsv1": {
         "name": "Quantité de sel dans le réservoir 1"
       },
@@ -485,6 +525,9 @@
       },
       "gettpr": {
         "name": "Pression cible"
+      },
+      "getttt": {
+        "name": "Température (début du rinçage)"
       },
       "getwmp": {
         "name": "Intervalle de mesure",
@@ -498,6 +541,13 @@
           "600": "10 minutes",
           "7200": "2 heures",
           "900": "15 minutes"
+        }
+      },
+      "getwty": {
+        "name": "Type d'eau",
+        "state": {
+          "1": "Eau froide",
+          "2": "Eau chaude"
         }
       }
     },
@@ -657,6 +707,9 @@
       "getbat": {
         "name": "Tension de batterie"
       },
+      "getcas": {
+        "name": "Taille du bidon"
+      },
       "getcel": {
         "name": "Température"
       },
@@ -728,6 +781,9 @@
       "getcyt": {
         "name": "Temps restant du cycle de régénération"
       },
+      "getdam": {
+        "name": "Quantité de dosage"
+      },
       "getdbd": {
         "name": "Baisse de pression lors du test d'étanchéité"
       },
@@ -758,6 +814,16 @@
           "2": "Alarme"
         }
       },
+      "getdmo": {
+        "name": "Mode de fonctionnement",
+        "state": {
+          "0": "Automatique",
+          "1": "Rodage",
+          "2": "Désinfection",
+          "255": "Inconnu",
+          "3": "Faible"
+        }
+      },
       "getdom": {
         "name": "Durée de vanne ouverte du test de microfuite"
       },
@@ -771,6 +837,14 @@
           "1": "Quotidien",
           "2": "Hebdomadaire",
           "3": "Mensuel"
+        }
+      },
+      "getdsl": {
+        "name": "Produit de dosage",
+        "state": {
+          "0": "Non défini",
+          "1": "Produit de dosage 1",
+          "2": "Produit de dosage 2"
         }
       },
       "getdst": {
@@ -799,6 +873,18 @@
       },
       "geteip": {
         "name": "Adresse IP (LAN)"
+      },
+      "getf2t": {
+        "name": "Durée maximale de rinçage"
+      },
+      "getf2w": {
+        "name": "Température (fin du rinçage)"
+      },
+      "getf3p": {
+        "name": "Intervalle de rinçage"
+      },
+      "getf3v": {
+        "name": "Volume de rinçage (périodique)"
       },
       "getfco": {
         "name": "Teneur en fer"
@@ -898,6 +984,9 @@
       },
       "getmit": {
         "name": "Température (minimale)"
+      },
+      "getmtf": {
+        "name": "Rinçages maximum par jour"
       },
       "getmxh": {
         "name": "Humidité (maximale)"
@@ -1491,6 +1580,12 @@
           "status_standby": "Veille"
         }
       },
+      "getstp": {
+        "name": "Durée de stagnation"
+      },
+      "getstv": {
+        "name": "Volume de rinçage (stagnation)"
+      },
       "getsv1": {
         "name": "Quantité de sel dans le réservoir 1"
       },
@@ -1526,6 +1621,9 @@
       },
       "getttm": {
         "name": "Durée maximale sans impulsion de turbine"
+      },
+      "getttt": {
+        "name": "Température (début du rinçage)"
       },
       "gettyp": {
         "name": "Type d'appareil"
@@ -1606,6 +1704,14 @@
           "power_outage": "Coupure de courant",
           "salt_supply_low": "Réserve de sel faible"
         }
+      },
+      "getwty": {
+        "name": "Type d'eau",
+        "state": {
+          "0": "Non défini",
+          "1": "Eau froide",
+          "2": "Eau chaude"
+        }
       }
     },
     "switch": {
@@ -1629,6 +1735,15 @@
           "false": "Désactivé",
           "true": "Activé"
         }
+      },
+      "getfd1": {
+        "name": "Rinçage de stagnation"
+      },
+      "getfd2": {
+        "name": "Rinçage de température"
+      },
+      "getfd3": {
+        "name": "Rinçage périodique"
       },
       "getifl": {
         "name": "Remplissage initial"

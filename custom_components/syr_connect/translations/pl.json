@@ -173,6 +173,9 @@
       "getald": {
         "name": "Czas trwania alarmu"
       },
+      "getcas": {
+        "name": "Pojemność kanistra"
+      },
       "getcrs": {
         "name": "Rozmiar wkładu",
         "state": {
@@ -190,6 +193,34 @@
       },
       "getcwl": {
         "name": "Próg ostrzeżenia o pozostałej pojemności"
+      },
+      "getdmo": {
+        "name": "Tryb pracy",
+        "state": {
+          "0": "Automatyczny",
+          "1": "Docieranie",
+          "2": "Dezynfekcja",
+          "3": "Niski"
+        }
+      },
+      "getdsl": {
+        "name": "Środek dozujący",
+        "state": {
+          "1": "Środek dozujący 1",
+          "2": "Środek dozujący 2"
+        }
+      },
+      "getf2t": {
+        "name": "Maksymalny czas płukania"
+      },
+      "getf2w": {
+        "name": "Temperatura (koniec płukania)"
+      },
+      "getf3p": {
+        "name": "Interwał płukania"
+      },
+      "getf3v": {
+        "name": "Objętość płukania (okresowe)"
       },
       "getfcs": {
         "name": "Rozmiar wkładu (niestandardowy)"
@@ -316,6 +347,9 @@
           "minus_90": "-9 °C",
           "off": "Wyłączony"
         }
+      },
+      "getmtf": {
+        "name": "Maksymalna liczba płukań na dobę"
       },
       "getmxh": {
         "name": "Wilgotność (maksymalna)",
@@ -474,6 +508,12 @@
           "90": "90°"
         }
       },
+      "getstp": {
+        "name": "Czas stagnacji"
+      },
+      "getstv": {
+        "name": "Objętość płukania (stagnacja)"
+      },
       "getsv1": {
         "name": "Ilość soli w pojemniku 1"
       },
@@ -485,6 +525,9 @@
       },
       "gettpr": {
         "name": "Ciśnienie docelowe"
+      },
+      "getttt": {
+        "name": "Temperatura (start płukania)"
       },
       "getwmp": {
         "name": "Interwał pomiarowy",
@@ -498,6 +541,13 @@
           "600": "10 minut",
           "7200": "2 godziny",
           "900": "15 minut"
+        }
+      },
+      "getwty": {
+        "name": "Rodzaj wody",
+        "state": {
+          "1": "Woda zimna",
+          "2": "Woda ciepła"
         }
       }
     },
@@ -657,6 +707,9 @@
       "getbat": {
         "name": "Napięcie baterii"
       },
+      "getcas": {
+        "name": "Pojemność kanistra"
+      },
       "getcel": {
         "name": "Temperatura"
       },
@@ -728,6 +781,9 @@
       "getcyt": {
         "name": "Pozostały czas cyklu regeneracji"
       },
+      "getdam": {
+        "name": "Ilość dozowania"
+      },
       "getdbd": {
         "name": "Spadek ciśnienia testu mikroprzecieku"
       },
@@ -758,6 +814,16 @@
           "2": "Alarm"
         }
       },
+      "getdmo": {
+        "name": "Tryb pracy",
+        "state": {
+          "0": "Automatyczny",
+          "1": "Docieranie",
+          "2": "Dezynfekcja",
+          "255": "Nieznany",
+          "3": "Niski"
+        }
+      },
       "getdom": {
         "name": "Czas otwarcia zaworu testu mikroprzecieku"
       },
@@ -771,6 +837,14 @@
           "1": "Codziennie",
           "2": "Co tydzień",
           "3": "Co miesiąc"
+        }
+      },
+      "getdsl": {
+        "name": "Środek dozujący",
+        "state": {
+          "0": "Nieokreślony",
+          "1": "Środek dozujący 1",
+          "2": "Środek dozujący 2"
         }
       },
       "getdst": {
@@ -799,6 +873,18 @@
       },
       "geteip": {
         "name": "Adres IP (LAN)"
+      },
+      "getf2t": {
+        "name": "Maksymalny czas płukania"
+      },
+      "getf2w": {
+        "name": "Temperatura (koniec płukania)"
+      },
+      "getf3p": {
+        "name": "Interwał płukania"
+      },
+      "getf3v": {
+        "name": "Objętość płukania (okresowe)"
       },
       "getfco": {
         "name": "Zawartość żelaza"
@@ -898,6 +984,9 @@
       },
       "getmit": {
         "name": "Temperatura (minimalna)"
+      },
+      "getmtf": {
+        "name": "Maksymalna liczba płukań na dobę"
       },
       "getmxh": {
         "name": "Wilgotność (maksymalna)"
@@ -1491,6 +1580,12 @@
           "status_standby": "Czuwanie"
         }
       },
+      "getstp": {
+        "name": "Czas stagnacji"
+      },
+      "getstv": {
+        "name": "Objętość płukania (stagnacja)"
+      },
       "getsv1": {
         "name": "Ilość soli w pojemniku 1"
       },
@@ -1526,6 +1621,9 @@
       },
       "getttm": {
         "name": "Maksymalny czas bez impulsów turbiny"
+      },
+      "getttt": {
+        "name": "Temperatura (start płukania)"
       },
       "gettyp": {
         "name": "Typ urządzenia"
@@ -1606,6 +1704,14 @@
           "power_outage": "Przerwa w zasilaniu",
           "salt_supply_low": "Niski poziom soli"
         }
+      },
+      "getwty": {
+        "name": "Rodzaj wody",
+        "state": {
+          "0": "Nieokreślony",
+          "1": "Woda zimna",
+          "2": "Woda ciepła"
+        }
       }
     },
     "switch": {
@@ -1629,6 +1735,15 @@
           "false": "Wyłączony",
           "true": "Włączony"
         }
+      },
+      "getfd1": {
+        "name": "Płukanie stagnacyjne"
+      },
+      "getfd2": {
+        "name": "Płukanie temperaturowe"
+      },
+      "getfd3": {
+        "name": "Płukanie okresowe"
       },
       "getifl": {
         "name": "Pierwsze napełnienie"

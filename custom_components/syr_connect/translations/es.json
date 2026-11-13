@@ -173,6 +173,9 @@
       "getald": {
         "name": "Duración de alarma"
       },
+      "getcas": {
+        "name": "Tamaño del bidón"
+      },
       "getcrs": {
         "name": "Tamaño del cartucho",
         "state": {
@@ -190,6 +193,34 @@
       },
       "getcwl": {
         "name": "Umbral de advertencia de capacidad restante"
+      },
+      "getdmo": {
+        "name": "Modo de funcionamiento",
+        "state": {
+          "0": "Automático",
+          "1": "Rodaje",
+          "2": "Desinfección",
+          "3": "Bajo"
+        }
+      },
+      "getdsl": {
+        "name": "Producto de dosificación",
+        "state": {
+          "1": "Producto de dosificación 1",
+          "2": "Producto de dosificación 2"
+        }
+      },
+      "getf2t": {
+        "name": "Duración máxima de purga"
+      },
+      "getf2w": {
+        "name": "Temperatura (fin de purga)"
+      },
+      "getf3p": {
+        "name": "Intervalo de purga"
+      },
+      "getf3v": {
+        "name": "Volumen de purga (periódica)"
       },
       "getfcs": {
         "name": "Tamaño del cartucho (personalizado)"
@@ -316,6 +347,9 @@
           "minus_90": "-9 °C",
           "off": "Apagado"
         }
+      },
+      "getmtf": {
+        "name": "Purgas máximas por día"
       },
       "getmxh": {
         "name": "Humedad (máxima)",
@@ -474,6 +508,12 @@
           "90": "90°"
         }
       },
+      "getstp": {
+        "name": "Tiempo de estancamiento"
+      },
+      "getstv": {
+        "name": "Volumen de purga (estancamiento)"
+      },
       "getsv1": {
         "name": "Cantidad de sal en el depósito 1"
       },
@@ -485,6 +525,9 @@
       },
       "gettpr": {
         "name": "Presión objetivo"
+      },
+      "getttt": {
+        "name": "Temperatura (inicio de purga)"
       },
       "getwmp": {
         "name": "Intervalo de medición",
@@ -498,6 +541,13 @@
           "600": "10 minutos",
           "7200": "2 horas",
           "900": "15 minutos"
+        }
+      },
+      "getwty": {
+        "name": "Tipo de agua",
+        "state": {
+          "1": "Agua fría",
+          "2": "Agua caliente"
         }
       }
     },
@@ -657,6 +707,9 @@
       "getbat": {
         "name": "Tensión de batería"
       },
+      "getcas": {
+        "name": "Tamaño del bidón"
+      },
       "getcel": {
         "name": "Temperatura"
       },
@@ -728,6 +781,9 @@
       "getcyt": {
         "name": "Tiempo restante del ciclo de regeneración"
       },
+      "getdam": {
+        "name": "Cantidad de dosificación"
+      },
       "getdbd": {
         "name": "Caída de presión en prueba de fugas"
       },
@@ -758,6 +814,16 @@
           "2": "Alarma"
         }
       },
+      "getdmo": {
+        "name": "Modo de funcionamiento",
+        "state": {
+          "0": "Automático",
+          "1": "Rodaje",
+          "2": "Desinfección",
+          "255": "Desconocido",
+          "3": "Bajo"
+        }
+      },
       "getdom": {
         "name": "Tiempo de válvula abierta de la prueba de microfugas"
       },
@@ -771,6 +837,14 @@
           "1": "Diario",
           "2": "Semanal",
           "3": "Mensual"
+        }
+      },
+      "getdsl": {
+        "name": "Producto de dosificación",
+        "state": {
+          "0": "Sin definir",
+          "1": "Producto de dosificación 1",
+          "2": "Producto de dosificación 2"
         }
       },
       "getdst": {
@@ -799,6 +873,18 @@
       },
       "geteip": {
         "name": "Dirección IP (LAN)"
+      },
+      "getf2t": {
+        "name": "Duración máxima de purga"
+      },
+      "getf2w": {
+        "name": "Temperatura (fin de purga)"
+      },
+      "getf3p": {
+        "name": "Intervalo de purga"
+      },
+      "getf3v": {
+        "name": "Volumen de purga (periódica)"
       },
       "getfco": {
         "name": "Contenido de hierro"
@@ -898,6 +984,9 @@
       },
       "getmit": {
         "name": "Temperatura (mínima)"
+      },
+      "getmtf": {
+        "name": "Purgas máximas por día"
       },
       "getmxh": {
         "name": "Humedad (máxima)"
@@ -1491,6 +1580,12 @@
           "status_standby": "Espera"
         }
       },
+      "getstp": {
+        "name": "Tiempo de estancamiento"
+      },
+      "getstv": {
+        "name": "Volumen de purga (estancamiento)"
+      },
       "getsv1": {
         "name": "Cantidad de sal en el depósito 1"
       },
@@ -1526,6 +1621,9 @@
       },
       "getttm": {
         "name": "Tiempo máximo sin impulsos de turbina"
+      },
+      "getttt": {
+        "name": "Temperatura (inicio de purga)"
       },
       "gettyp": {
         "name": "Tipo de dispositivo"
@@ -1606,6 +1704,14 @@
           "power_outage": "Corte de energía",
           "salt_supply_low": "Reserva de sal baja"
         }
+      },
+      "getwty": {
+        "name": "Tipo de agua",
+        "state": {
+          "0": "Sin definir",
+          "1": "Agua fría",
+          "2": "Agua caliente"
+        }
       }
     },
     "switch": {
@@ -1629,6 +1735,15 @@
           "false": "Desactivado",
           "true": "Activado"
         }
+      },
+      "getfd1": {
+        "name": "Purga por estancamiento"
+      },
+      "getfd2": {
+        "name": "Purga por temperatura"
+      },
+      "getfd3": {
+        "name": "Purga periódica"
       },
       "getifl": {
         "name": "Llenado inicial"

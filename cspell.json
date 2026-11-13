@@ -22,6 +22,7 @@
     "Einzelenthärtungsanlage",
     "Enthärtekapazität",
     "Entitäts",
+    "Gebindegröße",
     "HACS",
     "Hansgrohe",
     "Harzkapazität",
@@ -60,7 +61,10 @@
     "Schaltersteuerungen",
     "Softwater",
     "Solldruck",
+    "Stagnationsspülung",
+    "Stagnationszeit",
     "Statistikdiagramm",
+    "Stopptemperatur",
     "syrconnectapp",
     "Triofilter"
   ]

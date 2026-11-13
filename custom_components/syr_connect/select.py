@@ -16,6 +16,13 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import (
     _SYR_CONNECT_SELECT_ALD_OPTIONS,
     _SYR_CONNECT_SELECT_CRT_MAP,
+    _SYR_CONNECT_SELECT_DMO_MAP,
+    _SYR_CONNECT_SELECT_DSL_MAP,
+    _SYR_CONNECT_SELECT_F2T_OPTIONS,
+    _SYR_CONNECT_SELECT_F3P_OPTIONS,
+    _SYR_CONNECT_SELECT_FLUSHING_TEMPERATURE_GAP,
+    _SYR_CONNECT_SELECT_FLUSHING_TEMPERATURE_RANGES,
+    _SYR_CONNECT_SELECT_FLUSHING_VOLUME_OPTIONS,
     _SYR_CONNECT_SELECT_FMT_OPTIONS,
     _SYR_CONNECT_SELECT_MIH_MAP,
     _SYR_CONNECT_SELECT_MIT_MAP,
@@ -26,7 +33,10 @@ from .const import (
     _SYR_CONNECT_SELECT_RMO_MAP,
     _SYR_CONNECT_SELECT_RMT_OPTIONS,
     _SYR_CONNECT_SELECT_RVT_OPTIONS,
+    _SYR_CONNECT_SELECT_STP_OPTIONS,
     _SYR_CONNECT_SELECT_WMP_MAP,
+    _SYR_CONNECT_SELECT_WTY_MAP,
+    _SYR_CONNECT_SENSOR_CAS_VALUE_MAP,
     _SYR_CONNECT_SENSOR_CRS_VALUE_MAP,
     DOMAIN,
 )
@@ -193,6 +203,56 @@ _SYR_CONNECT_SELECT_TYPES: tuple[SyrConnectSelectEntityDescription, ...] = (
         key="getRCP",  # Synchronization interval (s)
         entity_category=EntityCategory.CONFIG,
     ),
+    # --- Hygiene flushing (HygBox) ---
+    SyrConnectSelectEntityDescription(
+        key="getF2T",  # Maximum flushing duration of the temperature flushing (s)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getF2W",  # Stop temperature of the temperature flushing (°C)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getF3P",  # Interval of the periodic flushing (min)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getF3V",  # Flushing volume of the periodic flushing (l)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getMTF",  # Maximum number of temperature flushings per day
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getSTP",  # Stagnation time of the stagnation flushing (min)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getSTV",  # Flushing volume of the stagnation flushing (l)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getTTT",  # Start temperature of the temperature flushing (°C)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getWTY",  # Water type (1=cold water, 2=hot water)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    # --- Dosing (Dosing Pump) ---
+    SyrConnectSelectEntityDescription(
+        key="getCAS",  # Canister size (raw 1-2, mapped to liters)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getDMO",  # Operating mode (0=automatic, 1=running-in, 2=disinfection, 3=low)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getDSL",  # Dosing liquid (1, 2)
+        entity_category=EntityCategory.CONFIG,
+    ),
 )
 
 _SYR_CONNECT_SELECT_DESCRIPTIONS: dict[str, SyrConnectSelectEntityDescription] = {
@@ -223,6 +283,12 @@ def _option_unit(key: str) -> str:
 _SYR_CONNECT_SELECT_CRS_MAP = {
     f"{v:g} {_option_unit('getCRS')}": k
     for k, v in _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.items()
+}
+# Canister size of the dosing pump (getCAS): 1=5 L, 2=10 L, from the same value map as the
+# getCAS sensor
+_SYR_CONNECT_SELECT_CAS_MAP = {
+    f"{v:g} {_option_unit('getCAS')}": k
+    for k, v in _SYR_CONNECT_SENSOR_CAS_VALUE_MAP.items()
 }
 # All-in-One+: also "custom" (raw 0), whose size in liters is getFCS
 _SYR_CONNECT_SELECT_CRS_CUSTOM_MAP = {
@@ -282,13 +348,24 @@ def _is_integer(value: Any) -> bool:
     Returns:
         True for a value int(float()) accepts, False for None, "" and anything else
     """
+    return _to_int(value) is not None
+
+
+def _to_int(value: Any) -> int | None:
+    """Return a raw device value as an integer (e.g. "90" or "90.0" -> 90).
+
+    Args:
+        value: Raw value from the device status
+
+    Returns:
+        The integer, or None for None, "" and anything int(float()) does not accept
+    """
     if value is None or value == "":
-        return False
+        return None
     try:
-        int(float(value))
+        return int(float(value))
     except ValueError, TypeError, OverflowError:
-        return False
-    return True
+        return None
 
 
 def _unit_options(key: str, values: list[int]) -> list[str]:
@@ -404,6 +481,8 @@ def _build_device_selects(
     _add_softener_selects(builder)
     _add_muco_selects(builder)
     _add_safefloor_selects(builder)
+    _add_hygbox_selects(builder)
+    _add_dosing_pump_selects(builder)
     return builder.entities
 
 
@@ -548,8 +627,59 @@ def _add_safefloor_selects(b: _SyrConnectSelectBuilder) -> None:
         b.add_numeric_steps("getALD", _SYR_CONNECT_SELECT_ALD_OPTIONS)
     if b.allowed("getWMP"):
         b.add_discrete("getWMP", _SYR_CONNECT_SELECT_WMP_MAP)
+    # Synchronization interval (getRCP); the HygBox offers a part of the steps
     if b.allowed("getRCP"):
-        b.add_discrete("getRCP", _SYR_CONNECT_SELECT_RCP_MAP)
+        profile = b.model_info.device_profile
+        rcp_values = profile.select_options.get("getRCP") if profile else None
+        b.add_discrete(
+            "getRCP",
+            _SYR_CONNECT_SELECT_RCP_MAP
+            if rcp_values is None
+            else {
+                option: raw
+                for option, raw in _SYR_CONNECT_SELECT_RCP_MAP.items()
+                if raw in rcp_values
+            },
+        )
+
+
+def _add_hygbox_selects(b: _SyrConnectSelectBuilder) -> None:
+    """Add the HygBox selects: water type and the stagnation, temperature and periodic flushing."""
+    if b.allowed("getWTY", _is_integer):
+        b.add_discrete("getWTY", _SYR_CONNECT_SELECT_WTY_MAP)
+    # Stagnation flushing: stagnation time (getSTP) and flushing volume (getSTV)
+    if b.allowed("getSTP"):
+        b.add_numeric_steps("getSTP", _SYR_CONNECT_SELECT_STP_OPTIONS)
+    if b.allowed("getSTV"):
+        b.add_numeric_steps("getSTV", _SYR_CONNECT_SELECT_FLUSHING_VOLUME_OPTIONS)
+    # Temperature flushing: start and stop temperature (getTTT, getF2W), whose range follows
+    # the water type, maximum duration (getF2T) and flushings per day (getMTF)
+    for temperature_key in ("getTTT", "getF2W"):
+        if b.allowed(temperature_key):
+            b.entities.append(
+                SyrConnectFlushingTemperatureSelect(
+                    b.coordinator, b.device_id, b.device_name, temperature_key
+                )
+            )
+    if b.allowed("getF2T"):
+        b.add_numeric_steps("getF2T", _SYR_CONNECT_SELECT_F2T_OPTIONS)
+    if b.allowed("getMTF"):
+        b.add_numeric("getMTF", 1, 50)
+    # Periodic flushing: interval (getF3P) and flushing volume (getF3V)
+    if b.allowed("getF3P"):
+        b.add_numeric_steps("getF3P", _SYR_CONNECT_SELECT_F3P_OPTIONS)
+    if b.allowed("getF3V"):
+        b.add_numeric_steps("getF3V", _SYR_CONNECT_SELECT_FLUSHING_VOLUME_OPTIONS)
+
+
+def _add_dosing_pump_selects(b: _SyrConnectSelectBuilder) -> None:
+    """Add the dosing pump selects: canister size, dosing liquid and operating mode."""
+    if b.allowed("getCAS", _is_integer):
+        b.add_discrete("getCAS", _SYR_CONNECT_SELECT_CAS_MAP)
+    if b.allowed("getDSL", _is_integer):
+        b.add_discrete("getDSL", _SYR_CONNECT_SELECT_DSL_MAP)
+    if b.allowed("getDMO", _is_integer):
+        b.add_discrete("getDMO", _SYR_CONNECT_SELECT_DMO_MAP)
 
 
 async def async_setup_entry(
@@ -917,6 +1047,78 @@ class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
                     "entity": self._entity_name,
                 },
             ) from err
+
+
+class SyrConnectFlushingTemperatureSelect(SyrConnectNumericSelect):
+    """Start or stop temperature of the temperature flushing (getTTT, getF2W, HygBox).
+
+    The range depends on the water type (getWTY): 10-25 °C for cold water, 50-60 °C for hot
+    water. Cold water is flushed when it gets warmer than the start temperature, until it
+    is cooled down to the stop temperature; hot water when it gets colder, until it is
+    heated up again. The start and the stop temperature keep a distance of 2 °C, so the
+    options of one key follow the current value of the other.
+    """
+
+    def __init__(
+        self,
+        coordinator: SyrConnectDataUpdateCoordinator,
+        device_id: str,
+        device_name: str,
+        sensor_key: str,
+    ) -> None:
+        """Initialize the select entity."""
+        low = min(
+            low
+            for low, _high in _SYR_CONNECT_SELECT_FLUSHING_TEMPERATURE_RANGES.values()
+        )
+        high = max(
+            high
+            for _low, high in _SYR_CONNECT_SELECT_FLUSHING_TEMPERATURE_RANGES.values()
+        )
+        super().__init__(coordinator, device_id, device_name, sensor_key, low, high)
+        self._unit = _option_unit(sensor_key)
+
+    def _range(self) -> tuple[int, int] | None:
+        """Return the lowest and highest temperature that can be selected now."""
+        water_type = _to_int(self._status.get("getWTY"))
+        temperature_range = (
+            _SYR_CONNECT_SELECT_FLUSHING_TEMPERATURE_RANGES.get(water_type)
+            if water_type is not None
+            else None
+        )
+        if temperature_range is None:
+            return None
+        low, high = temperature_range
+        is_start = self._sensor_key == "getTTT"
+        other = _to_int(self._status.get("getF2W" if is_start else "getTTT"))
+        if other is not None:
+            # Cold water: the start temperature is above the stop temperature; hot water:
+            # below it
+            if is_start == (water_type == 1):
+                low = max(low, other + _SYR_CONNECT_SELECT_FLUSHING_TEMPERATURE_GAP)
+            else:
+                high = min(high, other - _SYR_CONNECT_SELECT_FLUSHING_TEMPERATURE_GAP)
+        return (low, high) if low <= high else None
+
+    @property
+    @override
+    def options(self) -> list[str]:
+        """Return the selectable options."""
+        temperature_range = self._range()
+        if temperature_range is None:
+            return []
+        low, high = temperature_range
+        return [f"{value} {self._unit}" for value in range(low, high + 1)]
+
+    @property
+    @override
+    def current_option(self) -> str | None:
+        """Return the currently selected option."""
+        value = _to_int(self._status.get(self._sensor_key)) if self._device else None
+        if value is None:
+            return None
+        option = f"{value} {self._unit}"
+        return option if option in self.options else None
 
 
 class SyrConnectHardnessSelect(SyrConnectNumericSelect):
