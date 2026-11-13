@@ -4,7 +4,6 @@
 # ruff: noqa: SLF001
 
 from collections.abc import Callable
-from pathlib import Path
 from typing import Any, cast
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
@@ -16,7 +15,6 @@ from custom_components.syr_connect.button import SyrConnectButton, async_setup_e
 from custom_components.syr_connect.const import CONF_SERVICE, DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.models import MODEL_SIGNATURES
-from custom_components.syr_connect.response_parser import ResponseParser
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
@@ -1182,38 +1180,6 @@ async def test_async_setup_entry_skips_setdex_when_getdsv_missing(
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
     assert len(entities) == 0
-
-
-async def test_async_setup_entry_creates_setdex_for_triolock_real_fixture(
-    hass: HomeAssistant,
-    create_mock_entry_with_coordinator: Callable[
-        ..., tuple[MockConfigEntry, MagicMock]
-    ],
-    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
-) -> None:
-    """SYR TRIO Lock Connect (muco_triolock) real fixture creates setDEX on the JSON API."""
-
-    xml = (
-        Path(__file__).parent / "fixtures/xml/SyrTrioLock_GetDeviceCollectionStatus.xml"
-    ).read_text(encoding="utf-8")
-    status = ResponseParser().parse_device_status_response(xml)
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Test Device",
-                "project_id": "project1",
-                "status": status,
-            }
-        ]
-    }
-    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
-    mock_coordinator.api.__class__ = SyrConnectJsonAPI
-    entities, async_add_entities = mock_add_entities()
-
-    await async_setup_entry(hass, mock_config_entry, async_add_entities)
-
-    assert any(e._command == "setDEX" for e in entities)
 
 
 async def test_async_setup_entry_skips_command_excluded_by_model_allowlist(

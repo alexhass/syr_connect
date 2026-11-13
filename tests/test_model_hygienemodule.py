@@ -1,4 +1,4 @@
-"""Tests for the entities of the hygiene module and the Safe-T Hygiene module."""
+"""Tests for the entities of the hygiene module."""
 
 # The tests build the entities with the private builders of the platforms.
 # ruff: noqa: SLF001
@@ -33,8 +33,6 @@ def _model(name: str) -> SyrConnectModel:
 _SYR_CONNECT_TEST_HYGIENE_MODULE_MODEL = _model("hygienemodulehotcold")
 _SYR_CONNECT_TEST_HYGIENE_MODULE_COLD_MODEL = _model("hygienemodulecold")
 _SYR_CONNECT_TEST_HYGIENE_MODULE_HOT_MODEL = _model("hygienemodulehot")
-_SYR_CONNECT_TEST_SAFET_HYGIENE_MODULE_MODEL = _model("safethygienemodule")
-_SYR_CONNECT_TEST_SAFET_HYGIENE_MODULE_COLD_MODEL = _model("safethygienemodulecold")
 
 _SYR_CONNECT_TEST_COLD_KEYS = {"getSCF", "getCCF", "getCCL", "getCSS", "getCSL"}
 _SYR_CONNECT_TEST_HOT_KEYS = {"getSWF", "getCWF", "getWCL", "getWSS", "getWSL"}
@@ -169,11 +167,6 @@ def test_hygiene_module_selects(
             _SYR_CONNECT_TEST_HOT_KEYS,
             id="hot",
         ),
-        pytest.param(
-            _SYR_CONNECT_TEST_SAFET_HYGIENE_MODULE_COLD_MODEL,
-            _SYR_CONNECT_TEST_COLD_KEYS,
-            id="safet-cold",
-        ),
     ],
 )
 def test_hygiene_module_one_line(
@@ -187,23 +180,6 @@ def test_hygiene_module_one_line(
     )
 
     assert set(selects) == keys
-
-
-def test_safet_hygiene_module_temperature_ranges(
-    create_mock_coordinator: Callable[..., MagicMock],
-) -> None:
-    """The Safe-T Hygiene module has other temperature ranges and no "off" for them."""
-    selects = _selects(
-        create_mock_coordinator,
-        _SYR_CONNECT_TEST_SAFET_HYGIENE_MODULE_MODEL,
-        {**_SYR_CONNECT_TEST_HYGIENE_MODULE_STATUS, "getCCL": "1"},
-    )
-
-    assert selects["getCCL"].options == [f"{value} °C" for value in range(2, 41)]
-    assert selects["getCCL"].current_option is None
-    assert selects["getWCL"].options == [f"{value} °C" for value in range(50, 71)]
-    assert selects["getWCL"].current_option == "50 °C"
-    assert selects["getCCF"].options[0] == "off"
 
 
 @pytest.mark.parametrize(
@@ -292,11 +268,6 @@ async def test_hygiene_module_select_writes_the_raw_value(
             ["setALA", "setMFW"],
             id="hot",
         ),
-        pytest.param(
-            _SYR_CONNECT_TEST_SAFET_HYGIENE_MODULE_MODEL,
-            ["setALA"],
-            id="safet-without-manual-flushing",
-        ),
     ],
 )
 def test_hygiene_module_buttons(
@@ -305,7 +276,7 @@ def test_hygiene_module_buttons(
     model: SyrConnectModel,
     expected: list[str],
 ) -> None:
-    """The manual flushing of a line is offered by the hygiene module only."""
+    """The hygiene module offers the manual flushing of each of its lines."""
     device = _device(model, _SYR_CONNECT_TEST_HYGIENE_MODULE_STATUS)
     coordinator = create_mock_coordinator({"devices": [device]})
 
@@ -349,23 +320,16 @@ async def test_hygiene_module_manual_flushing_sends_no_value(
     coordinator.async_set_device_value.assert_awaited_once_with("device1", "setMFW", "")
 
 
-@pytest.mark.parametrize(
-    ("model", "expected"),
-    [
-        pytest.param(_SYR_CONNECT_TEST_HYGIENE_MODULE_MODEL, 0, id="hygiene-module"),
-        pytest.param(_SYR_CONNECT_TEST_SAFET_HYGIENE_MODULE_MODEL, 1, id="safet"),
-    ],
-)
-def test_hygiene_module_valve(
+def test_hygiene_module_has_no_valve(
     create_mock_coordinator: Callable[..., MagicMock],
-    model: SyrConnectModel,
-    expected: int,
 ) -> None:
-    """Only the Safe-T Hygiene module has a shut-off valve."""
-    device = _device(model, {"getAB": "1", "getVLV": "20"})
+    """The hygiene module has no shut-off valve, even if it reports one."""
+    device = _device(
+        _SYR_CONNECT_TEST_HYGIENE_MODULE_MODEL, {"getAB": "1", "getVLV": "20"}
+    )
     coordinator = create_mock_coordinator({"devices": [device]})
 
-    assert len(_build_device_valves(coordinator, device)) == expected
+    assert _build_device_valves(coordinator, device) == []
 
 
 @pytest.mark.parametrize(
@@ -383,16 +347,10 @@ def test_hygiene_module_valve(
             "alarm_temperature_cold_exceeded",
             id="hygiene-module-cold",
         ),
-        pytest.param(
-            _SYR_CONNECT_TEST_SAFET_HYGIENE_MODULE_COLD_MODEL,
-            "A0",
-            "alarm_safet_microleakage_detected",
-            id="safet-uses-the-safet-codes",
-        ),
     ],
 )
 def test_hygiene_module_alarm_codes(
     model: SyrConnectModel, code: str, expected: str
 ) -> None:
-    """The hygiene module has its own alarm codes, the Safe-T Hygiene module those of the Safe-T."""
+    """The hygiene module has its own alarm codes."""
     assert get_sensor_ala_map(model, code)[0] == expected

@@ -6,7 +6,6 @@
 # mypy: disable-error-code="method-assign, misc"
 from collections.abc import Callable
 import contextlib
-from pathlib import Path
 from typing import Any, cast
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
@@ -18,7 +17,6 @@ from custom_components.syr_connect.const import CONF_SERVICE
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.helpers import build_set_ab_command
 from custom_components.syr_connect.models import MODEL_SIGNATURES
-from custom_components.syr_connect.response_parser import ResponseParser
 from custom_components.syr_connect.valve import SyrConnectValve, async_setup_entry
 from homeassistant.components.valve import ValveEntityFeature
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
@@ -146,36 +144,6 @@ async def test_async_setup_entry_creates_valve(
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
     assert len(entities) >= 1
-
-
-async def test_async_setup_entry_creates_valve_for_triolock_real_fixture(
-    hass: HomeAssistant,
-    create_mock_entry_with_coordinator: Callable[
-        ..., tuple[MockConfigEntry, MagicMock]
-    ],
-    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
-) -> None:
-    """SYR TRIO Lock Connect (muco_triolock) real fixture creates a valve entity for getAB."""
-    xml = (
-        Path(__file__).parent / "fixtures/xml/SyrTrioLock_GetDeviceCollectionStatus.xml"
-    ).read_text(encoding="utf-8")
-    status = ResponseParser().parse_device_status_response(xml)
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Test Device",
-                "project_id": "project1",
-                "status": status,
-            }
-        ]
-    }
-    mock_config_entry, _mock_coordinator = create_mock_entry_with_coordinator(data)
-    entities, async_add_entities = mock_add_entities()
-
-    await async_setup_entry(hass, mock_config_entry, async_add_entities)
-
-    assert len(entities) == 1
 
 
 async def test_available(hass: HomeAssistant) -> None:

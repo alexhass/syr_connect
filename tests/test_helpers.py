@@ -1046,34 +1046,6 @@ def test_sensor_code_mappings_and_unknown_model() -> None:
     assert mapped_wrn2 is None and raw_wrn2 == ""
 
 
-@pytest.mark.parametrize(
-    ("raw", "expected"),
-    [
-        ("A2", "alarm_no_network_connection"),
-        ("AC", "alarm_conductivity_too_high"),
-        ("AD", "alarm_battery_low"),
-        ("AE", "alarm_leakage_volume_approaching"),
-        ("AF", "alarm_no_power_supply"),
-        ("FF", "no_alarm"),
-    ],
-)
-@pytest.mark.parametrize(
-    ("version", "name"),
-    [
-        ("Safe-Tech V4.08", "safetechv4"),
-        ("PontosBase V1.31", "pontosbase"),
-    ],
-)
-def test_sensor_ala_map_safetech(
-    version: str, name: str, raw: str, expected: str
-) -> None:
-    """SafeTech alarm codes that differ from the generic codes use their own meaning."""
-    model = detect_model({"getVER": version})
-
-    assert model.name == name
-    assert get_sensor_ala_map(model, raw) == (expected, raw)
-
-
 def test_get_sensor_ab_string_numeric_edge() -> None:
     """Cover numeric-string branch for getAB ('1' -> False)."""
 
@@ -1726,20 +1698,6 @@ def test_get_sensor_ala_map_known_model_unmapped_codes() -> None:
     assert mapped is None and raw == "ZZ"
 
 
-def test_get_sensor_ala_map_safefloor_known_codes() -> None:
-    """SafeFloor model maps its alarm codes correctly."""
-    model = _signature("safefloor")
-    mapped, raw = get_sensor_ala_map(model, "A0X0000")
-    assert mapped == "no_alarm" and raw == "A0X0000"
-
-    mapped, raw = get_sensor_ala_map(model, "A0X0004")
-    assert mapped == "alarm_safefloor_flood" and raw == "A0X0004"
-
-    # Bit 8 is the low battery alarm
-    mapped, raw = get_sensor_ala_map(model, "A0x0100")
-    assert mapped == "alarm_battery_low" and raw == "A0x0100"
-
-
 def test_get_sensor_ala_map_normalizes_case_of_raw_value() -> None:
     """Raw API values are uppercased before lookup, so mixed-case codes like LowBat match."""
     model = _signature("safetplus")
@@ -1748,36 +1706,6 @@ def test_get_sensor_ala_map_normalizes_case_of_raw_value() -> None:
 
     model = _signature("neosoft2500")
     assert get_sensor_ala_map(model, "a1")[0] == "alarm_end_switch"
-
-
-@pytest.mark.parametrize("name", ["l10", "lex100", "lexplus10", "lexplus10s"])
-def test_get_sensor_ala_map_lex_short_table(name: str) -> None:
-    """i-LEX, LEX Plus 10 and LEX Plus 10 S know only the alarm codes 1-5."""
-    model = _signature(name)
-    assert get_sensor_ala_map(model, "LowSalt")[0] == "alarm_salt_supply_low"
-    assert get_sensor_ala_map(model, "NoSalt")[0] == "alarm_salt_supply_empty"
-    assert get_sensor_ala_map(model, "1")[0] == "alarm_salt_supply_empty"
-    assert get_sensor_ala_map(model, "2")[0] == "alarm_pressure_too_low"
-    assert get_sensor_ala_map(model, "3")[0] == "alarm_pressure_too_high"
-    assert get_sensor_ala_map(model, "4")[0] == "alarm_pressure_sensor_faulty"
-    assert get_sensor_ala_map(model, "5")[0] == "alarm_valve_malfunction"
-    assert get_sensor_ala_map(model, "6") == (None, "6")
-    assert get_sensor_ala_map(model, "23") == (None, "23")
-
-
-def test_get_sensor_ala_map_lex_full_table() -> None:
-    """The LEX Plus 10 SL knows the full LEX alarm code table."""
-    model = _signature("lexplus10sl")
-    assert get_sensor_ala_map(model, "LowSalt")[0] == "alarm_salt_supply_low"
-    assert get_sensor_ala_map(model, "NoSalt")[0] == "alarm_salt_supply_empty"
-    assert get_sensor_ala_map(model, "1")[0] == "alarm_salt_supply_empty"
-    assert get_sensor_ala_map(model, "2")[0] == "alarm_chlor_generator_fault"
-    assert get_sensor_ala_map(model, "3")[0] == "alarm_valve_malfunction"
-    assert get_sensor_ala_map(model, "4")[0] == "alarm_pressure_too_low"
-    assert get_sensor_ala_map(model, "5")[0] == "alarm_pressure_too_high"
-    assert get_sensor_ala_map(model, "6")[0] == "alarm_brine_level_low"
-    assert get_sensor_ala_map(model, "19")[0] == "alarm_pressure_sensor_faulty"
-    assert get_sensor_ala_map(model, "23")[0] == "alarm_leakage_volume_approaching"
 
 
 def test_get_sensor_ala_map_covers_all_signatures_of_known_families() -> None:

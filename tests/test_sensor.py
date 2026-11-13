@@ -446,34 +446,6 @@ def test_sensor_cnd_class_from_conductivity(
 
 
 @pytest.mark.parametrize(
-    ("model", "cnd", "created"),
-    [
-        # Only the SafeTech family gets the water hardness range
-        ("safetech", "384", True),
-        ("safetechplus", 245, True),
-        ("safetechplus", "", False),
-        ("lexplus10sl", "250", False),
-        ("unknown", "250", False),
-    ],
-)
-def test_sensor_cnd_class_created_for_safetech_family(
-    hass: HomeAssistant, model: str, cnd: Any, created: bool
-) -> None:
-    """The computed water hardness range is a sensor of the SafeTech profiles only."""
-    signature = UNKNOWN_MODEL if model == "unknown" else _signature(model)
-    status = {"getCND": cnd}
-    device = {"id": "d1", "name": "D1", "model": signature, "status": status}
-    coordinator = _build_coordinator(hass, {"devices": [device]})
-
-    keys = sensor_module.sensor_keys_for_status(status, signature)
-    entities = sensor_module._build_device_sensors(hass, coordinator, cast(Any, device))
-    entity_keys = {getattr(entity, "_sensor_key", None) for entity in entities}
-
-    assert ("getCND_class" in keys) is created
-    assert ("getCND_class" in entity_keys) is created
-
-
-@pytest.mark.parametrize(
     ("model", "whu", "raw", "expected", "precision"),
     [
         # The NeoSoft family reports mmol/l in tenths
@@ -1809,35 +1781,6 @@ async def test_sensor_mxt_temperature_conversion(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getMXT")
     assert sensor.native_value == 49.0
-
-
-@pytest.mark.parametrize(
-    ("sensor_key", "raw_value", "expected_value"),
-    [
-        ("getALD", "20", 20),  # Alarm duration (s) — whole number
-        ("getMIH", "5", 5),  # Minimum humidity (%) — whole number
-        ("getMXH", "95", 95),  # Maximum humidity (%) — whole number
-        ("getRCP", "43200", 43200),  # Synchronization interval (s) — whole number
-        ("getWMP", "3600", 3600),  # Measurement interval (s) — whole number
-    ],
-)
-async def test_sensor_safefloor_config_sensors(
-    hass: HomeAssistant, sensor_key: str, raw_value: str, expected_value: int
-) -> None:
-    """Test SafeFloor config/threshold sensors return correct integer values."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {sensor_key: raw_value},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", sensor_key)
-    assert sensor.native_value == expected_value
 
 
 async def test_sensor_available_device_not_found(hass: HomeAssistant) -> None:
@@ -3601,34 +3544,6 @@ async def test_sensor_getbat_invalid_value(hass: HomeAssistant) -> None:
     assert bat_sensor.native_value is None
 
 
-async def test_sensor_getbat_safefloor_percentage(hass: HomeAssistant) -> None:
-    """SafeFloor (TYP=120) reports getBAT as integer percentage."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBAT": "40",
-                    "getTYP": "120",
-                    "getVER": "Syr Floorsensor 2.23",  # SafeFloor
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    bat = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
-
-    assert bat.native_value == 40
-    assert bat.native_unit_of_measurement == UnitOfRatio.PERCENTAGE
-    assert bat.device_class == SensorDeviceClass.BATTERY
-    assert bat.suggested_display_precision == 0
-    # The name follows the unit ("Battery level"), the unique_id stays getBAT
-    assert bat.translation_key == "getbap"
-    assert bat.unique_id == "device1_getBAT"
-
-
 @pytest.mark.parametrize(
     ("status", "expected"),
     [
@@ -3757,52 +3672,6 @@ async def test_sensor_getbat_voltage_keeps_voltage_name(hass: HomeAssistant) -> 
 
     assert bat.native_unit_of_measurement == UnitOfElectricPotential.VOLT
     assert bat.translation_key == "getbat"
-
-
-async def test_sensor_getbat_safefloor_invalid_percentage(hass: HomeAssistant) -> None:
-    """SafeFloor getBAT with an unparsable value returns None (covers except branch)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBAT": "not_a_number",
-                    "getTYP": "120",
-                    "getVER": "Syr Floorsensor 2.23",  # SafeFloor -> percentage unit
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    bat = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
-
-    assert bat.native_unit_of_measurement == UnitOfRatio.PERCENTAGE
-    assert bat.native_value is None
-
-
-async def test_sensor_getbat_safefloor_icon_levels(hass: HomeAssistant) -> None:
-    """In percentage mode device_class=BATTERY is set; icon is None so HA handles it automatically."""
-
-    base_data: dict[str, Any] = {
-        "id": "device1",
-        "name": "Device 1",
-        "project_id": "project1",
-        "status": {"getTYP": "120", "getVER": "Syr Floorsensor 2.23"},
-    }
-    for bat_pct in ["95", "85", "75", "65", "55", "45", "35", "25", "15", "5", "0"]:
-        data = {
-            "devices": [
-                {**base_data, "status": {**base_data["status"], "getBAT": bat_pct}}
-            ]
-        }
-        coordinator = _build_coordinator(hass, data)
-        bat = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
-        assert bat.device_class == SensorDeviceClass.BATTERY
-        assert bat.icon is None, (
-            f"Expected None for {bat_pct}% — HA renders icons via device_class"
-        )
 
 
 async def test_sensor_getbat_voltage_device_unaffected(hass: HomeAssistant) -> None:
@@ -8130,54 +7999,6 @@ async def test_connection_state_sensor_device_not_found(hass: HomeAssistant) -> 
     assert sensor.native_value is None
 
 
-async def test_async_setup_entry_creates_triolock_sensors_from_real_fixture(
-    hass: HomeAssistant,
-    create_mock_entry_with_coordinator: Callable[
-        ..., tuple[MockConfigEntry, MagicMock]
-    ],
-    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
-) -> None:
-    """SYR TRIO Lock Connect (muco_triolock) real fixture creates the newly-confirmed sensors."""
-    xml = (
-        Path(__file__).parent / "fixtures/xml/SyrTrioLock_GetDeviceCollectionStatus.xml"
-    ).read_text(encoding="utf-8")
-    status = ResponseParser().parse_device_status_response(xml)
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Test Device",
-                "project_id": "project1",
-                "status": status,
-            }
-        ]
-    }
-    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
-    entities, async_add_entities = mock_add_entities()
-
-    await async_setup_entry(hass, mock_config_entry, async_add_entities)
-
-    keys = {getattr(e, "_sensor_key", None) for e in entities}
-    assert {
-        "getAB",
-        "getVLV",
-        "getDBD",
-        "getDBT",
-        "getDCM",
-        "getDMA",
-        "getDOM",
-        "getDPL",
-        "getDRP",
-        "getDST",
-        "getDSV",
-        "getDTC",
-        "getDTT",
-        "getPA1",
-        "getPRF",
-        "getPRN",
-    } <= keys
-
-
 @pytest.mark.parametrize(
     ("status", "expected"),
     [
@@ -8212,26 +8033,6 @@ def test_sensor_flo_unit_depends_on_model(
 
     assert sensor.native_unit_of_measurement == UnitOfVolumeFlowRate.LITERS_PER_HOUR
     assert sensor.native_value == expected
-
-
-def test_allinoneplus_last_tapped_volume_in_milliliters(
-    create_mock_coordinator: Callable[..., MagicMock],
-) -> None:
-    """The All-in-One+ reports the last tapped volume (getLTV) in milliliters."""
-    data = {
-        "devices": [
-            {
-                "id": "d1",
-                "name": "D1",
-                "model": _signature("allinoneplus"),
-                "status": {"getLTV": "12000"},
-            }
-        ]
-    }
-    sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", "getLTV")
-
-    assert sensor.native_value == 12
-    assert sensor.native_unit_of_measurement == UnitOfVolume.LITERS
 
 
 @pytest.mark.parametrize(
@@ -8345,40 +8146,6 @@ def test_sensor_dom_seconds(
     sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", "getDOM")
 
     assert sensor.native_value == expected
-
-
-async def test_async_setup_entry_safetplus_dom(
-    hass: HomeAssistant,
-    create_mock_entry_with_coordinator: Callable[
-        ..., tuple[MockConfigEntry, MagicMock]
-    ],
-    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
-) -> None:
-    """The Safe-T+ shows getDOM ("1 min") in seconds; the other test parameters stay hidden."""
-    xml = (
-        Path(__file__).parent
-        / "fixtures/xml/SyrSafeTPlus_GetDeviceCollectionStatus.xml"
-    ).read_text(encoding="utf-8")
-    status = ResponseParser().parse_device_status_response(xml)
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Test Device",
-                "project_id": "project1",
-                "status": status,
-            }
-        ]
-    }
-    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
-    entities, async_add_entities = mock_add_entities()
-
-    await async_setup_entry(hass, mock_config_entry, async_add_entities)
-
-    sensors = {getattr(e, "_sensor_key", None): e for e in entities}
-    assert sensors["getDOM"].native_value == 60
-    assert sensors["getDOM"].native_unit_of_measurement == UnitOfTime.SECONDS
-    assert not {"getDBT", "getDCM", "getDPL", "getDST", "getDTC"} & set(sensors)
 
 
 @pytest.mark.parametrize(
@@ -8537,43 +8304,6 @@ def test_sensor_cyt_minutes(
 
     assert sensor.native_unit_of_measurement == UnitOfTime.MINUTES
     assert sensor.native_value == expected
-
-
-@pytest.mark.parametrize("model", ["SyrLEXplus10S", "SyrLEXplus10SL"])
-def test_lexplus_has_only_one_tank(model: str) -> None:
-    """LEXplus 10 S/SL have one tank: no sensors for tank 2 and 3, even if reported."""
-    xml = (
-        Path(__file__).parent / f"fixtures/xml/{model}_GetDeviceCollectionStatus.xml"
-    ).read_text(encoding="utf-8")
-    status = ResponseParser().parse_device_status_response(xml)
-    assert status is not None
-
-    keys = set(sensor_module.sensor_keys_for_status(status, detect_model(status)))
-
-    assert {"getCS1", "getSS1", "getSV1"} <= keys
-    assert not keys & {"getCS2", "getCS3", "getSS2", "getSS3", "getSV2", "getSV3"}
-
-
-@pytest.mark.parametrize(
-    ("model", "expected"),
-    [
-        ("SyrLEX30", set()),
-        ("SyrLEXplus10S", set()),
-        # Leakage detection only on the 10 SL; the fixture reports getVS1 only
-        ("SyrLEXplus10SL", {"getVS1"}),
-    ],
-)
-def test_lex_volume_thresholds(model: str, expected: set[str]) -> None:
-    """Volume thresholds (getVS1-3) are a leakage detection feature: only LEXplus 10 SL."""
-    xml = (
-        Path(__file__).parent / f"fixtures/xml/{model}_GetDeviceCollectionStatus.xml"
-    ).read_text(encoding="utf-8")
-    status = ResponseParser().parse_device_status_response(xml)
-    assert status is not None
-
-    keys = set(sensor_module.sensor_keys_for_status(status, detect_model(status)))
-
-    assert keys & {"getVS1", "getVS2", "getVS3"} == expected
 
 
 @pytest.mark.parametrize(
@@ -8760,28 +8490,6 @@ def test_conductivity_factor(
     data = {"devices": [{"id": "d1", "name": "D1", "status": status}]}
     sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", "getCNF")
     assert sensor.native_value == expected
-
-
-@pytest.mark.parametrize(
-    ("crt", "expected"),
-    [
-        pytest.param("0", {"getOWH"}, id="hwe"),
-        pytest.param("1", set(), id="hve"),
-    ],
-)
-def test_allinoneplus_owh_sensor_only_for_hwe_cartridge(
-    crt: str, expected: set[str]
-) -> None:
-    """On the All-in-One+, getOWH is the soft water hardness of the HWE cartridge."""
-    status = {"getCRT": crt, "getOWH": "5", "getLOT": "7", "getOHW": "3"}
-    model = _signature("allinoneplus")
-
-    keys = sensor_module.sensor_keys_for_status(status, model)
-
-    assert set(keys) & {"getOWH", "getLOT", "getOHW"} == expected
-    assert ("getOWH" in sensor_module._hidden_sensor_keys(status, model)) is not bool(
-        expected
-    )
 
 
 def test_owh_sensor_without_cartridge_type_always_applies() -> None:

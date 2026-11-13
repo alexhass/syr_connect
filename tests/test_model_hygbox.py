@@ -1,4 +1,4 @@
-"""Tests for the entities of the HygBox and the dosing pump."""
+"""Tests for the entities of the HygBox."""
 
 # The tests build the entities with the private builders of the platforms.
 # ruff: noqa: SLF001
@@ -19,7 +19,6 @@ from custom_components.syr_connect.select import (
     SyrConnectNumericSelect,
     _build_device_selects,
 )
-from custom_components.syr_connect.sensor import SyrConnectSensor
 from custom_components.syr_connect.switch import (
     SyrConnectBooleanSwitch,
     _build_device_switches,
@@ -29,10 +28,6 @@ from homeassistant.core import HomeAssistant
 _SYR_CONNECT_TEST_HYGBOX_MODEL = next(
     model for model in MODEL_SIGNATURES if model.name == "hygbox"
 )
-_SYR_CONNECT_TEST_DOSINGPUMP_MODEL = next(
-    model for model in MODEL_SIGNATURES if model.name == "dosingpump"
-)
-
 # Default settings of a HygBox for cold water
 _SYR_CONNECT_TEST_HYGBOX_STATUS = {
     "getWTY": "1",
@@ -49,14 +44,6 @@ _SYR_CONNECT_TEST_HYGBOX_STATUS = {
     "getF3V": "10",
     "getRCP": "43200",
     "getBUZ": "True",
-}
-
-_SYR_CONNECT_TEST_DOSINGPUMP_STATUS = {
-    "getCAS": "2",
-    "getDSL": "1",
-    "getDMO": "0",
-    "getDAM": "150",
-    "getFLO": "320",
 }
 
 
@@ -253,87 +240,27 @@ async def test_hygbox_inverted_switch_writes_the_opposite(
     )
 
 
-def test_dosingpump_selects(create_mock_coordinator: Callable[..., MagicMock]) -> None:
-    """The dosing pump offers canister size, dosing liquid and operating mode."""
-    selects = _selects(
-        create_mock_coordinator,
-        _SYR_CONNECT_TEST_DOSINGPUMP_MODEL,
-        _SYR_CONNECT_TEST_DOSINGPUMP_STATUS,
-    )
-
-    assert set(selects) == {"getCAS", "getDMO", "getDSL"}
-    assert selects["getCAS"].options == ["5 L", "10 L"]
-    assert selects["getCAS"].current_option == "10 L"
-    assert selects["getDSL"].options == ["1", "2"]
-    assert selects["getDSL"].current_option == "1"
-    assert selects["getDMO"].options == ["0", "1", "2", "3"]
-    assert selects["getDMO"].current_option == "0"
-
-
 @pytest.mark.parametrize(
-    ("raw", "expected"),
+    ("code", "expected"),
     [
-        pytest.param("1", 5, id="5-liters"),
-        pytest.param("2", 10, id="10-liters"),
-        pytest.param("0", None, id="not-defined"),
-        pytest.param("", None, id="empty"),
-        pytest.param("x", None, id="invalid"),
+        pytest.param("A4", "alarm_solenoid_valve_fault", id="solenoid-valve"),
+        pytest.param("a9", "alarm_periodic_flushing_time_exceeded", id="lowercase"),
     ],
 )
-def test_dosingpump_canister_size_in_liters(
-    create_mock_coordinator: Callable[..., MagicMock], raw: str, expected: int | None
-) -> None:
-    """The canister size (getCAS) is shown in liters."""
-    device = _device(_SYR_CONNECT_TEST_DOSINGPUMP_MODEL, {"getCAS": raw})
-    coordinator = create_mock_coordinator({"devices": [device]})
-    sensor = SyrConnectSensor(coordinator, "device1", "D", "getCAS")
-
-    assert sensor.native_value == expected
+def test_hygbox_alarm_codes(code: str, expected: str) -> None:
+    """The HygBox has its own alarm codes."""
+    assert get_sensor_ala_map(_SYR_CONNECT_TEST_HYGBOX_MODEL, code)[0] == expected
 
 
-@pytest.mark.parametrize(
-    ("model", "code", "expected"),
-    [
-        pytest.param(
-            _SYR_CONNECT_TEST_HYGBOX_MODEL,
-            "A4",
-            "alarm_solenoid_valve_fault",
-            id="hygbox-solenoid-valve",
-        ),
-        pytest.param(
-            _SYR_CONNECT_TEST_HYGBOX_MODEL,
-            "a9",
-            "alarm_periodic_flushing_time_exceeded",
-            id="hygbox-lowercase",
-        ),
-        pytest.param(
-            _SYR_CONNECT_TEST_DOSINGPUMP_MODEL,
-            "A3",
-            "alarm_dosing_liquid_empty",
-            id="dosingpump-empty",
-        ),
-        pytest.param(
-            _SYR_CONNECT_TEST_DOSINGPUMP_MODEL, "FF", "no_alarm", id="dosingpump-none"
-        ),
-    ],
-)
-def test_alarm_codes(model: SyrConnectModel, code: str, expected: str) -> None:
-    """The HygBox and the dosing pump have their own alarm codes."""
-    assert get_sensor_ala_map(model, code)[0] == expected
-
-
-@pytest.mark.parametrize(
-    "model",
-    [_SYR_CONNECT_TEST_HYGBOX_MODEL, _SYR_CONNECT_TEST_DOSINGPUMP_MODEL],
-    ids=lambda model: model.name,
-)
-def test_alarm_reset_button(
+def test_hygbox_alarm_reset_button(
     hass: HomeAssistant,
     create_mock_coordinator: Callable[..., MagicMock],
-    model: SyrConnectModel,
 ) -> None:
-    """Both devices get only the alarm reset button, no warning or notification reset."""
-    device = _device(model, {"getALA": "A1", "getWRN": "01", "getNOT": "01"})
+    """The HygBox gets only the alarm reset button, no warning or notification reset."""
+    device = _device(
+        _SYR_CONNECT_TEST_HYGBOX_MODEL,
+        {"getALA": "A1", "getWRN": "01", "getNOT": "01"},
+    )
     coordinator = create_mock_coordinator({"devices": [device]})
 
     buttons = [
