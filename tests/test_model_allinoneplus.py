@@ -4,8 +4,10 @@
 # ruff: noqa: SLF001
 
 from collections.abc import Callable
+import json
+from pathlib import Path
 from types import MappingProxyType
-from typing import Any
+from typing import Any, cast
 from unittest.mock import MagicMock, Mock
 
 import pytest
@@ -17,14 +19,24 @@ from custom_components.syr_connect import (
     switch as switch_module,
 )
 from custom_components.syr_connect.const import DOMAIN
-from custom_components.syr_connect.models import MODEL_SIGNATURES, SyrConnectModel
+from custom_components.syr_connect.models import (
+    MODEL_SIGNATURES,
+    SyrConnectModel,
+    detect_model,
+)
+from custom_components.syr_connect.response_parser import ResponseParser
 from custom_components.syr_connect.select import (
     SyrConnectHardnessSelect,
     SyrConnectRangedHardnessSelect,
 )
 from custom_components.syr_connect.sensor import SyrConnectSensor
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, UnitOfVolume
+from homeassistant.const import (
+    CONF_PASSWORD,
+    CONF_USERNAME,
+    UnitOfTemperature,
+    UnitOfVolume,
+)
 from homeassistant.core import HomeAssistant
 
 _SYR_CONNECT_TEST_ALLINONEPLUS_MODEL = next(
@@ -236,24 +248,26 @@ async def test_allinoneplus_initial_filling_selects(
     assert fmt.current_option == "60 min"
 
 
-def test_allinoneplus_last_tapped_volume_in_milliliters(
+def test_allinoneplus_last_filling_volume_in_milliliters(
     create_mock_coordinator: Callable[..., MagicMock],
 ) -> None:
-    """The All-in-One+ reports the last tapped volume (getLTV) in milliliters."""
+    """The All-in-One+ reports the last filling volume (getLFV) in milliliters."""
     data = {
         "devices": [
             {
                 "id": "d1",
                 "name": "D1",
                 "model": _signature("allinoneplus"),
-                "status": {"getLTV": "12000"},
+                "status": {"getLFV": "6600"},
             }
         ]
     }
-    sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", "getLTV")
+    sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", "getLFV")
 
-    assert sensor.native_value == 12
+    assert sensor.native_value == 6.6
     assert sensor.native_unit_of_measurement == UnitOfVolume.LITERS
+    # Shown as "6.60 L"
+    assert sensor.suggested_display_precision == 2
 
 
 @pytest.mark.parametrize(
@@ -276,6 +290,46 @@ def test_allinoneplus_owh_sensor_only_for_hwe_cartridge(
     assert ("getOWH" in sensor_module._hidden_sensor_keys(status, model)) is not bool(
         expected
     )
+
+
+def _fixture_status(fixture: str) -> dict[str, Any]:
+    """Return the status of the All-in-One+ from a local JSON or cloud XML fixture."""
+    path = Path(__file__).parent / "fixtures" / fixture
+    if path.suffix == ".json":
+        return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
+    status = ResponseParser().parse_device_status_response(
+        path.read_text(encoding="utf-8")
+    )
+    assert status is not None
+    return status
+
+
+@pytest.mark.parametrize(
+    ("fixture", "temperature"),
+    [
+        pytest.param("json/SyrAllInOnePlus_get_all.json", 23.5, id="json"),
+        pytest.param(
+            "xml/SyrAllInOnePlus_GetDeviceCollectionStatus.xml", 23.6, id="xml"
+        ),
+    ],
+)
+def test_allinoneplus_fixture_mac_and_temperature(
+    create_mock_coordinator: Callable[..., MagicMock],
+    fixture: str,
+    temperature: float,
+) -> None:
+    """The All-in-One+ reports one MAC address (getMAC) and the water temperature (getCEL)."""
+    status = _fixture_status(fixture)
+    model = detect_model(status)
+    assert model.name == "allinoneplus"
+
+    keys = set(sensor_module.sensor_keys_for_status(status, model))
+
+    assert {"getCEL", "getMAC"} <= keys
+    data = {"devices": [{"id": "d1", "name": "D1", "model": model, "status": status}]}
+    cel = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", "getCEL")
+    assert cel.native_value == temperature
+    assert cel.native_unit_of_measurement == UnitOfTemperature.CELSIUS
 
 
 async def test_async_setup_entry_creates_allinoneplus_manual_filling(

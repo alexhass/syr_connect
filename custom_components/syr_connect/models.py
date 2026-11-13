@@ -803,7 +803,6 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         dkv=36,
         manufacturer="SYR",
         name="allinoneplus",
-        # TODO: Untested model.
         ver_prefix="All-in-One+",
     ),
     SyrConnectModel(

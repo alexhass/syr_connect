@@ -2,23 +2,11 @@
 
 Model type: Filling the Heating System
 
-Provisional: no fixture of this device exists yet. The allowlists are taken from
-the muco_filling profile (Conel Clear Pro Fill, AC 3228 Connect), the closest
-filling controller, and must be checked against a capture of a real device.
+The allowlists hold the keys that a real device (firmware All-in-One+ V4.05) reports
+in the fixtures of the local JSON API and the cloud XML API.
 
-Differences to muco_filling:
-- getCFV, getLFV, getTRV: reported in milliliters instead of liters (see issue 10
-  in docs/known_issues_json_api.md).
-- getLTV: included, also in milliliters.
-- getOWH instead of getOHW: the soft water hardness of the HWE cartridge.
-- getFFM, getLOT, getSRO: not included, the device has no filter type, no
-  conductivity limit and no display rotation.
-- getRMT: other steps for the maximum filling duration (SELECT_RMT_OPTIONS).
-- getCWL: the warning threshold of the remaining capacity, only on this device.
-- getMFL: the manual filling, only on this device.
-- getFMT, getFVT, getIFL: the initial filling, only on this device.
-- getFCS: the custom cartridge size, selected with getCRS 0, only on this device.
-- getIWH, getOWH: selects whose range follows the unit (HARDNESS_RANGES).
+The device reports the filling volumes in milliliters, see issue 10 in
+docs/known_issues_json_api.md.
 
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists of the platforms which have to
@@ -33,36 +21,25 @@ SENSOR_SUPPORTED_KEYS = {
     # --- Valve & Flow ---
     "getFLO",
     "getVLV",
-    # --- Water Consumption & Volume ---
-    "getLTV",
-    # --- Alarm / Notification / Warning ---
+    # --- Alarm ---
     "getALA",
     "getALM",
-    "getALN",
-    "getALW",
-    "getNOT",
-    "getWRN",
     # --- Pressure ---
     "getBAR",
-    "getBAR2",
     # --- Voltage / Battery ---
-    "getBAP",
     "getBAT",
     "getNET",
     # --- Alarm Duration ---
     "getALD",
     # --- Water Quality ---
-    "getCND",
+    "getCEL",
     "getCNF",
     "getIWH",
     "getOWH",
     "getWHU",
     # --- Device Info & Diagnostics ---
-    "getEGW",
-    "getEIP",
     "getLNG",
-    "getMAC1",
-    "getMAC2",
+    "getMAC",
     "getSRN",
     "getTMZ",
     "getVER",
@@ -130,8 +107,6 @@ BINARY_SENSOR_SUPPORTED_KEYS = {
 
 BUTTON_SUPPORTED_KEYS = {
     "setALA",
-    "setNOT",
-    "setWRN",
 }
 
 VALVE_SUPPORTED_KEYS: set[str] = set()
@@ -180,7 +155,6 @@ PROFILE = SyrConnectDeviceProfile(
     sensor_divisors={
         "getCFV": 1000,
         "getLFV": 1000,
-        "getLTV": 1000,
         "getTRV": 1000,
     },
     switch=SWITCH_SUPPORTED_KEYS,
