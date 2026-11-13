@@ -50,7 +50,7 @@ async def test_json_client_parses_fixture(
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://127.0.0.1:5333/local/",
+        base_url="http://127.0.0.1:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -70,10 +70,10 @@ def test_init_with_base_url(integration_version: str) -> None:
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://192.168.1.100:5333/api/v1/",
+        base_url="http://192.168.1.100:5333/trio/",
         integration_version=integration_version,
     )
-    assert client._base_url == "http://192.168.1.100:5333/api/v1/"
+    assert client._base_url == "http://192.168.1.100:5333/trio/"
     assert client._session is sess
 
 
@@ -83,12 +83,12 @@ def test_init_without_base_url(integration_version: str) -> None:
     client = SyrConnectJsonAPI(
         sess,
         host="192.168.1.100",
-        base_path="/api/v1/",
+        base_path="/trio",
         integration_version=integration_version,
     )
     assert client._base_url is None
     assert client._host == "192.168.1.100"
-    assert client._base_path == "/api/v1/"
+    assert client._base_path == "/trio"
 
 
 def test_build_base_url_with_explicit_base_url(integration_version: str) -> None:
@@ -96,21 +96,21 @@ def test_build_base_url_with_explicit_base_url(integration_version: str) -> None
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
     result = client._build_base_url()
-    assert result == "http://test:5333/api/"
+    assert result == "http://test:5333/trio/"
 
 
 @pytest.mark.parametrize(
     ("host", "expected"),
     [
-        ("192.168.1.100", "http://192.168.1.100:5333/api/v1/"),
-        ("syr.local", "http://syr.local:5333/api/v1/"),
-        ("fe80::1", "http://[fe80::1]:5333/api/v1/"),
-        ("2001:db8::5", "http://[2001:db8::5]:5333/api/v1/"),
-        ("fd00::abcd", "http://[fd00::abcd]:5333/api/v1/"),
+        ("192.168.1.100", "http://192.168.1.100:5333/trio"),
+        ("syr.local", "http://syr.local:5333/trio"),
+        ("fe80::1", "http://[fe80::1]:5333/trio"),
+        ("2001:db8::5", "http://[2001:db8::5]:5333/trio"),
+        ("fd00::abcd", "http://[fd00::abcd]:5333/trio"),
     ],
 )
 def test_build_base_url_brackets_ipv6_host(
@@ -120,7 +120,7 @@ def test_build_base_url_brackets_ipv6_host(
     client = SyrConnectJsonAPI(
         MagicMock(),
         host=host,
-        base_path="/api/v1/",
+        base_path="/trio",
         integration_version=integration_version,
     )
     assert client._build_base_url() == expected
@@ -131,7 +131,7 @@ def test_construct_url_with_ipv6_host_is_parseable(integration_version: str) -> 
     client = SyrConnectJsonAPI(
         MagicMock(),
         host="fe80::1",
-        base_path="/api/v1",
+        base_path="/trio",
         integration_version=integration_version,
     )
 
@@ -139,7 +139,7 @@ def test_construct_url_with_ipv6_host_is_parseable(integration_version: str) -> 
 
     assert url.host == "fe80::1"
     assert url.port == 5333
-    assert url.path == "/api/v1/get/all"
+    assert url.path == "/trio/get/all"
 
 
 def test_build_base_url_without_ip_or_base_path(integration_version: str) -> None:
@@ -161,7 +161,7 @@ def test_build_base_url_without_ip_or_base_path(integration_version: str) -> Non
     # Missing host
     client = SyrConnectJsonAPI(
         sess,
-        base_path="/api/v1/",
+        base_path="/trio",
         integration_version=integration_version,
     )
     assert client._build_base_url() is None
@@ -173,11 +173,11 @@ def test_build_base_url_constructs_url(integration_version: str) -> None:
     client = SyrConnectJsonAPI(
         sess,
         host="192.168.1.50",
-        base_path="/api/v1/",
+        base_path="/trio",
         integration_version=integration_version,
     )
     result = client._build_base_url()
-    assert result == "http://192.168.1.50:5333/api/v1/"
+    assert result == "http://192.168.1.50:5333/trio"
 
 
 def test_is_session_valid_no_last_login(integration_version: str) -> None:
@@ -241,7 +241,7 @@ async def test_login_success(integration_version: str) -> None:
     client = SyrConnectJsonAPI(
         sess,
         host="192.168.1.100",
-        base_path="/api/v1/",
+        base_path="/trio",
         integration_version=integration_version,
     )
 
@@ -276,7 +276,7 @@ async def test_login_http_error(integration_version: str) -> None:
     client = SyrConnectJsonAPI(
         sess,
         host="192.168.1.100",
-        base_path="/api/v1/",
+        base_path="/trio",
         integration_version=integration_version,
     )
 
@@ -299,7 +299,7 @@ async def test_login_invalid_response_status(integration_version: str) -> None:
     client = SyrConnectJsonAPI(
         sess,
         host="192.168.1.100",
-        base_path="/api/v1/",
+        base_path="/trio",
         integration_version=integration_version,
     )
 
@@ -324,7 +324,7 @@ async def test_login_missing_status_key(integration_version: str) -> None:
     client = SyrConnectJsonAPI(
         sess,
         host="192.168.1.100",
-        base_path="/api/v1/",
+        base_path="/trio",
         integration_version=integration_version,
     )
 
@@ -349,7 +349,7 @@ async def test_login_mima_status(integration_version: str) -> None:
     client = SyrConnectJsonAPI(
         sess,
         host="192.168.1.100",
-        base_path="/api/v1/",
+        base_path="/trio",
         integration_version=integration_version,
     )
 
@@ -375,7 +375,7 @@ async def test_login_nsc_status(integration_version: str) -> None:
     client = SyrConnectJsonAPI(
         sess,
         host="192.168.1.100",
-        base_path="/api/v1/",
+        base_path="/trio",
         integration_version=integration_version,
     )
 
@@ -392,7 +392,7 @@ async def test_login_404_treated_as_not_required(integration_version: str) -> No
     client = SyrConnectJsonAPI(
         sess,
         host="192.168.1.100",
-        base_path="/api/v1/",
+        base_path="/trio",
         integration_version=integration_version,
     )
 
@@ -421,7 +421,7 @@ async def test_login_factory_treated_as_required(integration_version: str) -> No
     client = SyrConnectJsonAPI(
         sess,
         host="192.168.1.100",
-        base_path="/safe-tec/",
+        base_path="/safe-tec",
         integration_version=integration_version,
     )
 
@@ -450,7 +450,7 @@ async def test_login_factory_without_set_prefix(integration_version: str) -> Non
     client = SyrConnectJsonAPI(
         sess,
         host="192.168.1.100",
-        base_path="/floorsensor/",
+        base_path="/trio",
         integration_version=integration_version,
     )
 
@@ -470,7 +470,7 @@ async def test_get_device_status_does_not_call_login_if_not_required(
     client = SyrConnectJsonAPI(
         sess,
         host="192.168.1.100",
-        base_path="/api/v1/",
+        base_path="/trio",
         integration_version=integration_version,
     )
 
@@ -511,7 +511,7 @@ async def test_request_json_data_non_dict_raises(integration_version: str) -> No
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -541,7 +541,7 @@ async def test_request_json_data_http_error(integration_version: str) -> None:
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -562,7 +562,7 @@ async def test_request_json_data_success(integration_version: str) -> None:
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -577,7 +577,7 @@ async def test_get_device_status_calls_login(integration_version: str) -> None:
     client = SyrConnectJsonAPI(
         sess,
         host="192.168.1.100",
-        base_path="/api/v1/",
+        base_path="/trio",
         integration_version=integration_version,
     )
 
@@ -600,7 +600,7 @@ async def test_get_device_status_exception_returns_none(
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -639,7 +639,7 @@ async def test_set_device_status_strips_set_prefix(integration_version: str) -> 
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -665,7 +665,7 @@ async def test_set_device_status_success(integration_version: str) -> None:
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -691,7 +691,7 @@ async def test_set_device_status_http_error(integration_version: str) -> None:
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -706,7 +706,7 @@ async def test_get_device_status_skips_login_with_base_url(
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -739,7 +739,7 @@ async def test_request_json_data_logs_nsc_error(
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -767,7 +767,7 @@ async def test_request_json_data_logs_mima_error(
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -792,7 +792,7 @@ async def test_set_device_status_raises_on_nsc_error(integration_version: str) -
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -816,7 +816,7 @@ async def test_set_device_status_raises_on_mima_error(integration_version: str) 
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -842,7 +842,7 @@ async def test_set_device_status_url_encodes_special_characters(
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -879,7 +879,7 @@ async def test_set_device_status_missing_response_key(
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -907,7 +907,7 @@ async def test_set_device_status_unknown_status_code(
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -924,7 +924,7 @@ def test_strip_set_prefix_and_cases(integration_version: str) -> None:
     sess = MagicMock()
     api = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -939,7 +939,7 @@ def test_normalize_cmd_for_url(integration_version: str) -> None:
     sess = MagicMock()
     api = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -957,7 +957,7 @@ def test_response_key_for(integration_version: str) -> None:
     sess = MagicMock()
     api = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -970,7 +970,7 @@ def test_build_set_url_encodes_and_cases(integration_version: str) -> None:
     sess = MagicMock()
     api = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -995,7 +995,7 @@ async def test_validate_response_errors_case_sensitive(
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -1025,7 +1025,7 @@ async def test_validate_response_errors_accepts_error_colon_variant(
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -1043,7 +1043,7 @@ async def test_validate_response_errors_handles_split_value_error(
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -1070,7 +1070,7 @@ async def test_validate_response_errors_ignores_non_string_values(
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -1086,7 +1086,7 @@ async def test_get_devices_fetches_and_caches(integration_version: str) -> None:
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -1126,7 +1126,7 @@ async def test_get_device_status_without_cache(integration_version: str) -> None
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -1144,7 +1144,7 @@ async def test_get_devices_uses_frn_fallback(integration_version: str) -> None:
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -1163,7 +1163,7 @@ async def test_get_devices_uses_local_device_fallback(integration_version: str) 
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -1185,7 +1185,7 @@ async def test_get_devices_calls_login_when_session_invalid(
     client = SyrConnectJsonAPI(
         sess,
         host="192.168.1.1",
-        base_path="/api/",
+        base_path="/trio",
         integration_version=integration_version,
     )
 
@@ -1224,12 +1224,12 @@ async def test_execute_http_get_404_error(integration_version: str) -> None:
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
     with pytest.raises(SyrConnectConnectionError, match="Endpoint not found"):
-        await client._execute_http_get("http://test:5333/api/missing")
+        await client._execute_http_get("http://test:5333/trio/missing")
 
 
 async def test_execute_http_get_does_not_follow_redirects(
@@ -1247,12 +1247,12 @@ async def test_execute_http_get_does_not_follow_redirects(
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
     with pytest.raises(SyrConnectHTTPError, match="Redirect not followed") as excinfo:
-        await client._execute_http_get("http://test:5333/api/get/all")
+        await client._execute_http_get("http://test:5333/trio/get/all")
 
     assert excinfo.value.status == 302
     assert sess.get.call_args.kwargs["allow_redirects"] is False
@@ -1272,11 +1272,11 @@ async def test_execute_http_get_sends_the_user_agent(integration_version: str) -
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
-    await client._execute_http_get("http://test:5333/api/get/all")
+    await client._execute_http_get("http://test:5333/trio/get/all")
 
     assert sess.get.call_args.kwargs["headers"] == {
         "User-Agent": f"syr_connect/{integration_version} HomeAssistant/{HA_VERSION}"
@@ -1291,14 +1291,14 @@ async def test_execute_http_get_timeout_error(integration_version: str) -> None:
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
     with pytest.raises(
         SyrConnectConnectionError, match=r"Connection failed: TimeoutError\(\)"
     ):
-        await client._execute_http_get("http://test:5333/api/slow")
+        await client._execute_http_get("http://test:5333/trio/slow")
 
 
 async def test_execute_http_get_client_error(integration_version: str) -> None:
@@ -1309,12 +1309,12 @@ async def test_execute_http_get_client_error(integration_version: str) -> None:
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
     with pytest.raises(SyrConnectConnectionError, match="Connection failed"):
-        await client._execute_http_get("http://test:5333/api/test")
+        await client._execute_http_get("http://test:5333/trio/test")
 
 
 async def test_execute_http_get_unexpected_error(integration_version: str) -> None:
@@ -1325,12 +1325,12 @@ async def test_execute_http_get_unexpected_error(integration_version: str) -> No
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
     with pytest.raises(SyrConnectConnectionError, match="Unexpected error"):
-        await client._execute_http_get("http://test:5333/api/test")
+        await client._execute_http_get("http://test:5333/trio/test")
 
 
 async def test_execute_http_get_logs_error_response_body(
@@ -1356,12 +1356,12 @@ async def test_execute_http_get_logs_error_response_body(
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
     with pytest.raises(SyrConnectConnectionError):
-        await client._execute_http_get("http://test:5333/api/error")
+        await client._execute_http_get("http://test:5333/trio/error")
 
 
 async def test_execute_http_get_logs_error_response_read_failure(
@@ -1389,12 +1389,12 @@ async def test_execute_http_get_logs_error_response_read_failure(
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
     with caplog.at_level(logging.DEBUG), pytest.raises(SyrConnectConnectionError):
-        await client._execute_http_get("http://test:5333/api/error")
+        await client._execute_http_get("http://test:5333/trio/error")
 
     # Should log that it couldn't read the error response
     assert "Could not read error response" in caplog.text
@@ -1416,13 +1416,13 @@ async def test_execute_http_get_reraises_invalid_response_error(
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
     # The error should be raised as-is, not wrapped
     with pytest.raises(SyrConnectInvalidResponseError, match="unexpected payload type"):
-        await client._execute_http_get("http://test:5333/api/test")
+        await client._execute_http_get("http://test:5333/trio/test")
 
 
 async def test_construct_encoded_url_no_base_url_raises(
@@ -1442,7 +1442,7 @@ async def test_get_device_status_with_cached_response(integration_version: str) 
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -1469,7 +1469,7 @@ async def test_request_json_data_returns_none_raises(integration_version: str) -
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -1495,7 +1495,7 @@ async def test_login_clears_cached_data(integration_version: str) -> None:
     client = SyrConnectJsonAPI(
         sess,
         host="192.168.1.100",
-        base_path="/api/",
+        base_path="/trio",
         integration_version=integration_version,
     )
 
@@ -1515,7 +1515,7 @@ async def test_construct_encoded_url_with_encode_false(
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -1533,7 +1533,7 @@ async def test_construct_encoded_url_with_encode_true(integration_version: str) 
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -1552,7 +1552,7 @@ async def test_get_device_status_without_cache_with_base_url(
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -1585,7 +1585,7 @@ async def test_request_json_data_strips_leading_slash(integration_version: str) 
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -1594,8 +1594,8 @@ async def test_request_json_data_strips_leading_slash(integration_version: str) 
 
     # URL should not have double slashes
     called_url = str(sess.get.call_args[0][0])
-    assert "api//get" not in called_url
-    assert "api/get/all" in called_url
+    assert "trio//get" not in called_url
+    assert "trio/get/all" in called_url
 
 
 async def test_request_json_data_without_leading_slash(
@@ -1613,7 +1613,7 @@ async def test_request_json_data_without_leading_slash(
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -1622,7 +1622,7 @@ async def test_request_json_data_without_leading_slash(
 
     # URL should be correct
     called_url = str(sess.get.call_args[0][0])
-    assert "api/get/all" in called_url
+    assert "trio/get/all" in called_url
 
 
 async def test_get_devices_skips_login_when_session_valid(
@@ -1633,7 +1633,7 @@ async def test_get_devices_skips_login_when_session_valid(
     client = SyrConnectJsonAPI(
         sess,
         host="192.168.1.100",
-        base_path="/api/",
+        base_path="/trio",
         integration_version=integration_version,
     )
 
@@ -1660,7 +1660,7 @@ async def test_validate_set_response_missing_key_on_login_raises(
     """When a login set-response is missing the expected key, raise SyrConnectInvalidResponseError."""
     client = SyrConnectJsonAPI(
         MagicMock(),
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -1676,7 +1676,7 @@ async def test_get_device_status_returns_none_on_invalid_payload(
     """get_device_status should return None when the payload cannot be parsed into a dict."""
     client = SyrConnectJsonAPI(
         MagicMock(),
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -1711,12 +1711,12 @@ async def test_execute_http_get_401_auth_error(integration_version: str) -> None
 
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
     with pytest.raises(SyrConnectAuthError):
-        await client._execute_http_get("http://test:5333/api/auth")
+        await client._execute_http_get("http://test:5333/trio/auth")
 
 
 def test_validate_set_response_missing_key_nonlogin_returns(
@@ -1725,7 +1725,7 @@ def test_validate_set_response_missing_key_nonlogin_returns(
     """When response missing expected key for non-login, do not raise."""
     client = SyrConnectJsonAPI(
         MagicMock(),
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -1740,7 +1740,7 @@ async def test_login_skips_when_flag_false(integration_version: str) -> None:
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -1763,7 +1763,7 @@ def test_validate_set_response_unknown_status_on_login_raises(
 
     client = SyrConnectJsonAPI(
         MagicMock(),
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -1785,7 +1785,7 @@ async def test_login_reraises_connection_error(integration_version: str) -> None
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
-        base_url="http://test:5333/api/",
+        base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
@@ -1809,7 +1809,7 @@ async def test_get_device_status_skips_login_when_login_not_required(
     client = SyrConnectJsonAPI(
         sess,
         host="192.168.1.1",
-        base_path="/api/",
+        base_path="/trio",
         integration_version=integration_version,
     )
 
@@ -1836,7 +1836,7 @@ async def test_get_devices_skips_login_when_login_not_required(
     client = SyrConnectJsonAPI(
         sess,
         host="192.168.1.1",
-        base_path="/api/",
+        base_path="/trio",
         integration_version=integration_version,
     )
 

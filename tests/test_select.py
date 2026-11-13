@@ -2576,7 +2576,7 @@ async def test_async_setup_entry_creates_sv_select_for_srn_detected_model(
         _select_model(
             "getSV1",
             display_name="Test Model",
-            base_path="test",
+            base_path="/neosoft",
             srn_prefix="999",
             maximum_salt_volume=25,
         )
@@ -3934,7 +3934,7 @@ async def test_async_setup_entry_skips_hardness_and_safefloor_selects_without_de
         replace(
             UNKNOWN_MODEL,
             display_name="Test Model",
-            base_path="test",
+            base_path="/neosoft",
             name="testmodel",
             srn_prefix="999",
         )

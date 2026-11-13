@@ -369,7 +369,7 @@ def test_ver_contains_signature_matches_and_skips() -> None:
         replace(
             UNKNOWN_MODEL,
             display_name="Test Ver Contains",
-            base_path="/test",
+            base_path="/trio",
             name="testver",
             ver_contains="MAGIC",
         )
@@ -385,13 +385,13 @@ def test_chosen_model_is_used_without_detection() -> None:
         replace(
             UNKNOWN_MODEL,
             display_name="Test Chosen",
-            base_path="/test",
+            base_path="/trio",
             name="testchosen",
         ),
         replace(
             UNKNOWN_MODEL,
             display_name="Test Detected",
-            base_path="/test",
+            base_path="/trio",
             name="testdetected",
             cna_equals="DETECTED",
         ),
