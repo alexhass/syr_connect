@@ -1037,7 +1037,7 @@ The alarm history (getALH / setALH) names alarms by code: 1–8 = the alarm of b
 
 ### HygBox
 
-Properties of the HygBox hygiene flushing box (dk 180, dkv 37), also sold as DITECH Hygiene Flush Box. No capture of a real device exists yet; the values are not confirmed.
+Properties of the HygBox hygiene flushing box (dk 180, dkv 37), also sold as DITECH Hygiene Flush Box. No capture of a real device exists yet; the values are not confirmed. The examples are assumed, not captured, and marked "(assumed)"; they can be wrong and are to be replaced with the values of a capture.
 
 The HygBox flushes the water pipe in three ways. Each one has its own disable flag, which reports the function as disabled: `false` means the flushing is active.
 
@@ -1047,48 +1047,76 @@ The HygBox flushes the water pipe in three ways. Each one has its own disable fl
 
 | Property | Example | Unit | Access level | Default | Description |
 | --- | --- | --- | --- | --- | --- |
-| getBAP | "85" | % | | | Battery level |
-| getBAR | "4077" | mbar | | | Water pressure; shown in bar with one decimal |
-| getBUZ / setBUZ | "True" | | | | Alarm sound: false = off, true = on |
-| getCEL | "215" | 1/10 °C | | | Water temperature, e.g. "215" = 21.5 °C |
-| getF2T / setF2T | "30" | s | | 30 | Maximum duration of a temperature flushing. Range: 30–600 in steps of 30 |
-| getF2W / setF2W | "10" | °C | | 10 (cold), 60 (hot) | Stop temperature of the temperature flushing, whole degrees. Range: cold water 10–25, hot water 50–60; at least 2 °C away from getTTT (cold water: below it, hot water: above it) |
-| getF3P / setF3P | "720" | min | | 720 | Interval of the periodic flushing. Range: 60–17280 (1 hour – 12 days) |
-| getF3V / setF3V | "10" | L | | 10 | Flushing volume of the periodic flushing. Range: 1–100 |
-| getFD1 / setFD1 | "False" | | | | Stagnation flushing disabled: false = active, true = disabled |
-| getFD2 / setFD2 | "False" | | | | Temperature flushing disabled: false = active, true = disabled |
-| getFD3 / setFD3 | "False" | | | | Periodic flushing disabled: false = active, true = disabled |
-| getFLO | "320" | L/h | | | Current flow |
-| getMAC | "AA:BB:CC:DD:EE:FF" | | | | MAC address |
-| getMQT | "False" | | | | *unknown*, a boolean flag, probably whether MQTT is enabled |
-| getMTF / setMTF | "5" | | | 5 | Maximum number of temperature flushings per day. Range: 1–50 |
-| getRCP / setRCP | "43200" | s | | 43200 | Synchronization interval. Range: 21600–691200 (6 hours – 8 days) in steps of 6 hours |
-| getSTP / setSTP | "2880" | min | | 2880 | Stagnation time after which the stagnation flushing starts. Range: 60–43200 (1 hour – 30 days) |
-| getSTV / setSTV | "10" | L | | 10 | Flushing volume of the stagnation flushing. Range: 1–100 |
-| getTTT / setTTT | "25" | °C | | 25 (cold), 50 (hot) | Start temperature of the temperature flushing, whole degrees. Range: cold water 10–25, hot water 50–60; at least 2 °C away from getF2W (cold water: above it, hot water: below it) |
-| getWFC | "MyWiFi" | | | | Wi-Fi SSID |
-| getWGW | "192.168.1.1" | | | | Wi-Fi gateway |
-| getWIP | "192.168.1.50" | | | | Wi-Fi IP address |
-| getWTY / setWTY | "1" | | | | Water type: 0 = undefined, 1 = cold water, 2 = hot water. A change of the water type also changes the range of getTTT and getF2W, whose defaults are 25/10 °C for cold water and 50/60 °C for hot water |
+| getALA / clrALA | "FF" (assumed) | | | | Current alarm code, see [HygBox alarms (getALA)](#hygbox-alarms-getala). clrALA resets the alarm. The HygBox reports no warnings (getWRN) and no notifications (getNOT) |
+| getBAP | "85" (assumed) | % | | | Battery level |
+| getBAR | "4077" (assumed) | mbar | | | Water pressure; shown in bar with one decimal |
+| getBUZ / setBUZ | "True" (assumed) | | | | Alarm sound: false = off, true = on |
+| getCEL | "215" (assumed) | 1/10 °C | | | Water temperature, e.g. "215" = 21.5 °C |
+| getF2T / setF2T | "30" (assumed) | s | | 30 | Maximum duration of a temperature flushing. Range: 30–600 in steps of 30 |
+| getF2W / setF2W | "10" (assumed) | °C | | 10 (cold), 60 (hot) | Stop temperature of the temperature flushing, whole degrees. Range: cold water 10–25, hot water 50–60; at least 2 °C away from getTTT (cold water: below it, hot water: above it) |
+| getF3P / setF3P | "720" (assumed) | min | | 720 | Interval of the periodic flushing. Range: 60–17280 (1 hour – 12 days) |
+| getF3V / setF3V | "10" (assumed) | L | | 10 | Flushing volume of the periodic flushing. Range: 1–100 |
+| getFD1 / setFD1 | "False" (assumed) | | | | Stagnation flushing disabled: false = active, true = disabled |
+| getFD2 / setFD2 | "False" (assumed) | | | | Temperature flushing disabled: false = active, true = disabled |
+| getFD3 / setFD3 | "False" (assumed) | | | | Periodic flushing disabled: false = active, true = disabled |
+| getFLO | "320" (assumed) | L/h | | | Current flow |
+| getMAC | "AA:BB:CC:DD:EE:FF" (assumed) | | | | MAC address |
+| getMQT | "False" (assumed) | | | | *unknown*, a boolean flag, probably whether MQTT is enabled |
+| getMTF / setMTF | "5" (assumed) | | | 5 | Maximum number of temperature flushings per day. Range: 1–50 |
+| getRCP / setRCP | "43200" (assumed) | s | | 43200 | Synchronization interval. Range: 21600–691200 (6 hours – 8 days) in steps of 6 hours |
+| getSTP / setSTP | "2880" (assumed) | min | | 2880 | Stagnation time after which the stagnation flushing starts. Range: 60–43200 (1 hour – 30 days) |
+| getSTV / setSTV | "10" (assumed) | L | | 10 | Flushing volume of the stagnation flushing. Range: 1–100 |
+| getTTT / setTTT | "25" (assumed) | °C | | 25 (cold), 50 (hot) | Start temperature of the temperature flushing, whole degrees. Range: cold water 10–25, hot water 50–60; at least 2 °C away from getF2W (cold water: above it, hot water: below it) |
+| getWFC | "MyWiFi" (assumed) | | | | Wi-Fi SSID |
+| getWGW | "192.168.1.1" (assumed) | | | | Wi-Fi gateway |
+| getWIP | "192.168.1.50" (assumed) | | | | Wi-Fi IP address |
+| getWTY / setWTY | "1" (assumed) | | | | Water type: 0 = undefined, 1 = cold water, 2 = hot water. A change of the water type also changes the range of getTTT and getF2W, whose defaults are 25/10 °C for cold water and 50/60 °C for hot water |
+
+#### HygBox alarms (getALA)
+
+"FF" = no alarm is assumed like on the other devices with the alarm codes A1–AF.
+
+| Code | Alarm | Translation key |
+| --- | --- | --- |
+| A1 | Pressure sensor faulty | `alarm_pressure_sensor_faulty` |
+| A2 | Temperature sensor faulty | `alarm_temperature_sensor_faulty` |
+| A3 | Flow sensor (turbine) fault: no pulses for a long time | `alarm_flow_sensor_fault` |
+| A4 | Solenoid valve fault: the flushing did not start | `alarm_solenoid_valve_fault` |
+| A5 | Drain sensor fault: a backflow was detected in the funnel, the flushing did not start | `alarm_drain_sensor_fault` |
+| A6 | Pressure too low: the flushing did not start and continues when the operating pressure is reached | `alarm_pressure_too_low` |
+| A7 | Battery empty | `alarm_battery_low` |
+| A8 | Flushing time of the stagnation flushing exceeded | `alarm_stagnation_flushing_time_exceeded` |
+| A9 | Flushing time of the periodic flushing exceeded | `alarm_periodic_flushing_time_exceeded` |
 
 ### Dosing pump
 
-Properties of the dosing pump (dk 190, dkv 44), probably the SYR NeoDos Connect. No capture of a real device exists yet; the values are not confirmed.
+Properties of the dosing pump (dk 190, dkv 44), probably the SYR NeoDos Connect. No capture of a real device exists yet; the values are not confirmed. The examples are assumed, not captured, and marked "(assumed)"; they can be wrong and are to be replaced with the values of a capture.
 
 | Property | Example | Unit | Access level | Default | Description |
 | --- | --- | --- | --- | --- | --- |
-| getCAS / setCAS | "2" | | | | Canister size: 0 = not defined, 1 = 5 L, 2 = 10 L |
-| getDAM | "150" | mL/m³ | | | Current dosing amount per cubic meter of water |
-| getDMO / setDMO | "0" | | | | Operating mode: 0 = automatic, 1 = running-in, 2 = disinfection, 3 = low, 255 = unknown |
-| getDSL / setDSL | "1" | | | | Dosing liquid: 0 = not set, 1 and 2 = the two dosing liquids of the pump; their names are not known |
-| getFLO | "320" | L/h | | | Current flow |
-| getMAC | "AA:BB:CC:DD:EE:FF" | | | | MAC address |
-| getMQT | "False" | | | | *unknown*, a boolean flag, probably whether MQTT is enabled |
-| getRMR | "0" | | | | *unknown*, an integer; possibly a remaining amount or time |
-| getRMT / setRMT | "0" | | | | *unknown*, an integer that can be set; not the maximum filling duration of the MuCo (see [Filling the Heating System](#filling-the-heating-system)) |
-| getWFC | "MyWiFi" | | | | Wi-Fi SSID |
-| getWGW | "192.168.1.1" | | | | Wi-Fi gateway |
-| getWIP | "192.168.1.50" | | | | Wi-Fi IP address |
+| getALA / clrALA | "FF" (assumed) | | | | Current alarm code, see [Dosing pump alarms (getALA)](#dosing-pump-alarms-getala). clrALA resets the alarm. The dosing pump reports no warnings (getWRN) and no notifications (getNOT) |
+| getCAS / setCAS | "2" (assumed) | | | | Canister size: 0 = not defined, 1 = 5 L, 2 = 10 L |
+| getDAM | "150" (assumed) | mL/m³ | | | Current dosing amount per cubic meter of water |
+| getDMO / setDMO | "0" (assumed) | | | | Operating mode: 0 = automatic, 1 = running-in, 2 = disinfection, 3 = low, 255 = unknown |
+| getDSL / setDSL | "1" (assumed) | | | | Dosing liquid: 0 = not set, 1 and 2 = the two dosing liquids of the pump; their names are not known |
+| getFLO | "320" (assumed) | L/h | | | Current flow |
+| getMAC | "AA:BB:CC:DD:EE:FF" (assumed) | | | | MAC address |
+| getMQT | "False" (assumed) | | | | *unknown*, a boolean flag, probably whether MQTT is enabled |
+| getRMR | "0" (assumed) | | | | *unknown*, an integer; possibly a remaining amount or time |
+| getRMT / setRMT | "0" (assumed) | | | | *unknown*, an integer that can be set; not the maximum filling duration of the MuCo (see [Filling the Heating System](#filling-the-heating-system)) |
+| getWFC | "MyWiFi" (assumed) | | | | Wi-Fi SSID |
+| getWGW | "192.168.1.1" (assumed) | | | | Wi-Fi gateway |
+| getWIP | "192.168.1.50" (assumed) | | | | Wi-Fi IP address |
+
+#### Dosing pump alarms (getALA)
+
+"FF" = no alarm is assumed like on the other devices with the alarm codes A1–AF.
+
+| Code | Alarm | Translation key |
+| --- | --- | --- |
+| A1 | Communication fault: no connection between the dosing pump and the electronics box | `alarm_dosing_pump_communication` |
+| A2 | Dosing liquid low: enough for about 10 m³ of treated drinking water | `alarm_dosing_liquid_low` |
+| A3 | Dosing liquid empty | `alarm_dosing_liquid_empty` |
 
 ### Access levels
 

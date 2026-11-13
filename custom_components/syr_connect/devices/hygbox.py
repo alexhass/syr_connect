@@ -15,6 +15,9 @@ The HygBox flushes the water pipe in three ways, each with its own settings:
 - Periodic flushing (getFD3): every getF3P minutes, with the flushing volume getF3V.
 getFD1-3 report the function as disabled, so their switches are inverted.
 
+The alarm (getALA) is reset with clrALA (alarm_clear_via_set is not set). The
+HygBox reports no warnings (getWRN) and no notifications (getNOT).
+
 Deliberately NOT included:
 - getMQT: reported, but without a known meaning (probably an MQTT flag).
 
@@ -30,6 +33,8 @@ SENSOR_SUPPORTED_KEYS = {
     "dst",
     # --- Valve & Flow ---
     "getFLO",
+    # --- Alarm ---
+    "getALA",
     # --- Pressure ---
     "getBAR",
     # --- Voltage / Battery ---
@@ -83,7 +88,9 @@ BINARY_SENSOR_SUPPORTED_KEYS = {
     "getBUZ",
 }
 
-BUTTON_SUPPORTED_KEYS: set[str] = set()
+BUTTON_SUPPORTED_KEYS = {
+    "setALA",
+}
 
 VALVE_SUPPORTED_KEYS: set[str] = set()
 
@@ -102,8 +109,24 @@ SELECT_RCP_OPTIONS = [
     691200,
 ]
 
+# Alarm codes of the HygBox (raw API getALA -> internal translation key). "FF" = no alarm
+# is assumed like on the other devices with the alarm codes A1-AF.
+ALA_CODES = {
+    "A1": "alarm_pressure_sensor_faulty",
+    "A2": "alarm_temperature_sensor_faulty",
+    "A3": "alarm_flow_sensor_fault",
+    "A4": "alarm_solenoid_valve_fault",
+    "A5": "alarm_drain_sensor_fault",
+    "A6": "alarm_pressure_too_low",
+    "A7": "alarm_battery_low",
+    "A8": "alarm_stagnation_flushing_time_exceeded",
+    "A9": "alarm_periodic_flushing_time_exceeded",
+    "FF": "no_alarm",
+}
+
 
 PROFILE = SyrConnectDeviceProfile(
+    ala_codes=ALA_CODES,
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
     select=SELECT_SUPPORTED_KEYS,

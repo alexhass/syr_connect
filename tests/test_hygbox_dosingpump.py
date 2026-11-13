@@ -9,7 +9,9 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
+from custom_components.syr_connect.button import SyrConnectButton, _build_device_buttons
 from custom_components.syr_connect.data import SyrConnectDevice
+from custom_components.syr_connect.helpers import get_sensor_ala_map
 from custom_components.syr_connect.models import MODEL_SIGNATURES, SyrConnectModel
 from custom_components.syr_connect.select import (
     SyrConnectDiscreteSelect,
@@ -22,6 +24,7 @@ from custom_components.syr_connect.switch import (
     SyrConnectBooleanSwitch,
     _build_device_switches,
 )
+from homeassistant.core import HomeAssistant
 
 _SYR_CONNECT_TEST_HYGBOX_MODEL = next(
     model for model in MODEL_SIGNATURES if model.name == "hygbox"
@@ -286,3 +289,57 @@ def test_dosingpump_canister_size_in_liters(
     sensor = SyrConnectSensor(coordinator, "device1", "D", "getCAS")
 
     assert sensor.native_value == expected
+
+
+@pytest.mark.parametrize(
+    ("model", "code", "expected"),
+    [
+        pytest.param(
+            _SYR_CONNECT_TEST_HYGBOX_MODEL,
+            "A4",
+            "alarm_solenoid_valve_fault",
+            id="hygbox-solenoid-valve",
+        ),
+        pytest.param(
+            _SYR_CONNECT_TEST_HYGBOX_MODEL,
+            "a9",
+            "alarm_periodic_flushing_time_exceeded",
+            id="hygbox-lowercase",
+        ),
+        pytest.param(
+            _SYR_CONNECT_TEST_DOSINGPUMP_MODEL,
+            "A3",
+            "alarm_dosing_liquid_empty",
+            id="dosingpump-empty",
+        ),
+        pytest.param(
+            _SYR_CONNECT_TEST_DOSINGPUMP_MODEL, "FF", "no_alarm", id="dosingpump-none"
+        ),
+    ],
+)
+def test_alarm_codes(model: SyrConnectModel, code: str, expected: str) -> None:
+    """The HygBox and the dosing pump have their own alarm codes."""
+    assert get_sensor_ala_map(model, code)[0] == expected
+
+
+@pytest.mark.parametrize(
+    "model",
+    [_SYR_CONNECT_TEST_HYGBOX_MODEL, _SYR_CONNECT_TEST_DOSINGPUMP_MODEL],
+    ids=lambda model: model.name,
+)
+def test_alarm_reset_button(
+    hass: HomeAssistant,
+    create_mock_coordinator: Callable[..., MagicMock],
+    model: SyrConnectModel,
+) -> None:
+    """Both devices get only the alarm reset button, no warning or notification reset."""
+    device = _device(model, {"getALA": "A1", "getWRN": "01", "getNOT": "01"})
+    coordinator = create_mock_coordinator({"devices": [device]})
+
+    buttons = [
+        entity._command
+        for entity in _build_device_buttons(hass, coordinator, device)
+        if isinstance(entity, SyrConnectButton)
+    ]
+
+    assert buttons == ["setALA"]
