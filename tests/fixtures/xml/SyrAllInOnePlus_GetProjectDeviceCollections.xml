@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sc>
+  <prs>
+    <pr pg="536c78a2-5e22-4fee-a344-b1447e1116b3" pn="My+Project" pt="1" com="Firstname+Lastname" adr="" zip="" rsd="" rg="Deutschland" pho="" fax="" cph="" url="" spi="" tz="W.+Europe+Standard+Time" tzo="01:00:00" />
+  </prs>
+  <col>
+    <dcl dclg="226541cd-6724-459f-a726-72fcee1d0408" ali="Example+fill+station" dkv="36" mod="0" pg="536c78a2-5e22-4fee-a344-b1447e1116b3" ag="" aif="" pclg="488c6bd7-d274-48e6-baa3-8f3c667e1ce6" so="0" sta="2" dst="2" ast="1" clb="1" nrdt="" />
+  </col>
+  <dvs>
+    <d dg="6a99ea3b-f389-4e56-a7ff-3414a7e616fc" sn="123456789" sbt="" dfw="All-in-One%2b+V4.05" dk="160" dclg="226541cd-6724-459f-a726-72fcee1d0408" aid="1" bus="1" sta="2" dst="2" ast="1" dcg="34179ab2-66bf-48a8-a54d-3858e52e0d5a" so="1" ondt="" mac="0C:73:EB:XX:XX:XX" bar="1700" tpr="15" prc="95" iwh="6" owh="0" whu="0" crt="2" crs="1" fcs="2" ccl="347" wtr="1" />
+  </dvs>
+  <pdvs />
+  <cs v="B63B" />
+</sc>

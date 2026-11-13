@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<sc>
+  <col>
+    <dcl dclg="226541cd-6724-459f-a726-72fcee1d0408" sta="2" dst="2" ast="1" clb="1" nrdt="11.11.2026 17:06:32" nrs="0" />
+  </col>
+  <pdvs />
+  <dvs>
+    <d dg="6a99ea3b-f389-4e56-a7ff-3414a7e616fc" sbt="" sta="2" dst="2" ast="1" so="1" p1883="" p1883rd="" p8883="" p8883rd="">
+      <ci f="4.05" b="1.00" m="0C:73:EB:XX:XX:XX" />
+      <c n="getSRN" v="123456789" dt="11.11.2026 17:06:32" />
+      <c n="getVER" v="All-in-One+ V4.05" />
+      <c n="getALA" v="FF" dt="11.11.2026 12:47:32" />
+      <c n="getALD" v="0" />
+      <c n="getALM" v="Alarms:-&gt;A8 AC AB A9 AB A8 A8 A8" dt="30.10.2026 10:46:19" />
+      <c n="getAPT" v="3600" />
+      <c n="getBAR" v="1700 mbar" />
+      <c n="getBAT" v="9,26" />
+      <c n="getBUP" v="BUZ: Puls[100ms]:4 Periode[100ms]:60" />
+      <c n="getBUZ" v="1" />
+      <c n="getCCS" v="0" />
+      <c n="getCEL" v="236" />
+      <c n="getCFV" v="0" />
+      <c n="getCNF" v="20" />
+      <c n="getCNO" v="XXXXXXXXXXXXXXX" />
+      <c n="getCRS" v="1" />
+      <c n="getCRT" v="2" />
+      <c n="getCWL" v="5" />
+      <c n="getDEF" v="" />
+      <c n="getDFI" v="0" />
+      <c n="getFCS" v="2" />
+      <c n="getFLO" v="0" />
+      <c n="getFMT" v="90" />
+      <c n="getFVT" v="250" />
+      <c n="getHPR" v="3" />
+      <c n="getIBA" v="2300 mbar" />
+      <c n="getIDS" v="1" />
+      <c n="getIFL" v="0" />
+      <c n="getIWH" v="6" />
+      <c n="getLFT" v="159" />
+      <c n="getLFV" v="6600" />
+      <c n="getLMD" v="3" />
+      <c n="getLMF" v="0" />
+      <c n="getLNG" v="0 (0=Deutsch 1=English)" />
+      <c n="getLOT" v="10" />
+      <c n="getLPD" v="10" />
+      <c n="getLRC" v="347" />
+      <c n="getLW1" v="0" />
+      <c n="getLW2" v="0" />
+      <c n="getMAC" v="0c:73:eb:XX:XX:XX" />
+      <c n="getMFL" v="0" />
+      <c n="getMPR" v="2" />
+      <c n="getMQT" v="1" />
+      <c n="getMRT" v="60" />
+      <c n="getOWH" v="0" />
+      <c n="getPRC" v="95" />
+      <c n="getRCD" v="1" />
+      <c n="getRCN" v="32" />
+      <c n="getRMN" v="2" />
+      <c n="getRMT" v="5" />
+      <c n="getRVT" v="10" />
+      <c n="getSFV" v="0" />
+      <c n="getSPR" v="5" />
+      <c n="getSRO" v="0" />
+      <c n="getSRV" v="01.01.1971" />
+      <c n="getSTA" v="0" />
+      <c n="getTMZ" v="4" />
+      <c n="getTN" v="20" />
+      <c n="getTPR" v="15" />
+      <c n="getTRV" v="501" />
+      <c n="getTYP" v="160" />
+      <c n="getVLV" v="10" />
+      <c n="getWAD" v="1" />
+      <c n="getWAH" v="0" />
+      <c n="getWFC" v="syr-allinone-wifi1" />
+      <c n="getWFR" v="64" />
+      <c n="getWFS" v="2" />
+      <c n="getWGW" v="192.168.172.1" />
+      <c n="getWHU" v="0" />
+      <c n="getWIP" v="192.168.172.20" />
+      <c n="getWNS" v="0" />
+      <c n="getWTR" v="1" />
+    </d>
+  </dvs>
+  <cs v="DC89" />
+</sc>
