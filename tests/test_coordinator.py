@@ -1597,8 +1597,8 @@ async def test_async_update_data_first_update_skips_failed_project(
         assert coordinator.device_list_complete is False
 
 
-async def test_device_list_fetched_once_per_hour(hass: HomeAssistant) -> None:
-    """The device lists are fetched with the first update and then once per hour."""
+async def test_device_list_fetched_every_30_minutes(hass: HomeAssistant) -> None:
+    """The device lists are fetched with the first update and then every 30 minutes."""
 
     mock_api = _two_project_api(set())
     mock_api.get_devices = AsyncMock(side_effect=mock_api.get_devices)
@@ -1628,8 +1628,8 @@ async def test_device_list_fetched_once_per_hour(hass: HomeAssistant) -> None:
         coordinator.data = first
         assert mock_api.get_devices.await_count == 2
 
-        # Within the hour only the status is fetched, into new device dictionaries
-        mock_utcnow.return_value = start + timedelta(minutes=59)
+        # Within 30 minutes only the status is fetched, into new device dictionaries
+        mock_utcnow.return_value = start + timedelta(minutes=29)
         second = await coordinator._async_update_data()
         assert mock_api.get_devices.await_count == 2
         assert mock_api.get_device_status.await_count == 4
@@ -1637,7 +1637,7 @@ async def test_device_list_fetched_once_per_hour(hass: HomeAssistant) -> None:
         assert second["devices"][0] is not first["devices"][0]
         assert coordinator.device_list_complete is True
 
-        mock_utcnow.return_value = start + timedelta(hours=1)
+        mock_utcnow.return_value = start + timedelta(minutes=30)
         await coordinator._async_update_data()
         assert mock_api.get_devices.await_count == 4
 
@@ -1650,7 +1650,7 @@ async def test_device_list_fetched_once_per_hour(hass: HomeAssistant) -> None:
 async def test_device_list_failed_refresh_keeps_last_list(
     hass: HomeAssistant, caplog: pytest.LogCaptureFixture
 ) -> None:
-    """If the hourly fetch fails, the status is fetched with the last list and the fetch is repeated."""
+    """If the fetch of the device list fails, the status is fetched with the last list and the fetch is repeated."""
 
     failing: set[str] = set()
     mock_api = _two_project_api(failing)
@@ -1688,7 +1688,7 @@ async def test_device_list_failed_refresh_keeps_last_list(
         assert coordinator.device_list_complete is True
         assert "keeping the last device list" in caplog.text
 
-        # The next update tries again, not only after another hour
+        # The next update tries again, not only after another 30 minutes
         failing.clear()
         mock_utcnow.return_value = start + timedelta(hours=1, minutes=1)
         with caplog.at_level(logging.INFO):
