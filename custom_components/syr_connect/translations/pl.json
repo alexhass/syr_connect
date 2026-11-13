@@ -159,6 +159,12 @@
       "setdex": {
         "name": "Uruchom test mikroprzecieku"
       },
+      "setmfc": {
+        "name": "Płukanie ręczne (woda zimna)"
+      },
+      "setmfw": {
+        "name": "Płukanie ręczne (woda ciepła)"
+      },
       "setnot": {
         "name": "Resetuj powiadomienie"
       },
@@ -176,6 +182,18 @@
       "getcas": {
         "name": "Pojemność kanistra"
       },
+      "getccf": {
+        "name": "Interwał płukania (woda zimna)",
+        "state": {
+          "off": "Wyłączony"
+        }
+      },
+      "getccl": {
+        "name": "Temperatura (maksymalna, woda zimna)",
+        "state": {
+          "off": "Wyłączony"
+        }
+      },
       "getcrs": {
         "name": "Rozmiar wkładu",
         "state": {
@@ -189,6 +207,18 @@
           "1": "HVE",
           "2": "HVE+",
           "none": "Brak"
+        }
+      },
+      "getcsl": {
+        "name": "Maksymalna objętość płukania (woda zimna)"
+      },
+      "getcss": {
+        "name": "Maksymalny czas płukania (woda zimna)"
+      },
+      "getcwf": {
+        "name": "Interwał płukania (woda ciepła)",
+        "state": {
+          "off": "Wyłączony"
         }
       },
       "getcwl": {
@@ -499,6 +529,9 @@
       "getrvt": {
         "name": "Maksymalna objętość napełniania"
       },
+      "getscf": {
+        "name": "Czas stagnacji (woda zimna)"
+      },
       "getsro": {
         "name": "Orientacja wyświetlacza",
         "state": {
@@ -523,11 +556,20 @@
       "getsv3": {
         "name": "Ilość soli w pojemniku 3"
       },
+      "getswf": {
+        "name": "Czas stagnacji (woda ciepła)"
+      },
       "gettpr": {
         "name": "Ciśnienie docelowe"
       },
       "getttt": {
         "name": "Temperatura (start płukania)"
+      },
+      "getwcl": {
+        "name": "Temperatura (minimalna, woda ciepła)",
+        "state": {
+          "off": "Wyłączony"
+        }
       },
       "getwmp": {
         "name": "Interwał pomiarowy",
@@ -542,6 +584,12 @@
           "7200": "2 godziny",
           "900": "15 minut"
         }
+      },
+      "getwsl": {
+        "name": "Maksymalna objętość płukania (woda ciepła)"
+      },
+      "getwss": {
+        "name": "Maksymalny czas płukania (woda ciepła)"
       },
       "getwty": {
         "name": "Rodzaj wody",
@@ -578,16 +626,22 @@
           "alarm_cartridge_exhausted_capacity": "Wkład wyczerpany (pojemność)",
           "alarm_cartridge_exhausted_conductivity": "Wkład wyczerpany (przewodność)",
           "alarm_chlor_generator_fault": "Usterka generatora chloru!",
+          "alarm_combination_module_communication": "Brak połączenia z modułem kombinowanym",
           "alarm_conductivity_too_high": "Zbyt wysoka przewodność",
           "alarm_dosing_liquid_empty": "Środek dozujący pusty",
           "alarm_dosing_liquid_low": "Środek dozujący na wyczerpaniu",
           "alarm_dosing_pump_communication": "Usterka komunikacji pompy dozującej",
           "alarm_drain_sensor_fault": "Usterka czujnika odpływu",
+          "alarm_emergency_stop": "Płukanie zatrzymane przez wyłączenie awaryjne",
           "alarm_end_switch": "Wyłącznik krańcowy",
           "alarm_external_sensor_leakage_cable": "Zewnętrzny czujnik przecieku (kabel)",
           "alarm_external_sensor_leakage_radio": "Zewnętrzny czujnik przecieku (radio)",
           "alarm_fill_cycles_exceeded": "Przekroczono liczbę cykli napełniania!",
+          "alarm_flow_sensor_cold_fault": "Usterka czujnika przepływu (woda zimna)",
           "alarm_flow_sensor_fault": "Usterka czujnika przepływu!",
+          "alarm_flow_sensor_hot_fault": "Usterka czujnika przepływu (woda ciepła)",
+          "alarm_flushings_cold_exceeded": "Przekroczona liczba płukań (woda zimna)",
+          "alarm_flushings_hot_exceeded": "Przekroczona liczba płukań (woda ciepła)",
           "alarm_heating_fill_time_leak": "Wyciek czasu napełniania ogrzewania!",
           "alarm_heating_fill_volume_leak": "Wyciek objętości napełniania ogrzewania!",
           "alarm_increased_water_hardness": "Zwiększona twardość wody",
@@ -622,8 +676,13 @@
           "alarm_solenoid_valve_fault": "Usterka zaworu elektromagnetycznego",
           "alarm_stagnation_flushing_time_exceeded": "Przekroczony czas płukania stagnacyjnego",
           "alarm_target_pressure_unreachable": "Nie można osiągnąć ciśnienia docelowego!",
+          "alarm_temperature_cold_exceeded": "Przekroczony limit temperatury (woda zimna)",
+          "alarm_temperature_hot_exceeded": "Przekroczony limit temperatury (woda ciepła)",
+          "alarm_temperature_sensor_cold_faulty": "Czujnik temperatury uszkodzony (woda zimna)",
           "alarm_temperature_sensor_faulty": "Czujnik temperatury uszkodzony!",
+          "alarm_temperature_sensor_hot_faulty": "Czujnik temperatury uszkodzony (woda ciepła)",
           "alarm_turbine_blocked": "Turbina zablokowana!",
+          "alarm_turbine_table_invalid": "Nieprawidłowa tabela turbiny",
           "alarm_valve_malfunction": "Usterka mechanizmu zaworu",
           "alarm_valve_position": "Pozycja zaworu",
           "error_no_information": "Błąd: brak dostępnych informacji",
@@ -644,16 +703,22 @@
           "alarm_cartridge_exhausted_capacity": "Wkład wyczerpany (pojemność)",
           "alarm_cartridge_exhausted_conductivity": "Wkład wyczerpany (przewodność)",
           "alarm_chlor_generator_fault": "Usterka generatora chloru!",
+          "alarm_combination_module_communication": "Brak połączenia z modułem kombinowanym",
           "alarm_conductivity_too_high": "Zbyt wysoka przewodność",
           "alarm_dosing_liquid_empty": "Środek dozujący pusty",
           "alarm_dosing_liquid_low": "Środek dozujący na wyczerpaniu",
           "alarm_dosing_pump_communication": "Usterka komunikacji pompy dozującej",
           "alarm_drain_sensor_fault": "Usterka czujnika odpływu",
+          "alarm_emergency_stop": "Płukanie zatrzymane przez wyłączenie awaryjne",
           "alarm_end_switch": "Wyłącznik krańcowy",
           "alarm_external_sensor_leakage_cable": "Zewnętrzny czujnik przecieku (kabel)",
           "alarm_external_sensor_leakage_radio": "Zewnętrzny czujnik przecieku (radio)",
           "alarm_fill_cycles_exceeded": "Przekroczono liczbę cykli napełniania!",
+          "alarm_flow_sensor_cold_fault": "Usterka czujnika przepływu (woda zimna)",
           "alarm_flow_sensor_fault": "Usterka czujnika przepływu!",
+          "alarm_flow_sensor_hot_fault": "Usterka czujnika przepływu (woda ciepła)",
+          "alarm_flushings_cold_exceeded": "Przekroczona liczba płukań (woda zimna)",
+          "alarm_flushings_hot_exceeded": "Przekroczona liczba płukań (woda ciepła)",
           "alarm_heating_fill_time_leak": "Wyciek czasu napełniania ogrzewania!",
           "alarm_heating_fill_volume_leak": "Wyciek objętości napełniania ogrzewania!",
           "alarm_increased_water_hardness": "Zwiększona twardość wody",
@@ -688,8 +753,13 @@
           "alarm_solenoid_valve_fault": "Usterka zaworu elektromagnetycznego",
           "alarm_stagnation_flushing_time_exceeded": "Przekroczony czas płukania stagnacyjnego",
           "alarm_target_pressure_unreachable": "Nie można osiągnąć ciśnienia docelowego!",
+          "alarm_temperature_cold_exceeded": "Przekroczony limit temperatury (woda zimna)",
+          "alarm_temperature_hot_exceeded": "Przekroczony limit temperatury (woda ciepła)",
+          "alarm_temperature_sensor_cold_faulty": "Czujnik temperatury uszkodzony (woda zimna)",
           "alarm_temperature_sensor_faulty": "Czujnik temperatury uszkodzony!",
+          "alarm_temperature_sensor_hot_faulty": "Czujnik temperatury uszkodzony (woda ciepła)",
           "alarm_turbine_blocked": "Turbina zablokowana!",
+          "alarm_turbine_table_invalid": "Nieprawidłowa tabela turbiny",
           "alarm_valve_malfunction": "Usterka mechanizmu zaworu",
           "alarm_valve_position": "Pozycja zaworu",
           "error_no_information": "Błąd: brak dostępnych informacji",
@@ -723,6 +793,12 @@
       },
       "getcas": {
         "name": "Pojemność kanistra"
+      },
+      "getccf": {
+        "name": "Interwał płukania (woda zimna)"
+      },
+      "getccl": {
+        "name": "Temperatura (maksymalna, woda zimna)"
       },
       "getcel": {
         "name": "Temperatura"
@@ -785,6 +861,15 @@
       },
       "getcs3": {
         "name": "Pozostała pojemność żywicy w zbiorniku 3"
+      },
+      "getcsl": {
+        "name": "Maksymalna objętość płukania (woda zimna)"
+      },
+      "getcss": {
+        "name": "Maksymalny czas płukania (woda zimna)"
+      },
+      "getcwf": {
+        "name": "Interwał płukania (woda ciepła)"
       },
       "getcwl": {
         "name": "Próg ostrzeżenia o pozostałej pojemności"
@@ -1510,6 +1595,9 @@
       "getrvt": {
         "name": "Maksymalna objętość napełniania"
       },
+      "getscf": {
+        "name": "Czas stagnacji (woda zimna)"
+      },
       "getscr": {
         "name": "Cykle regeneracji serwisowej"
       },
@@ -1609,6 +1697,9 @@
       "getsv3": {
         "name": "Ilość soli w pojemniku 3"
       },
+      "getswf": {
+        "name": "Czas stagnacji (woda ciepła)"
+      },
       "gett1": {
         "name": "Czas wycieku 1"
       },
@@ -1676,6 +1767,9 @@
       "getvs3": {
         "name": "Próg objętości 3"
       },
+      "getwcl": {
+        "name": "Temperatura (minimalna, woda ciepła)"
+      },
       "getwfc": {
         "name": "SSID Wi-Fi"
       },
@@ -1718,6 +1812,12 @@
           "power_outage": "Przerwa w zasilaniu",
           "salt_supply_low": "Niski poziom soli"
         }
+      },
+      "getwsl": {
+        "name": "Maksymalna objętość płukania (woda ciepła)"
+      },
+      "getwss": {
+        "name": "Maksymalny czas płukania (woda ciepła)"
       },
       "getwty": {
         "name": "Rodzaj wody",

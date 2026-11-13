@@ -159,6 +159,12 @@
       "setdex": {
         "name": "Mikroleckage-Test starten"
       },
+      "setmfc": {
+        "name": "Manuelle Spülung (Kaltwasser)"
+      },
+      "setmfw": {
+        "name": "Manuelle Spülung (Warmwasser)"
+      },
       "setnot": {
         "name": "Benachrichtigung zurücksetzen"
       },
@@ -176,6 +182,18 @@
       "getcas": {
         "name": "Gebindegröße"
       },
+      "getccf": {
+        "name": "Spülintervall (Kaltwasser)",
+        "state": {
+          "off": "Aus"
+        }
+      },
+      "getccl": {
+        "name": "Temperatur (Maximal, Kaltwasser)",
+        "state": {
+          "off": "Aus"
+        }
+      },
       "getcrs": {
         "name": "Kartuschengröße",
         "state": {
@@ -189,6 +207,18 @@
           "1": "HVE",
           "2": "HVE+",
           "none": "Ohne"
+        }
+      },
+      "getcsl": {
+        "name": "Maximale Spülmenge (Kaltwasser)"
+      },
+      "getcss": {
+        "name": "Maximale Spüldauer (Kaltwasser)"
+      },
+      "getcwf": {
+        "name": "Spülintervall (Warmwasser)",
+        "state": {
+          "off": "Aus"
         }
       },
       "getcwl": {
@@ -499,6 +529,9 @@
       "getrvt": {
         "name": "Maximale Füllmenge"
       },
+      "getscf": {
+        "name": "Stagnationszeit (Kaltwasser)"
+      },
       "getsro": {
         "name": "Display-Orientierung",
         "state": {
@@ -523,11 +556,20 @@
       "getsv3": {
         "name": "Salzmenge in Behälter 3"
       },
+      "getswf": {
+        "name": "Stagnationszeit (Warmwasser)"
+      },
       "gettpr": {
         "name": "Solldruck"
       },
       "getttt": {
         "name": "Temperatur (Spülstart)"
+      },
+      "getwcl": {
+        "name": "Temperatur (Minimal, Warmwasser)",
+        "state": {
+          "off": "Aus"
+        }
       },
       "getwmp": {
         "name": "Messintervall",
@@ -542,6 +584,12 @@
           "7200": "2 Stunden",
           "900": "15 Minuten"
         }
+      },
+      "getwsl": {
+        "name": "Maximale Spülmenge (Warmwasser)"
+      },
+      "getwss": {
+        "name": "Maximale Spüldauer (Warmwasser)"
       },
       "getwty": {
         "name": "Wasserart",
@@ -578,16 +626,22 @@
           "alarm_cartridge_exhausted_capacity": "Kartusche erschöpft (Kapazität)",
           "alarm_cartridge_exhausted_conductivity": "Kartusche erschöpft (Leitwertanstieg)",
           "alarm_chlor_generator_fault": "Störung Chlorgenerator!",
+          "alarm_combination_module_communication": "Keine Verbindung zum Kombimodul",
           "alarm_conductivity_too_high": "Leitfähigkeit zu hoch",
           "alarm_dosing_liquid_empty": "Dosiermittel leer",
           "alarm_dosing_liquid_low": "Dosiermittel geht zur Neige",
           "alarm_dosing_pump_communication": "Kommunikationsstörung der Dosierpumpe",
           "alarm_drain_sensor_fault": "Störung Ablaufsensor",
+          "alarm_emergency_stop": "Spülung durch Notabschaltung gestoppt",
           "alarm_end_switch": "Endschalter",
           "alarm_external_sensor_leakage_cable": "EXT. SENSOR LECKAGE KABEL",
           "alarm_external_sensor_leakage_radio": "EXT. SENSOR LECKAGE FUNK",
           "alarm_fill_cycles_exceeded": "Füllzyklen überschritten!",
+          "alarm_flow_sensor_cold_fault": "Störung Durchflusssensor (Kaltwasser)",
           "alarm_flow_sensor_fault": "Störung Durchflusssensor!",
+          "alarm_flow_sensor_hot_fault": "Störung Durchflusssensor (Warmwasser)",
+          "alarm_flushings_cold_exceeded": "Anzahl der Spülungen überschritten (Kaltwasser)",
+          "alarm_flushings_hot_exceeded": "Anzahl der Spülungen überschritten (Warmwasser)",
           "alarm_heating_fill_time_leak": "Zeitleckage Heizungsbefüllung!",
           "alarm_heating_fill_volume_leak": "Volumenleckage Heizungsbefüllung!",
           "alarm_increased_water_hardness": "Erhöhte Wasserhärte",
@@ -622,8 +676,13 @@
           "alarm_solenoid_valve_fault": "Störung Magnetventil",
           "alarm_stagnation_flushing_time_exceeded": "Spülzeit der Stagnationsspülung überschritten",
           "alarm_target_pressure_unreachable": "Solldruck kann nicht erreicht werden!",
+          "alarm_temperature_cold_exceeded": "Temperaturgrenze überschritten (Kaltwasser)",
+          "alarm_temperature_hot_exceeded": "Temperaturgrenze überschritten (Warmwasser)",
+          "alarm_temperature_sensor_cold_faulty": "Temperatursensor fehlerhaft (Kaltwasser)",
           "alarm_temperature_sensor_faulty": "Temperatursensor fehlerhaft!",
+          "alarm_temperature_sensor_hot_faulty": "Temperatursensor fehlerhaft (Warmwasser)",
           "alarm_turbine_blocked": "Turbine blockiert!",
+          "alarm_turbine_table_invalid": "Fehlerhafte Turbinentabelle",
           "alarm_valve_malfunction": "Ventilmechanismus defekt",
           "alarm_valve_position": "Ventilstellung",
           "error_no_information": "Fehler: keine Informationen verfügbar",
@@ -644,16 +703,22 @@
           "alarm_cartridge_exhausted_capacity": "Kartusche erschöpft (Kapazität)",
           "alarm_cartridge_exhausted_conductivity": "Kartusche erschöpft (Leitwertanstieg)",
           "alarm_chlor_generator_fault": "Störung Chlorgenerator!",
+          "alarm_combination_module_communication": "Keine Verbindung zum Kombimodul",
           "alarm_conductivity_too_high": "Leitfähigkeit zu hoch",
           "alarm_dosing_liquid_empty": "Dosiermittel leer",
           "alarm_dosing_liquid_low": "Dosiermittel geht zur Neige",
           "alarm_dosing_pump_communication": "Kommunikationsstörung der Dosierpumpe",
           "alarm_drain_sensor_fault": "Störung Ablaufsensor",
+          "alarm_emergency_stop": "Spülung durch Notabschaltung gestoppt",
           "alarm_end_switch": "Endschalter",
           "alarm_external_sensor_leakage_cable": "EXT. SENSOR LECKAGE KABEL",
           "alarm_external_sensor_leakage_radio": "EXT. SENSOR LECKAGE FUNK",
           "alarm_fill_cycles_exceeded": "Füllzyklen überschritten!",
+          "alarm_flow_sensor_cold_fault": "Störung Durchflusssensor (Kaltwasser)",
           "alarm_flow_sensor_fault": "Störung Durchflusssensor!",
+          "alarm_flow_sensor_hot_fault": "Störung Durchflusssensor (Warmwasser)",
+          "alarm_flushings_cold_exceeded": "Anzahl der Spülungen überschritten (Kaltwasser)",
+          "alarm_flushings_hot_exceeded": "Anzahl der Spülungen überschritten (Warmwasser)",
           "alarm_heating_fill_time_leak": "Zeitleckage Heizungsbefüllung!",
           "alarm_heating_fill_volume_leak": "Volumenleckage Heizungsbefüllung!",
           "alarm_increased_water_hardness": "Erhöhte Wasserhärte",
@@ -688,8 +753,13 @@
           "alarm_solenoid_valve_fault": "Störung Magnetventil",
           "alarm_stagnation_flushing_time_exceeded": "Spülzeit der Stagnationsspülung überschritten",
           "alarm_target_pressure_unreachable": "Solldruck kann nicht erreicht werden!",
+          "alarm_temperature_cold_exceeded": "Temperaturgrenze überschritten (Kaltwasser)",
+          "alarm_temperature_hot_exceeded": "Temperaturgrenze überschritten (Warmwasser)",
+          "alarm_temperature_sensor_cold_faulty": "Temperatursensor fehlerhaft (Kaltwasser)",
           "alarm_temperature_sensor_faulty": "Temperatursensor fehlerhaft!",
+          "alarm_temperature_sensor_hot_faulty": "Temperatursensor fehlerhaft (Warmwasser)",
           "alarm_turbine_blocked": "Turbine blockiert!",
+          "alarm_turbine_table_invalid": "Fehlerhafte Turbinentabelle",
           "alarm_valve_malfunction": "Ventilmechanismus defekt",
           "alarm_valve_position": "Ventilstellung",
           "error_no_information": "Fehler: keine Informationen verfügbar",
@@ -723,6 +793,12 @@
       },
       "getcas": {
         "name": "Gebindegröße"
+      },
+      "getccf": {
+        "name": "Spülintervall (Kaltwasser)"
+      },
+      "getccl": {
+        "name": "Temperatur (Maximal, Kaltwasser)"
       },
       "getcel": {
         "name": "Temperatur"
@@ -785,6 +861,15 @@
       },
       "getcs3": {
         "name": "Restkapazität des Harzes in Behälter 3"
+      },
+      "getcsl": {
+        "name": "Maximale Spülmenge (Kaltwasser)"
+      },
+      "getcss": {
+        "name": "Maximale Spüldauer (Kaltwasser)"
+      },
+      "getcwf": {
+        "name": "Spülintervall (Warmwasser)"
       },
       "getcwl": {
         "name": "Warnschwelle der Restkapazität"
@@ -1510,6 +1595,9 @@
       "getrvt": {
         "name": "Maximale Füllmenge"
       },
+      "getscf": {
+        "name": "Stagnationszeit (Kaltwasser)"
+      },
       "getscr": {
         "name": "Service-Regenerationszyklen"
       },
@@ -1609,6 +1697,9 @@
       "getsv3": {
         "name": "Salzmenge in Behälter 3"
       },
+      "getswf": {
+        "name": "Stagnationszeit (Warmwasser)"
+      },
       "gett1": {
         "name": "Zeitleckage 1"
       },
@@ -1676,6 +1767,9 @@
       "getvs3": {
         "name": "Volumenschwelle 3"
       },
+      "getwcl": {
+        "name": "Temperatur (Minimal, Warmwasser)"
+      },
       "getwfc": {
         "name": "WLAN-SSID"
       },
@@ -1718,6 +1812,12 @@
           "power_outage": "Stromunterbrechung",
           "salt_supply_low": "Salzvorrat gering"
         }
+      },
+      "getwsl": {
+        "name": "Maximale Spülmenge (Warmwasser)"
+      },
+      "getwss": {
+        "name": "Maximale Spüldauer (Warmwasser)"
       },
       "getwty": {
         "name": "Wasserart",

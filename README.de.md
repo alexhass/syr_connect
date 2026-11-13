@@ -163,6 +163,7 @@ Andere Geräte sind auch interessant, müssen aber noch integriert oder zumindes
 - SYR NeoSoft 5000 Connect
 - SYR NeoSoft Lock Connect I / II
 - SYR RSA Connect
+- SYR Safe-T Hygienemodul
 - SYR Safe-T Kommunikationsmodul
 - SYR Safe-T Master / Slave
 - SYR SafeTech Lock Connect
@@ -282,6 +283,7 @@ Die Integration bietet eine umfangreiche Überwachung der Geräte:
 - **Benachrichtigung zurücksetzen**: Benachrichtigungen löschen.
 - **Warnung zurücksetzen**: Warnungen löschen.
 - **Mikroleckage-Test starten**: Mikroleckage-Test starten. Das Ventil bleibt dabei etwa 4 Minuten geschlossen, eine Wasserentnahme während des Tests führt zu einem negativen Ergebnis (nur lokale API).
+- **Manuelle Spülung (Kaltwasser)**, **Manuelle Spülung (Warmwasser)**: Manuelle Spülung der Wasserleitung starten (Hygienemodul).
 
 #### Schalter
 
@@ -304,6 +306,7 @@ Die Integration bietet eine umfangreiche Überwachung der Geräte:
 - **Wasseraufbereitung und Befüllung** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect): Kartuschengröße und -typ, Weichwasserhärte oder maximale Ausgangsleitfähigkeit (je nach Kartusche), Zeitraum der Füllungen, Anzahl der Füllzyklen, maximale Fülldauer und -menge, Solldruck.
 - **Bodensensor** (SafeFloor): Alarmdauer, minimale und maximale Schwellwerte für Luftfeuchtigkeit und Temperatur („Aus“ deaktiviert einen Schwellwert), Messintervall und Synchronisationsintervall der Einstellungen.
 - **Hygienespülung** (HygBox): Wasserart, Stagnationszeit und Spülmenge, Start- und Stopptemperatur, maximale Spüldauer und Spülungen pro Tag, Intervall und Spülmenge der periodischen Spülung, Synchronisationsintervall der Einstellungen.
+- **Hygienespülung** (Hygienemodul, Safe-T Hygienemodul): Stagnationszeit, Spülintervall, Temperaturgrenze, maximale Spüldauer und maximale Spülmenge der Kalt- und der Warmwasserleitung.
 - **Dosierung** (NeoDos Connect): Gebindegröße, Dosiermittel und Betriebsart.
 
 #### Ventilsteuerung

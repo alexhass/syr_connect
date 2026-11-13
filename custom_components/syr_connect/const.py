@@ -462,8 +462,9 @@ _SYR_CONNECT_SELECT_FLUSHING_TEMPERATURE_RANGES = {
     2: (50, 60),
 }
 
-# Flushing volume of the stagnation and the periodic flushing (getSTV, getF3V, HygBox) in
-# liters: 1-100 in steps of 1
+# Flushing volume of the stagnation and the periodic flushing (getSTV, getF3V, HygBox) and
+# the flushing volume after which a hygiene module stops (getCSL, getWSL) in liters: 1-100
+# in steps of 1
 _SYR_CONNECT_SELECT_FLUSHING_VOLUME_OPTIONS = list(range(1, 101))
 
 # Maximum duration of the initial filling (getFMT, All-in-One+) in minutes: 5-20 in steps
@@ -475,6 +476,17 @@ _SYR_CONNECT_SELECT_FMT_OPTIONS = sorted(
         *range(60, 1501, 30),
     }
 )
+
+# Periodic flushing of a hygiene module line (getCCF, getCWF) in days: 1-30 in steps of 1;
+# "off" (0) comes from the device profile
+_SYR_CONNECT_SELECT_HYGIENE_PERIODIC_OPTIONS = list(range(1, 31))
+
+# Stagnation flushing of a hygiene module line (getSCF, getSWF) in days: 1-7 in steps of 1
+_SYR_CONNECT_SELECT_HYGIENE_STAGNATION_OPTIONS = list(range(1, 8))
+
+# Flushing time after which a hygiene module line stops (getCSS, getWSS): raw 1-99 in steps
+# of 1, in 10 s (10-990 s)
+_SYR_CONNECT_SELECT_HYGIENE_STOP_TIME_OPTIONS = list(range(1, 100))
 
 # Minimum humidity threshold (getMIH): 0-95 % in steps of 5. The lower boundary 0 doubles
 # as "Off" (per docs/syrconnect-protocol.md), so no separate raw sentinel value is needed,

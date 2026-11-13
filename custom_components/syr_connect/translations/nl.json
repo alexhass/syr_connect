@@ -159,6 +159,12 @@
       "setdex": {
         "name": "Microlektest starten"
       },
+      "setmfc": {
+        "name": "Handmatige spoeling (koud water)"
+      },
+      "setmfw": {
+        "name": "Handmatige spoeling (warm water)"
+      },
       "setnot": {
         "name": "Melding resetten"
       },
@@ -176,6 +182,18 @@
       "getcas": {
         "name": "Jerrycangrootte"
       },
+      "getccf": {
+        "name": "Spoelinterval (koud water)",
+        "state": {
+          "off": "Uit"
+        }
+      },
+      "getccl": {
+        "name": "Temperatuur (maximaal, koud water)",
+        "state": {
+          "off": "Uit"
+        }
+      },
       "getcrs": {
         "name": "Cartridgegrootte",
         "state": {
@@ -189,6 +207,18 @@
           "1": "HVE",
           "2": "HVE+",
           "none": "Geen"
+        }
+      },
+      "getcsl": {
+        "name": "Maximaal spoelvolume (koud water)"
+      },
+      "getcss": {
+        "name": "Maximale spoelduur (koud water)"
+      },
+      "getcwf": {
+        "name": "Spoelinterval (warm water)",
+        "state": {
+          "off": "Uit"
         }
       },
       "getcwl": {
@@ -499,6 +529,9 @@
       "getrvt": {
         "name": "Maximaal vulvolume"
       },
+      "getscf": {
+        "name": "Stagnatietijd (koud water)"
+      },
       "getsro": {
         "name": "Displayoriëntatie",
         "state": {
@@ -523,11 +556,20 @@
       "getsv3": {
         "name": "Zouthoeveelheid in container 3"
       },
+      "getswf": {
+        "name": "Stagnatietijd (warm water)"
+      },
       "gettpr": {
         "name": "Streefdruk"
       },
       "getttt": {
         "name": "Temperatuur (spoelstart)"
+      },
+      "getwcl": {
+        "name": "Temperatuur (minimaal, warm water)",
+        "state": {
+          "off": "Uit"
+        }
       },
       "getwmp": {
         "name": "Meetinterval",
@@ -542,6 +584,12 @@
           "7200": "2 uur",
           "900": "15 minuten"
         }
+      },
+      "getwsl": {
+        "name": "Maximaal spoelvolume (warm water)"
+      },
+      "getwss": {
+        "name": "Maximale spoelduur (warm water)"
       },
       "getwty": {
         "name": "Watertype",
@@ -578,16 +626,22 @@
           "alarm_cartridge_exhausted_capacity": "Cartridge uitgeput (capaciteit)",
           "alarm_cartridge_exhausted_conductivity": "Cartridge uitgeput (geleidbaarheid)",
           "alarm_chlor_generator_fault": "Storing chloorgenerator!",
+          "alarm_combination_module_communication": "Geen verbinding met de combimodule",
           "alarm_conductivity_too_high": "Geleidbaarheid te hoog",
           "alarm_dosing_liquid_empty": "Doseermiddel leeg",
           "alarm_dosing_liquid_low": "Doseermiddel bijna leeg",
           "alarm_dosing_pump_communication": "Communicatiestoring van de doseerpomp",
           "alarm_drain_sensor_fault": "Storing afvoersensor",
+          "alarm_emergency_stop": "Spoeling gestopt door de noodstop",
           "alarm_end_switch": "Eindschakelaar",
           "alarm_external_sensor_leakage_cable": "Lek externe sensor (kabel)",
           "alarm_external_sensor_leakage_radio": "Lek externe sensor (radio)",
           "alarm_fill_cycles_exceeded": "Vulcycli overschreden!",
+          "alarm_flow_sensor_cold_fault": "Storing doorstroomsensor (koud water)",
           "alarm_flow_sensor_fault": "Storing doorstroomsensor!",
+          "alarm_flow_sensor_hot_fault": "Storing doorstroomsensor (warm water)",
+          "alarm_flushings_cold_exceeded": "Aantal spoelingen overschreden (koud water)",
+          "alarm_flushings_hot_exceeded": "Aantal spoelingen overschreden (warm water)",
           "alarm_heating_fill_time_leak": "Tijdlek vulling verwarming!",
           "alarm_heating_fill_volume_leak": "Volumelek vulling verwarming!",
           "alarm_increased_water_hardness": "Verhoogde waterhardheid",
@@ -622,8 +676,13 @@
           "alarm_solenoid_valve_fault": "Storing magneetventiel",
           "alarm_stagnation_flushing_time_exceeded": "Spoeltijd van de stagnatiespoeling overschreden",
           "alarm_target_pressure_unreachable": "Streefdruk kan niet worden bereikt!",
+          "alarm_temperature_cold_exceeded": "Temperatuurgrens overschreden (koud water)",
+          "alarm_temperature_hot_exceeded": "Temperatuurgrens overschreden (warm water)",
+          "alarm_temperature_sensor_cold_faulty": "Temperatuursensor defect (koud water)",
           "alarm_temperature_sensor_faulty": "Temperatuursensor defect!",
+          "alarm_temperature_sensor_hot_faulty": "Temperatuursensor defect (warm water)",
           "alarm_turbine_blocked": "Turbine geblokkeerd!",
+          "alarm_turbine_table_invalid": "Onjuiste turbinetabel",
           "alarm_valve_malfunction": "Klepmechanisme defect",
           "alarm_valve_position": "Klepstand",
           "error_no_information": "Fout: geen informatie beschikbaar",
@@ -644,16 +703,22 @@
           "alarm_cartridge_exhausted_capacity": "Cartridge uitgeput (capaciteit)",
           "alarm_cartridge_exhausted_conductivity": "Cartridge uitgeput (geleidbaarheid)",
           "alarm_chlor_generator_fault": "Storing chloorgenerator!",
+          "alarm_combination_module_communication": "Geen verbinding met de combimodule",
           "alarm_conductivity_too_high": "Geleidbaarheid te hoog",
           "alarm_dosing_liquid_empty": "Doseermiddel leeg",
           "alarm_dosing_liquid_low": "Doseermiddel bijna leeg",
           "alarm_dosing_pump_communication": "Communicatiestoring van de doseerpomp",
           "alarm_drain_sensor_fault": "Storing afvoersensor",
+          "alarm_emergency_stop": "Spoeling gestopt door de noodstop",
           "alarm_end_switch": "Eindschakelaar",
           "alarm_external_sensor_leakage_cable": "Lek externe sensor (kabel)",
           "alarm_external_sensor_leakage_radio": "Lek externe sensor (radio)",
           "alarm_fill_cycles_exceeded": "Vulcycli overschreden!",
+          "alarm_flow_sensor_cold_fault": "Storing doorstroomsensor (koud water)",
           "alarm_flow_sensor_fault": "Storing doorstroomsensor!",
+          "alarm_flow_sensor_hot_fault": "Storing doorstroomsensor (warm water)",
+          "alarm_flushings_cold_exceeded": "Aantal spoelingen overschreden (koud water)",
+          "alarm_flushings_hot_exceeded": "Aantal spoelingen overschreden (warm water)",
           "alarm_heating_fill_time_leak": "Tijdlek vulling verwarming!",
           "alarm_heating_fill_volume_leak": "Volumelek vulling verwarming!",
           "alarm_increased_water_hardness": "Verhoogde waterhardheid",
@@ -688,8 +753,13 @@
           "alarm_solenoid_valve_fault": "Storing magneetventiel",
           "alarm_stagnation_flushing_time_exceeded": "Spoeltijd van de stagnatiespoeling overschreden",
           "alarm_target_pressure_unreachable": "Streefdruk kan niet worden bereikt!",
+          "alarm_temperature_cold_exceeded": "Temperatuurgrens overschreden (koud water)",
+          "alarm_temperature_hot_exceeded": "Temperatuurgrens overschreden (warm water)",
+          "alarm_temperature_sensor_cold_faulty": "Temperatuursensor defect (koud water)",
           "alarm_temperature_sensor_faulty": "Temperatuursensor defect!",
+          "alarm_temperature_sensor_hot_faulty": "Temperatuursensor defect (warm water)",
           "alarm_turbine_blocked": "Turbine geblokkeerd!",
+          "alarm_turbine_table_invalid": "Onjuiste turbinetabel",
           "alarm_valve_malfunction": "Klepmechanisme defect",
           "alarm_valve_position": "Klepstand",
           "error_no_information": "Fout: geen informatie beschikbaar",
@@ -723,6 +793,12 @@
       },
       "getcas": {
         "name": "Jerrycangrootte"
+      },
+      "getccf": {
+        "name": "Spoelinterval (koud water)"
+      },
+      "getccl": {
+        "name": "Temperatuur (maximaal, koud water)"
       },
       "getcel": {
         "name": "Temperatuur"
@@ -785,6 +861,15 @@
       },
       "getcs3": {
         "name": "Resterende harscapaciteit in tank 3"
+      },
+      "getcsl": {
+        "name": "Maximaal spoelvolume (koud water)"
+      },
+      "getcss": {
+        "name": "Maximale spoelduur (koud water)"
+      },
+      "getcwf": {
+        "name": "Spoelinterval (warm water)"
       },
       "getcwl": {
         "name": "Waarschuwingsdrempel resterende capaciteit"
@@ -1510,6 +1595,9 @@
       "getrvt": {
         "name": "Maximaal vulvolume"
       },
+      "getscf": {
+        "name": "Stagnatietijd (koud water)"
+      },
       "getscr": {
         "name": "Serviceregeneratiecycli"
       },
@@ -1609,6 +1697,9 @@
       "getsv3": {
         "name": "Zouthoeveelheid in container 3"
       },
+      "getswf": {
+        "name": "Stagnatietijd (warm water)"
+      },
       "gett1": {
         "name": "Lektijd 1"
       },
@@ -1676,6 +1767,9 @@
       "getvs3": {
         "name": "Volumedrempel 3"
       },
+      "getwcl": {
+        "name": "Temperatuur (minimaal, warm water)"
+      },
       "getwfc": {
         "name": "Wi-Fi-SSID"
       },
@@ -1718,6 +1812,12 @@
           "power_outage": "Stroomuitval",
           "salt_supply_low": "Zoutvoorraad laag"
         }
+      },
+      "getwsl": {
+        "name": "Maximaal spoelvolume (warm water)"
+      },
+      "getwss": {
+        "name": "Maximale spoelduur (warm water)"
       },
       "getwty": {
         "name": "Watertype",

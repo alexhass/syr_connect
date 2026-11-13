@@ -159,6 +159,12 @@
       "setdex": {
         "name": "Avvia test di microperdita"
       },
+      "setmfc": {
+        "name": "Risciacquo manuale (acqua fredda)"
+      },
+      "setmfw": {
+        "name": "Risciacquo manuale (acqua calda)"
+      },
       "setnot": {
         "name": "Reimposta notifica"
       },
@@ -176,6 +182,18 @@
       "getcas": {
         "name": "Dimensione della tanica"
       },
+      "getccf": {
+        "name": "Intervallo di risciacquo (acqua fredda)",
+        "state": {
+          "off": "Disattivato"
+        }
+      },
+      "getccl": {
+        "name": "Temperatura (massima, acqua fredda)",
+        "state": {
+          "off": "Disattivato"
+        }
+      },
       "getcrs": {
         "name": "Dimensione cartuccia",
         "state": {
@@ -189,6 +207,18 @@
           "1": "HVE",
           "2": "HVE+",
           "none": "Nessuno"
+        }
+      },
+      "getcsl": {
+        "name": "Volume massimo di risciacquo (acqua fredda)"
+      },
+      "getcss": {
+        "name": "Durata massima del risciacquo (acqua fredda)"
+      },
+      "getcwf": {
+        "name": "Intervallo di risciacquo (acqua calda)",
+        "state": {
+          "off": "Disattivato"
         }
       },
       "getcwl": {
@@ -499,6 +529,9 @@
       "getrvt": {
         "name": "Volume massimo di riempimento"
       },
+      "getscf": {
+        "name": "Tempo di stagnazione (acqua fredda)"
+      },
       "getsro": {
         "name": "Orientamento del display",
         "state": {
@@ -523,11 +556,20 @@
       "getsv3": {
         "name": "Quantità di sale nel contenitore 3"
       },
+      "getswf": {
+        "name": "Tempo di stagnazione (acqua calda)"
+      },
       "gettpr": {
         "name": "Pressione target"
       },
       "getttt": {
         "name": "Temperatura (inizio risciacquo)"
+      },
+      "getwcl": {
+        "name": "Temperatura (minima, acqua calda)",
+        "state": {
+          "off": "Disattivato"
+        }
       },
       "getwmp": {
         "name": "Intervallo di misurazione",
@@ -542,6 +584,12 @@
           "7200": "2 ore",
           "900": "15 minuti"
         }
+      },
+      "getwsl": {
+        "name": "Volume massimo di risciacquo (acqua calda)"
+      },
+      "getwss": {
+        "name": "Durata massima del risciacquo (acqua calda)"
       },
       "getwty": {
         "name": "Tipo di acqua",
@@ -578,16 +626,22 @@
           "alarm_cartridge_exhausted_capacity": "Cartuccia esaurita (capacità)",
           "alarm_cartridge_exhausted_conductivity": "Cartuccia esaurita (conducibilità)",
           "alarm_chlor_generator_fault": "Guasto generatore di cloro!",
+          "alarm_combination_module_communication": "Nessuna connessione con il modulo combinato",
           "alarm_conductivity_too_high": "Conducibilità troppo alta",
           "alarm_dosing_liquid_empty": "Prodotto di dosaggio esaurito",
           "alarm_dosing_liquid_low": "Prodotto di dosaggio in esaurimento",
           "alarm_dosing_pump_communication": "Guasto di comunicazione della pompa dosatrice",
           "alarm_drain_sensor_fault": "Guasto sensore di scarico",
+          "alarm_emergency_stop": "Risciacquo interrotto dallo spegnimento di emergenza",
           "alarm_end_switch": "Interruttore di fine corsa",
           "alarm_external_sensor_leakage_cable": "Perdita del sensore esterno (cavo)",
           "alarm_external_sensor_leakage_radio": "Perdita del sensore esterno (radio)",
           "alarm_fill_cycles_exceeded": "Cicli di riempimento superati!",
+          "alarm_flow_sensor_cold_fault": "Guasto sensore di flusso (acqua fredda)",
           "alarm_flow_sensor_fault": "Guasto sensore di flusso!",
+          "alarm_flow_sensor_hot_fault": "Guasto sensore di flusso (acqua calda)",
+          "alarm_flushings_cold_exceeded": "Numero di risciacqui superato (acqua fredda)",
+          "alarm_flushings_hot_exceeded": "Numero di risciacqui superato (acqua calda)",
           "alarm_heating_fill_time_leak": "Perdita tempo riempimento riscaldamento!",
           "alarm_heating_fill_volume_leak": "Perdita volume riempimento riscaldamento!",
           "alarm_increased_water_hardness": "Aumento della durezza dell'acqua",
@@ -622,8 +676,13 @@
           "alarm_solenoid_valve_fault": "Guasto elettrovalvola",
           "alarm_stagnation_flushing_time_exceeded": "Tempo del risciacquo per stagnazione superato",
           "alarm_target_pressure_unreachable": "Impossibile raggiungere la pressione target!",
+          "alarm_temperature_cold_exceeded": "Limite di temperatura superato (acqua fredda)",
+          "alarm_temperature_hot_exceeded": "Limite di temperatura superato (acqua calda)",
+          "alarm_temperature_sensor_cold_faulty": "Sensore di temperatura difettoso (acqua fredda)",
           "alarm_temperature_sensor_faulty": "Sensore di temperatura difettoso!",
+          "alarm_temperature_sensor_hot_faulty": "Sensore di temperatura difettoso (acqua calda)",
           "alarm_turbine_blocked": "Turbina bloccata!",
+          "alarm_turbine_table_invalid": "Tabella turbina errata",
           "alarm_valve_malfunction": "Difetto del meccanismo della valvola",
           "alarm_valve_position": "Posizione della valvola",
           "error_no_information": "Errore: nessuna informazione disponibile",
@@ -644,16 +703,22 @@
           "alarm_cartridge_exhausted_capacity": "Cartuccia esaurita (capacità)",
           "alarm_cartridge_exhausted_conductivity": "Cartuccia esaurita (conducibilità)",
           "alarm_chlor_generator_fault": "Guasto generatore di cloro!",
+          "alarm_combination_module_communication": "Nessuna connessione con il modulo combinato",
           "alarm_conductivity_too_high": "Conducibilità troppo alta",
           "alarm_dosing_liquid_empty": "Prodotto di dosaggio esaurito",
           "alarm_dosing_liquid_low": "Prodotto di dosaggio in esaurimento",
           "alarm_dosing_pump_communication": "Guasto di comunicazione della pompa dosatrice",
           "alarm_drain_sensor_fault": "Guasto sensore di scarico",
+          "alarm_emergency_stop": "Risciacquo interrotto dallo spegnimento di emergenza",
           "alarm_end_switch": "Interruttore di fine corsa",
           "alarm_external_sensor_leakage_cable": "Perdita del sensore esterno (cavo)",
           "alarm_external_sensor_leakage_radio": "Perdita del sensore esterno (radio)",
           "alarm_fill_cycles_exceeded": "Cicli di riempimento superati!",
+          "alarm_flow_sensor_cold_fault": "Guasto sensore di flusso (acqua fredda)",
           "alarm_flow_sensor_fault": "Guasto sensore di flusso!",
+          "alarm_flow_sensor_hot_fault": "Guasto sensore di flusso (acqua calda)",
+          "alarm_flushings_cold_exceeded": "Numero di risciacqui superato (acqua fredda)",
+          "alarm_flushings_hot_exceeded": "Numero di risciacqui superato (acqua calda)",
           "alarm_heating_fill_time_leak": "Perdita tempo riempimento riscaldamento!",
           "alarm_heating_fill_volume_leak": "Perdita volume riempimento riscaldamento!",
           "alarm_increased_water_hardness": "Aumento della durezza dell'acqua",
@@ -688,8 +753,13 @@
           "alarm_solenoid_valve_fault": "Guasto elettrovalvola",
           "alarm_stagnation_flushing_time_exceeded": "Tempo del risciacquo per stagnazione superato",
           "alarm_target_pressure_unreachable": "Impossibile raggiungere la pressione target!",
+          "alarm_temperature_cold_exceeded": "Limite di temperatura superato (acqua fredda)",
+          "alarm_temperature_hot_exceeded": "Limite di temperatura superato (acqua calda)",
+          "alarm_temperature_sensor_cold_faulty": "Sensore di temperatura difettoso (acqua fredda)",
           "alarm_temperature_sensor_faulty": "Sensore di temperatura difettoso!",
+          "alarm_temperature_sensor_hot_faulty": "Sensore di temperatura difettoso (acqua calda)",
           "alarm_turbine_blocked": "Turbina bloccata!",
+          "alarm_turbine_table_invalid": "Tabella turbina errata",
           "alarm_valve_malfunction": "Difetto del meccanismo della valvola",
           "alarm_valve_position": "Posizione della valvola",
           "error_no_information": "Errore: nessuna informazione disponibile",
@@ -723,6 +793,12 @@
       },
       "getcas": {
         "name": "Dimensione della tanica"
+      },
+      "getccf": {
+        "name": "Intervallo di risciacquo (acqua fredda)"
+      },
+      "getccl": {
+        "name": "Temperatura (massima, acqua fredda)"
       },
       "getcel": {
         "name": "Temperatura"
@@ -785,6 +861,15 @@
       },
       "getcs3": {
         "name": "Capacità residua della resina nel serbatoio 3"
+      },
+      "getcsl": {
+        "name": "Volume massimo di risciacquo (acqua fredda)"
+      },
+      "getcss": {
+        "name": "Durata massima del risciacquo (acqua fredda)"
+      },
+      "getcwf": {
+        "name": "Intervallo di risciacquo (acqua calda)"
       },
       "getcwl": {
         "name": "Soglia di avviso della capacità residua"
@@ -1510,6 +1595,9 @@
       "getrvt": {
         "name": "Volume massimo di riempimento"
       },
+      "getscf": {
+        "name": "Tempo di stagnazione (acqua fredda)"
+      },
       "getscr": {
         "name": "Cicli di rigenerazione di servizio"
       },
@@ -1609,6 +1697,9 @@
       "getsv3": {
         "name": "Quantità di sale nel contenitore 3"
       },
+      "getswf": {
+        "name": "Tempo di stagnazione (acqua calda)"
+      },
       "gett1": {
         "name": "Tempo perdita 1"
       },
@@ -1676,6 +1767,9 @@
       "getvs3": {
         "name": "Soglia volume 3"
       },
+      "getwcl": {
+        "name": "Temperatura (minima, acqua calda)"
+      },
       "getwfc": {
         "name": "SSID Wi-Fi"
       },
@@ -1718,6 +1812,12 @@
           "power_outage": "Interruzione di corrente",
           "salt_supply_low": "Scorta di sale bassa"
         }
+      },
+      "getwsl": {
+        "name": "Volume massimo di risciacquo (acqua calda)"
+      },
+      "getwss": {
+        "name": "Durata massima del risciacquo (acqua calda)"
       },
       "getwty": {
         "name": "Tipo di acqua",

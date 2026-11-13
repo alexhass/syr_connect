@@ -164,6 +164,7 @@ Other devices are also of interest, but may need to be integrated or at least te
 - SYR NeoSoft Lock Connect I / II
 - SYR RSA Connect
 - SYR Safe-T Communication Module
+- SYR Safe-T Hygiene Module
 - SYR Safe-T Master / Slave
 - SYR SafeTech Lock Connect
 - SYR Trio LS Connect
@@ -282,6 +283,7 @@ The integration provides comprehensive monitoring of the devices:
 - **Reset notification**: Clear notification messages.
 - **Reset warning**: Clear warning messages.
 - **Start microleakage test**: Start the microleakage test. The valve stays closed for about 4 minutes, and drawing water during the test gives a negative result (local API only).
+- **Manual flushing (cold water)**, **Manual flushing (hot water)**: Start a manual flushing of the water line (hygiene module).
 
 #### Switches
 
@@ -304,6 +306,7 @@ The integration provides comprehensive monitoring of the devices:
 - **Water treatment and filling** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect): Cartridge size and type, soft water hardness or maximum output conductivity (depending on the cartridge), filling period, number of filling cycles, maximum filling duration and amount, target pressure.
 - **Floor sensor** (SafeFloor): Alarm duration, minimum and maximum humidity and temperature thresholds ("Off" disables a threshold), measurement interval and settings synchronization interval.
 - **Hygiene flushing** (HygBox): Water type, stagnation time and flushing volume, start and stop temperature, maximum flushing duration and flushings per day, interval and flushing volume of the periodic flushing, settings synchronization interval.
+- **Hygiene flushing** (hygiene module, Safe-T Hygiene module): Stagnation time, flushing interval, temperature limit, maximum flushing duration and maximum flushing volume of the cold and the hot water line.
 - **Dosing** (NeoDos Connect): Canister size, dosing liquid and operating mode.
 
 #### Valve control

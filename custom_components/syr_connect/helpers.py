@@ -902,6 +902,28 @@ def get_sensor_net_value(value: Any) -> float | None:
     return None
 
 
+def get_hygiene_module_value(value: Any) -> int | None:
+    """Setting of a hygiene module line (getSCF, getCCF, ...): raw value -> integer.
+
+    Only the number before a space or a "[" counts; the cloud probably adds a suffix of
+    an unknown format (see "Hygiene module" in docs/syrconnect-protocol.md).
+
+    Formats:
+    - Without a suffix: "3" -> 3
+    - With a suffix (assumed): "3 [1-7]" -> 3
+    - With a suffix without a space (assumed): "3[1-7]" -> 3
+    """
+    if value is None or isinstance(value, bool):
+        return None
+    tokens = str(value).split()
+    if not tokens:
+        return None
+    try:
+        return int(float(tokens[0].split("[", 1)[0]))
+    except ValueError, OverflowError:
+        return None
+
+
 def host_has_port(host: object) -> bool:
     """Return True if *host* ends with an explicit port, e.g. "192.168.1.10:5333".
 

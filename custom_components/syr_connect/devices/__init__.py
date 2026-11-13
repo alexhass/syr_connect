@@ -103,6 +103,9 @@ class SyrConnectDeviceProfile:
         default_factory=dict
     )
     select: AbstractSet[str]
+    # Select keys with an "off" option: key -> raw value written for "off"; a reported
+    # value below the lowest other option is shown as "off"
+    select_off_values: Mapping[str, int] = field(default_factory=dict)
     # Select keys whose options differ from the global step list of the platform: key ->
     # raw values in ascending order, e.g. other durations for getRMT
     select_options: Mapping[str, list[int]] = field(default_factory=dict)

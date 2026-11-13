@@ -14,6 +14,9 @@ from .devices import (
     dosingpump,
     hva,
     hygbox,
+    hygienemodule,
+    hygienemodule_cold,
+    hygienemodule_hot,
     lex,
     lexplus10s,
     lexplus10sl,
@@ -27,6 +30,8 @@ from .devices import (
     safefloor,
     safetech,
     safetechplus,
+    safethygienemodule,
+    safethygienemodule_cold,
     safetplus,
     trio,
 )
@@ -139,7 +144,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         name="safetplus",
         ver_prefix="Safe-T+",
     ),
-    # ── Safe-T Master / Slave / Communication module (dk=2..5) ─────────────────────
+    # ── Safe-T Master / Slave / Communication module (dk=2, 3, 5) ──────────────────
     SyrConnectModel(
         base_path=None,
         device_profile=safetplus.PROFILE,
@@ -178,6 +183,37 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
         dkv=12,
         manufacturer="SYR",
         name="safetcomm",
+        # TODO: Untested model.
+    ),
+    # ── Safe-T Hygiene module (dk=4) ─────────────────────────────────────────────
+    SyrConnectModel(
+        base_path=None,
+        device_profile=safethygienemodule_cold.PROFILE,
+        display_name="Safe-T Hygiene Module",
+        dk=4,
+        dkv=5,
+        manufacturer="SYR",
+        name="safethygienemodulecold",
+        # TODO: Untested model.
+    ),
+    SyrConnectModel(
+        base_path=None,
+        device_profile=safethygienemodule.PROFILE,
+        display_name="Safe-T Hygiene Module",
+        dk=4,
+        dkv=11,
+        manufacturer="SYR",
+        name="safethygienemoduleinwall",
+        # TODO: Untested model.
+    ),
+    SyrConnectModel(
+        base_path=None,
+        device_profile=safethygienemodule.PROFILE,
+        display_name="Safe-T Hygiene Module",
+        dk=4,
+        dkv=15,
+        manufacturer="SYR",
+        name="safethygienemodule",
         # TODO: Untested model.
     ),
     # ── HVA (dk=20) ─────────────────────────────────────────────────────────────
@@ -488,6 +524,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     # ── Hygiene module (dk=60-63) ────────────────────────────────────────────────
     SyrConnectModel(
         base_path=None,
+        device_profile=hygienemodule_cold.PROFILE,
         display_name="Hygiene Module (cold)",
         dk=60,
         dkv=21,
@@ -497,6 +534,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         base_path=None,
+        device_profile=hygienemodule_hot.PROFILE,
         display_name="Hygiene Module (hot)",
         dk=61,
         dkv=22,
@@ -506,6 +544,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         base_path=None,
+        device_profile=hygienemodule.PROFILE,
         display_name="Hygiene Module (hot and cold)",
         dk=62,
         dkv=23,
@@ -515,6 +554,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         base_path=None,
+        device_profile=hygienemodule.PROFILE,
         display_name="Hygiene Module (cold and hot)",
         dk=63,
         dkv=24,

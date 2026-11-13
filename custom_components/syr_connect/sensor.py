@@ -57,6 +57,7 @@ from .helpers import (
     get_device_model,
     get_hardness_divisor,
     get_hardness_factor,
+    get_hygiene_module_value,
     get_model_supported_keys,
     get_sensor_ab_value,
     get_sensor_ala_map,
@@ -520,6 +521,19 @@ def _value_cas(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     except ValueError, TypeError, OverflowError:
         return None
     return _SYR_CONNECT_SENSOR_CAS_VALUE_MAP.get(raw)
+
+
+def _value_hygiene_module(
+    sensor: SyrConnectSensor, status: dict[str, Any], value: Any
+) -> Any:
+    """Setting of a hygiene module line (getSCF, getCCF, ...): raw value -> number.
+
+    Formats:
+    - Without a suffix: "3" -> 3
+    - With a suffix (assumed): "3 [1-7]" -> 3
+    """
+    number = get_hygiene_module_value(value)
+    return sensor.numeric_value(number) if number is not None else None
 
 
 def _value_crs(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
@@ -1879,6 +1893,79 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
+    # --- Hygiene flushing (hygiene module, cold and hot water line) ---
+    SyrConnectSensorEntityDescription(
+        key="getCCF",  # Periodic flushing of the cold water line (days, 0=off)
+        native_unit_of_measurement=UnitOfTime.DAYS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_hygiene_module,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getCCL",  # Maximum temperature of the cold water line (°C)
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_hygiene_module,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getCSL",  # Flushing volume after which the cold water line stops (l)
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_hygiene_module,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getCSS",  # Flushing time after which the cold water line stops (10 s)
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        multiply_by=10,
+        value_fn=_value_hygiene_module,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getCWF",  # Periodic flushing of the hot water line (days, 0=off)
+        native_unit_of_measurement=UnitOfTime.DAYS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_hygiene_module,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getSCF",  # Stagnation time of the cold water line (days)
+        native_unit_of_measurement=UnitOfTime.DAYS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_hygiene_module,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getSWF",  # Stagnation time of the hot water line (days)
+        native_unit_of_measurement=UnitOfTime.DAYS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_hygiene_module,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getWCL",  # Minimum temperature of the hot water line (°C)
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_hygiene_module,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getWSL",  # Flushing volume after which the hot water line stops (l)
+        native_unit_of_measurement=UnitOfVolume.LITERS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_value_hygiene_module,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getWSS",  # Flushing time after which the hot water line stops (10 s)
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        multiply_by=10,
+        value_fn=_value_hygiene_module,
+    ),
     # --- Dosing (Dosing Pump) ---
     SyrConnectSensorEntityDescription(
         key="getCAS",  # Canister size (raw 1-2, mapped to liters)
@@ -2174,11 +2261,16 @@ _SYR_CONNECT_SENSOR_DESCRIPTIONS: dict[str, SyrConnectSensorEntityDescription] =
 
 # Sensors that only a device profile enables: computed values that the device does not
 # report itself and that apply to one family only, the keys of one cartridge type
-# (cartridge_keys of the profile), and the keys of the HygBox and the dosing pump, which
-# other devices report with another meaning (getDMO, getMTF)
+# (cartridge_keys of the profile), and the keys of the HygBox, the dosing pump and the
+# hygiene module, which other devices report with another meaning (getCWF, getDMO, getMTF)
 _SYR_CONNECT_SENSOR_PROFILE_ONLY_KEYS = {
     "getCAS",
+    "getCCF",
+    "getCCL",
     "getCND_class",
+    "getCSL",
+    "getCSS",
+    "getCWF",
     "getDAM",
     "getDMO",
     "getDSL",
@@ -2189,9 +2281,14 @@ _SYR_CONNECT_SENSOR_PROFILE_ONLY_KEYS = {
     "getLOT",
     "getMTF",
     "getOHW",
+    "getSCF",
     "getSTP",
     "getSTV",
+    "getSWF",
     "getTTT",
+    "getWCL",
+    "getWSL",
+    "getWSS",
     "getWTY",
 }
 

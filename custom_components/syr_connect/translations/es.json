@@ -159,6 +159,12 @@
       "setdex": {
         "name": "Iniciar prueba de microfugas"
       },
+      "setmfc": {
+        "name": "Purga manual (agua fría)"
+      },
+      "setmfw": {
+        "name": "Purga manual (agua caliente)"
+      },
       "setnot": {
         "name": "Restablecer notificación"
       },
@@ -176,6 +182,18 @@
       "getcas": {
         "name": "Tamaño del bidón"
       },
+      "getccf": {
+        "name": "Intervalo de purga (agua fría)",
+        "state": {
+          "off": "Apagado"
+        }
+      },
+      "getccl": {
+        "name": "Temperatura (máxima, agua fría)",
+        "state": {
+          "off": "Apagado"
+        }
+      },
       "getcrs": {
         "name": "Tamaño del cartucho",
         "state": {
@@ -189,6 +207,18 @@
           "1": "HVE",
           "2": "HVE+",
           "none": "Ninguno"
+        }
+      },
+      "getcsl": {
+        "name": "Volumen máximo de purga (agua fría)"
+      },
+      "getcss": {
+        "name": "Duración máxima de purga (agua fría)"
+      },
+      "getcwf": {
+        "name": "Intervalo de purga (agua caliente)",
+        "state": {
+          "off": "Apagado"
         }
       },
       "getcwl": {
@@ -499,6 +529,9 @@
       "getrvt": {
         "name": "Volumen máximo de llenado"
       },
+      "getscf": {
+        "name": "Tiempo de estancamiento (agua fría)"
+      },
       "getsro": {
         "name": "Orientación de la pantalla",
         "state": {
@@ -523,11 +556,20 @@
       "getsv3": {
         "name": "Cantidad de sal en el depósito 3"
       },
+      "getswf": {
+        "name": "Tiempo de estancamiento (agua caliente)"
+      },
       "gettpr": {
         "name": "Presión objetivo"
       },
       "getttt": {
         "name": "Temperatura (inicio de purga)"
+      },
+      "getwcl": {
+        "name": "Temperatura (mínima, agua caliente)",
+        "state": {
+          "off": "Apagado"
+        }
       },
       "getwmp": {
         "name": "Intervalo de medición",
@@ -542,6 +584,12 @@
           "7200": "2 horas",
           "900": "15 minutos"
         }
+      },
+      "getwsl": {
+        "name": "Volumen máximo de purga (agua caliente)"
+      },
+      "getwss": {
+        "name": "Duración máxima de purga (agua caliente)"
       },
       "getwty": {
         "name": "Tipo de agua",
@@ -578,16 +626,22 @@
           "alarm_cartridge_exhausted_capacity": "Cartucho agotado (capacidad)",
           "alarm_cartridge_exhausted_conductivity": "Cartucho agotado (conductividad)",
           "alarm_chlor_generator_fault": "¡Fallo del generador de cloro!",
+          "alarm_combination_module_communication": "Sin conexión con el módulo combinado",
           "alarm_conductivity_too_high": "Conductividad demasiado alta",
           "alarm_dosing_liquid_empty": "Producto de dosificación vacío",
           "alarm_dosing_liquid_low": "Producto de dosificación bajo",
           "alarm_dosing_pump_communication": "Fallo de comunicación de la bomba dosificadora",
           "alarm_drain_sensor_fault": "Fallo del sensor de desagüe",
+          "alarm_emergency_stop": "Purga detenida por la desconexión de emergencia",
           "alarm_end_switch": "Interruptor de fin de carrera",
           "alarm_external_sensor_leakage_cable": "Fuga en sensor externo (cable)",
           "alarm_external_sensor_leakage_radio": "Fuga en sensor externo (radio)",
           "alarm_fill_cycles_exceeded": "¡Ciclos de llenado superados!",
+          "alarm_flow_sensor_cold_fault": "Fallo del sensor de caudal (agua fría)",
           "alarm_flow_sensor_fault": "¡Fallo del sensor de caudal!",
+          "alarm_flow_sensor_hot_fault": "Fallo del sensor de caudal (agua caliente)",
+          "alarm_flushings_cold_exceeded": "Número de purgas superado (agua fría)",
+          "alarm_flushings_hot_exceeded": "Número de purgas superado (agua caliente)",
           "alarm_heating_fill_time_leak": "¡Fuga de tiempo de llenado de calefacción!",
           "alarm_heating_fill_volume_leak": "¡Fuga de volumen de llenado de calefacción!",
           "alarm_increased_water_hardness": "Aumento de dureza del agua",
@@ -622,8 +676,13 @@
           "alarm_solenoid_valve_fault": "Fallo de la electroválvula",
           "alarm_stagnation_flushing_time_exceeded": "Tiempo de purga por estancamiento superado",
           "alarm_target_pressure_unreachable": "¡No se puede alcanzar la presión objetivo!",
+          "alarm_temperature_cold_exceeded": "Límite de temperatura superado (agua fría)",
+          "alarm_temperature_hot_exceeded": "Límite de temperatura superado (agua caliente)",
+          "alarm_temperature_sensor_cold_faulty": "Sensor de temperatura defectuoso (agua fría)",
           "alarm_temperature_sensor_faulty": "¡Sensor de temperatura defectuoso!",
+          "alarm_temperature_sensor_hot_faulty": "Sensor de temperatura defectuoso (agua caliente)",
           "alarm_turbine_blocked": "¡Turbina bloqueada!",
+          "alarm_turbine_table_invalid": "Tabla de turbina incorrecta",
           "alarm_valve_malfunction": "Defecto del mecanismo de la válvula",
           "alarm_valve_position": "Posición de la válvula",
           "error_no_information": "Error: no hay información disponible",
@@ -644,16 +703,22 @@
           "alarm_cartridge_exhausted_capacity": "Cartucho agotado (capacidad)",
           "alarm_cartridge_exhausted_conductivity": "Cartucho agotado (conductividad)",
           "alarm_chlor_generator_fault": "¡Fallo del generador de cloro!",
+          "alarm_combination_module_communication": "Sin conexión con el módulo combinado",
           "alarm_conductivity_too_high": "Conductividad demasiado alta",
           "alarm_dosing_liquid_empty": "Producto de dosificación vacío",
           "alarm_dosing_liquid_low": "Producto de dosificación bajo",
           "alarm_dosing_pump_communication": "Fallo de comunicación de la bomba dosificadora",
           "alarm_drain_sensor_fault": "Fallo del sensor de desagüe",
+          "alarm_emergency_stop": "Purga detenida por la desconexión de emergencia",
           "alarm_end_switch": "Interruptor de fin de carrera",
           "alarm_external_sensor_leakage_cable": "Fuga en sensor externo (cable)",
           "alarm_external_sensor_leakage_radio": "Fuga en sensor externo (radio)",
           "alarm_fill_cycles_exceeded": "¡Ciclos de llenado superados!",
+          "alarm_flow_sensor_cold_fault": "Fallo del sensor de caudal (agua fría)",
           "alarm_flow_sensor_fault": "¡Fallo del sensor de caudal!",
+          "alarm_flow_sensor_hot_fault": "Fallo del sensor de caudal (agua caliente)",
+          "alarm_flushings_cold_exceeded": "Número de purgas superado (agua fría)",
+          "alarm_flushings_hot_exceeded": "Número de purgas superado (agua caliente)",
           "alarm_heating_fill_time_leak": "¡Fuga de tiempo de llenado de calefacción!",
           "alarm_heating_fill_volume_leak": "¡Fuga de volumen de llenado de calefacción!",
           "alarm_increased_water_hardness": "Aumento de dureza del agua",
@@ -688,8 +753,13 @@
           "alarm_solenoid_valve_fault": "Fallo de la electroválvula",
           "alarm_stagnation_flushing_time_exceeded": "Tiempo de purga por estancamiento superado",
           "alarm_target_pressure_unreachable": "¡No se puede alcanzar la presión objetivo!",
+          "alarm_temperature_cold_exceeded": "Límite de temperatura superado (agua fría)",
+          "alarm_temperature_hot_exceeded": "Límite de temperatura superado (agua caliente)",
+          "alarm_temperature_sensor_cold_faulty": "Sensor de temperatura defectuoso (agua fría)",
           "alarm_temperature_sensor_faulty": "¡Sensor de temperatura defectuoso!",
+          "alarm_temperature_sensor_hot_faulty": "Sensor de temperatura defectuoso (agua caliente)",
           "alarm_turbine_blocked": "¡Turbina bloqueada!",
+          "alarm_turbine_table_invalid": "Tabla de turbina incorrecta",
           "alarm_valve_malfunction": "Defecto del mecanismo de la válvula",
           "alarm_valve_position": "Posición de la válvula",
           "error_no_information": "Error: no hay información disponible",
@@ -723,6 +793,12 @@
       },
       "getcas": {
         "name": "Tamaño del bidón"
+      },
+      "getccf": {
+        "name": "Intervalo de purga (agua fría)"
+      },
+      "getccl": {
+        "name": "Temperatura (máxima, agua fría)"
       },
       "getcel": {
         "name": "Temperatura"
@@ -785,6 +861,15 @@
       },
       "getcs3": {
         "name": "Capacidad restante de la resina en el depósito 3"
+      },
+      "getcsl": {
+        "name": "Volumen máximo de purga (agua fría)"
+      },
+      "getcss": {
+        "name": "Duración máxima de purga (agua fría)"
+      },
+      "getcwf": {
+        "name": "Intervalo de purga (agua caliente)"
       },
       "getcwl": {
         "name": "Umbral de advertencia de capacidad restante"
@@ -1510,6 +1595,9 @@
       "getrvt": {
         "name": "Volumen máximo de llenado"
       },
+      "getscf": {
+        "name": "Tiempo de estancamiento (agua fría)"
+      },
       "getscr": {
         "name": "Ciclos de regeneración de servicio"
       },
@@ -1609,6 +1697,9 @@
       "getsv3": {
         "name": "Cantidad de sal en el depósito 3"
       },
+      "getswf": {
+        "name": "Tiempo de estancamiento (agua caliente)"
+      },
       "gett1": {
         "name": "Fuga de tiempo 1"
       },
@@ -1676,6 +1767,9 @@
       "getvs3": {
         "name": "Umbral de volumen 3"
       },
+      "getwcl": {
+        "name": "Temperatura (mínima, agua caliente)"
+      },
       "getwfc": {
         "name": "SSID WLAN"
       },
@@ -1718,6 +1812,12 @@
           "power_outage": "Corte de energía",
           "salt_supply_low": "Reserva de sal baja"
         }
+      },
+      "getwsl": {
+        "name": "Volumen máximo de purga (agua caliente)"
+      },
+      "getwss": {
+        "name": "Duración máxima de purga (agua caliente)"
       },
       "getwty": {
         "name": "Tipo de agua",

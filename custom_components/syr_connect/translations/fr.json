@@ -159,6 +159,12 @@
       "setdex": {
         "name": "Démarrer le test de microfuite"
       },
+      "setmfc": {
+        "name": "Rinçage manuel (eau froide)"
+      },
+      "setmfw": {
+        "name": "Rinçage manuel (eau chaude)"
+      },
       "setnot": {
         "name": "Réinitialiser la notification"
       },
@@ -176,6 +182,18 @@
       "getcas": {
         "name": "Taille du bidon"
       },
+      "getccf": {
+        "name": "Intervalle de rinçage (eau froide)",
+        "state": {
+          "off": "Désactivé"
+        }
+      },
+      "getccl": {
+        "name": "Température (maximale, eau froide)",
+        "state": {
+          "off": "Désactivé"
+        }
+      },
       "getcrs": {
         "name": "Taille de la cartouche",
         "state": {
@@ -189,6 +207,18 @@
           "1": "HVE",
           "2": "HVE+",
           "none": "Aucun"
+        }
+      },
+      "getcsl": {
+        "name": "Volume maximal de rinçage (eau froide)"
+      },
+      "getcss": {
+        "name": "Durée maximale de rinçage (eau froide)"
+      },
+      "getcwf": {
+        "name": "Intervalle de rinçage (eau chaude)",
+        "state": {
+          "off": "Désactivé"
         }
       },
       "getcwl": {
@@ -499,6 +529,9 @@
       "getrvt": {
         "name": "Volume maximal de remplissage"
       },
+      "getscf": {
+        "name": "Durée de stagnation (eau froide)"
+      },
       "getsro": {
         "name": "Orientation de l'affichage",
         "state": {
@@ -523,11 +556,20 @@
       "getsv3": {
         "name": "Quantité de sel dans le réservoir 3"
       },
+      "getswf": {
+        "name": "Durée de stagnation (eau chaude)"
+      },
       "gettpr": {
         "name": "Pression cible"
       },
       "getttt": {
         "name": "Température (début du rinçage)"
+      },
+      "getwcl": {
+        "name": "Température (minimale, eau chaude)",
+        "state": {
+          "off": "Désactivé"
+        }
       },
       "getwmp": {
         "name": "Intervalle de mesure",
@@ -542,6 +584,12 @@
           "7200": "2 heures",
           "900": "15 minutes"
         }
+      },
+      "getwsl": {
+        "name": "Volume maximal de rinçage (eau chaude)"
+      },
+      "getwss": {
+        "name": "Durée maximale de rinçage (eau chaude)"
       },
       "getwty": {
         "name": "Type d'eau",
@@ -578,16 +626,22 @@
           "alarm_cartridge_exhausted_capacity": "Cartouche épuisée (capacité)",
           "alarm_cartridge_exhausted_conductivity": "Cartouche épuisée (conductivité)",
           "alarm_chlor_generator_fault": "Défaut du générateur de chlore",
+          "alarm_combination_module_communication": "Pas de connexion avec le module combiné",
           "alarm_conductivity_too_high": "Conductivité trop élevée",
           "alarm_dosing_liquid_empty": "Produit de dosage vide",
           "alarm_dosing_liquid_low": "Produit de dosage faible",
           "alarm_dosing_pump_communication": "Défaut de communication de la pompe doseuse",
           "alarm_drain_sensor_fault": "Défaut du capteur d'écoulement",
+          "alarm_emergency_stop": "Rinçage arrêté par l'arrêt d'urgence",
           "alarm_end_switch": "Fin de course",
           "alarm_external_sensor_leakage_cable": "Fuite du capteur externe (câble)",
           "alarm_external_sensor_leakage_radio": "Fuite du capteur externe (radio)",
           "alarm_fill_cycles_exceeded": "Cycles de remplissage dépassés",
+          "alarm_flow_sensor_cold_fault": "Défaut du capteur de débit (eau froide)",
           "alarm_flow_sensor_fault": "Défaut du capteur de débit",
+          "alarm_flow_sensor_hot_fault": "Défaut du capteur de débit (eau chaude)",
+          "alarm_flushings_cold_exceeded": "Nombre de rinçages dépassé (eau froide)",
+          "alarm_flushings_hot_exceeded": "Nombre de rinçages dépassé (eau chaude)",
           "alarm_heating_fill_time_leak": "Fuite de temps de remplissage du chauffage",
           "alarm_heating_fill_volume_leak": "Fuite de volume de remplissage du chauffage",
           "alarm_increased_water_hardness": "Dureté de l'eau augmentée",
@@ -622,8 +676,13 @@
           "alarm_solenoid_valve_fault": "Défaut de l'électrovanne",
           "alarm_stagnation_flushing_time_exceeded": "Durée du rinçage de stagnation dépassée",
           "alarm_target_pressure_unreachable": "Impossible d'atteindre la pression cible",
+          "alarm_temperature_cold_exceeded": "Limite de température dépassée (eau froide)",
+          "alarm_temperature_hot_exceeded": "Limite de température dépassée (eau chaude)",
+          "alarm_temperature_sensor_cold_faulty": "Capteur de température défectueux (eau froide)",
           "alarm_temperature_sensor_faulty": "Capteur de température défectueux",
+          "alarm_temperature_sensor_hot_faulty": "Capteur de température défectueux (eau chaude)",
           "alarm_turbine_blocked": "Turbine bloquée",
+          "alarm_turbine_table_invalid": "Table de turbine incorrecte",
           "alarm_valve_malfunction": "Défaut du mécanisme de la vanne",
           "alarm_valve_position": "Position de la vanne",
           "error_no_information": "Erreur : aucune information disponible",
@@ -644,16 +703,22 @@
           "alarm_cartridge_exhausted_capacity": "Cartouche épuisée (capacité)",
           "alarm_cartridge_exhausted_conductivity": "Cartouche épuisée (conductivité)",
           "alarm_chlor_generator_fault": "Défaut du générateur de chlore",
+          "alarm_combination_module_communication": "Pas de connexion avec le module combiné",
           "alarm_conductivity_too_high": "Conductivité trop élevée",
           "alarm_dosing_liquid_empty": "Produit de dosage vide",
           "alarm_dosing_liquid_low": "Produit de dosage faible",
           "alarm_dosing_pump_communication": "Défaut de communication de la pompe doseuse",
           "alarm_drain_sensor_fault": "Défaut du capteur d'écoulement",
+          "alarm_emergency_stop": "Rinçage arrêté par l'arrêt d'urgence",
           "alarm_end_switch": "Fin de course",
           "alarm_external_sensor_leakage_cable": "Fuite du capteur externe (câble)",
           "alarm_external_sensor_leakage_radio": "Fuite du capteur externe (radio)",
           "alarm_fill_cycles_exceeded": "Cycles de remplissage dépassés",
+          "alarm_flow_sensor_cold_fault": "Défaut du capteur de débit (eau froide)",
           "alarm_flow_sensor_fault": "Défaut du capteur de débit",
+          "alarm_flow_sensor_hot_fault": "Défaut du capteur de débit (eau chaude)",
+          "alarm_flushings_cold_exceeded": "Nombre de rinçages dépassé (eau froide)",
+          "alarm_flushings_hot_exceeded": "Nombre de rinçages dépassé (eau chaude)",
           "alarm_heating_fill_time_leak": "Fuite de temps de remplissage du chauffage",
           "alarm_heating_fill_volume_leak": "Fuite de volume de remplissage du chauffage",
           "alarm_increased_water_hardness": "Dureté de l'eau augmentée",
@@ -688,8 +753,13 @@
           "alarm_solenoid_valve_fault": "Défaut de l'électrovanne",
           "alarm_stagnation_flushing_time_exceeded": "Durée du rinçage de stagnation dépassée",
           "alarm_target_pressure_unreachable": "Impossible d'atteindre la pression cible",
+          "alarm_temperature_cold_exceeded": "Limite de température dépassée (eau froide)",
+          "alarm_temperature_hot_exceeded": "Limite de température dépassée (eau chaude)",
+          "alarm_temperature_sensor_cold_faulty": "Capteur de température défectueux (eau froide)",
           "alarm_temperature_sensor_faulty": "Capteur de température défectueux",
+          "alarm_temperature_sensor_hot_faulty": "Capteur de température défectueux (eau chaude)",
           "alarm_turbine_blocked": "Turbine bloquée",
+          "alarm_turbine_table_invalid": "Table de turbine incorrecte",
           "alarm_valve_malfunction": "Défaut du mécanisme de la vanne",
           "alarm_valve_position": "Position de la vanne",
           "error_no_information": "Erreur : aucune information disponible",
@@ -723,6 +793,12 @@
       },
       "getcas": {
         "name": "Taille du bidon"
+      },
+      "getccf": {
+        "name": "Intervalle de rinçage (eau froide)"
+      },
+      "getccl": {
+        "name": "Température (maximale, eau froide)"
       },
       "getcel": {
         "name": "Température"
@@ -785,6 +861,15 @@
       },
       "getcs3": {
         "name": "Capacité restante de la résine dans le réservoir 3"
+      },
+      "getcsl": {
+        "name": "Volume maximal de rinçage (eau froide)"
+      },
+      "getcss": {
+        "name": "Durée maximale de rinçage (eau froide)"
+      },
+      "getcwf": {
+        "name": "Intervalle de rinçage (eau chaude)"
       },
       "getcwl": {
         "name": "Seuil d'avertissement de capacité restante"
@@ -1510,6 +1595,9 @@
       "getrvt": {
         "name": "Volume maximal de remplissage"
       },
+      "getscf": {
+        "name": "Durée de stagnation (eau froide)"
+      },
       "getscr": {
         "name": "Cycles de régénération de service"
       },
@@ -1609,6 +1697,9 @@
       "getsv3": {
         "name": "Quantité de sel dans le réservoir 3"
       },
+      "getswf": {
+        "name": "Durée de stagnation (eau chaude)"
+      },
       "gett1": {
         "name": "Fuite de temps 1"
       },
@@ -1676,6 +1767,9 @@
       "getvs3": {
         "name": "Seuil de volume 3"
       },
+      "getwcl": {
+        "name": "Température (minimale, eau chaude)"
+      },
       "getwfc": {
         "name": "SSID WLAN"
       },
@@ -1718,6 +1812,12 @@
           "power_outage": "Coupure de courant",
           "salt_supply_low": "Réserve de sel faible"
         }
+      },
+      "getwsl": {
+        "name": "Volume maximal de rinçage (eau chaude)"
+      },
+      "getwss": {
+        "name": "Durée maximale de rinçage (eau chaude)"
       },
       "getwty": {
         "name": "Type d'eau",

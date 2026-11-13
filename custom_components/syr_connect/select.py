@@ -24,6 +24,9 @@ from .const import (
     _SYR_CONNECT_SELECT_FLUSHING_TEMPERATURE_RANGES,
     _SYR_CONNECT_SELECT_FLUSHING_VOLUME_OPTIONS,
     _SYR_CONNECT_SELECT_FMT_OPTIONS,
+    _SYR_CONNECT_SELECT_HYGIENE_PERIODIC_OPTIONS,
+    _SYR_CONNECT_SELECT_HYGIENE_STAGNATION_OPTIONS,
+    _SYR_CONNECT_SELECT_HYGIENE_STOP_TIME_OPTIONS,
     _SYR_CONNECT_SELECT_MIH_MAP,
     _SYR_CONNECT_SELECT_MIT_MAP,
     _SYR_CONNECT_SELECT_MXH_MAP,
@@ -51,6 +54,7 @@ from .helpers import (
     get_device_model,
     get_hardness_factor,
     get_hardness_range,
+    get_hygiene_module_value,
     get_model_supported_keys,
     get_sensor_rtm_value,
     get_whu_unit,
@@ -240,6 +244,47 @@ _SYR_CONNECT_SELECT_TYPES: tuple[SyrConnectSelectEntityDescription, ...] = (
         key="getWTY",  # Water type (1=cold water, 2=hot water)
         entity_category=EntityCategory.CONFIG,
     ),
+    # --- Hygiene flushing (hygiene module, cold and hot water line) ---
+    SyrConnectSelectEntityDescription(
+        key="getCCF",  # Periodic flushing of the cold water line (days, 0=off)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getCCL",  # Maximum temperature of the cold water line (°C)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getCSL",  # Flushing volume after which the cold water line stops (l)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getCSS",  # Flushing time after which the cold water line stops (10 s)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getCWF",  # Periodic flushing of the hot water line (days, 0=off)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getSCF",  # Stagnation time of the cold water line (days)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getSWF",  # Stagnation time of the hot water line (days)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getWCL",  # Minimum temperature of the hot water line (°C)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getWSL",  # Flushing volume after which the hot water line stops (l)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getWSS",  # Flushing time after which the hot water line stops (10 s)
+        entity_category=EntityCategory.CONFIG,
+    ),
     # --- Dosing (Dosing Pump) ---
     SyrConnectSelectEntityDescription(
         key="getCAS",  # Canister size (raw 1-2, mapped to liters)
@@ -368,6 +413,18 @@ def _to_int(value: Any) -> int | None:
         return None
 
 
+def _is_hygiene_module_value(value: Any) -> bool:
+    """Return True if a raw hygiene module setting holds a number (e.g. "3" or "3 [1-7]").
+
+    Args:
+        value: Raw value from the device status
+
+    Returns:
+        True if `get_hygiene_module_value` finds a number, False otherwise
+    """
+    return get_hygiene_module_value(value) is not None
+
+
 def _unit_options(key: str, values: list[int]) -> list[str]:
     """Return option labels with the key's unit suffix, e.g. "30 min".
 
@@ -482,6 +539,7 @@ def _build_device_selects(
     _add_muco_selects(builder)
     _add_safefloor_selects(builder)
     _add_hygbox_selects(builder)
+    _add_hygiene_module_selects(builder)
     _add_dosing_pump_selects(builder)
     return builder.entities
 
@@ -670,6 +728,50 @@ def _add_hygbox_selects(b: _SyrConnectSelectBuilder) -> None:
         b.add_numeric_steps("getF3P", _SYR_CONNECT_SELECT_F3P_OPTIONS)
     if b.allowed("getF3V"):
         b.add_numeric_steps("getF3V", _SYR_CONNECT_SELECT_FLUSHING_VOLUME_OPTIONS)
+
+
+def _add_hygiene_module_selects(b: _SyrConnectSelectBuilder) -> None:
+    """Add the hygiene module selects: the five settings of the cold and the hot water line.
+
+    The temperature limits (getCCL, getWCL) differ between the hygiene module and the
+    Safe-T Hygiene module and come from the device profile only.
+    """
+    profile = b.model_info.device_profile
+    if profile is None:
+        return
+    for key, values in (
+        ("getSCF", _SYR_CONNECT_SELECT_HYGIENE_STAGNATION_OPTIONS),
+        ("getSWF", _SYR_CONNECT_SELECT_HYGIENE_STAGNATION_OPTIONS),
+        ("getCCF", _SYR_CONNECT_SELECT_HYGIENE_PERIODIC_OPTIONS),
+        ("getCWF", _SYR_CONNECT_SELECT_HYGIENE_PERIODIC_OPTIONS),
+        ("getCCL", profile.select_options.get("getCCL")),
+        ("getWCL", profile.select_options.get("getWCL")),
+        ("getCSS", _SYR_CONNECT_SELECT_HYGIENE_STOP_TIME_OPTIONS),
+        ("getWSS", _SYR_CONNECT_SELECT_HYGIENE_STOP_TIME_OPTIONS),
+        ("getCSL", _SYR_CONNECT_SELECT_FLUSHING_VOLUME_OPTIONS),
+        ("getWSL", _SYR_CONNECT_SELECT_FLUSHING_VOLUME_OPTIONS),
+    ):
+        if values is None or not b.allowed(key, _is_hygiene_module_value):
+            continue
+        # Option labels in the unit of the sensor, e.g. "60 s" for the raw value 6 of getCSS
+        unit = _option_unit(key)
+        factor = _SYR_CONNECT_SENSOR_DESCRIPTIONS[key].multiply_by
+        options_map: dict[str, int | None] = {
+            f"{value * factor} {unit}": value for value in values
+        }
+        off_value = profile.select_off_values.get(key)
+        if off_value is not None:
+            options_map = {"off": off_value, **options_map}
+        b.entities.append(
+            SyrConnectHygieneModuleSelect(
+                b.coordinator,
+                b.device_id,
+                b.device_name,
+                key,
+                options_map,
+                off_value,
+            )
+        )
 
 
 def _add_dosing_pump_selects(b: _SyrConnectSelectBuilder) -> None:
@@ -1463,6 +1565,48 @@ class SyrConnectDiscreteSelect(SyrConnectEntity, SelectEntity):
                     "entity": self._entity_name,
                 },
             ) from err
+
+
+class SyrConnectHygieneModuleSelect(SyrConnectDiscreteSelect):
+    """Setting of a hygiene module line (getSCF, getCCF, getCCL, getCSS, getCSL and getW*).
+
+    Only the number before a space or a "[" of the reported value counts, see
+    `get_hygiene_module_value`. With an "off" option, a value below the lowest other
+    option is shown as "off".
+    """
+
+    def __init__(
+        self,
+        coordinator: SyrConnectDataUpdateCoordinator,
+        device_id: str,
+        device_name: str,
+        sensor_key: str,
+        options_map: Mapping[str, int | None],
+        off_value: int | None,
+    ) -> None:
+        """Initialize the select entity."""
+        super().__init__(coordinator, device_id, device_name, sensor_key, options_map)
+        self._off_value = off_value
+
+    @property
+    @override
+    def current_option(self) -> str | None:
+        """Return the currently selected option."""
+        if self._device is None:
+            return None
+        value = get_hygiene_module_value(self._status.get(self._sensor_key))
+        if value is None:
+            return None
+        for option, raw in self._options_map.items():
+            if raw == value:
+                return option
+        if self._off_value is not None and value < min(
+            raw
+            for option, raw in self._options_map.items()
+            if option != "off" and raw is not None
+        ):
+            return "off"
+        return None
 
 
 class SyrConnectPrfSelect(SyrConnectEntity, SelectEntity):

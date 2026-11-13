@@ -67,7 +67,21 @@ _SYR_CONNECT_BUTTON_TYPES: tuple[ButtonEntityDescription, ...] = (
     ButtonEntityDescription(
         key="setDEX",  # Start microleakage test
     ),
+    ButtonEntityDescription(
+        key="setMFC",  # Start a manual flushing of the cold water line (hygiene module)
+    ),
+    ButtonEntityDescription(
+        key="setMFW",  # Start a manual flushing of the hot water line (hygiene module)
+    ),
 )
+
+# Commands without a read key of their own: command -> status key that tells the device
+# has the function. A hygiene module reports no getMFC/getMFW; the stagnation time of the
+# line (getSCF, getSWF) shows that the line exists.
+_SYR_CONNECT_BUTTON_PRESENCE_KEYS = {
+    "setMFC": "getSCF",
+    "setMFW": "getSWF",
+}
 
 _SYR_CONNECT_BUTTON_DESCRIPTIONS: dict[str, ButtonEntityDescription] = {
     description.key: description for description in _SYR_CONNECT_BUTTON_TYPES
@@ -179,7 +193,9 @@ def _build_device_buttons(
                 continue
             get_key = "getDSV"
         else:
-            get_key = "get" + command[3:]
+            get_key = _SYR_CONNECT_BUTTON_PRESENCE_KEYS.get(
+                command, "get" + command[3:]
+            )
         if get_key not in status:
             continue
 
@@ -328,6 +344,13 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
                     value_sir = 0
                 await coordinator.async_set_device_value(
                     self._device_id, self._command, value_sir
+                )
+                return
+
+            # Manual flushing of a hygiene module line: the command has no value
+            if self._command in _SYR_CONNECT_BUTTON_PRESENCE_KEYS:
+                await coordinator.async_set_device_value(
+                    self._device_id, self._command, ""
                 )
                 return
 

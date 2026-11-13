@@ -664,8 +664,9 @@ def test_detect_model_safet_slave_in_wall_is_device_kind_3() -> None:
     """The in-wall Safe-T Slave (dkv 4) is a Safe-T Slave (dk 3), not dk 4."""
     assert detect_model({}, dk=3, dkv=3).name == "safetslave"
     assert detect_model({}, dk=3, dkv=4).name == "safetslaveinwall"
-    # dk 4 is the Safe-T Hygiene module, which has no signature
-    assert detect_model({}, dk=4, dkv=5) is UNKNOWN_MODEL
+    # dk 4 is the Safe-T Hygiene module
+    assert detect_model({}, dk=4, dkv=5).name == "safethygienemodulecold"
+    assert detect_model({}, dk=4, dkv=4) is UNKNOWN_MODEL
 
 
 def test_detect_model_subtype_selects_the_signature() -> None:
