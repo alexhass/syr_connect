@@ -49,6 +49,7 @@ from .helpers import (
     get_default_scan_interval_for_entry,
     get_device,
     get_device_model,
+    get_integration_version,
     get_sensor_iwh_value,
     is_device_offline,
 )
@@ -162,6 +163,7 @@ class SyrConnectDataUpdateCoordinator(
                 username,
                 password,
                 service=svc,
+                integration_version=get_integration_version(hass),
                 language=get_api_locale(hass.config.language, hass.config.country),
             )
             self._username = username
