@@ -355,6 +355,7 @@ Newer devices also offer a local HTTP API, documented officially by SYR (see [Fu
 | 5 | Safe-T Hygiene module (front-wall installation) | | | |
 | 6 | Safe-T – stand-alone – leakage detector unit | | | |
 | 10 | Safe-T Secondary unit Dual module | | | ref=3, inCollectionAmount=2 |
+| 11 | Safe-T Hygiene module (in-wall installation) | | | only a name in the app, no entry in its device list |
 | 12 | Safe-T – Communication module | | | |
 | 13 | Safe-T Dual leakage detector unit | | | inCollectionAmount=2 |
 | 14 | Safe-T Triple leakage detector unit | | | inCollectionAmount=3 |
@@ -1117,6 +1118,93 @@ Properties of the dosing pump (dk 190, dkv 44), probably the SYR NeoDos Connect.
 | A1 | Communication fault: no connection between the dosing pump and the electronics box | `alarm_dosing_pump_communication` |
 | A2 | Dosing liquid low: enough for about 10 m³ of treated drinking water | `alarm_dosing_liquid_low` |
 | A3 | Dosing liquid empty | `alarm_dosing_liquid_empty` |
+
+### Hygiene module
+
+Properties of the hygiene module (dk 60–63) and of the Safe-T Hygiene module (dk 4, dkv 5, 11, 15). No capture of a real device exists yet; the values are not confirmed. The examples are assumed, not captured, and marked "(assumed)"; they can be wrong and are to be replaced with the values of a capture.
+
+The hygiene module flushes a cold water line, a hot water line or both. The device kind tells which lines exist:
+
+| dk | dkv | Device name | Lines |
+| --- | --- | --- | --- |
+| 4 | 5 | Safe-T Hygiene module (front-wall installation) | cold |
+| 4 | 11 | Safe-T Hygiene module (in-wall installation) | cold and hot |
+| 4 | 15 | Safe-T Hygiene module | cold and hot |
+| 60 | 21 | Hygiene module cold | cold |
+| 61 | 22 | Hygiene module hot | hot |
+| 62 | 23 | Hygiene module hot and cold | hot and cold |
+| 63 | 24 | Hygiene module cold and hot | cold and hot |
+
+Every line has the same five settings. The keys of the cold line have a `C`, the keys of the hot line a `W`: getSCF/getSWF, getCCF/getCWF, getCCL/getWCL, getCSS/getWSS, getCSL/getWSL. getCWF is the periodic flushing of the hot line here, not the water consumption of the week as on the other devices.
+
+The app reads only the part of a value before a `[`, for getCCF/getCWF (and for getSCF/getSWF on dk 60–63) also only the part before a space. The cloud probably adds a suffix to these values; its format is not known.
+
+| Property | Example | Unit | Access level | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| getALA / clrALA | "FF" (assumed) | | | | Current alarm code. On dk 60–63 see [Hygiene module alarms (getALA)](#hygiene-module-alarms-getala); the Safe-T Hygiene module (dk 4) uses the generic alarm texts. clrALA resets the alarm |
+| getBAT | "6,12" (assumed) | V | | | Battery voltage, two decimals |
+| getCCF / setCCF | "7" (assumed) | days | | | Periodic flushing of the cold line: 0 = off, 1–30 = every n days |
+| getCWF / setCWF | "7" (assumed) | days | | | Periodic flushing of the hot line: 0 = off, 1–30 = every n days |
+| getCCL / setCCL | "25" (assumed) | °C | | | Maximum temperature of the cold line. Range: dk 60–63 15–25, a value below 15 = off; dk 4 2–40 |
+| getWCL / setWCL | "55" (assumed) | °C | | | Minimum temperature of the hot line. Range: dk 60–63 55–65, a value below 55 = off; dk 4 50–70 |
+| getCNO | "1234" (assumed) | | | | Code number |
+| getCSL / setCSL | "10" (assumed) | L | | | Flushing of the cold line stops after this volume. Range: 1–100 |
+| getWSL / setWSL | "10" (assumed) | L | | | Flushing of the hot line stops after this volume. Range: 1–100 |
+| getCSS / setCSS | "6" (assumed) | 10 s | | | Flushing of the cold line stops after this time, e.g. "6" = 60 s. Range: 1–99 (10–990 s) |
+| getWSS / setWSS | "6" (assumed) | 10 s | | | Flushing of the hot line stops after this time, e.g. "6" = 60 s. Range: 1–99 (10–990 s) |
+| getMAC | "AA:BB:CC:DD:EE:FF" (assumed) | | | | MAC address |
+| getSCF / setSCF | "3" (assumed) | days | | | Stagnation flushing of the cold line: flushes after n days without water use. Range: 1–7 |
+| getSWF / setSWF | "3" (assumed) | days | | | Stagnation flushing of the hot line: flushes after n days without water use. Range: 1–7 |
+| getVOL | "0" (assumed) | | | | The attributes `tcf` and `twf` hold the number of flushings of the cold and the hot line. On dk 4 the value holds one number per line, which the app divides by 1000 and shows as the current flow of the line |
+| setMFC | | | | | dk 60–63 only: starts a manual flushing of the cold line |
+| setMFW | | | | | dk 60–63 only: starts a manual flushing of the hot line |
+| getVLV / setAB | "20" (assumed) | | | | dk 4 only: shut-off valve, see getVLV and getAB / setAB above |
+| getNPS | "22" (assumed) | s | | | dk 4 only: no turbine pulses since |
+| getTMP / setTMP | "0" (assumed) | s | | 0 | dk 4 only: deactivates the protection for n seconds, see getTMP above |
+
+#### Hygiene module alarms (getALA)
+
+Alarm codes of the hygiene module (dk 60–63). "FF" = no alarm is assumed like on the other devices with the alarm codes A0–AF.
+
+| Code | Alarm |
+| --- | --- |
+| A0 | Battery empty |
+| A1 | Shut-off valve fault: impurities, a motor damage or the end switch |
+| A2 | Flow sensor (cold) sends no signals |
+| A3 | Flow sensor (hot) sends no signals |
+| A4 | Number of hygiene flushings (cold) exceeded: stagnation, or the limit is too low |
+| A5 | Number of hygiene flushings (hot) exceeded: stagnation, or the limit is too low |
+| A6 | Temperature limit (cold) exceeded: insufficient insulation, or the limit is too low |
+| A7 | Temperature limit (hot) exceeded: insufficient insulation, or the limit is too low |
+| A8 | The emergency switch-off stopped the flushing |
+| A9 | Drain sensor reports humidity, the flushing is prevented |
+| AA | Temperature sensor (cold) sends no signal |
+| AB | Temperature sensor (hot) sends no signal |
+| AC | No connection to the combination module |
+| AD | Incorrect turbine table |
+
+### CONTROLICmini
+
+Properties of the CONTROLICmini (dk 100, dkv 27). No capture of a real device exists yet; the values are not confirmed. The examples are assumed, not captured, and marked "(assumed)"; they can be wrong and are to be replaced with the values of a capture.
+
+The CONTROLICmini reports its values with keys without the `get` prefix. Over the cloud they can only be read; the app changes the settings over Bluetooth only.
+
+| Property | Example | Unit | Access level | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| CARTRIDGELITERS | "7" (assumed) | | | | Cartridge size, an index: 0 = unknown, 1–5 = normal cartridge with 4, 6, 7, 14, 30 L, 6–23 = EWC cartridge with 5, 10, 14, 18, 20, 23, 30, 40, 50, 60, 70, 80, 120, 140, 180, 250, 400, 600 L |
+| CARTRIDGETYPE | "3" (assumed) | | | | Cartridge type: 0 = HWE, 1 = HVE, 2 = HVE+, 3 = resin (EWC) |
+| VERSION | "1.0" (assumed) | | | | Firmware version |
+| VOLCARTRIDGE | "500" (assumed) | L (assumed) | | | Volume of the cartridge |
+| VOLCARTRIDGEMAX | "1000" (assumed) | L (assumed) | | | Maximum volume of the cartridge |
+| VOLCURRENT | "120" (assumed) | L (assumed) | | | Current volume |
+| VOLTOTAL | "5000" (assumed) | L (assumed) | | | Total volume |
+| VOLWARNING | "100" (assumed) | L (assumed) | | | Volume at which a warning is shown |
+| WATERHARDNESS | "20" (assumed) | | | | Water hardness of the inlet, in the unit WATERHARDNESSUNIT |
+| WATERHARDNESSUNIT | "0" (assumed) | | | | Unit of WATERHARDNESS: 0 = °dH, 1 = °fH, 2 = °e, 3 = mg CaCO₃/L, 4 = ppm, 5 = mmol/L, 6 = mval/L |
+
+### Inliner-HWA 3300
+
+The app has no own view for the Inliner-HWA 3300 (dk 25, dkv 26). It shows the shut-off valve (getVLV), the battery voltage (getBAT), the firmware, the serial number and the code number (getCNO), like for a device kind it does not know.
 
 ### Access levels
 
