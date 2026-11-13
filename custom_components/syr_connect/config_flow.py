@@ -257,7 +257,12 @@ async def validate_input_json(
         raise CannotConnectError
 
     session = async_get_clientsession(hass)
-    api = SyrConnectJsonAPI(session, host=host, base_path=base_path)
+    api = SyrConnectJsonAPI(
+        session,
+        host=host,
+        base_path=base_path,
+        integration_version=get_integration_version(hass),
+    )
 
     # Test connection by attempting login and fetching device data via public API
     _LOGGER.debug("Testing JSON API connection...")

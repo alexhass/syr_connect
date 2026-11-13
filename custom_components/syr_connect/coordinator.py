@@ -137,6 +137,7 @@ class SyrConnectDataUpdateCoordinator(
                 host=host,
                 base_path=base_path,
                 login_required=config_data.get(CONF_LOGIN_REQUIRED),
+                integration_version=get_integration_version(hass),
             )
             self._username = None  # Not used for JSON API
             self._configuration_url: str | None = (

@@ -18,7 +18,12 @@ from .const import API_TYPE_JSON, API_TYPE_XML, CONF_API_TYPE, CONF_MODEL, CONF_
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .exceptions import SyrConnectConnectionError, SyrConnectHTTPError
-from .helpers import get_device_model, is_empty_ip, mask_ug_value
+from .helpers import (
+    get_device_model,
+    get_integration_version,
+    is_empty_ip,
+    mask_ug_value,
+)
 from .sensor import sensor_keys_for_status
 
 _LOGGER = logging.getLogger(__name__)
@@ -410,7 +415,7 @@ async def _collect_raw_json_local_entry(
 
 
 async def _fetch_local_device_json(
-    session: Any, dev: SyrConnectDevice, base_path: str
+    session: Any, dev: SyrConnectDevice, base_path: str, integration_version: str
 ) -> tuple[str, Any]:
     """Fetch the redacted local `/get/all` data of a cloud device.
 
@@ -440,7 +445,12 @@ async def _fetch_local_device_json(
     if not address.is_private or address.is_loopback or address.is_link_local:
         return dev_id, None
 
-    json_api = SyrConnectJsonAPI(session, host=ip, base_path=base_path)
+    json_api = SyrConnectJsonAPI(
+        session,
+        host=ip,
+        base_path=base_path,
+        integration_version=integration_version,
+    )
     try:
         # Login is required for some devices
         try:
@@ -483,6 +493,7 @@ async def _fetch_local_device_json(
 
 
 async def _collect_raw_json_cloud_devices(
+    hass: HomeAssistant,
     coordinator: SyrConnectDataUpdateCoordinator,
 ) -> dict[str, Any]:
     """Collect local `/get/all` data of cloud (XML API) devices whose model offers local access.
@@ -501,10 +512,13 @@ async def _collect_raw_json_cloud_devices(
         if coordinator and coordinator.data:
             devices = coordinator.data.get("devices", [])
             semaphore = asyncio.Semaphore(_SYR_CONNECT_DIAGNOSTICS_CONCURRENT_API_CALLS)
+            integration_version = get_integration_version(hass)
 
             async def _wrap(dev: SyrConnectDevice, base_path: str) -> tuple[str, Any]:
                 async with semaphore:
-                    return await _fetch_local_device_json(session, dev, base_path)
+                    return await _fetch_local_device_json(
+                        session, dev, base_path, integration_version
+                    )
 
             tasks = [
                 _wrap(d, base_path)
@@ -712,7 +726,7 @@ async def async_get_config_entry_diagnostics(
         diagnostics_data["raw_json"] = await _collect_raw_json_local_entry(coordinator)
     else:
         diagnostics_data["raw_json"] = await _collect_raw_json_cloud_devices(
-            coordinator
+            hass, coordinator
         )
 
     if coordinator.data:

@@ -24,7 +24,7 @@ from .const import (
     CONF_SERVICE,
 )
 from .exceptions import SyrConnectInvalidResponseError
-from .helpers import build_entry_unique_id
+from .helpers import build_entry_unique_id, get_integration_version
 from .models import detect_model
 
 # Renamed local JSON API models (CONF_MODEL) -> their new name
@@ -266,6 +266,7 @@ async def _async_detect_local_model(
         host=entry.data[CONF_HOST],
         base_path=base_path,
         login_required=entry.data.get(CONF_LOGIN_REQUIRED),
+        integration_version=get_integration_version(hass),
     )
     devices = await api.get_devices("local")
     status = await api.get_device_status(devices[0]["id"])

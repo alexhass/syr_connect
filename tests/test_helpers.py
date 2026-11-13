@@ -2786,10 +2786,13 @@ def test_get_month_version() -> None:
         assert get_month_version() == "2026.1.0"
 
 
-def test_build_user_agent() -> None:
+def test_build_user_agent(integration_version: str) -> None:
     """The User-Agent names the integration and Home Assistant with their versions."""
-    assert build_user_agent("2.1.0") == f"syr_connect/2.1.0 HomeAssistant/{HA_VERSION}"
     assert (
-        build_user_agent("2.1.0", "2026.11.0")
-        == "syr_connect/2.1.0 HomeAssistant/2026.11.0"
+        build_user_agent(integration_version)
+        == f"syr_connect/{integration_version} HomeAssistant/{HA_VERSION}"
+    )
+    assert (
+        build_user_agent(integration_version, "2026.11.0")
+        == f"syr_connect/{integration_version} HomeAssistant/2026.11.0"
     )

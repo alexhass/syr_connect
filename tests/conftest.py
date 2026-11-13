@@ -1,6 +1,8 @@
 """Fixtures for the SYR Connect tests."""
 
 from collections.abc import Callable, Generator
+import json
+from pathlib import Path
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
@@ -28,17 +30,37 @@ def auto_enable_custom_integrations(enable_custom_integrations: None) -> Any:
     return enable_custom_integrations
 
 
+@pytest.fixture(name="integration_version")
+def integration_version_fixture() -> str:
+    """Return the version of the integration from its manifest."""
+    manifest = (
+        Path(__file__).parent.parent
+        / "custom_components"
+        / "syr_connect"
+        / "manifest.json"
+    )
+    return str(json.loads(manifest.read_text(encoding="utf-8"))["version"])
+
+
 @pytest.fixture(autouse=True)
-def mock_integration_version() -> Generator[None]:
+def mock_integration_version(integration_version: str) -> Generator[None]:
     """Provide the integration version; most tests do not load the integration."""
     with (
         patch(
             "custom_components.syr_connect.config_flow.get_integration_version",
-            return_value="2.1.0",
+            return_value=integration_version,
         ),
         patch(
             "custom_components.syr_connect.coordinator.get_integration_version",
-            return_value="2.1.0",
+            return_value=integration_version,
+        ),
+        patch(
+            "custom_components.syr_connect.diagnostics.get_integration_version",
+            return_value=integration_version,
+        ),
+        patch(
+            "custom_components.syr_connect.migrations.get_integration_version",
+            return_value=integration_version,
         ),
     ):
         yield

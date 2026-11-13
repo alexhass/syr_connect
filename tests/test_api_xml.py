@@ -36,19 +36,20 @@ def mock_session() -> Any:
 
 
 @pytest.fixture
-def api_client(mock_session: MagicMock) -> Any:
+def api_client(mock_session: MagicMock, integration_version: str) -> Any:
     """Create an API client instance."""
     return SyrConnectXmlAPI(
         mock_session,
         "test@example.com",
         "testpassword",
         service=_SYR_SERVICE,
-        integration_version="2.1.0",
+        integration_version=integration_version,
     )
 
 
 def test_request_urls_and_app_identity_come_from_the_service(
     mock_session: MagicMock,
+    integration_version: str,
 ) -> None:
     """The URLs, the app name and the bundle identifier are those of the service."""
     svc = _SYR_CONNECT_API_SERVICES["de.consoft.gc.conel.connect"]
@@ -57,7 +58,7 @@ def test_request_urls_and_app_identity_come_from_the_service(
         "test@example.com",
         "testpassword",
         service=svc,
-        integration_version="2.1.0",
+        integration_version=integration_version,
     )
 
     assert (
@@ -71,7 +72,9 @@ def test_request_urls_and_app_identity_come_from_the_service(
     assert api.payload_builder.app_version.endswith("-de.consoft.gc.conel.connect")
 
 
-def test_crypt_values_select_the_login_response_key(mock_session: MagicMock) -> None:
+def test_crypt_values_select_the_login_response_key(
+    mock_session: MagicMock, integration_version: str
+) -> None:
     """The login response is decrypted with the key and IV of the service."""
     svc = _SYR_CONNECT_API_SERVICES["de.consoft.rwc.connect"]
     api = SyrConnectXmlAPI(
@@ -79,7 +82,7 @@ def test_crypt_values_select_the_login_response_key(mock_session: MagicMock) -> 
         "test@example.com",
         "testpassword",
         service=svc,
-        integration_version="2.1.0",
+        integration_version=integration_version,
     )
 
     assert (
@@ -90,7 +93,7 @@ def test_crypt_values_select_the_login_response_key(mock_session: MagicMock) -> 
 
 
 async def test_login_does_not_log_payload(
-    mock_session: MagicMock, caplog: pytest.LogCaptureFixture
+    mock_session: MagicMock, caplog: pytest.LogCaptureFixture, integration_version: str
 ) -> None:
     """The login payload is not logged, only its size, so the password never reaches the log."""
     api = SyrConnectXmlAPI(
@@ -98,7 +101,7 @@ async def test_login_does_not_log_payload(
         "user@example.com",
         "s3cr3t!",
         service=_SYR_SERVICE,
-        integration_version="2.1.0",
+        integration_version=integration_version,
         language="en-DE",
     )
     caplog.set_level("DEBUG", logger="custom_components.syr_connect.api_xml")
@@ -118,6 +121,7 @@ async def test_login_does_not_log_payload(
 
 def test_language_is_passed_to_payload_builder_and_http_client(
     mock_session: MagicMock,
+    integration_version: str,
 ) -> None:
     """The locale reaches the login/statistics payloads and the Accept-Language header."""
     api = SyrConnectXmlAPI(
@@ -125,7 +129,7 @@ def test_language_is_passed_to_payload_builder_and_http_client(
         "test@example.com",
         "testpassword",
         service=_SYR_SERVICE,
-        integration_version="2.1.0",
+        integration_version=integration_version,
         language="en-DE",
     )
 
@@ -136,11 +140,12 @@ def test_language_is_passed_to_payload_builder_and_http_client(
 
 def test_user_agent_names_integration_and_home_assistant(
     api_client: SyrConnectXmlAPI,
+    integration_version: str,
 ) -> None:
     """The User-Agent names the integration and Home Assistant with their versions."""
     assert (
         api_client.http_client.user_agent
-        == f"syr_connect/2.1.0 HomeAssistant/{HA_VERSION}"
+        == f"syr_connect/{integration_version} HomeAssistant/{HA_VERSION}"
     )
 
 

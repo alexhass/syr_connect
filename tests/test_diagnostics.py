@@ -1766,7 +1766,12 @@ async def test_raw_json_from_xml_api_base_path_getsrn_redacted(
 
     class DummyJsonAPI:
         def __init__(
-            self, session: Any, host: Any = None, base_path: Any = None
+            self,
+            session: Any,
+            host: Any = None,
+            base_path: Any = None,
+            *,
+            integration_version: str,
         ) -> None:
             self._session = session
             self._host = host
@@ -2494,7 +2499,12 @@ async def test_fetch_device_json_status_exception(
 
     class FakeJsonAPI:
         def __init__(
-            self, session: Any, host: Any = None, base_path: Any = None
+            self,
+            session: Any,
+            host: Any = None,
+            base_path: Any = None,
+            *,
+            integration_version: str,
         ) -> None:
             self._session = session
 
@@ -3479,7 +3489,12 @@ async def test_fetch_device_json_assignment_exception_handled(
 
     class DummyJsonAPI:
         def __init__(
-            self, session: Any, host: Any = None, base_path: Any = None
+            self,
+            session: Any,
+            host: Any = None,
+            base_path: Any = None,
+            *,
+            integration_version: str,
         ) -> None:
             self._session = session
             self._host = host
@@ -4928,16 +4943,27 @@ def _xml_coordinator(status: dict[str, Any]) -> MagicMock:
 
 
 async def test_diagnostics_xml_local_json_uses_model_base_path(
-    monkeypatch: pytest.MonkeyPatch, hass: HomeAssistant
+    monkeypatch: pytest.MonkeyPatch, hass: HomeAssistant, integration_version: str
 ) -> None:
     """A cloud device whose model offers local access is queried via the model's base path and status IP."""
     constructed: list[dict[str, Any]] = []
 
     class FakeJsonApi:
         def __init__(
-            self, session: Any, host: Any = None, base_path: Any = None
+            self,
+            session: Any,
+            host: Any = None,
+            base_path: Any = None,
+            *,
+            integration_version: str,
         ) -> None:
-            constructed.append({"host": host, "base_path": base_path})
+            constructed.append(
+                {
+                    "host": host,
+                    "base_path": base_path,
+                    "integration_version": integration_version,
+                }
+            )
 
         def is_session_valid(self) -> Any:
             return True
@@ -4962,7 +4988,13 @@ async def test_diagnostics_xml_local_json_uses_model_base_path(
 
     diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
 
-    assert constructed == [{"host": "192.168.178.20", "base_path": "/neosoft"}]
+    assert constructed == [
+        {
+            "host": "192.168.178.20",
+            "base_path": "/neosoft",
+            "integration_version": integration_version,
+        }
+    ]
     assert diagnostics["raw_json"]["dev1"]["getSRN"] == "**REDACTED**"
     assert diagnostics["raw_json"]["dev1"]["getFLO"] == "5"
 
@@ -4975,7 +5007,12 @@ async def test_diagnostics_xml_local_json_skipped_without_model_base_path(
 
     class FakeJsonApi:
         def __init__(
-            self, session: Any, host: Any = None, base_path: Any = None
+            self,
+            session: Any,
+            host: Any = None,
+            base_path: Any = None,
+            *,
+            integration_version: str,
         ) -> None:
             constructed.append(host)
 
@@ -5097,6 +5134,7 @@ async def test_diagnostics_xml_json_no_session_sets_error(hass: HomeAssistant) -
 
 async def test_local_device_not_reachable_skips_fetch(
     caplog: pytest.LogCaptureFixture,
+    integration_version: str,
 ) -> None:
     """An unreachable device (login timeout) is logged in one line and not fetched again."""
     caplog.set_level("DEBUG", logger="custom_components.syr_connect.diagnostics")
@@ -5112,7 +5150,9 @@ async def test_local_device_not_reachable_skips_fetch(
         )
         mock_json_api.get_device_status = AsyncMock()
 
-        result = await diag._fetch_local_device_json(MagicMock(), dev, "/trio")
+        result = await diag._fetch_local_device_json(
+            MagicMock(), dev, "/trio", integration_version
+        )
 
     assert result == ("dev1", None)
     mock_json_api.get_device_status.assert_not_called()
@@ -5123,7 +5163,9 @@ async def test_local_device_not_reachable_skips_fetch(
     assert "Traceback" not in caplog.text
 
 
-async def test_local_device_without_login_endpoint_is_fetched() -> None:
+async def test_local_device_without_login_endpoint_is_fetched(
+    integration_version: str,
+) -> None:
     """A device that answers the login with an HTTP error is still fetched."""
     dev: Any = {"id": "dev1", "status": {"getWIP": "192.168.1.100"}}
 
@@ -5137,6 +5179,8 @@ async def test_local_device_without_login_endpoint_is_fetched() -> None:
         )
         mock_json_api.get_device_status = AsyncMock(return_value={"getFLO": "5"})
 
-        result = await diag._fetch_local_device_json(MagicMock(), dev, "/trio")
+        result = await diag._fetch_local_device_json(
+            MagicMock(), dev, "/trio", integration_version
+        )
 
     assert result == ("dev1", {"getFLO": "5"})

@@ -35,6 +35,7 @@ from .exceptions import (
     SyrConnectHTTPError,
     SyrConnectInvalidResponseError,
 )
+from .helpers import build_user_agent
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -87,6 +88,8 @@ class SyrConnectJsonAPI:
         host: IP address or hostname of the device (optional if base_url provided)
         base_path: path component for the device (optional)
         base_url: explicit base URL (overrides host/base_path)
+        integration_version: version of this integration (from
+            helpers.get_integration_version), sent in the User-Agent header
     """
 
     def __init__(
@@ -96,6 +99,8 @@ class SyrConnectJsonAPI:
         base_path: str | None = None,
         base_url: str | None = None,
         login_required: bool | None = None,
+        *,
+        integration_version: str,
     ) -> None:
         """Initialize the JSON API client.
 
@@ -105,6 +110,10 @@ class SyrConnectJsonAPI:
         """
         # HTTP session management
         self._session = session
+
+        # The User-Agent identifies the integration and Home Assistant, as for the
+        # cloud API
+        self._headers = {"User-Agent": build_user_agent(integration_version)}
 
         # URL construction parameters (option 1: host + base_path)
         self._host = host
@@ -336,7 +345,7 @@ class SyrConnectJsonAPI:
             # Redirects are not followed: the local API is unencrypted, and a redirect
             # could send Home Assistant to any address
             async with self._session.get(
-                url, timeout=timeout_obj, allow_redirects=False
+                url, headers=self._headers, timeout=timeout_obj, allow_redirects=False
             ) as resp:
                 _LOGGER.debug(
                     "JSON API: %s - Response status: %s", operation, resp.status
