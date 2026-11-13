@@ -3,6 +3,7 @@
 # The unit tests in this module check private helpers and attributes directly.
 # ruff: noqa: SLF001
 from dataclasses import replace
+from datetime import UTC, datetime
 import importlib
 import logging
 import pkgutil
@@ -44,8 +45,11 @@ from custom_components.syr_connect.helpers import (
     build_entity_id,
     build_set_ab_command,
     build_unique_id,
+    build_user_agent,
     get_current_mac,
     get_device,
+    get_integration_version,
+    get_month_version,
     get_sensor_ab_value,
     get_sensor_ala_map,
     get_sensor_avo_value,
@@ -71,8 +75,10 @@ from custom_components.syr_connect.sensor import (
     _SYR_CONNECT_SENSOR_SUPPORTED_KEYS,
     is_sensor_visible,
 )
+from homeassistant.const import __version__ as HA_VERSION
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
+from homeassistant.loader import async_get_integration
 
 # The profiles of all device files, keyed by module name.
 _DEVICE_PROFILES = {
@@ -2746,3 +2752,44 @@ def test_get_hardness_factor(model: str, raw_code: Any, expected: float) -> None
 def test_round_hardness(value: float, expected: int) -> None:
     """A converted water hardness is rounded to a whole number, halves up."""
     assert helpers.round_hardness(value) == expected
+
+
+async def test_get_integration_version_reads_the_manifest(hass: HomeAssistant) -> None:
+    """The integration version comes from the loaded integration, i.e. manifest.json."""
+    integration = await async_get_integration(hass, DOMAIN)
+
+    assert integration.version is not None
+    assert get_integration_version(hass) == str(integration.version)
+
+
+def test_get_integration_version_without_version(hass: HomeAssistant) -> None:
+    """Without a version in the manifest, the current year and month are used."""
+    with (
+        patch(
+            "custom_components.syr_connect.helpers.async_get_loaded_integration",
+            return_value=SimpleNamespace(version=None),
+        ),
+        patch(
+            "custom_components.syr_connect.helpers.get_month_version",
+            return_value="2026.11.0",
+        ),
+    ):
+        assert get_integration_version(hass) == "2026.11.0"
+
+
+def test_get_month_version() -> None:
+    """The version is the current year and month with patch 0."""
+    with patch(
+        "custom_components.syr_connect.helpers.dt_util.now",
+        return_value=datetime(2026, 1, 31, 23, 0, tzinfo=UTC),
+    ):
+        assert get_month_version() == "2026.1.0"
+
+
+def test_build_user_agent() -> None:
+    """The User-Agent names the integration and Home Assistant with their versions."""
+    assert build_user_agent("2.1.0") == f"syr_connect/2.1.0 HomeAssistant/{HA_VERSION}"
+    assert (
+        build_user_agent("2.1.0", "2026.11.0")
+        == "syr_connect/2.1.0 HomeAssistant/2026.11.0"
+    )

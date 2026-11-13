@@ -43,6 +43,7 @@ from .helpers import (
     build_entry_unique_id,
     get_api_locale,
     get_default_scan_interval_for_entry,
+    get_integration_version,
     host_has_port,
     is_valid_host,
 )
@@ -140,6 +141,7 @@ async def validate_input_xml(
         data[CONF_USERNAME],
         data[CONF_PASSWORD],
         service=svc,
+        integration_version=get_integration_version(hass),
         language=get_api_locale(hass.config.language, hass.config.country),
     )
 

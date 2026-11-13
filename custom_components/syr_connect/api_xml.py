@@ -44,7 +44,6 @@ from .const import (
     _SYR_CONNECT_CLIENT_OS_MODEL,
     _SYR_CONNECT_CLIENT_OS_NAME,
     _SYR_CONNECT_CLIENT_OS_VERSION,
-    _SYR_CONNECT_CLIENT_USER_AGENT,
     SyrConnectService,
 )
 from .data import SyrConnectDevice
@@ -56,7 +55,7 @@ from .exceptions import (
     SyrConnectLoginFailedError,
     SyrConnectSessionExpiredError,
 )
-from .helpers import mask_ug_value
+from .helpers import build_user_agent, mask_ug_value
 from .http_client import HTTPClient
 from .payload_builder import PayloadBuilder
 from .response_parser import ResponseParser
@@ -80,6 +79,7 @@ class SyrConnectXmlAPI:
         password: str,
         *,
         service: SyrConnectService,
+        integration_version: str,
         language: str = _SYR_CONNECT_CLIENT_OS_LANGUAGE,
     ) -> None:
         """Initialize the cloud API client.
@@ -90,6 +90,8 @@ class SyrConnectXmlAPI:
             password: SYR Connect cloud account password
             service: Cloud API service of the account (from _SYR_CONNECT_API_SERVICES):
                 app name, base URL, bundle identifier and the key of the login response
+            integration_version: Version of this integration (from helpers.get_integration_version),
+                sent in the User-Agent header.
             language: Locale like "de-DE" (from helpers.get_api_locale) sent in the app version string
                 "<si v=...>", as lng/reg at login, lg/rg in statistics requests and in the
                 Accept-Language header. Defaults to _SYR_CONNECT_CLIENT_OS_LANGUAGE ("en-US").
@@ -150,9 +152,9 @@ class SyrConnectXmlAPI:
         # XML response parsing (handles various response formats)
         self.response_parser = ResponseParser()
 
-        # HTTP client with SYR-specific User-Agent
+        # HTTP client; the User-Agent identifies the integration and Home Assistant
         self.http_client = HTTPClient(
-            session, _SYR_CONNECT_CLIENT_USER_AGENT, language=language
+            session, build_user_agent(integration_version), language=language
         )
 
     @property

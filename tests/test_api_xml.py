@@ -24,6 +24,7 @@ from custom_components.syr_connect.exceptions import (
     SyrConnectLoginFailedError,
     SyrConnectSessionExpiredError,
 )
+from homeassistant.const import __version__ as HA_VERSION
 
 _SYR_SERVICE = _SYR_CONNECT_API_SERVICES[_SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER]
 
@@ -38,7 +39,11 @@ def mock_session() -> Any:
 def api_client(mock_session: MagicMock) -> Any:
     """Create an API client instance."""
     return SyrConnectXmlAPI(
-        mock_session, "test@example.com", "testpassword", service=_SYR_SERVICE
+        mock_session,
+        "test@example.com",
+        "testpassword",
+        service=_SYR_SERVICE,
+        integration_version="2.1.0",
     )
 
 
@@ -48,7 +53,11 @@ def test_request_urls_and_app_identity_come_from_the_service(
     """The URLs, the app name and the bundle identifier are those of the service."""
     svc = _SYR_CONNECT_API_SERVICES["de.consoft.gc.conel.connect"]
     api = SyrConnectXmlAPI(
-        mock_session, "test@example.com", "testpassword", service=svc
+        mock_session,
+        "test@example.com",
+        "testpassword",
+        service=svc,
+        integration_version="2.1.0",
     )
 
     assert (
@@ -66,7 +75,11 @@ def test_crypt_values_select_the_login_response_key(mock_session: MagicMock) -> 
     """The login response is decrypted with the key and IV of the service."""
     svc = _SYR_CONNECT_API_SERVICES["de.consoft.rwc.connect"]
     api = SyrConnectXmlAPI(
-        mock_session, "test@example.com", "testpassword", service=svc
+        mock_session,
+        "test@example.com",
+        "testpassword",
+        service=svc,
+        integration_version="2.1.0",
     )
 
     assert (
@@ -85,6 +98,7 @@ async def test_login_does_not_log_payload(
         "user@example.com",
         "s3cr3t!",
         service=_SYR_SERVICE,
+        integration_version="2.1.0",
         language="en-DE",
     )
     caplog.set_level("DEBUG", logger="custom_components.syr_connect.api_xml")
@@ -111,12 +125,23 @@ def test_language_is_passed_to_payload_builder_and_http_client(
         "test@example.com",
         "testpassword",
         service=_SYR_SERVICE,
+        integration_version="2.1.0",
         language="en-DE",
     )
 
     assert api.payload_builder.app_version.startswith("App-3.9.7-en-DE-iOS-")
     assert api.payload_builder._compute_locale_lang_reg() == ("en", "DE")
     assert api.http_client._build_accept_language() == "en-DE,en;q=0.9"
+
+
+def test_user_agent_names_integration_and_home_assistant(
+    api_client: SyrConnectXmlAPI,
+) -> None:
+    """The User-Agent names the integration and Home Assistant with their versions."""
+    assert (
+        api_client.http_client.user_agent
+        == f"syr_connect/2.1.0 HomeAssistant/{HA_VERSION}"
+    )
 
 
 def test_language_defaults(api_client: SyrConnectXmlAPI) -> None:

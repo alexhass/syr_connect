@@ -29,6 +29,22 @@ def auto_enable_custom_integrations(enable_custom_integrations: None) -> Any:
 
 
 @pytest.fixture(autouse=True)
+def mock_integration_version() -> Generator[None]:
+    """Provide the integration version; most tests do not load the integration."""
+    with (
+        patch(
+            "custom_components.syr_connect.config_flow.get_integration_version",
+            return_value="2.1.0",
+        ),
+        patch(
+            "custom_components.syr_connect.coordinator.get_integration_version",
+            return_value="2.1.0",
+        ),
+    ):
+        yield
+
+
+@pytest.fixture(autouse=True)
 def expected_lingering_timers() -> bool:
     """Temporarily allow lingering timers."""
     return True

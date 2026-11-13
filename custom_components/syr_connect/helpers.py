@@ -10,11 +10,12 @@ from typing import Any
 
 from homeassistant.components.recorder import get_instance
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_HOST, CONF_USERNAME
+from homeassistant.const import CONF_HOST, CONF_USERNAME, __version__ as HA_VERSION
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
-from homeassistant.util import slugify
+from homeassistant.loader import async_get_loaded_integration
+from homeassistant.util import dt as dt_util, slugify
 
 from .const import (
     _SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT,
@@ -261,6 +262,30 @@ def build_device_info(
         connections=connections or set(),
         configuration_url=configuration_url,
     )
+
+
+def get_month_version() -> str:
+    """Return the current year and month with patch 0 as a version, e.g. "2026.11.0"."""
+    now = dt_util.now()
+    return f"{now.year}.{now.month}.0"
+
+
+def get_integration_version(hass: HomeAssistant) -> str:
+    """Return the version of this integration from its manifest.
+
+    Without a version in the manifest, the current year and month are used
+    (get_month_version).
+    """
+    version = async_get_loaded_integration(hass, DOMAIN).version
+    return str(version) if version is not None else get_month_version()
+
+
+def build_user_agent(integration_version: str, ha_version: str = HA_VERSION) -> str:
+    """Build the HTTP User-Agent that names the integration and Home Assistant.
+
+    Example: "syr_connect/2.1.0 HomeAssistant/2026.11.1"
+    """
+    return f"{DOMAIN}/{integration_version} HomeAssistant/{ha_version}"
 
 
 def build_entity_id(platform: str, device_id: str, key: str) -> str:
