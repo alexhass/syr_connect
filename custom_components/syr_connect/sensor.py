@@ -51,14 +51,14 @@ from .data import SyrConnectDevice
 from .entity import SyrConnectEntity, async_add_device_entities
 from .helpers import (
     find_entity_id,
-    get_cartridge_key,
+    get_cartridge_entity_keys,
     get_cartridge_keys,
-    get_cartridge_type_key,
     get_device_model,
     get_hardness_divisor,
     get_hardness_factor,
     get_hygiene_module_value,
     get_model_supported_keys,
+    get_reported_cartridge_keys,
     get_sensor_ab_value,
     get_sensor_ala_map,
     get_sensor_avo_value,
@@ -2260,8 +2260,8 @@ _SYR_CONNECT_SENSOR_DESCRIPTIONS: dict[str, SyrConnectSensorEntityDescription] =
 }
 
 # Sensors that only a device profile enables: computed values that the device does not
-# report itself and that apply to one family only, the keys of one cartridge type
-# (cartridge_keys of the profile), and the keys of the HygBox, the dosing pump and the
+# report itself and that apply to one family only, the keys of one cartridge type or size
+# (cartridge_keys, cartridge_size_keys of the profile), and the keys of the HygBox, the dosing pump and the
 # hygiene module, which other devices report with another meaning (getCWF, getDMO, getMTF)
 _SYR_CONNECT_SENSOR_PROFILE_ONLY_KEYS = {
     "getCAS",
@@ -2392,7 +2392,7 @@ def _hidden_sensor_keys(status: dict[str, Any], model: SyrConnectModel) -> set[s
         key
         for key in _SYR_CONNECT_SENSOR_CONDITIONAL_KEYS
         if not is_sensor_visible(status, key, status.get(key))
-    } | (get_cartridge_keys(model) - {get_cartridge_type_key(model, status)})
+    } | (get_cartridge_keys(model) - get_reported_cartridge_keys(model, status))
 
 
 async def async_setup_entry(
@@ -2440,7 +2440,7 @@ def _build_device_sensors(
     coordinator: SyrConnectDataUpdateCoordinator,
     device: SyrConnectDevice,
 ) -> list[SensorEntity]:
-    """Return the sensors of one device (except the conditional getLOT/getOHW)."""
+    """Return the sensors of one device (except the conditional cartridge keys)."""
     # Registry handle used for per-group removals below
     registry = er.async_get(hass)
     entities: list[SensorEntity] = []
@@ -2638,17 +2638,17 @@ def _pa_group_keys(idx: int) -> list[str]:
     ]
 
 
-def _muco_conditional_key(status: dict[str, Any], model: SyrConnectModel) -> str | None:
-    """Return the cartridge key that applies to the cartridge type (getCRT), or None.
+def _muco_conditional_keys(status: dict[str, Any], model: SyrConnectModel) -> set[str]:
+    """Return the cartridge keys that apply to the cartridge type and size.
 
-    Only for models whose profile maps the cartridge types to keys (MuCo filling, All in
-    One +). Leak-protection and TrioLock devices also report getCRT/getLOT/getOHW but
-    deliberately do not expose them.
+    Only for models whose profile maps the cartridge types (getCRT) or sizes (getCRS) to
+    keys (MuCo filling, All in One +). Leak-protection and TrioLock devices also report
+    getCRT/getLOT/getOHW but deliberately do not expose them.
     """
     supported_sensor_keys = get_model_supported_keys(
         model, "sensor", _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
     )
-    return get_cartridge_key(model, status, supported_sensor_keys)
+    return get_cartridge_entity_keys(model, status, supported_sensor_keys)
 
 
 def sensor_keys_for_status(status: dict[str, Any], model: SyrConnectModel) -> list[str]:
@@ -2656,7 +2656,7 @@ def sensor_keys_for_status(status: dict[str, Any], model: SyrConnectModel) -> li
 
     Uses the same rules as the setup: the model's allowlist, the connection state (dst),
     the active leak-protection profiles (getPAx), the visibility and value checks of
-    `_is_sensor_wanted` and the conditional getLOT/getOHW sensor.
+    `_is_sensor_wanted` and the conditional cartridge sensors (getLOT, getOHW, getFCS).
 
     Args:
         status: The flattened device status
@@ -2684,8 +2684,7 @@ def sensor_keys_for_status(status: dict[str, Any], model: SyrConnectModel) -> li
         for key, value in status.items()
         if _is_sensor_wanted(status, key, value, supported_sensor_keys, handled_keys)
     )
-    if (conditional_key := _muco_conditional_key(status, model)) is not None:
-        keys.append(conditional_key)
+    keys.extend(sorted(_muco_conditional_keys(status, model)))
     if _is_cnd_class_wanted(status, supported_sensor_keys):
         keys.append("getCND_class")
     return keys
@@ -2775,10 +2774,11 @@ def _async_setup_muco_conditional_sensors(
     coordinator: SyrConnectDataUpdateCoordinator,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Dynamically add/remove the getLOT/getOHW sensor depending on the cartridge type.
+    """Dynamically add/remove the cartridge sensors depending on the cartridge type and size.
 
     Mirrors _async_setup_muco_conditional_selects in select.py: getLOT (HVE/HVE+) and
-    getOHW (HWE) are mutually exclusive based on getCRT. registry_cleanup() only runs
+    getOHW (HWE) are mutually exclusive based on getCRT, and the custom cartridge size
+    (getFCS) only applies to getCRS "custom". registry_cleanup() only runs
     once at setup, so without this listener the inapplicable diagnostic sensor would
     stay registered and show as permanently grayed-out "unavailable" after the user
     changes the cartridge type live (e.g. via the getCRT select), instead of being
@@ -2798,8 +2798,7 @@ def _async_setup_muco_conditional_sensors(
                 device_name = device["name"]
                 status = device.get("status", {})
                 current = live_keys.setdefault(device_id, set())
-                wanted = _muco_conditional_key(status, get_device_model(device))
-                wanted_set = {wanted} if wanted else set()
+                wanted_set = _muco_conditional_keys(status, get_device_model(device))
 
                 for key in current - wanted_set:
                     stale_entity_id = find_entity_id(
@@ -2813,7 +2812,7 @@ def _async_setup_muco_conditional_sensors(
                         registry.async_remove(stale_entity_id)
                     current.discard(key)
 
-                for key in wanted_set - current:
+                for key in sorted(wanted_set - current):
                     new_entities.append(
                         SyrConnectSensor(coordinator, device_id, device_name, key)
                     )

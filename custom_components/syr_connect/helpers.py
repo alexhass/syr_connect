@@ -1415,46 +1415,58 @@ def _whu_code(raw_code: Any) -> int | None:
 
 
 def get_cartridge_keys(model: SyrConnectModel) -> set[str]:
-    """Return the keys that only apply to one cartridge type (getCRT) of the model.
+    """Return the keys that only apply to one cartridge type or size of the model.
 
-    The device profile maps each cartridge type to its key (`cartridge_keys`):
+    The device profile maps each cartridge type (getCRT) to its key (`cartridge_keys`)
+    and each cartridge size (getCRS) to its key (`cartridge_size_keys`):
     - MuCo filling: HWE -> getOHW, HVE/HVE+ -> getLOT
-    - All-in-One+: HWE -> getOWH
+    - All-in-One+: HWE -> getOWH, custom size -> getFCS
 
     Args:
         model: Detected model of the device.
 
     Returns:
-        The keys, empty for a model without cartridge types.
+        The keys, empty for a model without cartridge types or sizes.
     """
     profile = model.device_profile
-    return set(profile.cartridge_keys.values()) if profile is not None else set()
+    if profile is None:
+        return set()
+    return set(profile.cartridge_keys.values()) | set(
+        profile.cartridge_size_keys.values()
+    )
 
 
-def get_cartridge_type_key(
+def get_reported_cartridge_keys(
     model: SyrConnectModel, status: dict[str, Any]
-) -> str | None:
-    """Return the key of the reported cartridge type (getCRT), or None.
+) -> set[str]:
+    """Return the keys of the reported cartridge type (getCRT) and size (getCRS).
 
     Args:
         model: Detected model of the device.
         status: The flattened device status.
 
     Returns:
-        The key the device profile maps the cartridge type to, or None if the model has
-        no key for it.
+        The keys the device profile maps the reported cartridge type and size to, empty
+        if the model has no key for them.
     """
     profile = model.device_profile
-    crt_value = status.get("getCRT")
-    if profile is None or crt_value is None:
-        return None
-    return profile.cartridge_keys.get(str(crt_value).strip())
+    if profile is None:
+        return set()
+    keys = set()
+    for status_key, key_map in (
+        ("getCRT", profile.cartridge_keys),
+        ("getCRS", profile.cartridge_size_keys),
+    ):
+        value = status.get(status_key)
+        if value is not None and (key := key_map.get(str(value).strip())) is not None:
+            keys.add(key)
+    return keys
 
 
-def get_cartridge_key(
+def get_cartridge_entity_keys(
     model: SyrConnectModel, status: dict[str, Any], supported_keys: AbstractSet[str]
-) -> str | None:
-    """Return the cartridge key that becomes an entity for the device, or None.
+) -> set[str]:
+    """Return the cartridge keys that become entities for the device.
 
     Args:
         model: Detected model of the device.
@@ -1462,13 +1474,14 @@ def get_cartridge_key(
         supported_keys: The keys the model lists for the platform.
 
     Returns:
-        The key of the reported cartridge type (see `get_cartridge_type_key`), or None
-        if there is none, or the model does not list it, or it has no value.
+        The keys of the reported cartridge type and size (see
+        `get_reported_cartridge_keys`) that the model lists and that have a value.
     """
-    key = get_cartridge_type_key(model, status)
-    if key is None or key not in supported_keys or status.get(key) in (None, ""):
-        return None
-    return key
+    return {
+        key
+        for key in get_reported_cartridge_keys(model, status)
+        if key in supported_keys and status.get(key) not in (None, "")
+    }
 
 
 def get_sensor_not_map(model: SyrConnectModel, raw_code: Any) -> tuple[str | None, str]:

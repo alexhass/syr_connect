@@ -146,6 +146,9 @@ PROFILE = SyrConnectDeviceProfile(
     cartridge_keys={
         "0": "getOWH",
     },
+    cartridge_size_keys={
+        "0": "getFCS",
+    },
     hardness_ranges=HARDNESS_RANGES,
     select=SELECT_SUPPORTED_KEYS,
     select_options={

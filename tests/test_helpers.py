@@ -2594,19 +2594,19 @@ def test_empty_ip_hides_sensor_and_skips_mac() -> None:
     ("model", "expected"),
     [
         pytest.param("conelclearprofill", {"getLOT", "getOHW"}, id="muco-filling"),
-        pytest.param("allinoneplus", {"getOWH"}, id="allinoneplus"),
+        pytest.param("allinoneplus", {"getFCS", "getOWH"}, id="allinoneplus"),
         pytest.param("lex30", set(), id="softener"),
         pytest.param("unknown", set(), id="no-profile"),
     ],
 )
 def test_get_cartridge_keys(model: str, expected: set[str]) -> None:
-    """The device profile names the keys that only apply to one cartridge type."""
+    """The device profile names the keys that only apply to one cartridge type or size."""
     signature = UNKNOWN_MODEL if model == "unknown" else _signature(model)
 
     assert helpers.get_cartridge_keys(signature) == expected
 
 
-_SYR_CONNECT_TEST_CARTRIDGE_KEYS = {"getLOT", "getOHW", "getOWH"}
+_SYR_CONNECT_TEST_CARTRIDGE_KEYS = {"getFCS", "getLOT", "getOHW", "getOWH"}
 
 
 @pytest.mark.parametrize(
@@ -2616,88 +2616,118 @@ _SYR_CONNECT_TEST_CARTRIDGE_KEYS = {"getLOT", "getOHW", "getOWH"}
             "conelclearprofill",
             {"getCRT": "1", "getLOT": "7"},
             _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
-            "getLOT",
+            {"getLOT"},
             id="hve",
         ),
         pytest.param(
             "conelclearprofill",
             {"getCRT": 2, "getLOT": "7"},
             _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
-            "getLOT",
+            {"getLOT"},
             id="hve-plus",
         ),
         pytest.param(
             "conelclearprofill",
             {"getCRT": "0", "getOHW": "3", "getOWH": "5"},
             _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
-            "getOHW",
+            {"getOHW"},
             id="hwe-muco",
         ),
         pytest.param(
             "allinoneplus",
             {"getCRT": "0", "getOHW": "3", "getOWH": "5"},
             _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
-            "getOWH",
+            {"getOWH"},
             id="hwe-allinoneplus",
         ),
         pytest.param(
             "allinoneplus",
             {"getCRT": "1", "getLOT": "7"},
             _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
-            None,
+            set(),
             id="allinoneplus-hve",
         ),
         pytest.param(
             "conelclearprofill",
             {"getCRT": "1", "getLOT": "7"},
             {"getOHW"},
-            None,
+            set(),
             id="not-listed",
         ),
         pytest.param(
             "conelclearprofill",
             {"getCRT": "0", "getOHW": ""},
             _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
-            None,
+            set(),
             id="hwe-empty",
         ),
         pytest.param(
             "conelclearprofill",
             {"getCRT": "1", "getLOT": None},
             _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
-            None,
+            set(),
             id="hve-missing",
         ),
         pytest.param(
             "conelclearprofill",
             {"getCRT": "", "getOHW": "3"},
             _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
-            None,
+            set(),
             id="no-cartridge",
         ),
         pytest.param(
             "conelclearprofill",
             {"getOHW": "3"},
             _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
-            None,
+            set(),
             id="no-crt",
         ),
         pytest.param(
             "unknown",
             {"getCRT": "1", "getLOT": "7"},
             _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
-            None,
+            set(),
             id="no-profile",
+        ),
+        pytest.param(
+            "allinoneplus",
+            {"getCRS": "0", "getFCS": "20"},
+            _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
+            {"getFCS"},
+            id="custom-size",
+        ),
+        pytest.param(
+            "allinoneplus",
+            {"getCRS": "1", "getFCS": "20"},
+            _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
+            set(),
+            id="fixed-size",
+        ),
+        pytest.param(
+            "allinoneplus",
+            {"getCRT": "0", "getOWH": "5", "getCRS": 0, "getFCS": "20"},
+            _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
+            {"getFCS", "getOWH"},
+            id="hwe-and-custom-size",
+        ),
+        pytest.param(
+            "conelclearprofill",
+            {"getCRS": "0", "getFCS": "20"},
+            _SYR_CONNECT_TEST_CARTRIDGE_KEYS,
+            set(),
+            id="muco-without-custom-size",
         ),
     ],
 )
-def test_get_cartridge_key(
-    model: str, status: dict[str, Any], supported_keys: set[str], expected: str | None
+def test_get_cartridge_entity_keys(
+    model: str, status: dict[str, Any], supported_keys: set[str], expected: set[str]
 ) -> None:
-    """The key of the cartridge type, if the model lists it and it has a value."""
+    """The keys of the cartridge type and size, if the model lists them and they have a value."""
     signature = UNKNOWN_MODEL if model == "unknown" else _signature(model)
 
-    assert helpers.get_cartridge_key(signature, status, supported_keys) == expected
+    assert (
+        helpers.get_cartridge_entity_keys(signature, status, supported_keys) == expected
+    )
 
 
 @pytest.mark.parametrize(

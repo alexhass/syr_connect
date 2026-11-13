@@ -90,6 +90,9 @@ class SyrConnectDeviceProfile:
     # Keys that only apply to one cartridge type (getCRT): cartridge type code -> key;
     # only the key of the reported cartridge type becomes an entity
     cartridge_keys: Mapping[str, str] = field(default_factory=dict)
+    # Keys that only apply to one cartridge size (getCRS): cartridge size code -> key;
+    # only the key of the reported cartridge size becomes an entity
+    cartridge_size_keys: Mapping[str, str] = field(default_factory=dict)
     # Water hardness values (getIWH, getOWH) the device reports in another scale for a
     # getWHU code: code -> divisor, e.g. 10 for tenths of mmol/l; the display gets one
     # decimal more per factor 10

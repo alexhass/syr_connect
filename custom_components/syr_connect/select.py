@@ -49,13 +49,14 @@ from .entity import SyrConnectEntity, async_add_device_entities
 from .exceptions import SyrConnectError
 from .helpers import (
     find_entity_id,
-    get_cartridge_key,
+    get_cartridge_entity_keys,
     get_cartridge_keys,
     get_device_model,
     get_hardness_factor,
     get_hardness_range,
     get_hygiene_module_value,
     get_model_supported_keys,
+    get_reported_cartridge_keys,
     get_sensor_rtm_value,
     get_whu_unit,
     is_value_true,
@@ -521,7 +522,7 @@ class _SyrConnectSelectBuilder:
 def _build_device_selects(
     coordinator: SyrConnectDataUpdateCoordinator, device: SyrConnectDevice
 ) -> list[SelectEntity]:
-    """Return the selects of one device (except the conditional getLOT/getOHW).
+    """Return the selects of one device (except the conditional cartridge keys).
 
     A select is only created when the detected model lists its key and the device
     reports a valid value for it; a few keys are not limited to the allowlist (marked
@@ -621,9 +622,10 @@ def _add_softener_selects(b: _SyrConnectSelectBuilder) -> None:
 def _add_muco_selects(b: _SyrConnectSelectBuilder) -> None:
     """Add the MuCo selects for the water treatment / filling mode configuration.
 
-    getLOT and getOHW are mutually exclusive depending on cartridge type and are handled
-    separately (_async_setup_muco_conditional_selects), which adds/removes whichever one
-    currently applies instead of creating both and showing the other as unavailable.
+    getLOT and getOHW are mutually exclusive depending on cartridge type, and the custom
+    cartridge size (getFCS) only applies to getCRS "custom". They are handled separately
+    (_async_setup_muco_conditional_selects), which adds/removes whichever one currently
+    applies instead of creating it and showing it as unavailable.
     """
     # Cartridge size (getCRS); a model with a custom size (getFCS) also offers "custom"
     if b.allowed("getCRS", _is_integer):
@@ -633,9 +635,6 @@ def _add_muco_selects(b: _SyrConnectSelectBuilder) -> None:
             if "getFCS" in b.supported_select_keys
             else _SYR_CONNECT_SELECT_CRS_MAP,
         )
-    # Custom cartridge size (getFCS): 1-100 L in steps of 1
-    if b.allowed("getFCS"):
-        b.add_numeric_steps("getFCS", list(range(1, 101)))
     # getCRT and getRCD have an option for the empty value, so any reported value counts
     if "getCRT" in b.supported_select_keys and "getCRT" in b.status:
         b.add_discrete("getCRT", _SYR_CONNECT_SELECT_CRT_MAP)
@@ -803,6 +802,9 @@ async def async_setup_entry(
         "select",
         allowed_keys=set(),
         entry_id=coordinator.entry_id,
+        hidden_keys=lambda status, model: (
+            get_cartridge_keys(model) - get_reported_cartridge_keys(model, status)
+        ),
     )
 
     async_add_device_entities(
@@ -821,10 +823,11 @@ def _async_setup_muco_conditional_selects(
     coordinator: SyrConnectDataUpdateCoordinator,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Dynamically add/remove the getLOT/getOHW select depending on the cartridge type.
+    """Dynamically add/remove the cartridge selects depending on the cartridge type and size.
 
     getLOT (HVE/HVE+) and the soft water hardness (HWE; getOHW, getOWH on the All-in-One+)
-    are mutually exclusive: only one ever applies for a given cartridge type (getCRT). Instead of creating both and showing the inapplicable one
+    are mutually exclusive: only one ever applies for a given cartridge type (getCRT). The
+    custom cartridge size (getFCS) only applies to getCRS "custom". Instead of creating both and showing the inapplicable one
     as permanently grayed-out "unavailable", only the currently-relevant entity is added; the
     other is removed from the entity registry. Re-evaluated on every coordinator update, so
     switching getCRT (which optimistically updates coordinator.data immediately) swaps the
@@ -833,12 +836,13 @@ def _async_setup_muco_conditional_selects(
     # Per-device set of currently added keys ("getLOT" / "getOHW")
     live_keys: dict[str, set[str]] = {}
 
-    def _wanted_key(status: dict[str, Any], model: SyrConnectModel) -> str | None:
-        # Only for models whose profile maps the cartridge types to keys (MuCo filling, All
-        # in One +). Leak-protection and TrioLock devices also report getCRT/getLOT/getOHW
-        # but deliberately do not expose them; a select there would even write setOHW/setLOT.
+    def _wanted_keys(status: dict[str, Any], model: SyrConnectModel) -> set[str]:
+        # Only for models whose profile maps the cartridge types or sizes to keys (MuCo
+        # filling, All in One +). Leak-protection and TrioLock devices also report
+        # getCRT/getLOT/getOHW but deliberately do not expose them; a select there would
+        # even write setOHW/setLOT.
         supported_select_keys = get_model_supported_keys(model, "select", set())
-        return get_cartridge_key(model, status, supported_select_keys)
+        return get_cartridge_entity_keys(model, status, supported_select_keys)
 
     def _build_entity(
         device_id: str, device_name: str, key: str
@@ -848,6 +852,19 @@ def _async_setup_muco_conditional_selects(
             lot_map = {f"{raw * 10} {lot_unit}": raw for raw in range(21)}
             return SyrConnectDiscreteSelect(
                 coordinator, device_id, device_name, "getLOT", lot_map
+            )
+        if key == "getFCS":
+            # Custom cartridge size: 1-100 L in steps of 1
+            fcs_values = list(range(1, 101))
+            return SyrConnectNumericSelect(
+                coordinator,
+                device_id,
+                device_name,
+                "getFCS",
+                fcs_values[0],
+                fcs_values[-1],
+                1,
+                options=_unit_options("getFCS", fcs_values),
             )
         return SyrConnectRangedHardnessSelect(coordinator, device_id, device_name, key)
 
@@ -863,8 +880,7 @@ def _async_setup_muco_conditional_selects(
                 device_name = device["name"]
                 status = device.get("status", {})
                 current = live_keys.setdefault(device_id, set())
-                wanted = _wanted_key(status, get_device_model(device))
-                wanted_set = {wanted} if wanted else set()
+                wanted_set = _wanted_keys(status, get_device_model(device))
 
                 for key in current - wanted_set:
                     # Selects use the "<key>_select" unique_id suffix (see SyrConnectDiscreteSelect/NumericSelect)
@@ -883,7 +899,7 @@ def _async_setup_muco_conditional_selects(
                         registry.async_remove(stale_entity_id)
                     current.discard(key)
 
-                for key in wanted_set - current:
+                for key in sorted(wanted_set - current):
                     new_entities.append(_build_entity(device_id, device_name, key))
                     current.add(key)
         except Exception:

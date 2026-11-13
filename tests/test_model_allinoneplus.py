@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any, cast
-from unittest.mock import MagicMock, Mock
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -99,6 +99,100 @@ async def test_allinoneplus_owh_select_only_for_hwe_cartridge(
         assert select.options[0] == "0 °dH"
         assert select.options[-1] == "12 °dH"
         assert select.current_option == "5 °dH"
+
+
+@pytest.mark.parametrize(
+    ("crs", "expected"),
+    [
+        pytest.param("0", {"getFCS"}, id="custom"),
+        pytest.param("1", set(), id="fixed-size"),
+    ],
+)
+async def test_allinoneplus_fcs_only_for_custom_cartridge_size(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+    crs: str,
+    expected: set[str],
+) -> None:
+    """The custom cartridge size (getFCS) is a select and a sensor only for getCRS "custom"."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "model": _SYR_CONNECT_TEST_ALLINONEPLUS_MODEL,
+                "status": {"getCRS": crs, "getFCS": "2"},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    selects, async_add_selects = mock_add_entities()
+    sensors, async_add_sensors = mock_add_entities()
+
+    await select_module.async_setup_entry(hass, mock_config_entry, async_add_selects)
+    await sensor_module.async_setup_entry(hass, mock_config_entry, async_add_sensors)
+
+    for entities in (selects, sensors):
+        keys = {getattr(e, "_sensor_key", None) for e in entities}
+        assert keys & {"getFCS"} == expected
+
+
+async def test_allinoneplus_fcs_select_switches_live_on_crs_change(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+) -> None:
+    """Changing getCRS live adds and removes the getFCS select without a reload."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "model": _SYR_CONNECT_TEST_ALLINONEPLUS_MODEL,
+                "status": {"getCRS": "1", "getFCS": "2"},
+            }
+        ]
+    }
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+    fake_registry = MagicMock()
+    fake_registry.async_get.return_value = Mock(config_entry_id=None)
+
+    with patch(
+        "homeassistant.helpers.entity_registry.async_get", return_value=fake_registry
+    ):
+        await select_module.async_setup_entry(
+            hass, mock_config_entry, async_add_entities
+        )
+    assert "getFCS" not in {getattr(e, "_sensor_key", None) for e in entities}
+    listener = mock_coordinator.async_add_listener.call_args.args[0]
+
+    # Custom size selected: the select appears with 1-100 L
+    mock_coordinator.data["devices"][0]["status"]["getCRS"] = "0"
+    entities.clear()
+    with patch(
+        "homeassistant.helpers.entity_registry.async_get", return_value=fake_registry
+    ):
+        listener()
+    fcs = next(e for e in entities if getattr(e, "_sensor_key", None) == "getFCS")
+    assert fcs.options == [f"{value} L" for value in range(1, 101)]
+    assert fcs.current_option == "2 L"
+
+    # A fixed size selected again: the select is removed
+    mock_coordinator.data["devices"][0]["status"]["getCRS"] = "1"
+    fake_registry.async_remove.reset_mock()
+    with patch(
+        "homeassistant.helpers.entity_registry.async_get", return_value=fake_registry
+    ):
+        listener()
+    fake_registry.async_remove.assert_called_once()
 
 
 async def test_allinoneplus_cwl_select(
@@ -326,6 +420,8 @@ def test_allinoneplus_fixture_mac_and_temperature(
     keys = set(sensor_module.sensor_keys_for_status(status, model))
 
     assert {"getCEL", "getMAC"} <= keys
+    # getCRS 1 (2.5 L): the reported custom size getFCS does not apply
+    assert "getFCS" not in keys
     data = {"devices": [{"id": "d1", "name": "D1", "model": model, "status": status}]}
     cel = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", "getCEL")
     assert cel.native_value == temperature
