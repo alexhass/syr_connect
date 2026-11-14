@@ -1057,18 +1057,9 @@ class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
         self.entity_description = _SYR_CONNECT_SELECT_DESCRIPTIONS[sensor_key]
 
         # Determine unit label (if available) and build options (append unit for readability)
-        unit_label = None
-        unit = _SYR_CONNECT_SENSOR_DESCRIPTIONS[
+        unit_label = _SYR_CONNECT_SENSOR_DESCRIPTIONS[
             self._sensor_key
         ].native_unit_of_measurement
-        if unit is not None:
-            try:
-                unit_label = str(unit)
-            except (ValueError, TypeError) as err:
-                _LOGGER.debug(
-                    "Failed to convert unit to string for %s: %s", self._sensor_key, err
-                )
-                unit_label = None
 
         opts: list[str] = []
         v = min_value
