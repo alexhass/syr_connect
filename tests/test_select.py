@@ -14,10 +14,11 @@ import pytest
 from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.syr_connect import select as select_module
-from custom_components.syr_connect.const import CONF_SERVICE
+from custom_components.syr_connect.const import CONF_SERVICE, DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.devices import SyrConnectDeviceProfile
 from custom_components.syr_connect.exceptions import SyrConnectError
+from custom_components.syr_connect.helpers import build_unique_id
 from custom_components.syr_connect.models import (
     MODEL_SIGNATURES,
     UNKNOWN_MODEL,
@@ -37,6 +38,7 @@ from custom_components.syr_connect.select import (
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
+from homeassistant.helpers import entity_registry as er
 
 # NeoSoft 2500: regeneration mode, no water hardness selects
 _SYR_CONNECT_TEST_NEOSOFT_MODEL = next(
@@ -3359,3 +3361,41 @@ async def test_ranged_hardness_select_lowering_soft_water_hardness_fails(
         await select.async_select_option("5 °dH")
 
     assert err.value.translation_key == "set_value_failed"
+
+
+async def test_async_setup_entry_removes_select_of_other_cartridge_type(
+    hass: HomeAssistant,
+) -> None:
+    """A select of a cartridge type that no longer applies is removed at setup."""
+    entry = MockConfigEntry(domain=DOMAIN)
+    entry.add_to_hass(hass)
+    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    coordinator.entry_id = entry.entry_id
+    coordinator.last_update_success = True
+    # HVE cartridge (getCRT 1): getLOT applies, the HWE soft water hardness (getOHW) not
+    coordinator.data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "available": True,
+                "model": _SYR_CONNECT_TEST_MUCO_FILLING_MODEL,
+                "status": {"getCRT": "1", "getLOT": "5", "getOHW": "3", "getWHU": "0"},
+            }
+        ]
+    }
+    entry.runtime_data = coordinator
+    registry = er.async_get(hass)
+    for key in ("getLOT", "getOHW"):
+        registry.async_get_or_create(
+            "select",
+            DOMAIN,
+            build_unique_id(entry.entry_id, "device1", f"{key}_select"),
+            config_entry=entry,
+        )
+
+    await select_module.async_setup_entry(hass, entry, Mock())
+
+    assert sorted(
+        e.unique_id for e in er.async_entries_for_config_entry(registry, entry.entry_id)
+    ) == [build_unique_id(entry.entry_id, "device1", "getLOT_select")]

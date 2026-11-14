@@ -801,9 +801,12 @@ async def async_setup_entry(
         "select",
         allowed_keys=set(),
         entry_id=coordinator.entry_id,
-        hidden_keys=lambda status, model: (
-            get_cartridge_keys(model) - get_reported_cartridge_keys(model, status)
-        ),
+        # The selects of the other cartridge types; their unique_id has the "_select" suffix
+        hidden_keys=lambda status, model: {
+            f"{key}_select"
+            for key in get_cartridge_keys(model)
+            - get_reported_cartridge_keys(model, status)
+        },
     )
 
     async_add_device_entities(
