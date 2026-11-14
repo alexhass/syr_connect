@@ -869,6 +869,42 @@ async def test_set_device_status_sends_special_characters_unencoded(
     assert result2 is True
 
 
+@pytest.mark.parametrize(
+    ("value", "sent"),
+    [
+        pytest.param(True, "true", id="bool-true"),
+        pytest.param(False, "false", id="bool-false"),
+        pytest.param("True", "true", id="text-true"),
+        pytest.param("FALSE", "false", id="text-false"),
+        pytest.param(1, "1", id="number"),
+    ],
+)
+async def test_set_device_status_sends_booleans_in_lowercase(
+    integration_version: str,
+    set_response_body: Callable[..., None],
+    value: Any,
+    sent: str,
+) -> None:
+    """A boolean is sent in lowercase, as documented by SYR; other values unchanged."""
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.raise_for_status = MagicMock()
+    set_response_body(mock_response, json.dumps({f"setBUZ{sent}": "OK"}))
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+    client = SyrConnectJsonAPI(
+        sess,
+        base_url="http://test:5333/trio/",
+        integration_version=integration_version,
+    )
+
+    assert await client.set_device_status("device1", [("setBUZ", value)]) is True
+
+    assert str(sess.get.call_args[0][0]) == f"http://test:5333/trio/set/buz/{sent}"
+
+
 async def test_set_device_status_missing_response_key(
     caplog: pytest.LogCaptureFixture,
     integration_version: str,

@@ -669,6 +669,13 @@ class SyrConnectJsonAPI:
         # command and build the correct URL form via helpers.
         base_cmd = self._strip_set_prefix(command)
 
+        # A boolean is always sent in lowercase ("/set/ab/true"), as documented by SYR,
+        # also when the caller passes True or "True"
+        if isinstance(value, bool):
+            value = "true" if value else "false"
+        elif isinstance(value, str) and value.lower() in ("true", "false"):
+            value = value.lower()
+
         # Build URL with Path Encoding using helper (handles ADM exception)
         url = self._build_set_url(base_cmd, value)
 

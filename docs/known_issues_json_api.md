@@ -101,6 +101,7 @@ curl -i "http://localhost:5333/trio/set/ab/false"  # -> {"setABtrue":"OK"}
   - Normalize to true/false internally.
   - Use "1/0" for older devices when sending set commands
   - Use "true/false" for newer devices when sending set commands
+  - A boolean is always sent in lowercase (`/set/buz/true`), also when the device reports it as JSON `true` or the string `"True"` (`_set_device_status_single`).
 - Evidence / references:
   - Fixtures: [tests/fixtures/json/SyrSafeTech_get_all.json](tests/fixtures/json/SyrSafeTech_get_all.json), [tests/fixtures/json/SyrNeoSoft2500_get_all.json](tests/fixtures/json/SyrNeoSoft2500_get_all.json)
 
