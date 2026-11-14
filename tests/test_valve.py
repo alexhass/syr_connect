@@ -6,7 +6,7 @@
 # mypy: disable-error-code="method-assign, misc"
 from collections.abc import Callable
 from typing import Any, cast
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 from pytest_homeassistant.common import MockConfigEntry
@@ -1166,64 +1166,6 @@ async def test_async_open_valve_unknown_device_raises(hass: HomeAssistant) -> No
 
     with pytest.raises(HomeAssistantError, match="device_not_found"):
         await coordinator.async_open_valve("missing_device", "setAB", 1)
-
-
-async def test_async_open_valve_alarm_detection_exception_falls_back_to_set(
-    hass: HomeAssistant,
-) -> None:
-    """When the model lookup raises, alarm detection fails gracefully and valve opens normally."""
-    data = {
-        "devices": [
-            {
-                "id": "dev_x",
-                "name": "DevX",
-                "project_id": "p1",
-                "status": {"getAB": "2", "getALA": "A5"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()
-
-    with patch(
-        "custom_components.syr_connect.coordinator.get_device_model",
-        side_effect=RuntimeError("boom"),
-    ):
-        await coordinator.async_open_valve("dev_x", "setAB", 1)
-
-    # Should fall back to normal open (no clear) because detection failed
-    coordinator.async_set_device_value.assert_awaited_once_with("dev_x", "setAB", 1)
-
-
-async def test_async_open_valve_optimistic_update_exception_still_sends_command(
-    hass: HomeAssistant,
-) -> None:
-    """Optimistic update failure is logged as warning; the valve command is still sent."""
-
-    data = {
-        "devices": [
-            {
-                "id": "dev_y",
-                "name": "DevY",
-                "project_id": "p1",
-                "status": {"getAB": "2", "getALA": "A5"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    coordinator.api.__class__ = SyrConnectJsonAPI
-    api: Any = coordinator.api
-    api.request_json_data = AsyncMock(return_value={})
-    coordinator.api.set_device_status = AsyncMock(return_value=True)
-
-    with patch(
-        "custom_components.syr_connect.coordinator.copy.deepcopy",
-        side_effect=TypeError("deepcopy failed"),
-    ):
-        await coordinator.async_open_valve("dev_y", "setAB", 1)
-
-    # Valve command should still be sent despite optimistic update failure
-    coordinator.api.set_device_status.assert_awaited_once_with("dev_y", [("setAB", 1)])
 
 
 async def test_async_open_valve_alarm_clear_via_set_json_api_sends_set_then_open(

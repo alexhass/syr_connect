@@ -325,9 +325,7 @@ class SyrConnectDataUpdateCoordinator(
                         translation_domain=DOMAIN,
                         translation_key="auth_failed",
                     ) from device_result
-                if isinstance(device_result, Exception):
-                    _LOGGER.warning("Device status fetch failed: %s", device_result)
-                    continue
+                # _fetch_device_status handles every other error itself
                 if isinstance(device_result, dict) and device_result:
                     all_devices.append(device_result)
 
@@ -498,14 +496,7 @@ class SyrConnectDataUpdateCoordinator(
             # Compute derived sensor values (e.g. getIWH from getCND) so they
             # are available to all platforms without mutating coordinator data
             # from within platform setup code.
-            try:
-                get_sensor_iwh_value(status)
-            except (ValueError, TypeError) as err:
-                _LOGGER.warning(
-                    "Failed to compute derived sensor values for device %s: %s",
-                    device.get("id"),
-                    err,
-                )
+            get_sensor_iwh_value(status)
 
             # Remove "device offline" repair issues left over from older versions,
             # which created one on every failed status poll
@@ -623,45 +614,34 @@ class SyrConnectDataUpdateCoordinator(
         previous_data = self.data
         optimistic_data: SyrConnectCoordinatorData | None = None
 
-        try:
-            if isinstance(self.data, dict):
-                new_data = copy.deepcopy(self.data)
-                device = get_device(new_data, device_id)
-                applied = False
-                for command, value in commands:
-                    # "clrXYZ" clears an alarm; it has no value to show optimistically
-                    if command.startswith("clr"):
-                        continue
-                    # Derive the read key from the write command.
-                    # Convention: all writable SYR commands are named "setXYZ";
-                    # the corresponding readable key is "getXYZ".
-                    # Guard explicitly so we never write a garbage key to the status dict.
-                    if not command.startswith("set"):
-                        _LOGGER.warning(
-                            "Command '%s' does not follow the 'setXYZ' convention; "
-                            "skipping optimistic status update for device %s",
-                            command,
-                            device_id,
-                        )
-                        continue
-                    if device is not None:
-                        device.setdefault("status", {})[f"get{command[3:]}"] = str(
-                            value
-                        )
-                        device["available"] = True
-                    applied = True
-                if device is not None and applied:
-                    device["model"] = detect_device_model(
-                        device, self._service, self._model
-                    )
-                if applied:
-                    self.async_set_updated_data(new_data)
-                    optimistic_data = new_data
-
-        except (KeyError, AttributeError, TypeError, ValueError) as err:
-            _LOGGER.warning(
-                "Failed to apply optimistic update to coordinator data: %s", err
-            )
+        new_data = copy.deepcopy(self.data)
+        device = get_device(new_data, device_id)
+        applied = False
+        for command, value in commands:
+            # "clrXYZ" clears an alarm; it has no value to show optimistically
+            if command.startswith("clr"):
+                continue
+            # Derive the read key from the write command.
+            # Convention: all writable SYR commands are named "setXYZ";
+            # the corresponding readable key is "getXYZ".
+            # Guard explicitly so we never write a garbage key to the status dict.
+            if not command.startswith("set"):
+                _LOGGER.warning(
+                    "Command '%s' does not follow the 'setXYZ' convention; "
+                    "skipping optimistic status update for device %s",
+                    command,
+                    device_id,
+                )
+                continue
+            if device is not None:
+                device.setdefault("status", {})[f"get{command[3:]}"] = str(value)
+                device["available"] = True
+            applied = True
+        if device is not None and applied:
+            device["model"] = detect_device_model(device, self._service, self._model)
+        if applied:
+            self.async_set_updated_data(new_data)
+            optimistic_data = new_data
 
         try:
             await self.api.set_device_status(dclg, commands)
@@ -730,7 +710,7 @@ class SyrConnectDataUpdateCoordinator(
           as two sequential HTTP calls (the JSON API has no multi-command
           endpoint).
 
-        If no alarm is detected, or alarm detection fails for any reason, the
+        If no alarm is detected, the
         open command is issued without any clear prefix — identical behavior
         to a direct "async_set_device_value" call.
 
@@ -756,45 +736,35 @@ class SyrConnectDataUpdateCoordinator(
             )
 
         device = get_device(self.data, device_id)
-        status: dict = (device.get("status") or {}) if device is not None else {}
+        status: dict[str, Any] = (
+            (device.get("status") or {}) if device is not None else {}
+        )
 
         # --- Detect active alarm and compute clear command ---
         # Returns (command, value) when an alarm must be cleared first, or None.
         clear_prefix: tuple[str, Any] | None = None
-        try:
-            model_info = get_device_model(device)
-            alarm_style_alm = model_info.alarm_style_alm
-            alarm_clear_via_set = model_info.alarm_clear_via_set
-            field = "alm" if alarm_style_alm else "ala"
-            get_key = f"get{field.upper()}"
-            raw = status.get(get_key)
-            if (
-                raw is not None
-                and str(raw).strip().upper()
-                not in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM
-            ):
-                if alarm_clear_via_set:
-                    clear_prefix = (f"set{field.upper()}", "FF")
-                else:
-                    clear_prefix = (f"clr{field.upper()}", "")
-                _LOGGER.info(
-                    "Valve open: active alarm %s=%r on device %s; prepending %s",
-                    get_key,
-                    raw,
-                    device_id,
-                    clear_prefix[0],
-                )
-        except Exception as err:
-            _LOGGER.debug(
-                "Valve open: alarm detection failed for %s (will open without clear): %s",
+        model_info = get_device_model(device)
+        field = "alm" if model_info.alarm_style_alm else "ala"
+        get_key = f"get{field.upper()}"
+        raw = status.get(get_key)
+        if (
+            raw is not None
+            and str(raw).strip().upper() not in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM
+        ):
+            if model_info.alarm_clear_via_set:
+                clear_prefix = (f"set{field.upper()}", "FF")
+            else:
+                clear_prefix = (f"clr{field.upper()}", "")
+            _LOGGER.info(
+                "Valve open: active alarm %s=%r on device %s; prepending %s",
+                get_key,
+                raw,
                 device_id,
-                err,
-                exc_info=True,
+                clear_prefix[0],
             )
-            clear_prefix = None
 
         if clear_prefix is None:
-            # No active alarm (or detection failed) — normal open path
+            # No active alarm — normal open path
             await self.async_set_device_value(device_id, set_key, set_val)
             return
 
