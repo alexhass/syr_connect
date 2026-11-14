@@ -2,7 +2,7 @@
 
 from collections.abc import Callable
 from typing import Any, cast
-from unittest.mock import MagicMock, Mock
+from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 from pytest_homeassistant.common import MockConfigEntry
@@ -162,6 +162,155 @@ async def test_async_setup_entry_skips_non_numeric_safefloor_threshold_values(
     keys = {getattr(e, "_sensor_key", None) for e in entities}
     assert not (
         {"getALD", "getMIH", "getMXH", "getMIT", "getMXT", "getRCP", "getWMP"} & keys
+    )
+
+
+@pytest.mark.parametrize(
+    ("key", "raw", "options", "current", "option", "value"),
+    [
+        pytest.param(
+            "getMIH",
+            "0",
+            # 0-95 % in steps of 5
+            [str(percent) for percent in range(0, 96, 5)],
+            "0",
+            "95",
+            95,
+            id="minimum-humidity",
+        ),
+        pytest.param(
+            "getMXH",
+            "100",
+            # 5-100 % in steps of 5
+            [str(percent) for percent in range(5, 101, 5)],
+            "100",
+            "5",
+            5,
+            id="maximum-humidity",
+        ),
+        pytest.param(
+            "getMIT",
+            "-50",
+            # Off, then -30 to 49 °C in steps of 1 °C as 1/10 °C
+            [
+                "off",
+                *(f"minus_{degrees * 10}" for degrees in range(30, 0, -1)),
+                *(str(degrees * 10) for degrees in range(50)),
+            ],
+            "minus_50",
+            "minus_300",
+            -300,
+            id="minimum-temperature",
+        ),
+        pytest.param(
+            "getMIT",
+            "-400",
+            [
+                "off",
+                *(f"minus_{degrees * 10}" for degrees in range(30, 0, -1)),
+                *(str(degrees * 10) for degrees in range(50)),
+            ],
+            "off",
+            "0",
+            0,
+            id="minimum-temperature-off",
+        ),
+        pytest.param(
+            "getMXT",
+            "700",
+            # 1-50 °C in steps of 1 °C as 1/10 °C, then off
+            [*(str(degrees * 10) for degrees in range(1, 51)), "off"],
+            "off",
+            "490",
+            490,
+            id="maximum-temperature",
+        ),
+        pytest.param(
+            "getRCP",
+            "43200",
+            # 1, 2, 3, 6 and 12 hours, 1-9 days and 2 weeks, in seconds
+            [
+                "3600",
+                "7200",
+                "10800",
+                "21600",
+                "43200",
+                "86400",
+                "172800",
+                "259200",
+                "345600",
+                "432000",
+                "518400",
+                "604800",
+                "691200",
+                "777600",
+                "1209600",
+            ],
+            "43200",
+            "1209600",
+            1209600,
+            id="synchronization-interval",
+        ),
+        pytest.param(
+            "getWMP",
+            "3600",
+            # 1, 10, 15 and 30 minutes, 1, 2, 3, 6 and 12 hours, in seconds
+            [
+                "60",
+                "600",
+                "900",
+                "1800",
+                "3600",
+                "7200",
+                "10800",
+                "21600",
+                "43200",
+            ],
+            "3600",
+            "60",
+            60,
+            id="measurement-interval",
+        ),
+    ],
+)
+async def test_safefloor_select_options_and_selection(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+    key: str,
+    raw: str,
+    options: list[str],
+    current: str,
+    option: str,
+    value: int,
+) -> None:
+    """A SafeFloor select offers the documented steps and sends the raw value of an option."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getVER": _SAFEFLOOR_STATUS["getVER"], key: raw},
+            }
+        ]
+    }
+    mock_config_entry, coordinator = create_mock_entry_with_coordinator(data)
+    coordinator.async_set_device_value = AsyncMock()
+    entities, async_add_entities = mock_add_entities()
+
+    await select_module.async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    [select] = [e for e in entities if getattr(e, "_sensor_key", None) == key]
+    assert select.options == options
+    assert select.current_option == current
+
+    await select.async_select_option(option)
+
+    coordinator.async_set_device_value.assert_called_once_with(
+        "device1", f"set{key[3:]}", value
     )
 
 

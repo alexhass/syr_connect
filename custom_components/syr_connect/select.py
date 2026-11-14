@@ -1424,8 +1424,7 @@ class SyrConnectRotationSelect(SyrConnectEntity, SelectEntity):
     async def async_select_option(self, option: str) -> None:
         """Write the selected option to the device."""
         try:
-            token = str(option).rstrip("°").strip()
-            val = int(token)
+            val = int(option)
         except ValueError as err:
             raise ServiceValidationError(
                 translation_domain=DOMAIN,
