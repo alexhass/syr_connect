@@ -2992,60 +2992,6 @@ def test_getcof_handles_string_values() -> None:
     assert isinstance(sensor.native_value, int | float)
 
 
-async def test_async_setup_entry_registry_remove_exception(hass: HomeAssistant) -> None:
-    """Test exception handler when registry.async_remove fails."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPA1": "0",  # False, triggers removal
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-    )
-    entry.runtime_data = coordinator
-    entry.add_to_hass(hass)
-    coordinator.entry_id = entry.entry_id
-
-    # Mock the entity registry with an entry that exists
-    with patch("custom_components.syr_connect.sensor.er.async_get") as mock_er:
-        mock_registry = MagicMock()
-        mock_entry = MagicMock()
-        mock_entry.entity_id = "sensor.device1_getpa1"
-        mock_entry.config_entry_id = entry.entry_id
-
-        # Make async_get return the mock entry
-        mock_registry.async_get = Mock(return_value=mock_entry)
-
-        # Make async_remove raise an exception
-        mock_registry.async_remove = Mock(side_effect=RuntimeError("Remove failed"))
-        mock_er.return_value = mock_registry
-
-        mock_add_entities = Mock()
-
-        # Should not raise exception, should handle it gracefully
-        await async_setup_entry(hass, entry, mock_add_entities)
-
-        # Verify async_remove was attempted
-        assert mock_registry.async_remove.called
-
-
 async def test_sensor_apply_numeric_conversion_vol_exception(
     hass: HomeAssistant,
 ) -> None:
@@ -3725,39 +3671,6 @@ async def test_bar_avo_invalid_and_vol_prefix(hass: HomeAssistant) -> None:
 
     vol = SyrConnectSensor(coordinator, "device1", "Device 1", "getVOL")
     assert abs(float(vol.native_value) - 6.53) < 0.001  # type: ignore[arg-type]
-
-
-async def test_sensor_setup_pa_group_outer_exception_caught(
-    hass: HomeAssistant,
-) -> None:
-    """Outer except(ValueError,TypeError,..) in getPA loop caught.
-
-    Patch SyrConnectSensor to raise TypeError inside the True branch so the outer
-    handler fires.  Only getPA1 is true; status has no other keys so the
-    status-items loop never calls SyrConnectSensor.
-    """
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getPA1": "true"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    mock_add = Mock()
-    with patch(
-        "custom_components.syr_connect.sensor.SyrConnectSensor",
-        side_effect=TypeError("boom"),
-    ):
-        await async_setup_entry(hass, entry, mock_add)
-    # Exception was caught; no entity was created
-    mock_add.assert_not_called()
 
 
 async def test_sensor_setup_sro_empty_value_skipped(hass: HomeAssistant) -> None:
@@ -5032,13 +4945,22 @@ def test_sensor_rpw_weekdays(
     assert _rpw_sensor(create_mock_coordinator, raw).native_value == expected
 
 
+@pytest.mark.parametrize(
+    ("language", "expected"),
+    [
+        pytest.param("de", "Mo.,Di.,Mi.,Do.,Fr.,Sa.,So.", id="de"),
+        # Languages with a region or script: Home Assistant writes "pt-BR", Babel "pt_BR"
+        pytest.param("pt-BR", "seg.,ter.,qua.,qui.,sex.,sáb.,dom.", id="pt-BR"),
+        pytest.param("zh-Hans", "周一,周二,周三,周四,周五,周六,周日", id="zh-Hans"),
+    ],
+)
 def test_sensor_rpw_weekdays_in_home_assistant_language(
-    create_mock_coordinator: Callable[..., MagicMock],
+    create_mock_coordinator: Callable[..., MagicMock], language: str, expected: str
 ) -> None:
     """The weekday names follow the language of Home Assistant."""
-    sensor = _rpw_sensor(create_mock_coordinator, 127, language="de")
+    sensor = _rpw_sensor(create_mock_coordinator, 127, language=language)
 
-    assert sensor.native_value == "Mo.,Di.,Mi.,Do.,Fr.,Sa.,So."
+    assert sensor.native_value == expected
 
 
 def test_sensor_rpw_weekdays_before_added_to_hass(

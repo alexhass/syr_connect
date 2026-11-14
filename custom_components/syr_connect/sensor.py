@@ -399,11 +399,13 @@ def _value_rpw(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
         return "0"
 
     # Localize with the Home Assistant language; a reference Monday maps the weekday offsets.
+    # Babel takes "pt_BR", not the "pt-BR" of Home Assistant.
     ref_monday = datetime(2024, 1, 1)
     try:
-        locale = getattr(sensor.hass.config, "language", None)
+        language = getattr(sensor.hass.config, "language", None)
     except AttributeError:
-        locale = None
+        language = None
+    locale = language.replace("-", "_") if language else None
 
     parts: list[str] = []
     for idx in range(7):
@@ -448,7 +450,7 @@ def _value_sta(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     if m2_match:
         mapped = str(
             _SYR_CONNECT_SENSOR_STA_VALUE_MAP.get(
-                "Płukanie rapide", "status_fast_rinse"
+                "Płukanie szybkie", "status_fast_rinse"
             )
         )
         _LOGGER.debug(
@@ -2570,66 +2572,56 @@ def _build_pa_group_sensors(
         pa_val = status.get(pa_key)
         group_keys = _pa_group_keys(idx)
 
-        try:
-            if is_value_true(pa_val):
-                # Create entities for group keys — only if the key is actually present in
-                # status AND allowed for this model (per-model allowlist takes precedence).
-                for gk in group_keys:
-                    # Avoid duplicates when iterating over status later
-                    handled_keys.add(gk)
-                    if gk not in supported_sensor_keys:
-                        _LOGGER.debug(
-                            "Skipping PA group sensor (not in allowlist): device=%s key=%s",
-                            device_id,
-                            gk,
-                        )
-                        continue
-                    if gk not in status:
-                        _LOGGER.debug(
-                            "Skipping PA group sensor (not in status): device=%s key=%s",
-                            device_id,
-                            gk,
-                        )
-                        continue
+        if is_value_true(pa_val):
+            # Create entities for group keys — only if the key is actually present in
+            # status AND allowed for this model (per-model allowlist takes precedence).
+            for gk in group_keys:
+                # Avoid duplicates when iterating over status later
+                handled_keys.add(gk)
+                if gk not in supported_sensor_keys:
                     _LOGGER.debug(
-                        "Creating sensor (PA group): device=%s key=%s", device_id, gk
+                        "Skipping PA group sensor (not in allowlist): device=%s key=%s",
+                        device_id,
+                        gk,
                     )
-                    entities.append(
-                        SyrConnectSensor(
-                            coordinator,
-                            device_id,
-                            device_name,
-                            gk,
-                        )
+                    continue
+                if gk not in status:
+                    _LOGGER.debug(
+                        "Skipping PA group sensor (not in status): device=%s key=%s",
+                        device_id,
+                        gk,
                     )
-            elif status:
-                # Remove group sensors from entity registry when the PA flag is false or missing
-                # (Pontos Base reports the profile keys without any getPAx; they are not shown).
-                # Skipped for an empty status: it was not fetched yet (temporary failure at
-                # startup), which says nothing about the profiles, like in registry_cleanup.
-                for gk in group_keys:
-                    try:
-                        # Found by unique_id, so a renamed or "_2"-suffixed sensor is removed as well
-                        stale_entity_id = find_entity_id(
-                            registry, "sensor", coordinator.entry_id, device_id, gk
-                        )
-                        if stale_entity_id is not None:
-                            _LOGGER.debug(
-                                "Removing sensor due to getPA=false: %s",
-                                stale_entity_id,
-                            )
-                            registry.async_remove(stale_entity_id)
-                    except RuntimeError:
-                        _LOGGER.exception(
-                            "Failed to remove sensor %s for device %s", gk, device_id
-                        )
-                    # Ensure group keys are marked as handled so they are not recreated
-                    # later when iterating over status.items().
-                    handled_keys.add(gk)
-        except ValueError, KeyError, AttributeError, TypeError:
-            _LOGGER.exception(
-                "Error handling getPA group %s for device %s", pa_key, device_id
-            )
+                    continue
+                _LOGGER.debug(
+                    "Creating sensor (PA group): device=%s key=%s", device_id, gk
+                )
+                entities.append(
+                    SyrConnectSensor(
+                        coordinator,
+                        device_id,
+                        device_name,
+                        gk,
+                    )
+                )
+        elif status:
+            # Remove group sensors from entity registry when the PA flag is false or missing
+            # (Pontos Base reports the profile keys without any getPAx; they are not shown).
+            # Skipped for an empty status: it was not fetched yet (temporary failure at
+            # startup), which says nothing about the profiles, like in registry_cleanup.
+            for gk in group_keys:
+                # Found by unique_id, so a renamed or "_2"-suffixed sensor is removed as well
+                stale_entity_id = find_entity_id(
+                    registry, "sensor", coordinator.entry_id, device_id, gk
+                )
+                if stale_entity_id is not None:
+                    _LOGGER.debug(
+                        "Removing sensor due to getPA=false: %s",
+                        stale_entity_id,
+                    )
+                    registry.async_remove(stale_entity_id)
+                # Ensure group keys are marked as handled so they are not recreated
+                # later when iterating over status.items().
+                handled_keys.add(gk)
 
     return entities, handled_keys
 
