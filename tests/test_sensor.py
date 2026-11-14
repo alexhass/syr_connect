@@ -3046,48 +3046,6 @@ async def test_async_setup_entry_registry_remove_exception(hass: HomeAssistant) 
         assert mock_registry.async_remove.called
 
 
-async def test_is_value_true_string_numeric_exception(hass: HomeAssistant) -> None:
-    """Test is_value_true exception handling for string that fails numeric conversion."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPA1": "not_a_number",  # String that fails conversion
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-    )
-    entry.runtime_data = coordinator
-    entry.add_to_hass(hass)
-
-    mock_add_entities = Mock()
-
-    # Should handle exception and complete setup
-    await async_setup_entry(hass, entry, mock_add_entities)
-
-    entities = _added_entities(mock_add_entities)
-    # Since "not_a_number" string fails conversion, is_value_true returns False
-    # So getPA1 group shouldn't be created
-    sensor_keys = [e._sensor_key for e in entities]
-    assert "getPA1" not in sensor_keys
-
-
 async def test_sensor_apply_numeric_conversion_vol_exception(
     hass: HomeAssistant,
 ) -> None:
@@ -3376,119 +3334,9 @@ async def test_sensor_registry_cleanup_exception_async_get(hass: HomeAssistant) 
         # Entities should still be added despite exception
         assert mock_add_entities.called
 
-
-async def test_is_true_with_non_standard_type(hass: HomeAssistant) -> None:
-    """Test _is_true with non-standard types (dict, list, etc.) returns False."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPA1": {"key": "value"},  # Dict should return False
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-    )
-    entry.runtime_data = coordinator
-    entry.add_to_hass(hass)
-
-    mock_add_entities = Mock()
-
-    # Dict type should be treated as False by _is_true
-    await async_setup_entry(hass, entry, mock_add_entities)
-
-    # Should complete without raising exception, PA group sensors should not be created
-    entities = _added_entities(mock_add_entities)
-    # PA1 dict value treated as False, so no getPA1 group members created
-    pa_group_keys = [
-        "getPA1",
-        "getPV1",
-        "getPT1",
-        "getPF1",
-        "getPN1",
-        "getPM1",
-        "getPW1",
-        "getPB1",
-        "getPR1",
-    ]
-    created_keys = [e._sensor_key for e in entities]
-    for key in pa_group_keys:
-        assert key not in created_keys
-
     # Should complete despite exception
 
     # Should complete despite exception
-
-
-async def test_is_true_with_list_type(hass: HomeAssistant) -> None:
-    """Test _is_true with list type returns False."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPA2": [1, 2, 3],  # List should return False
-                    "someOtherKey": "value",  # Ensure device is not empty
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-    )
-    entry.runtime_data = coordinator
-    entry.add_to_hass(hass)
-
-    mock_add_entities = Mock()
-
-    # List type should be treated as False by _is_true
-    await async_setup_entry(hass, entry, mock_add_entities)
-
-    entities = _added_entities(mock_add_entities)
-    # PA2 list value treated as False, so no getPA2 group members should be created
-    pa2_group_keys = [
-        "getPA2",
-        "getPV2",
-        "getPT2",
-        "getPF2",
-        "getPN2",
-        "getPM2",
-        "getPW2",
-        "getPB2",
-        "getPR2",
-    ]
-    created_keys = [e._sensor_key for e in entities]
-    for key in pa2_group_keys:
-        assert key not in created_keys
 
 
 async def test_sensor_getvol_none_value(hass: HomeAssistant) -> None:
@@ -3552,7 +3400,7 @@ async def test_sensor_getbat_none_value(hass: HomeAssistant) -> None:
 
 
 async def test_sensor_leak_protection_getpv_float_value(hass: HomeAssistant) -> None:
-    """Test leak protection getPV boolean with float value."""
+    """Test leak protection getPV with float value."""
     data = {
         "devices": [
             {
@@ -3568,12 +3416,12 @@ async def test_sensor_leak_protection_getpv_float_value(hass: HomeAssistant) -> 
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPV1")
 
-    # getPV is not in the boolean regex pattern, so returns numeric value (rounded)
+    # getPV is a number, rounded to its precision
     assert sensor.native_value == 2
 
 
 async def test_sensor_leak_protection_getpt_zero_float(hass: HomeAssistant) -> None:
-    """Test leak protection getPT boolean with zero float value."""
+    """Test leak protection getPT with zero float value."""
     data = {
         "devices": [
             {
@@ -3589,12 +3437,11 @@ async def test_sensor_leak_protection_getpt_zero_float(hass: HomeAssistant) -> N
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPT2")
 
-    # getPT is not in the boolean regex pattern, so returns numeric value
     assert sensor.native_value == 0
 
 
 async def test_sensor_leak_protection_getpn_none_value(hass: HomeAssistant) -> None:
-    """Test leak protection getPN boolean with None value."""
+    """Test leak protection getPN with None value."""
     data = {
         "devices": [
             {
@@ -3614,7 +3461,7 @@ async def test_sensor_leak_protection_getpn_none_value(hass: HomeAssistant) -> N
 
 
 async def test_sensor_leak_protection_getpw_empty_string(hass: HomeAssistant) -> None:
-    """Test leak protection getPW boolean with empty string."""
+    """Test leak protection flag getPW with empty string."""
     data = {
         "devices": [
             {
@@ -3636,7 +3483,7 @@ async def test_sensor_leak_protection_getpw_empty_string(hass: HomeAssistant) ->
 async def test_sensor_leak_protection_getpw_invalid_numeric_string(
     hass: HomeAssistant,
 ) -> None:
-    """Test leak protection getPW boolean with invalid numeric string."""
+    """Test leak protection flag getPW with a text that is no number."""
     data = {
         "devices": [
             {
@@ -3657,7 +3504,7 @@ async def test_sensor_leak_protection_getpw_invalid_numeric_string(
 
 
 async def test_sensor_leak_protection_getpb_invalid_type(hass: HomeAssistant) -> None:
-    """Test leak protection getPB boolean with invalid type."""
+    """Test leak protection flag getPB with invalid type."""
     data = {
         "devices": [
             {
@@ -3677,58 +3524,44 @@ async def test_sensor_leak_protection_getpb_invalid_type(hass: HomeAssistant) ->
     assert sensor.native_value == "false"
 
 
-async def test_getpa_is_true_bool_true(hass: HomeAssistant) -> None:
-    """Test _is_true helper with boolean True."""
-    # This is tested indirectly through getPA group logic
+@pytest.mark.parametrize(
+    ("value", "active"),
+    [
+        pytest.param(True, True, id="true"),
+        pytest.param(1, True, id="one"),
+        pytest.param(5, True, id="int"),
+        pytest.param(2.5, True, id="float"),
+        pytest.param("true", True, id="text-true"),
+        pytest.param("1", True, id="text-one"),
+        pytest.param("3.14", True, id="text-float"),
+        pytest.param(False, False, id="false"),
+        pytest.param("invalid", False, id="text-without-number"),
+        pytest.param({"key": "value"}, False, id="dict"),
+        pytest.param([1, 2, 3], False, id="list"),
+    ],
+)
+async def test_sensor_setup_profile_sensors_follow_profile_flag(
+    hass: HomeAssistant, value: object, active: bool
+) -> None:
+    """The sensors of a leak protection profile are only created for an active profile (getPA)."""
+    group = {"getPA1", "getPV1", "getPN1"}
     data = {
         "devices": [
             {
                 "id": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
-                "status": {
-                    "getPA1": True,  # Real boolean
-                },
+                "status": {"getPA1": value, "getPV1": "10", "getPN1": "Present"},
             }
         ]
     }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
+    entry = _build_entry(_build_coordinator(hass, data))
+    add_entities = Mock()
 
-    mock_add_entities = Mock()
-    await async_setup_entry(hass, entry, mock_add_entities)
+    await async_setup_entry(hass, entry, add_entities)
 
-    # getPA group sensors should be created
-    entities = mock_add_entities.call_args[0][0]
-    sensor_keys = [e._sensor_key for e in entities]
-    assert "getPA1" in sensor_keys
-
-
-async def test_getpa_is_true_bool_false(hass: HomeAssistant) -> None:
-    """Test _is_true helper with boolean False."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPA2": False,  # Real boolean
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-
-    mock_add_entities = Mock()
-    await async_setup_entry(hass, entry, mock_add_entities)
-
-    # getPA group sensors should NOT be created
-    entities = _added_entities(mock_add_entities)
-    sensor_keys = [e._sensor_key for e in entities]
-    assert "getPA2" not in sensor_keys
-    assert "getPV2" not in sensor_keys
+    keys = {entity._sensor_key for entity in _added_entities(add_entities)}
+    assert keys & group == (group if active else set())
 
 
 async def test_getpa_group_key_excluded_by_model_allowlist(hass: HomeAssistant) -> None:
@@ -3764,189 +3597,6 @@ async def test_getpa_group_key_excluded_by_model_allowlist(hass: HomeAssistant) 
     sensor_keys = [e._sensor_key for e in entities]
     assert "getPA1" not in sensor_keys
     assert "getPV1" not in sensor_keys
-
-
-async def test_getpa_is_true_numeric_int(hass: HomeAssistant) -> None:
-    """Test _is_true helper with numeric int != 0."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPA3": 5,  # Non-zero int
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-
-    mock_add_entities = Mock()
-    await async_setup_entry(hass, entry, mock_add_entities)
-
-    # getPA group sensors should be created
-    entities = mock_add_entities.call_args[0][0]
-    sensor_keys = [e._sensor_key for e in entities]
-    assert "getPA3" in sensor_keys
-
-
-async def test_getpa_is_true_numeric_float(hass: HomeAssistant) -> None:
-    """Test _is_true helper with numeric float != 0."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPA4": 2.5,  # Non-zero float
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-
-    mock_add_entities = Mock()
-    await async_setup_entry(hass, entry, mock_add_entities)
-
-    # getPA group sensors should be created
-    entities = mock_add_entities.call_args[0][0]
-    sensor_keys = [e._sensor_key for e in entities]
-    assert "getPA4" in sensor_keys
-
-
-async def test_getpa_is_true_string_true(hass: HomeAssistant) -> None:
-    """Test _is_true helper with string 'true'."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPA5": "true",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-
-    mock_add_entities = Mock()
-    await async_setup_entry(hass, entry, mock_add_entities)
-
-    # getPA group sensors should be created
-    entities = mock_add_entities.call_args[0][0]
-    sensor_keys = [e._sensor_key for e in entities]
-    assert "getPA5" in sensor_keys
-
-
-async def test_getpa_is_true_string_numeric(hass: HomeAssistant) -> None:
-    """Test _is_true helper with numeric string."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPA6": "3.14",  # Numeric string != 0
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-
-    mock_add_entities = Mock()
-    await async_setup_entry(hass, entry, mock_add_entities)
-
-    # getPA group sensors should be created
-    entities = mock_add_entities.call_args[0][0]
-    sensor_keys = [e._sensor_key for e in entities]
-    assert "getPA6" in sensor_keys
-
-
-async def test_getpa_is_true_invalid_string(hass: HomeAssistant) -> None:
-    """Test _is_true helper with invalid string."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPA7": "invalid",  # Can't convert to number
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-
-    mock_add_entities = Mock()
-    await async_setup_entry(hass, entry, mock_add_entities)
-
-    # Should treat as false (don't create group sensors)
-    entities = _added_entities(mock_add_entities)
-    sensor_keys = [e._sensor_key for e in entities]
-    assert "getPA7" not in sensor_keys
-    assert "getPV7" not in sensor_keys
-
-
-async def test_getpa_is_true_string_one(hass: HomeAssistant) -> None:
-    """Test _is_true helper with numeric string '1'."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPA8": "1",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-
-    mock_add_entities = Mock()
-    await async_setup_entry(hass, entry, mock_add_entities)
-
-    # getPA group sensors should be created
-    entities = mock_add_entities.call_args[0][0]
-    sensor_keys = [e._sensor_key for e in entities]
-    assert "getPA8" in sensor_keys
-
-
-async def test_getpa_is_true_int_one(hass: HomeAssistant) -> None:
-    """Test _is_true helper with integer 1."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPA8": 1,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-
-    mock_add_entities = Mock()
-    await async_setup_entry(hass, entry, mock_add_entities)
-
-    # getPA group sensors should be created
-    entities = mock_add_entities.call_args[0][0]
-    sensor_keys = [e._sensor_key for e in entities]
-    assert "getPA8" in sensor_keys
 
 
 def test_pm_boolean_edgecases(
@@ -4076,23 +3726,11 @@ async def test_bar_avo_invalid_and_vol_prefix(hass: HomeAssistant) -> None:
     vol = SyrConnectSensor(coordinator, "device1", "Device 1", "getVOL")
     assert abs(float(vol.native_value) - 6.53) < 0.001  # type: ignore[arg-type]
 
-    # end
-
-
-# ---------------------------------------------------------------------------
-# Lines 111-112 — _is_true except branch for int/float (float() raises)
-# ---------------------------------------------------------------------------
-
-
-# ---------------------------------------------------------------------------
-# Lines 173-174 — outer except in getPA group loop
-# ---------------------------------------------------------------------------
-
 
 async def test_sensor_setup_pa_group_outer_exception_caught(
     hass: HomeAssistant,
 ) -> None:
-    """Outer except(ValueError,TypeError,..) in getPA loop caught (lines 173-174).
+    """Outer except(ValueError,TypeError,..) in getPA loop caught.
 
     Patch SyrConnectSensor to raise TypeError inside the True branch so the outer
     handler fires.  Only getPA1 is true; status has no other keys so the
@@ -4122,13 +3760,8 @@ async def test_sensor_setup_pa_group_outer_exception_caught(
     mock_add.assert_not_called()
 
 
-# ---------------------------------------------------------------------------
-# Lines 193, 198-199 — getSRO empty / non-numeric value
-# ---------------------------------------------------------------------------
-
-
 async def test_sensor_setup_sro_empty_value_skipped(hass: HomeAssistant) -> None:
-    """The getSRO with empty string hits the None/empty continue (line 193)."""
+    """The getSRO with empty string hits the None/empty continue."""
     data = {
         "devices": [
             {
@@ -4152,7 +3785,7 @@ async def test_sensor_setup_sro_empty_value_skipped(hass: HomeAssistant) -> None
 
 
 async def test_sensor_setup_sro_bad_string_skipped(hass: HomeAssistant) -> None:
-    """The getSRO with non-numeric string hits except-continue (lines 198-199)."""
+    """The getSRO with non-numeric string hits except-continue."""
     data = {
         "devices": [
             {
@@ -4175,13 +3808,8 @@ async def test_sensor_setup_sro_bad_string_skipped(hass: HomeAssistant) -> None:
     assert len(sro) == 0  # non-numeric → not created
 
 
-# ---------------------------------------------------------------------------
-# Lines 204, 209-210 — getFFM empty / non-numeric value
-# ---------------------------------------------------------------------------
-
-
 async def test_sensor_setup_ffm_empty_value_skipped(hass: HomeAssistant) -> None:
-    """The getFFM with empty string hits the None/empty continue (line 204)."""
+    """The getFFM with empty string hits the None/empty continue."""
     data = {
         "devices": [
             {
@@ -4205,7 +3833,7 @@ async def test_sensor_setup_ffm_empty_value_skipped(hass: HomeAssistant) -> None
 
 
 async def test_sensor_setup_ffm_bad_string_skipped(hass: HomeAssistant) -> None:
-    """The getFFM with non-numeric string hits except-continue (lines 209-210)."""
+    """The getFFM with non-numeric string hits except-continue."""
     data = {
         "devices": [
             {
@@ -4228,20 +3856,10 @@ async def test_sensor_setup_ffm_bad_string_skipped(hass: HomeAssistant) -> None:
     assert len(ffm) == 0
 
 
-# ---------------------------------------------------------------------------
-# Lines 409-410 — getBAT icon ValueError (float(sval) fails)
-# ---------------------------------------------------------------------------
-
-
-# ---------------------------------------------------------------------------
-# Line 524 — getAB native_value returns None when ab is None
-# ---------------------------------------------------------------------------
-
-
 def test_sensor_getab_native_value_none_when_ab_none(
     create_mock_coordinator: Callable[..., MagicMock],
 ) -> None:
-    """The getAB _compute_native_value returns None when get_sensor_ab_value returns None (line 524)."""
+    """The getAB _compute_native_value returns None when get_sensor_ab_value returns None."""
     data = {"devices": [{"id": "d1", "status": {"getAB": None}}]}
     coord = create_mock_coordinator(data)
     sensor = SyrConnectSensor(coord, "d1", "D1", "getAB")
@@ -4249,15 +3867,10 @@ def test_sensor_getab_native_value_none_when_ab_none(
     assert sensor.native_value is None
 
 
-# ---------------------------------------------------------------------------
-# Lines 537-538 — getALA mapped value returned
-# ---------------------------------------------------------------------------
-
-
 def test_sensor_getala_mapped_translation_key_returned(
     create_mock_coordinator: Callable[..., MagicMock],
 ) -> None:
-    """getALA: mapped truthy value sets translation_key and returns it (lines 537-538).
+    """getALA: mapped truthy value sets translation_key and returns it.
 
     Use LEXplus10SL + code '0' which maps to 'no_alarm'.
     """
@@ -4279,16 +3892,6 @@ def test_sensor_getala_mapped_translation_key_returned(
     )  # unchanged; the state is translated under it
 
 
-# ---------------------------------------------------------------------------
-# Lines 589-590 — getBAR except(ValueError,TypeError) when str(value) raises
-# ---------------------------------------------------------------------------
-
-
-# ---------------------------------------------------------------------------
-# Lines 610-614 — getNET native_value branches
-# ---------------------------------------------------------------------------
-
-
 def test_sensor_getnet_valid_value(
     create_mock_coordinator: Callable[..., MagicMock],
 ) -> None:
@@ -4302,7 +3905,7 @@ def test_sensor_getnet_valid_value(
 def test_sensor_getnet_none_value(
     create_mock_coordinator: Callable[..., MagicMock],
 ) -> None:
-    """The getNET with None returns None (lines 610-611)."""
+    """The getNET with None returns None."""
     data = {"devices": [{"id": "d1", "status": {"getNET": None}}]}
     coord = create_mock_coordinator(data)
     sensor = SyrConnectSensor(coord, "d1", "D1", "getNET")
@@ -4313,7 +3916,7 @@ def test_sensor_getnet_none_value(
 def test_sensor_getnet_non_str_int_float_type(
     create_mock_coordinator: Callable[..., MagicMock],
 ) -> None:
-    """The getNET with non-str/int/float type returns None (lines 612-613)."""
+    """The getNET with non-str/int/float type returns None."""
     data = {"devices": [{"id": "d1", "status": {"getNET": {"a": 1}}}]}
     coord = create_mock_coordinator(data)
     sensor = SyrConnectSensor(coord, "d1", "D1", "getNET")
@@ -4321,15 +3924,10 @@ def test_sensor_getnet_non_str_int_float_type(
     assert sensor.native_value is None
 
 
-# ---------------------------------------------------------------------------
-# Lines 641-645 — getNOT mapped / unmapped branches
-# ---------------------------------------------------------------------------
-
-
 def test_sensor_getnot_mapped_value_returned(
     create_mock_coordinator: Callable[..., MagicMock],
 ) -> None:
-    """getNOT: known code '01' returns mapped translation key (lines 641-643)."""
+    """getNOT: known code '01' returns mapped translation key."""
     data = {"devices": [{"id": "d1", "status": {"getNOT": "01"}}]}
     coord = create_mock_coordinator(data)
     sensor = SyrConnectSensor(coord, "d1", "D1", "getNOT")
@@ -4344,18 +3942,13 @@ def test_sensor_getnot_mapped_value_returned(
 def test_sensor_getnot_unmapped_returns_raw_code(
     create_mock_coordinator: Callable[..., MagicMock],
 ) -> None:
-    """getNOT: unknown code returns raw string (lines 641, 644-645)."""
+    """getNOT: unknown code returns raw string."""
     data = {"devices": [{"id": "d1", "status": {"getNOT": "99"}}]}
     coord = create_mock_coordinator(data)
     sensor = SyrConnectSensor(coord, "d1", "D1", "getNOT")
 
     value = sensor.native_value
     assert value == "99"
-
-
-# ---------------------------------------------------------------------------
-# Lines 659-660 — getPMx int/float except when int(float(nan)) raises ValueError
-# ---------------------------------------------------------------------------
 
 
 def test_sensor_leak_flag_float_nan_returns_false(
@@ -4369,15 +3962,10 @@ def test_sensor_leak_flag_float_nan_returns_false(
     assert sensor.native_value == "false"
 
 
-# ---------------------------------------------------------------------------
-# Lines 794-798 — getWRN mapped / unmapped branches
-# ---------------------------------------------------------------------------
-
-
 def test_sensor_getwrn_mapped_value_returned(
     create_mock_coordinator: Callable[..., MagicMock],
 ) -> None:
-    """getWRN: known code '01' returns mapped translation key (lines 794-796)."""
+    """getWRN: known code '01' returns mapped translation key."""
     data = {"devices": [{"id": "d1", "status": {"getWRN": "01"}}]}
     coord = create_mock_coordinator(data)
     sensor = SyrConnectSensor(coord, "d1", "D1", "getWRN")
@@ -4392,7 +3980,7 @@ def test_sensor_getwrn_mapped_value_returned(
 def test_sensor_getwrn_unmapped_returns_raw_code(
     create_mock_coordinator: Callable[..., MagicMock],
 ) -> None:
-    """getWRN: unknown code returns raw string (lines 794, 797-798)."""
+    """getWRN: unknown code returns raw string."""
     data = {"devices": [{"id": "d1", "status": {"getWRN": "99"}}]}
     coord = create_mock_coordinator(data)
     sensor = SyrConnectSensor(coord, "d1", "D1", "getWRN")
@@ -4404,7 +3992,7 @@ def test_sensor_getwrn_unmapped_returns_raw_code(
 def test_sensor_getlng_none_value_returns_none(
     create_mock_coordinator: Callable[..., MagicMock],
 ) -> None:
-    """getLNG: None value returns None (line 642)."""
+    """getLNG: None value returns None."""
     data = {"devices": [{"id": "d1", "status": {"getLNG": None}}]}
     coord = create_mock_coordinator(data)
     sensor = SyrConnectSensor(coord, "d1", "D1", "getLNG")
@@ -4415,7 +4003,7 @@ def test_sensor_getlng_none_value_returns_none(
 def test_sensor_getlng_empty_string_returns_none(
     create_mock_coordinator: Callable[..., MagicMock],
 ) -> None:
-    """getLNG: empty string value returns None (line 642-643)."""
+    """getLNG: empty string value returns None."""
     data = {"devices": [{"id": "d1", "status": {"getLNG": ""}}]}
     coord = create_mock_coordinator(data)
     sensor = SyrConnectSensor(coord, "d1", "D1", "getLNG")
@@ -4426,7 +4014,7 @@ def test_sensor_getlng_empty_string_returns_none(
 def test_sensor_getlng_annotated_value_stripped(
     create_mock_coordinator: Callable[..., MagicMock],
 ) -> None:
-    """getLNG: annotated value is stripped to the leading integer (line 648)."""
+    """getLNG: annotated value is stripped to the leading integer."""
     data = {"devices": [{"id": "d1", "status": {"getLNG": "0 (0=Deutsch 1=English)"}}]}
     coord = create_mock_coordinator(data)
     sensor = SyrConnectSensor(coord, "d1", "D1", "getLNG")
@@ -4766,7 +4354,7 @@ async def test_muco_conditional_sensor_switches_live_on_crt_change(
     assert "getLOT" in {getattr(e, "_sensor_key", None) for e in entities}
 
 
-# Line 299 — devices without an "id" must be skipped by the MuCo conditional sensor sync.
+# Devices without an "id" must be skipped by the MuCo conditional sensor sync.
 # Note: the main setup loop above indexes device['id']/['name']/['project_id'] directly,
 # so the id key must be present (but falsy) rather than omitted.
 async def test_muco_conditional_sensor_skips_device_without_id(
@@ -4805,7 +4393,7 @@ class _FakeRegistry:
         return None
 
 
-# Lines 320-322 — the MuCo conditional sensor sync must swallow registry errors.
+# The MuCo conditional sensor sync must swallow registry errors.
 async def test_muco_conditional_sensor_sync_registry_exception(
     hass: HomeAssistant,
     create_mock_entry_with_coordinator: Callable[
