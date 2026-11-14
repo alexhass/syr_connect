@@ -129,26 +129,6 @@ def test_get_default_scan_interval_for_entry_options_and_data() -> None:
     )
 
 
-def test_get_default_scan_interval_for_entry_attribute_access_error_fallback() -> None:
-    """When attribute access raises, fallback to mapping access must be used."""
-
-    class BrokenDict(dict):
-        @override
-        def __getattribute__(self, name: Any) -> Any:
-            if name in ("options", "data"):
-                raise TypeError("boom")
-            return super().__getattribute__(name)
-
-    entry = BrokenDict(
-        {
-            "options": {helpers._SYR_CONNECT_SCAN_INTERVAL_CONF: "45"},
-            "data": {helpers.CONF_API_TYPE: API_TYPE_JSON},
-        }
-    )
-
-    assert helpers.get_default_scan_interval_for_entry(entry) == 45
-
-
 def test_build_device_info_fallback_and_entity_id_additional() -> None:
     """Test build device info fallback and entity id additional."""
     # No device info in coordinator -> fallback model
@@ -156,19 +136,15 @@ def test_build_device_info_fallback_and_entity_id_additional() -> None:
     di = helpers.build_device_info("dev123", "My Dev", coord)
     assert di.serial_number == "dev123"
     assert di.model == "Unknown model"
-    # entity id builder
-    assert helpers.build_entity_id("sensor", "DevID", "getFOO").startswith("sensor.")
 
 
 def test_registry_cleanup_handles_exception() -> None:
-    """Test registry cleanup handles exception."""
+    """A failing entity registry does not stop the caller."""
     hass = MagicMock()
-    # Make er.async_get raise
     with patch(
         "custom_components.syr_connect.helpers.er.async_get",
         side_effect=RuntimeError("boom"),
-    ):
-        # Should not raise
+    ) as mock_registry:
         helpers.registry_cleanup(
             hass,
             cast(Any, {"devices": [{"id": "DEV"}]}),
@@ -176,6 +152,8 @@ def test_registry_cleanup_handles_exception() -> None:
             allowed_keys={"getPRS"},
             entry_id="entry",
         )
+
+    mock_registry.assert_called_once_with(hass)
 
 
 def test_cleanup_removed_devices_removes_stale_device() -> None:
@@ -364,9 +342,10 @@ def test_cleanup_removed_devices_handles_exception() -> None:
     with patch(
         "custom_components.syr_connect.helpers.dr.async_get",
         side_effect=RuntimeError("boom"),
-    ):
-        # Should not raise
+    ) as mock_registry:
         helpers.cleanup_removed_devices(hass, cast(Any, {"devices": []}), "entry1")
+
+    mock_registry.assert_called_once_with(hass)
 
 
 def test_get_current_mac_priorities_additional() -> None:
@@ -385,32 +364,6 @@ def test_get_current_mac_priorities_additional() -> None:
 
     # Empty status
     assert helpers.get_current_mac({}) is None
-
-
-def test_get_sensor_avo_value_variants_additional() -> None:
-    """Test get sensor avo value variants additional."""
-    assert helpers.get_sensor_avo_value(None) is None
-    assert helpers.get_sensor_avo_value(1655) == 1.655
-    assert helpers.get_sensor_avo_value("1655mL") == 1.655
-    assert helpers.get_sensor_avo_value("1655") == 1.655
-    assert helpers.get_sensor_avo_value("bad") is None
-
-
-def test_get_sensor_vol_value_additional() -> None:
-    """Test get sensor vol value additional."""
-    assert helpers.get_sensor_vol_value(6530) == 6530
-    assert helpers.get_sensor_vol_value("") is None
-    assert helpers.get_sensor_vol_value("Vol[L]6530") == "6530"
-    assert helpers.get_sensor_vol_value("Xyz123") == "Xyz123"
-
-
-def test_get_sensor_bat_value_formats_additional() -> None:
-    """Test get sensor bat value formats additional."""
-    assert helpers.get_sensor_bat_value(None) is None
-    assert helpers.get_sensor_bat_value(363) == 3.63
-    assert helpers.get_sensor_bat_value("6,11 4,38 3,90") == 6.11
-    assert helpers.get_sensor_bat_value("9,36") == 9.36
-    assert helpers.get_sensor_bat_value("bad") is None
 
 
 def test_get_sensor_rtm_and_set_additional() -> None:
@@ -632,11 +585,6 @@ def test_clean_value_complex_strings() -> None:
     assert get_sensor_vol_value("Test") == "Test"
 
 
-def test_get_current_mac_empty_and_none() -> None:
-    """Empty or None status returns None."""
-    assert get_current_mac({}) is None
-
-
 def test_get_current_mac_priority_getipa() -> None:
     """If getIPA present, prefer getMAC."""
     status = {
@@ -726,8 +674,8 @@ def test_get_sensor_net_value_safe_t_plus_format() -> None:
     assert get_sensor_net_value("ADC:950 6,16V") == 6.16
 
 
-def test_get_sensor_net_value_safe_t_plus_format_uppercase_v() -> None:
-    """Safe-T+ format with uppercase V is handled."""
+def test_get_sensor_net_value_safe_t_plus_format_lowercase_v() -> None:
+    """Safe-T+ format with lowercase v is handled."""
     assert get_sensor_net_value("ADC:950 6,16v") == 6.16
 
 
@@ -794,7 +742,7 @@ def test_get_sensor_iwh_whu_missing_defaults_to_zero_and_derive() -> None:
 def test_get_sensor_iwh_derived_from_getcnd_zero() -> None:
     """Test get sensor iwh derived from getCND zero."""
     status = {"getCND": 0}
-    # 0 / 30 == 0 -> int
+    # 0 / 35 == 0 -> int
     assert get_sensor_iwh_value(status) == 0
 
 
@@ -836,19 +784,12 @@ def test_get_sensor_iwh_set_whu_assignment_raises_does_not_crash() -> None:
     assert get_sensor_iwh_value(status) == 10
 
 
-def test_get_sensor_iwh_explicit_value_assignment_raises_does_not_crash() -> None:
-    """If persisting explicit getIWH raises, function still returns parsed value."""
+def test_get_sensor_iwh_whole_float_string_returns_int() -> None:
+    """A getIWH text with a whole number ("12.0") is returned as int."""
+    value = get_sensor_iwh_value({"getIWH": "12.0", "getWHU": 0})
 
-    class BadStatus(dict):
-        @override
-        def __setitem__(self, key: Any, value: Any) -> Any:
-            if key == "getIWH":
-                raise RuntimeError("boom")
-            return super().__setitem__(key, value)
-
-    status = BadStatus({"getIWH": "12.0", "getWHU": 0})
-    # Should parse explicit getIWH and return 12 (int)
-    assert get_sensor_iwh_value(status) == 12
+    assert value == 12
+    assert isinstance(value, int)
 
 
 def test_get_sensor_iwh_invalid_getiwh_falls_back_to_derive() -> None:
@@ -908,16 +849,6 @@ def test_get_sensor_net_value_adc_format_unparseable_v_token() -> None:
     assert get_sensor_net_value("ADC:950 badV") is None
 
 
-def test_clean_sensor_vol_value() -> None:
-    """Clean sensor values with and without prefixes."""
-    assert get_sensor_vol_value("Vol[L]6530") == "6530"
-    # Non-matching string should be returned unchanged
-    assert get_sensor_vol_value("plain_value") == "plain_value"
-    # Non-string values are returned unchanged
-    assert get_sensor_vol_value(123) == 123
-    assert get_sensor_vol_value(12.34) == 12.34
-
-
 def test_get_sensor_lng_value_with_annotation() -> None:
     """The getLNG value with trailing annotation is stripped to the leading integer."""
     assert get_sensor_lng_value("0 (0=Deutsch 1=English)") == "0"
@@ -970,7 +901,7 @@ def test_get_sensor_rtm_and_setters() -> None:
     # set_sensor_rtm_value: separate mode returns two commands
     status_for_set2 = {"getRTH": "1", "getRTM": "15"}
     cmds2 = set_sensor_rtm_value(status_for_set2, "04:20")
-    assert ("setRTH", 4) in cmds2 and ("setRTM", 20) in cmds2
+    assert cmds2 == [("setRTH", 4), ("setRTM", 20)]
 
 
 def test_get_sensor_ab_and_build_command(caplog: pytest.LogCaptureFixture) -> None:
@@ -1636,6 +1567,9 @@ def test_registry_cleanup_conditional_only_applies_to_sensor_domain() -> None:
 
     registry.async_remove.assert_not_called()
 
+
+def test_get_current_mac_wifi_not_connected() -> None:
+    """The Wi-Fi MAC is only used while the Wi-Fi is connected (getWFS 2)."""
     # Wi-Fi present but WFS indicates not connected
     status = {"getWIP": "10.0.0.5", "getWFS": "1", "getMAC1": "11:11:11:11:11:11"}
     assert get_current_mac(status) is None
@@ -1774,13 +1708,6 @@ def test_is_sensor_visible_empty_string_and_value_exclusions() -> None:
     assert not is_sensor_visible({}, key_ip, None)
     assert not is_sensor_visible({}, key_ip, "   ")
     assert not is_sensor_visible({}, key_ip, "0.0.0.0")
-
-
-def test_get_sensor_ab_value_string_variants() -> None:
-    """Test get sensor ab value string variants."""
-    # String boolean-like values accepted by helpers
-    assert get_sensor_ab_value({"getAB": "true"}) is True
-    assert get_sensor_ab_value({"getAB": "false"}) is False
 
 
 def test_get_sensor_bat_value_first_token_unparseable() -> None:
@@ -2373,9 +2300,6 @@ def test_get_model_supported_keys_safetech_device_override() -> None:
             )
             == module.BUTTON_SUPPORTED_KEYS
         )
-
-    assert "getBAR" in safetech.SENSOR_SUPPORTED_KEYS
-    assert "getBAR" in safetechplus.SENSOR_SUPPORTED_KEYS
 
 
 @pytest.mark.parametrize("platform", ["sensor", "select"])

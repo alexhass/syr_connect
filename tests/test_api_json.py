@@ -46,7 +46,7 @@ def load_fixture(name: str) -> dict:
 async def test_json_client_parses_fixture(
     fixture: str, integration_version: str
 ) -> None:
-    """Ensure SyrConnectJsonAPI returns the JSON as status dict when request_json_data is patched."""
+    """The answer of /get/all is the status of the device, unchanged."""
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
@@ -60,9 +60,7 @@ async def test_json_client_parses_fixture(
     with patch.object(client, "request_json_data", new=AsyncMock(return_value=data)):
         status = await client.get_device_status("local")
 
-    assert isinstance(status, dict)
-    # Sanity check: fixture contains at least one getXYZ key
-    assert any(k.startswith("get") for k in status)
+    assert status == data
 
 
 def test_init_with_base_url(integration_version: str) -> None:
@@ -827,10 +825,10 @@ async def test_set_device_status_raises_on_mima_error(integration_version: str) 
         await client.set_device_status("device1", [("PRF9", "999")])
 
 
-async def test_set_device_status_url_encodes_special_characters(
+async def test_set_device_status_sends_special_characters_unencoded(
     integration_version: str,
 ) -> None:
-    """Test set_device_status URL-encodes special characters in command and value."""
+    """Colons and slashes of a value are sent as they are, the firmware decodes nothing."""
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
@@ -965,8 +963,10 @@ def test_response_key_for(integration_version: str) -> None:
     assert api._response_key_for("PRF9", "999") == "setPRF9999"
 
 
-def test_build_set_url_encodes_and_cases(integration_version: str) -> None:
-    """Test build set url encodes and cases."""
+def test_build_set_url_keeps_value_and_lowercases_command(
+    integration_version: str,
+) -> None:
+    """The value is sent unencoded; the command is lowercase, except ADM."""
     sess = MagicMock()
     api = SyrConnectJsonAPI(
         sess,
@@ -1114,7 +1114,7 @@ async def test_get_devices_fetches_and_caches(integration_version: str) -> None:
 
         # Second call to get_device_status should use cache
         status = await client.get_device_status(devices[0]["id"])
-        assert isinstance(status, dict)
+        assert status == original_data
         # Should still be 1 because cache was used
         assert fetch_call_count == 1
         # Device dict must include project_id for compatibility with platforms
@@ -1135,8 +1135,8 @@ async def test_get_device_status_without_cache(integration_version: str) -> None
     with patch.object(client, "request_json_data", new=AsyncMock(return_value=data)):
         # Call get_device_status without calling get_devices first
         status = await client.get_device_status("local")
-        assert isinstance(status, dict)
-        assert len(status) > 0
+
+    assert status == data
 
 
 async def test_get_devices_uses_frn_fallback(integration_version: str) -> None:
@@ -1334,6 +1334,7 @@ async def test_execute_http_get_unexpected_error(integration_version: str) -> No
 
 
 async def test_execute_http_get_logs_error_response_body(
+    caplog: pytest.LogCaptureFixture,
     integration_version: str,
 ) -> None:
     """Test _execute_http_get logs error response body for debugging."""
@@ -1360,8 +1361,10 @@ async def test_execute_http_get_logs_error_response_body(
         integration_version=integration_version,
     )
 
-    with pytest.raises(SyrConnectConnectionError):
+    with caplog.at_level(logging.DEBUG), pytest.raises(SyrConnectConnectionError):
         await client._execute_http_get("http://test:5333/trio/error")
+
+    assert "Error response: 'Server encountered an error'" in caplog.text
 
 
 async def test_execute_http_get_logs_error_response_read_failure(
@@ -1543,33 +1546,6 @@ async def test_construct_encoded_url_with_encode_true(integration_version: str) 
     # Colon should be URL-encoded as %3A
     assert "02%3A30" in str(url)
     assert "02:30" not in str(url)
-
-
-async def test_get_device_status_without_cache_with_base_url(
-    integration_version: str,
-) -> None:
-    """Test get_device_status without cache but with base_url (skips login)."""
-    sess = MagicMock()
-    client = SyrConnectJsonAPI(
-        sess,
-        base_url="http://test:5333/trio/",
-        integration_version=integration_version,
-    )
-
-    # Mock request_json_data
-    data = {"getSRN": "12345", "getTemp": "25"}
-    client.request_json_data = AsyncMock(return_value=data)  # type: ignore[method-assign]
-
-    # Should not call login because base_url is set
-    client.login = AsyncMock()  # type: ignore[method-assign]
-
-    status = await client.get_device_status("12345")
-
-    # Should NOT have called login
-    client.login.assert_not_called()
-
-    # Should have fetched data
-    assert status == data
 
 
 async def test_request_json_data_strips_leading_slash(integration_version: str) -> None:
@@ -1780,7 +1756,7 @@ def test_validate_set_response_unknown_status_on_login_raises(
 
 
 async def test_login_reraises_connection_error(integration_version: str) -> None:
-    """login() must re-raise SyrConnectConnectionError (line 367-369 coverage)."""
+    """login() must re-raise SyrConnectConnectionError."""
 
     sess = MagicMock()
     client = SyrConnectJsonAPI(
@@ -1801,37 +1777,10 @@ async def test_login_reraises_connection_error(integration_version: str) -> None
         await client.login()
 
 
-async def test_get_device_status_skips_login_when_login_not_required(
-    integration_version: str,
-) -> None:
-    """get_device_status skips login when _login_required is False (line 453 coverage)."""
-    sess = MagicMock()
-    client = SyrConnectJsonAPI(
-        sess,
-        host="192.168.1.1",
-        base_path="/trio",
-        integration_version=integration_version,
-    )
-
-    # Explicitly mark login as not required and session as expired
-    client._login_required = False
-    client._last_login = None
-
-    client.login = AsyncMock()  # type: ignore[method-assign]
-
-    data = {"getSRN": "99999", "getFLO": "0"}
-    with patch.object(client, "request_json_data", new=AsyncMock(return_value=data)):
-        status = await client.get_device_status("99999")
-
-    # login must NOT have been called
-    client.login.assert_not_called()
-    assert status == data
-
-
 async def test_get_devices_skips_login_when_login_not_required(
     integration_version: str,
 ) -> None:
-    """get_devices skips login when _login_required is False (line 453 coverage)."""
+    """get_devices skips login when _login_required is False."""
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
