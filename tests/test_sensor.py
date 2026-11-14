@@ -13,7 +13,7 @@ from typing import Any, NoReturn, cast, override
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.syr_connect import sensor as sensor_mod, sensor as sensor_module
 from custom_components.syr_connect.const import CONF_SERVICE, DOMAIN

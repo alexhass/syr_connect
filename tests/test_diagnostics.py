@@ -14,7 +14,7 @@ from typing import Any, NoReturn, cast, override
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.syr_connect import diagnostics as diag
 from custom_components.syr_connect.api_json import SyrConnectJsonAPI

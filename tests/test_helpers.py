@@ -13,7 +13,7 @@ from typing import Any, NoReturn, cast, override
 from unittest.mock import MagicMock, patch
 
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.syr_connect import (
     binary_sensor,
@@ -154,9 +154,8 @@ def test_build_device_info_fallback_and_entity_id_additional() -> None:
     # No device info in coordinator -> fallback model
     coord: Any = {"devices": []}
     di = helpers.build_device_info("dev123", "My Dev", coord)
-    # DeviceInfo is a mapping-like object; assert via keys
-    assert di["serial_number"] == "dev123"
-    assert di["model"] == "Unknown model"
+    assert di.serial_number == "dev123"
+    assert di.model == "Unknown model"
     # entity id builder
     assert helpers.build_entity_id("sensor", "DevID", "getFOO").startswith("sensor.")
 
@@ -514,13 +513,13 @@ def test_build_device_info() -> None:
         "DEVICE123", "Test Device", cast(Any, coordinator_data)
     )
 
-    assert device_info["name"] == "Test Device"
-    assert device_info["manufacturer"] == "SYR"  # LEXplus10S is a SYR device
-    assert device_info["model"] == "LEX Plus 10 S Connect"
-    assert device_info["sw_version"] == "1.0.0"
-    assert device_info["hw_version"] == "SLPS"
-    assert device_info["serial_number"] == "DEVICE123"
-    assert ("mac", "00:11:22:33:44:55") in device_info["connections"]
+    assert device_info.name == "Test Device"
+    assert device_info.manufacturer == "SYR"  # LEXplus10S is a SYR device
+    assert device_info.model == "LEX Plus 10 S Connect"
+    assert device_info.sw_version == "1.0.0"
+    assert device_info.hw_version == "SLPS"
+    assert device_info.serial_number == "DEVICE123"
+    assert ("mac", "00:11:22:33:44:55") in device_info.connections
 
 
 def test_build_device_info_service_branding() -> None:
@@ -538,8 +537,8 @@ def test_build_device_info_service_branding() -> None:
 
     device_info = build_device_info("DEVICE123", "Floor", cast(Any, coordinator_data))
 
-    assert device_info["manufacturer"] == "CONEL"
-    assert device_info["model"] == "CLEAR PRO Floor Sensor"
+    assert device_info.manufacturer == "CONEL"
+    assert device_info.model == "CLEAR PRO Floor Sensor"
 
 
 def test_build_device_info_minimal() -> None:
@@ -558,10 +557,10 @@ def test_build_device_info_minimal() -> None:
         "DEVICE123", "Test Device", cast(Any, coordinator_data)
     )
 
-    assert device_info["name"] == "Test Device"
-    assert device_info["manufacturer"] == "Unknown"  # Fallback when model is undetected
-    assert device_info["model"] == "Unknown model"  # Fallback
-    assert device_info["serial_number"] == "DEVICE123"
+    assert device_info.name == "Test Device"
+    assert device_info.manufacturer == "Unknown"  # Fallback when model is undetected
+    assert device_info.model == "Unknown model"  # Fallback
+    assert device_info.serial_number == "DEVICE123"
 
 
 def test_get_sensor_avo_value() -> None:

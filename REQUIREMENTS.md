@@ -10,7 +10,7 @@
 For running tests and development:
 
 ```bash
-pip install pytest pytest-homeassistant-custom-component pytest-cov
+pip install pytest pytest-homeassistant pytest-cov
 ```
 
 Run tests with:

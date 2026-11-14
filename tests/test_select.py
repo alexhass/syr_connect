@@ -11,7 +11,7 @@ from typing import Any, NoReturn, cast, override
 from unittest.mock import AsyncMock, MagicMock, Mock, call, patch
 
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.syr_connect import select as select_module
 from custom_components.syr_connect.const import CONF_SERVICE

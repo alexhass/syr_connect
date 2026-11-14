@@ -7,13 +7,11 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from homeassistant import config_entries
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
-
-pytest_plugins = "pytest_homeassistant_custom_component"
 
 
 @pytest.fixture

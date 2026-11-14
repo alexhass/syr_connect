@@ -8,7 +8,7 @@ from typing import Any
 from unittest.mock import MagicMock, Mock
 
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.syr_connect.models import detect_model
 from custom_components.syr_connect.select import async_setup_entry
