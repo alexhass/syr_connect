@@ -458,6 +458,40 @@ def test_allinoneplus_fixture_system_and_inlet_pressure(
     assert iba.native_unit_of_measurement == UnitOfPressure.BAR
 
 
+@pytest.mark.parametrize(
+    ("dfi", "is_on"),
+    [
+        pytest.param("0", True, id="enabled"),
+        pytest.param("1", False, id="disabled"),
+    ],
+)
+async def test_allinoneplus_automatic_filling_switch_inverted(
+    create_mock_coordinator: Callable[..., MagicMock],
+    dfi: str,
+    is_on: bool,
+) -> None:
+    """On the All-in-One+, the automatic filling mode (getDFI) is 0 = on, 1 = off."""
+    data = {
+        "devices": [
+            {
+                "id": "d1",
+                "name": "D1",
+                "model": _signature("allinoneplus"),
+                "status": {"getDFI": dfi},
+            }
+        ]
+    }
+    coordinator = create_mock_coordinator(data)
+    switch = switch_module.SyrConnectBooleanSwitch(coordinator, "d1", "D1", "getDFI")
+
+    assert switch.is_on is is_on
+    await switch.async_turn_off()
+    coordinator.async_set_device_value.assert_awaited_once_with("d1", "setDFI", "1")
+    coordinator.async_set_device_value.reset_mock()
+    await switch.async_turn_on()
+    coordinator.async_set_device_value.assert_awaited_once_with("d1", "setDFI", "0")
+
+
 async def test_async_setup_entry_creates_allinoneplus_manual_filling(
     hass: HomeAssistant,
 ) -> None:

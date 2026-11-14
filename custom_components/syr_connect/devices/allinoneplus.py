@@ -153,6 +153,10 @@ PROFILE = SyrConnectDeviceProfile(
         "0": "getFCS",
     },
     hardness_ranges=HARDNESS_RANGES,
+    # The automatic filling mode (getDFI) is 0 = enabled, 1 = disabled
+    inverted_switches={
+        "getDFI",
+    },
     select=SELECT_SUPPORTED_KEYS,
     select_options={
         "getRMT": SELECT_RMT_OPTIONS,

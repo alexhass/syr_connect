@@ -1,6 +1,5 @@
 """Switch platform for SYR Connect integration."""
 
-from dataclasses import dataclass
 import logging
 from typing import Any, override
 
@@ -29,63 +28,51 @@ _LOGGER = logging.getLogger(__name__)
 PARALLEL_UPDATES = 1
 
 
-@dataclass(frozen=True, kw_only=True)
-class SyrConnectSwitchEntityDescription(SwitchEntityDescription):
-    """Describes a SYR Connect switch; `key` is the status key (e.g. "getBUZ")."""
-
-    # The device reports the opposite of the switch: True means the function is
-    # disabled (getFD1-3, HygBox)
-    inverted: bool = False
-
-
 # Descriptions of all switches (boolean get<KEY>/set<KEY> settings)
-_SYR_CONNECT_SWITCH_TYPES: tuple[SyrConnectSwitchEntityDescription, ...] = (
-    SyrConnectSwitchEntityDescription(
+_SYR_CONNECT_SWITCH_TYPES: tuple[SwitchEntityDescription, ...] = (
+    SwitchEntityDescription(
         key="getBPB",  # Profile change by button allowed (0 = blocked, 1 = allowed)
         entity_category=EntityCategory.CONFIG,
     ),
-    SyrConnectSwitchEntityDescription(
+    SwitchEntityDescription(
         key="getBUZ",  # Buzzer on/off
         entity_category=EntityCategory.CONFIG,
     ),
-    SyrConnectSwitchEntityDescription(
+    SwitchEntityDescription(
         key="getDFI",  # Filling mode enabled flag (Conel Clear Pro Fill)
         entity_category=EntityCategory.CONFIG,
     ),
-    SyrConnectSwitchEntityDescription(
+    SwitchEntityDescription(
         key="getFD1",  # Stagnation flushing disabled flag (HygBox)
         entity_category=EntityCategory.CONFIG,
-        inverted=True,
     ),
-    SyrConnectSwitchEntityDescription(
+    SwitchEntityDescription(
         key="getFD2",  # Temperature flushing disabled flag (HygBox)
         entity_category=EntityCategory.CONFIG,
-        inverted=True,
     ),
-    SyrConnectSwitchEntityDescription(
+    SwitchEntityDescription(
         key="getFD3",  # Periodic flushing disabled flag (HygBox)
         entity_category=EntityCategory.CONFIG,
-        inverted=True,
     ),
-    SyrConnectSwitchEntityDescription(
+    SwitchEntityDescription(
         key="getIFL",  # Initial filling active flag (All-in-One+)
         entity_category=EntityCategory.CONFIG,
     ),
-    SyrConnectSwitchEntityDescription(
+    SwitchEntityDescription(
         key="getMFL",  # Manual filling active flag (All-in-One+)
         entity_category=EntityCategory.CONFIG,
     ),
-    SyrConnectSwitchEntityDescription(
+    SwitchEntityDescription(
         key="getSSA",  # Automatic backwash enabled flag (RSA)
         entity_category=EntityCategory.CONFIG,
     ),
-    SyrConnectSwitchEntityDescription(
+    SwitchEntityDescription(
         key="getSSE",  # Backwash reminder enabled flag (RSA)
         entity_category=EntityCategory.CONFIG,
     ),
 )
 
-_SYR_CONNECT_SWITCH_DESCRIPTIONS: dict[str, SyrConnectSwitchEntityDescription] = {
+_SYR_CONNECT_SWITCH_DESCRIPTIONS: dict[str, SwitchEntityDescription] = {
     description.key: description for description in _SYR_CONNECT_SWITCH_TYPES
 }
 
@@ -175,7 +162,7 @@ def _build_device_switches(
 class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
     """Generic switch entity for boolean get<KEY>/set<KEY> settings (e.g. getBUZ, getDFI)."""
 
-    entity_description: SyrConnectSwitchEntityDescription
+    entity_description: SwitchEntityDescription
 
     def __init__(
         self,
@@ -195,6 +182,10 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
 
         self._sensor_key = sensor_key
         self.entity_description = _SYR_CONNECT_SWITCH_DESCRIPTIONS[sensor_key]
+        # The device reports the opposite of the switch, e.g. True means the function
+        # is disabled (getFD1-3, HygBox)
+        profile = self.device_model.device_profile
+        self._inverted = profile is not None and sensor_key in profile.inverted_switches
 
         # Use a platform-specific suffix to avoid unique_id collision with the
         # binary_sensor that represents the same underlying key (getBUZ).
@@ -216,7 +207,7 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
             return None
         # A reported but unknown value (e.g. empty) is shown as off
         enabled = is_value_true(value)
-        return not enabled if self.entity_description.inverted else enabled
+        return not enabled if self._inverted else enabled
 
     @override
     async def async_turn_on(self, **kwargs: Any) -> None:
@@ -230,7 +221,7 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
 
     async def _set_value(self, state: bool) -> None:
         """Set the boolean value via API."""
-        if self.entity_description.inverted:
+        if self._inverted:
             state = not state
         # Mirror the exact type of the current getter value so the setter
         # uses the same format the device expects.

@@ -108,6 +108,9 @@ class SyrConnectDeviceProfile:
     hardness_ranges: Mapping[str, Mapping[int, tuple[int, int, int]]] = field(
         default_factory=dict
     )
+    # Switch keys the device reports inverted to the other devices: the reported
+    # value means the opposite of the switch state
+    inverted_switches: AbstractSet[str] = field(default_factory=frozenset)
     select: AbstractSet[str]
     # Select keys with an "off" option: key -> raw value written for "off"; a reported
     # value below the lowest other option is shown as "off"

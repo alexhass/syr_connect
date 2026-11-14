@@ -1442,6 +1442,7 @@ The All-in-One+ has these additional properties:
 | getFCS / setFCS | "20" | L | Custom cartridge size, used when `getCRS` is 0. Range in SYR GUI: 1–100 L |
 | getIWH / setIWH | "20" | `getWHU` | Raw water hardness. Default=20, Range in SYR GUI: 1–50 °dH, 1–65 °e, 1–90 °fH, 10–900 ppm in steps of 10. A value below the soft water hardness lowers that one too |
 | getOWH / setOWH | "0" | `getWHU` | Soft water hardness, only visible when the cartridge type is HWE. Range in SYR GUI: 0–12 °dH, 0–16 °e, 0–22 °fH, 0–220 ppm in steps of 10, at most the raw water hardness |
+| getDFI / setDFI | "0" | | Automatic filling mode, inverted to the MuCo: 0=Enabled / 1=Disabled |
 | getCWL / setCWL | "10" | % | Warning threshold of the remaining capacity. Default=10, Range in SYR GUI: 1–10 % in steps of 1 |
 | getMFL / setMFL | "False" | | Manual filling: True=Active / False=Inactive. Fills the heating system to the target pressure within the maximum filling volume and duration, without counting the filling cycles; stays active until it is switched off. The SYR GUI only allows switching it while the automatic filling mode (`getDFI`) is off. |
 | getIFL / setIFL | "False" | | Initial filling: True=Active / False=Inactive. Fills a new or existing heating system to the target pressure within the maximum volume (`getFVT`) and duration (`getFMT`) of the initial filling, then the device returns to automatic refilling. The SYR GUI only allows starting it while the automatic filling mode (`getDFI`) is off and the device is idle (`getSTA` 0). |

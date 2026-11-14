@@ -126,6 +126,12 @@ PROFILE = SyrConnectDeviceProfile(
     ala_codes=ALA_CODES,
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
+    # The flushings (getFD1-3) report the function as disabled
+    inverted_switches={
+        "getFD1",
+        "getFD2",
+        "getFD3",
+    },
     select=SELECT_SUPPORTED_KEYS,
     select_options={
         "getRCP": SELECT_RCP_OPTIONS,
