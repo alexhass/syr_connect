@@ -5,8 +5,9 @@ Model type: Filling the Heating System
 The allowlists hold the keys that a real device (firmware All-in-One+ V4.05) reports
 in the fixtures of the local JSON API and the cloud XML API.
 
-The device reports the filling volumes in milliliters, see issue 10 in
-docs/known_issues_json_api.md.
+The device reports the current and the last filling volume (getCFV, getLFV) in
+milliliters, see issue 10 in docs/known_issues_json_api.md. The cumulative refilled
+volume (getTRV) is in liters.
 
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists of the platforms which have to
@@ -165,7 +166,6 @@ PROFILE = SyrConnectDeviceProfile(
     sensor_divisors={
         "getCFV": 1000,
         "getLFV": 1000,
-        "getTRV": 1000,
     },
     switch=SWITCH_SUPPORTED_KEYS,
     valve=VALVE_SUPPORTED_KEYS,

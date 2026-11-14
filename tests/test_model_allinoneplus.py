@@ -365,6 +365,26 @@ def test_allinoneplus_last_filling_volume_in_milliliters(
     assert sensor.suggested_display_precision == 2
 
 
+def test_allinoneplus_cumulative_refilled_volume_in_liters(
+    create_mock_coordinator: Callable[..., MagicMock],
+) -> None:
+    """The All-in-One+ reports the cumulative refilled volume (getTRV) in liters."""
+    data = {
+        "devices": [
+            {
+                "id": "d1",
+                "name": "D1",
+                "model": _signature("allinoneplus"),
+                "status": {"getTRV": "501"},
+            }
+        ]
+    }
+    sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", "getTRV")
+
+    assert sensor.native_value == 501
+    assert sensor.native_unit_of_measurement == UnitOfVolume.LITERS
+
+
 @pytest.mark.parametrize(
     ("crt", "expected"),
     [
