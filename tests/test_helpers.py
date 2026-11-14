@@ -519,7 +519,7 @@ def test_build_device_info() -> None:
     assert device_info.sw_version == "1.0.0"
     assert device_info.hw_version == "SLPS"
     assert device_info.serial_number == "DEVICE123"
-    assert ("mac", "00:11:22:33:44:55") in device_info.connections
+    assert device_info.connections == {("mac", "00:11:22:33:44:55")}
 
 
 def test_build_device_info_service_branding() -> None:
