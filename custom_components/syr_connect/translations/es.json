@@ -1069,6 +1069,12 @@
       "getltv": {
         "name": "Último volumen dispensado"
       },
+      "getlw1": {
+        "name": "Conductividad (entrada)"
+      },
+      "getlw2": {
+        "name": "Conductividad (salida)"
+      },
       "getlwt": {
         "name": "Umbral de aviso de fuga"
       },

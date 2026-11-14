@@ -1069,6 +1069,12 @@
       "getltv": {
         "name": "Ultimo volume erogato"
       },
+      "getlw1": {
+        "name": "Conducibilità (ingresso)"
+      },
+      "getlw2": {
+        "name": "Conducibilità (uscita)"
+      },
       "getlwt": {
         "name": "Soglia di avviso perdita"
       },

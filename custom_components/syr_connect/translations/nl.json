@@ -1069,6 +1069,12 @@
       "getltv": {
         "name": "Laatste gedoseerde volume"
       },
+      "getlw1": {
+        "name": "Geleidbaarheid (inlaat)"
+      },
+      "getlw2": {
+        "name": "Geleidbaarheid (uitlaat)"
+      },
       "getlwt": {
         "name": "Lekwaarschuwingsdrempel"
       },

@@ -1069,6 +1069,12 @@
       "getltv": {
         "name": "Dernier volume distribué"
       },
+      "getlw1": {
+        "name": "Conductivité (entrée)"
+      },
+      "getlw2": {
+        "name": "Conductivité (sortie)"
+      },
       "getlwt": {
         "name": "Seuil d'avertissement de fuite"
       },

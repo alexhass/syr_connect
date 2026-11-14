@@ -740,6 +740,18 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         hidden_when="empty",  # value "" means sensor does not exist or is not measured.
     ),
     SyrConnectSensorEntityDescription(
+        key="getLW1",  # Inlet conductivity (µS/cm, All-in-One+)
+        native_unit_of_measurement=UnitOfConductivity.MICROSIEMENS_PER_CM,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getLW2",  # Outlet conductivity (µS/cm, All-in-One+)
+        native_unit_of_measurement=UnitOfConductivity.MICROSIEMENS_PER_CM,
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
         key="getCND_class",  # Water hardness range computed from getCND (SafeTech family)
         device_class=SensorDeviceClass.ENUM,
         options=[

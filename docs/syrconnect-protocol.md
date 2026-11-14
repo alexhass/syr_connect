@@ -1446,6 +1446,8 @@ The All-in-One+ has these additional properties:
 | getCWL / setCWL | "10" | % | Warning threshold of the remaining capacity. Default=10, Range in SYR GUI: 1–10 % in steps of 1 |
 | getMFL / setMFL | "False" | | Manual filling: True=Active / False=Inactive. Fills the heating system to the target pressure within the maximum filling volume and duration, without counting the filling cycles; stays active until it is switched off. The SYR GUI only allows switching it while the automatic filling mode (`getDFI`) is off. |
 | getIFL / setIFL | "False" | | Initial filling: True=Active / False=Inactive. Fills a new or existing heating system to the target pressure within the maximum volume (`getFVT`) and duration (`getFMT`) of the initial filling, then the device returns to automatic refilling. The SYR GUI only allows starting it while the automatic filling mode (`getDFI`) is off and the device is idle (`getSTA` 0). |
+| getLW1 | "0" | µS/cm | Conductivity of the inlet water |
+| getLW2 | "2" | µS/cm | Conductivity of the outlet water |
 | getFVT / setFVT | "100" | L | Maximum volume of the initial filling. Default=100, Range in SYR GUI: as `getRVT` |
 | getFMT / setFMT | "60" | min | Maximum duration of the initial filling. Default=60, Range in SYR GUI: 5–20 min in 5 min steps, 30–50 min in 10 min steps, 1 h–25 h in 0.5 h steps |
 

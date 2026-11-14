@@ -37,6 +37,8 @@ SENSOR_SUPPORTED_KEYS = {
     "getCEL",
     "getCNF",
     "getIWH",
+    "getLW1",
+    "getLW2",
     "getOWH",
     "getWHU",
     # --- Device Info & Diagnostics ---

@@ -1069,6 +1069,12 @@
       "getltv": {
         "name": "Last dispensed volume"
       },
+      "getlw1": {
+        "name": "Conductivity (inlet)"
+      },
+      "getlw2": {
+        "name": "Conductivity (outlet)"
+      },
       "getlwt": {
         "name": "Leakage warning threshold"
       },

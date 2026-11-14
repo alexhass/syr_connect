@@ -1069,6 +1069,12 @@
       "getltv": {
         "name": "Ostatnio wydana objętość"
       },
+      "getlw1": {
+        "name": "Przewodność (wejście)"
+      },
+      "getlw2": {
+        "name": "Przewodność (wyjście)"
+      },
       "getlwt": {
         "name": "Próg ostrzeżenia o wycieku"
       },

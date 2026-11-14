@@ -34,6 +34,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_PASSWORD,
     CONF_USERNAME,
+    UnitOfConductivity,
     UnitOfPressure,
     UnitOfTemperature,
     UnitOfVolume,
@@ -476,6 +477,35 @@ def test_allinoneplus_fixture_system_and_inlet_pressure(
     assert iba.translation_key == "getiba"
     assert iba.native_value == 2.3
     assert iba.native_unit_of_measurement == UnitOfPressure.BAR
+
+
+@pytest.mark.parametrize(
+    ("fixture", "outlet"),
+    [
+        pytest.param("json/SyrAllInOnePlus_get_all.json", 2, id="json"),
+        pytest.param("xml/SyrAllInOnePlus_GetDeviceCollectionStatus.xml", 0, id="xml"),
+    ],
+)
+def test_allinoneplus_fixture_inlet_and_outlet_conductivity(
+    create_mock_coordinator: Callable[..., MagicMock],
+    fixture: str,
+    outlet: int,
+) -> None:
+    """The All-in-One+ reports the inlet (getLW1) and outlet (getLW2) conductivity."""
+    status = _fixture_status(fixture)
+    model = detect_model(status)
+
+    assert {"getLW1", "getLW2"} <= set(
+        sensor_module.sensor_keys_for_status(status, model)
+    )
+    data = {"devices": [{"id": "d1", "name": "D1", "model": model, "status": status}]}
+    coordinator = create_mock_coordinator(data)
+    lw1 = SyrConnectSensor(coordinator, "d1", "D1", "getLW1")
+    lw2 = SyrConnectSensor(coordinator, "d1", "D1", "getLW2")
+    assert lw1.native_value == 0
+    assert lw2.native_value == outlet
+    assert lw2.native_unit_of_measurement == UnitOfConductivity.MICROSIEMENS_PER_CM
+    assert lw2.suggested_display_precision == 0
 
 
 @pytest.mark.parametrize(

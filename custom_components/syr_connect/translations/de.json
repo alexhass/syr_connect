@@ -1069,6 +1069,12 @@
       "getltv": {
         "name": "Letztes gezapftes Volumen"
       },
+      "getlw1": {
+        "name": "Leitfähigkeit (Eingang)"
+      },
+      "getlw2": {
+        "name": "Leitfähigkeit (Ausgang)"
+      },
       "getlwt": {
         "name": "Leckage-Warnschwellwert"
       },
