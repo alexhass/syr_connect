@@ -92,15 +92,12 @@ def _map_code(model: SyrConnectModel, raw: Any, mapper: Any) -> str | None:
     """Map an alarm/notification/warning code to its translation key, else the raw code."""
     if raw is None:
         return None
-    try:
-        mapped, raw_code = mapper(model, raw)
-        if mapped:
-            return str(mapped)
-        # Model unknown or no mapping found: return the raw value 1:1
-        sval = str(raw_code)
-        return sval if sval.strip() != "" else None
-    except ValueError, KeyError, AttributeError, TypeError:
-        return None
+    mapped, raw_code = mapper(model, raw)
+    if mapped:
+        return str(mapped)
+    # Model unknown or no mapping found: return the raw value 1:1
+    sval = str(raw_code)
+    return sval if sval.strip() != "" else None
 
 
 def _value_ab(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
@@ -135,10 +132,7 @@ def _value_alm(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     - Safe-T+: "Alarms: A5 A5 A6 ->A6 A5 A5 A5 A5" -> "A5 A5 A6 ->A6 A5 A5 A5 A5"
     """
     raw_str = str(value) if value is not None else ""
-    try:
-        ala_mapped, _ = get_sensor_ala_map(sensor.device_model, value)
-    except ValueError, KeyError, AttributeError, TypeError:
-        ala_mapped = None
+    ala_mapped, _ = get_sensor_ala_map(sensor.device_model, value)
     std_mapped = _SYR_CONNECT_SENSOR_ALM_VALUE_MAP.get(raw_str.strip().upper())
     mapped = ala_mapped or std_mapped
     # Mapped key (e.g. 'alarm_salt_supply_empty', 'no_alarm') or the raw value as fallback
@@ -185,15 +179,12 @@ def _value_bar(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     """Pressure (getBAR / getBAR2, Safe-T+ / TRIO Lock): "4077 mbar" -> bar."""
     if value is None or value == "":
         return None
-    try:
-        match = re.search(r"\d+", str(value))
-        if not match:
-            return None
-        pressure_bar = float(match.group()) / 1000
-        precision = sensor.entity_description.suggested_display_precision
-        return round(pressure_bar, 3 if precision is None else precision)
-    except ValueError, TypeError:
+    match = re.search(r"\d+", str(value))
+    if not match:
         return None
+    pressure_bar = float(match.group()) / 1000
+    precision = sensor.entity_description.suggested_display_precision
+    return round(pressure_bar, 3 if precision is None else precision)
 
 
 def _value_bat(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
@@ -260,15 +251,12 @@ def _value_dbd(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     """Microleakage pressure drop (getDBD): tenths of a bar ("10" -> 1.0 bar)."""
     if value is None or value == "":
         return None
-    try:
-        match = re.search(r"-?\d+", str(value))
-        if not match:
-            return None
-        pressure_bar = float(match.group()) / 10.0
-        precision = sensor.entity_description.suggested_display_precision
-        return round(pressure_bar, 1 if precision is None else precision)
-    except ValueError, TypeError:
+    match = re.search(r"-?\d+", str(value))
+    if not match:
         return None
+    pressure_bar = float(match.group()) / 10.0
+    precision = sensor.entity_description.suggested_display_precision
+    return round(pressure_bar, 1 if precision is None else precision)
 
 
 def _value_dom(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:

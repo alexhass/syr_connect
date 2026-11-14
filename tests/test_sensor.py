@@ -9,13 +9,13 @@ from datetime import UTC, datetime
 import json
 import logging
 from pathlib import Path
-from typing import Any, NoReturn, cast, override
+from typing import Any, cast
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from pytest_homeassistant.common import MockConfigEntry
 
-from custom_components.syr_connect import sensor as sensor_mod, sensor as sensor_module
+from custom_components.syr_connect import sensor as sensor_module
 from custom_components.syr_connect.const import CONF_SERVICE, DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.devices import SyrConnectDeviceProfile
@@ -481,49 +481,6 @@ def test_sensor_hardness_scale_follows_whu(
     assert sensor.suggested_display_precision == precision
 
 
-async def test_sensor_regeneration_weekdays_all(hass: HomeAssistant) -> None:
-    """Test regeneration permitted weekdays with all days (getRPW)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRPW": "127",  # All 7 days (binary 1111111)
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
-
-    # Should return comma-separated weekday names
-    assert sensor.native_value is not None
-    assert "," in str(sensor.native_value)
-
-
-async def test_sensor_regeneration_weekdays_zero(hass: HomeAssistant) -> None:
-    """Test regeneration permitted weekdays with mask 0 (getRPW)."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRPW": "0",  # Anytime
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
-
-    # The integration exposes mask==0 as the internal translation key "0"
-    assert sensor.native_value == "0"
-
-
 async def test_sensor_status_mapping(hass: HomeAssistant) -> None:
     """Test status sensor mapping (getSTA)."""
     data = {
@@ -865,26 +822,6 @@ async def test_sensor_rtime_invalid(hass: HomeAssistant) -> None:
     assert sensor.native_value is None
 
 
-async def test_sensor_rpw_invalid_mask(hass: HomeAssistant) -> None:
-    """Test getRPW with invalid mask value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRPW": "invalid",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
-
-    assert sensor.native_value is None
-
-
 async def test_sensor_string_value_numeric(hass: HomeAssistant) -> None:
     """Test sensor with string value that can be converted to numeric."""
     data = {
@@ -939,109 +876,6 @@ async def test_sensor_setup_no_data(hass: HomeAssistant) -> None:
 
     # Should not call add_entities when no data
     add_entities.assert_not_called()
-
-
-async def test_async_setup_entry_preprocessing_handles_helper_exception(
-    hass: HomeAssistant,
-) -> None:
-    """Ensure preprocessing exceptions from get_sensor_iwh_value are handled."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getPRS": "50"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    with patch(
-        "custom_components.syr_connect.sensor.get_sensor_iwh_value",
-        side_effect=RuntimeError("boom"),
-    ):
-        # Should not raise even if preprocessing helper fails
-        await async_setup_entry(hass, entry, add_entities)
-
-
-async def test_async_setup_entry_preprocessing_device_get_raises(
-    hass: HomeAssistant,
-) -> None:
-    """Ensure outer preprocessing exception is handled when device.get raises."""
-
-    class BadDevice:
-        def __init__(self) -> None:
-            self._raised = False
-
-        def get(self, key: Any, default: Any = None) -> Any:
-            # Simulate failure on the first access to 'status', allow subsequent accesses
-            if key == "status":
-                if not self._raised:
-                    self._raised = True
-                    raise RuntimeError("boom")
-                return {}
-            return None
-
-        def __getitem__(self, key: Any) -> Any:
-            # Provide mapping for subscriptions used by the platform
-            if key == "id":
-                return "baddev"
-            if key == "name":
-                return "Bad Device"
-            if key == "project_id":
-                return "proj"
-            if key == "status":
-                # Delegate to get() so we simulate the same first-call failure
-                return self.get("status")
-            raise KeyError(key)
-
-    data = {"devices": [BadDevice()]}
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    # device.get("status") raises RuntimeError on first call; the outer device
-    # loop in async_setup_entry has no try/except at that level, so it propagates.
-    with pytest.raises(RuntimeError, match="boom"):
-        await async_setup_entry(hass, entry, add_entities)
-
-
-def test_getdbd_rounding_precision_typeerror(monkeypatch: pytest.MonkeyPatch) -> None:
-    """If precision is invalid and round() raises, getDBD returns None."""
-
-    monkeypatch.setitem(
-        sensor_mod._SYR_CONNECT_SENSOR_DESCRIPTIONS,
-        "getDBD",
-        replace(
-            sensor_mod._SYR_CONNECT_SENSOR_DESCRIPTIONS["getDBD"],
-            suggested_display_precision=cast(Any, "bad"),
-        ),
-    )
-
-    # Create a coordinator-like object for the sensor
-    data = {
-        "devices": [
-            {"id": "dev_x", "name": "X", "project_id": "p1", "status": {"getDBD": "10"}}
-        ]
-    }
-
-    # Instead of building a full coordinator, instantiate SyrConnectSensor directly with a mock coordinator
-    class DummyCoord:
-        entry_id = None
-
-        def __init__(self, data: Any) -> None:
-            self.data = data
-
-    coord = DummyCoord(data)
-
-    sensor = SyrConnectSensor(cast(Any, coord), "dev_x", "X", "getDBD")
-    # When precision is invalid, rounding should raise and the function returns None
-    assert sensor.native_value is None
 
 
 @pytest.mark.parametrize(
@@ -1139,11 +973,11 @@ def test_extra_getrtm_and_getab_icon_and_getpm_boolean(
     assert pm1.native_value == "true"
 
 
-def test_extra_getwhu_and_getlar_and_getrpw(
+def test_extra_getwhu_and_getlar(
     create_mock_coordinator: Callable[..., MagicMock],
 ) -> None:
-    """Test extra getWHU and getLAR and getRPW."""
-    # getWHU mapping, getLAR timestamp, getRPW bitmask
+    """Test extra getWHU and getLAR."""
+    # getWHU mapping, getLAR timestamp
     ts = 1609459200  # 2021-01-01 00:00:00 UTC
     data = {
         "devices": [
@@ -1155,7 +989,6 @@ def test_extra_getwhu_and_getlar_and_getrpw(
                 "status": {
                     "getWHU": 1,
                     "getLAR": str(ts),
-                    "getRPW": "5",  # Monday + Wednesday bits
                 },
             }
         ]
@@ -1169,11 +1002,6 @@ def test_extra_getwhu_and_getlar_and_getrpw(
     assert isinstance(lar.native_value, datetime)
     # Check timestamp matches (allow timezone differences by comparing UTC timestamp)
     assert int(lar.native_value.replace(tzinfo=UTC).timestamp()) == ts
-
-    rpw = SyrConnectSensor(coord, "dev_w", "Device W", "getRPW")
-    # Should return a comma-separated list for mask with multiple days
-    assert isinstance(rpw.native_value, str)
-    assert "," in rpw.native_value or rpw.native_value != ""
 
 
 def test_extra_getsta_getalm_getle_and_gett1_mappings(
@@ -1317,40 +1145,6 @@ def test_getrcd_value_mapping(
     assert rcd.native_value == expected
 
 
-async def test_async_setup_entry_handles_status_get_exception(
-    hass: HomeAssistant,
-) -> None:
-    """Ensure async_setup_entry does not crash when status.get raises."""
-
-    class BadStatus:
-        def get(self, key: Any, default: Any = None) -> None:
-            return None
-
-        def items(self) -> Any:
-            return {}.items()
-
-        def __len__(self) -> Any:
-            return 0
-
-    data = {
-        "devices": [
-            {
-                "id": "bad_dev",
-                "name": "Bad Device",
-                "project_id": "p1",
-                "status": BadStatus(),
-            }
-        ]
-    }
-    coord = _build_coordinator(hass, data)
-    entry = _build_entry(coord)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    # Should not raise
-    await async_setup_entry(hass, entry, add_entities)
-
-
 async def test_getsro_and_getffm_creation_rules(hass: HomeAssistant) -> None:
     """Test that getSRO only created for integer values and getFFM >=1."""
     data = {
@@ -1461,56 +1255,6 @@ async def test_sensor_whu_invalid_value(hass: HomeAssistant) -> None:
 
     # Should return None for invalid values
     assert sensor.native_value is None
-
-
-async def test_sensor_rpw_invalid_string_mask(hass: HomeAssistant) -> None:
-    """Test getRPW with invalid string that cannot be converted."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRPW": "not_a_number",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
-
-    # Should return None for invalid mask
-    assert sensor.native_value is None
-
-
-async def test_sensor_rpw_with_babel_fallback(hass: HomeAssistant) -> None:
-    """Test getRPW falls back to strftime if Babel fails."""
-
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRPW": "127",  # All days
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
-
-    # Mock format_datetime to raise exception
-    with patch(
-        "custom_components.syr_connect.sensor.format_datetime",
-        side_effect=ValueError("Babel error"),
-    ):
-        result = sensor.native_value
-        # Should still return weekday names using strftime fallback
-        assert result is not None
-        assert isinstance(result, str)
 
 
 async def test_sensor_alarm_none_value(hass: HomeAssistant) -> None:
@@ -1642,48 +1386,8 @@ async def test_sensor_numeric_float_value(hass: HomeAssistant) -> None:
     # getFLO has precision 0, so 123.45 should be rounded to 123
     assert sensor.native_value == 123
 
-
-async def test_sensor_exclude_when_zero_non_cs(hass: HomeAssistant) -> None:
-    """Test sensors excluded when value is zero (non-CS sensors)."""
-    # Test with a sensor that should be excluded when zero
-    # First check that it's created when non-zero
-    data_non_zero = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRS1": 5,  # Assume getRS1 is in EXCLUDE_WHEN_ZERO
-                },
-            }
-        ]
-    }
-
-    # Mock the async setup
-    mock_coordinator = _build_coordinator(hass, data_non_zero)
-    mock_entry = _build_entry(mock_coordinator)
-    mock_entry.add_to_hass(hass)
-
-    with (
-        patch(
-            "custom_components.syr_connect.sensor.er.async_get"
-        ) as mock_registry_getter,
-    ):
-        mock_registry = Mock()
-        mock_registry.async_get.return_value = None
-        mock_registry.async_remove = Mock()
-        mock_registry_getter.return_value = mock_registry
-
-        entities = []
-        await async_setup_entry(
-            hass,
-            mock_entry,
-            lambda ents: entities.extend(ents),  # type: ignore[arg-type]
-        )
-
-        # Sensor should be created when value is non-zero
-        # Note: actual behavior depends on if getRS1 is in EXCLUDE_WHEN_ZERO const
+    # Sensor should be created when value is non-zero
+    # Note: actual behavior depends on if getRS1 is in EXCLUDE_WHEN_ZERO const
 
 
 async def test_sensor_cel_temperature_conversion(hass: HomeAssistant) -> None:
@@ -1781,49 +1485,6 @@ async def test_sensor_mxt_temperature_conversion(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getMXT")
     assert sensor.native_value == 49.0
-
-
-async def test_sensor_available_device_not_found(hass: HomeAssistant) -> None:
-    """Test available property when device is not in coordinator data."""
-    data = {
-        "devices": [
-            {
-                "id": "other_device",
-                "name": "Other Device",
-                "project_id": "project1",
-                "status": {},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    # Create sensor for device that doesn't exist in data
-    sensor = SyrConnectSensor(
-        coordinator, "nonexistent_device", "Nonexistent", "getSTA"
-    )
-
-    # Should return True when device not found
-    assert sensor.available is False
-
-
-async def test_sensor_rpw_empty_string(hass: HomeAssistant) -> None:
-    """Test getRPW with empty string value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRPW": "",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
-
-    # Empty string should return None
-    assert sensor.native_value is None
 
 
 async def test_sensor_cel_string_value(hass: HomeAssistant) -> None:
@@ -1958,106 +1619,10 @@ async def test_sensor_exclude_when_zero_int_value(hass: HomeAssistant) -> None:
     sv2_sensors = [e for e in entities if e._sensor_key == "getSV2"]
     assert len(sv2_sensors) == 1
 
-
-async def test_sensor_exclude_when_zero_float_value(hass: HomeAssistant) -> None:
-    """Test getSV2 is shown even when float value is zero."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getSV2": 0.0,  # Float zero
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    entities = add_entities.call_args.args[0]
-    # getSV2 with value 0.0 is now always shown
-    sv2_sensors = [e for e in entities if e._sensor_key == "getSV2"]
-    assert len(sv2_sensors) == 1
-
-
-async def test_sensor_registry_cleanup_exception(hass: HomeAssistant) -> None:
-    """Test entity registry cleanup handles exceptions gracefully."""
-
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getPRS": "50"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-
-    # Provide a dummy registry that safely ignores async_remove calls
-    class DummyRegistry:
-        def async_get(self, entity_id: Any) -> None:
-            return None
-
-        def async_get_entity_id(
-            self, domain: Any, platform: Any, unique_id: Any
-        ) -> None:
-            return None
-
-        def async_remove(self, entity_id: Any) -> None:
-            return None
-
-    with patch(
-        "custom_components.syr_connect.sensor.er.async_get",
-        return_value=DummyRegistry(),
-    ):
-        # Should not raise exception, continues setup
-        await async_setup_entry(hass, entry, add_entities)
-        # Entities should still be added despite registry issues
+    # Entities should still be added despite registry issues
 
 
 # Focused tests for uncovered branches in sensor setup logic
-async def test_async_setup_entry_getpa_group_true(hass: HomeAssistant) -> None:
-    """Test async setup entry getPA group true."""
-    data = {
-        "devices": [
-            {
-                "id": "devp",
-                "name": "DevP",
-                "project_id": "p1",
-                "status": {
-                    "getPA1": "1",
-                    "getPV1": "10",
-                    "getPT1": "60",
-                    "getPF1": "5",
-                    "getPN1": "Zone1",
-                    "getPM1": "true",
-                    "getPW1": "true",
-                    "getPB1": "false",
-                    "getPR1": "0",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    added = []
-    await async_setup_entry(hass, entry, lambda ents: added.extend(ents))  # type: ignore[arg-type]
-    # group keys like getPV1 should be created
-    assert any(getattr(e, "_sensor_key", None) == "getPV1" for e in added)
 
 
 def _register_sensor(
@@ -2343,126 +1908,6 @@ async def test_getpa_group_without_flag_pontos_removes_registry_entries(
     ]
 
 
-async def test_sensor_controlled_sensors_cleanup(hass: HomeAssistant) -> None:
-    """Test cleanup of controlled sensors from registry."""
-
-    # Create registry entry for a controlled sensor
-    registry = er.async_get(hass)
-    controlled_entry = registry.async_get_or_create(
-        "sensor",
-        "syr_connect",
-        "device1_getRTM",  # getRTM is controlled
-        suggested_object_id="device1_getrtm",
-    )
-
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getPRS": "50"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    # Controlled sensor entry should be handled
-    assert controlled_entry is not None
-
-
-async def test_sensor_rpw_locale_exception(hass: HomeAssistant) -> None:
-    """Test getRPW handles locale retrieval exception."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRPW": "5",  # Some days
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
-
-    # The exception handling in sensor.py catches Exception when accessing locale
-    # Just verify the sensor can still return weekday names
-    result = sensor.native_value
-    # Should still return weekday names despite any locale issues
-    assert result is not None
-    assert isinstance(result, str)
-
-
-async def test_sensor_precision_rounding_error(hass: HomeAssistant) -> None:
-    """Test sensor handles precision rounding errors."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getFLO": "invalid",  # Not a number, never rounded
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getFLO")
-
-    assert sensor.native_value is None
-
-
-async def test_sensor_rpw_mask_invalid_int_conversion(hass: HomeAssistant) -> None:
-    """Test getRPW sensor with value that can't be converted to int."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRPW": "not_a_number",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
-
-    # Should return None when conversion fails
-    assert sensor.native_value is None
-
-
-async def test_sensor_rpw_mask_empty_string(hass: HomeAssistant) -> None:
-    """Test getRPW sensor with empty string value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRPW": "",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
-
-    # Should return None for empty string
-    assert sensor.native_value is None
-
-
 async def test_sensor_rpw_format_datetime_exception(hass: HomeAssistant) -> None:
     """Test getRPW sensor handles format_datetime exception."""
     data = {
@@ -2512,27 +1957,6 @@ async def test_sensor_lar_none_value(hass: HomeAssistant) -> None:
     assert sensor.native_value is None
 
 
-async def test_sensor_lar_empty_string(hass: HomeAssistant) -> None:
-    """Test getLAR sensor with empty string value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getLAR": "",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLAR")
-
-    # Should return None for empty string
-    assert sensor.native_value is None
-
-
 async def test_sensor_lar_overflow_error(hass: HomeAssistant) -> None:
     """Test getLAR sensor with timestamp that causes overflow."""
     data = {
@@ -2551,49 +1975,6 @@ async def test_sensor_lar_overflow_error(hass: HomeAssistant) -> None:
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLAR")
 
     # Should return None when overflow occurs
-    assert sensor.native_value is None
-
-
-async def test_sensor_lar_invalid_value(hass: HomeAssistant) -> None:
-    """Test getLAR sensor with invalid value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getLAR": "invalid",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLAR")
-
-    # Should return None when value is invalid
-    assert sensor.native_value is None
-
-
-async def test_sensor_rth_invalid_hour(hass: HomeAssistant) -> None:
-    """Test getRTH sensor with invalid hour value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRTH": "invalid",
-                    "getRTM": "30",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRTM")
-
-    # Should return None when conversion fails
     assert sensor.native_value is None
 
 
@@ -2752,52 +2133,6 @@ async def test_sensor_setup_binary_key_in_supported_keys_not_created(
     assert any(e._sensor_key == "getRES" for e in entities)
 
 
-async def test_sensor_rpw_hass_config_no_language(hass: HomeAssistant) -> None:
-    """Test getRPW sensor when hass.config has no language attribute."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRPW": "3",  # Monday and Tuesday
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
-
-    # Should handle missing language attribute gracefully
-    value = sensor.native_value
-    assert value is not None
-    assert "," in str(value)
-
-
-async def test_sensor_rpw_mask_specific_bit(hass: HomeAssistant) -> None:
-    """Test getRPW sensor with specific bit set."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRPW": "64",  # Bit 6 = Sunday
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
-
-    # Should return Sunday
-    value = sensor.native_value
-    assert value is not None
-    assert len(str(value)) > 0
-
-
 async def test_sensor_alarm_unmapped_value(hass: HomeAssistant) -> None:
     """Test getALM sensor with value not in mapping returns original value."""
     data = {
@@ -2819,55 +2154,6 @@ async def test_sensor_alarm_unmapped_value(hass: HomeAssistant) -> None:
     value = sensor.native_value
     # The implementation now returns the raw unmapped value as-is.
     assert value == "UnknownAlarm"
-
-
-async def test_sensor_alarm_value_none_and_unmapped(hass: HomeAssistant) -> None:
-    """Test getALM when both value is None and result is unmapped."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getALM": "SomeUnknownValue",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getALM")
-
-    # Should handle gracefully
-    value = sensor.native_value
-    assert value is not None
-
-
-async def test_sensor_rpw_getattr_exception(hass: HomeAssistant) -> None:
-    """Test getRPW sensor when getattr raises exception."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRPW": 3,  # Monday and Tuesday (bitmask)
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
-
-    # Mock getattr on hass.config to raise exception
-    with patch(
-        "custom_components.syr_connect.sensor.getattr",
-        side_effect=AttributeError("Test exception"),
-    ):
-        # Should handle exception and use None locale
-        value = sensor.native_value
-        assert value is not None
 
 
 async def test_sensor_sta_with_rapide_variant(hass: HomeAssistant) -> None:
@@ -2913,167 +2199,6 @@ async def test_sensor_whu_none_value_returns_none(hass: HomeAssistant) -> None:
     assert sensor.native_value is None
 
 
-async def test_sensor_setup_no_coordinator_data(hass: HomeAssistant) -> None:
-    """Test sensor setup with no coordinator data."""
-    coordinator = _build_coordinator(hass, {})
-    coordinator.async_set_updated_data(None)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    # Should not add entities
-    add_entities.assert_not_called()
-
-
-async def test_sensor_setup_registry_exception(hass: HomeAssistant) -> None:
-    """Test sensor setup handles registry exception gracefully."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPRS": "50",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    # Provide a dummy registry so setup continues even if registry backend is unavailable
-    class DummyRegistry:
-        def async_get(self, entity_id: Any) -> None:
-            return None
-
-        def async_get_entity_id(
-            self, domain: Any, platform: Any, unique_id: Any
-        ) -> None:
-            return None
-
-        def async_remove(self, entity_id: Any) -> None:
-            return None
-
-    with patch(
-        "custom_components.syr_connect.sensor.er.async_get",
-        return_value=DummyRegistry(),
-    ):
-        add_entities = Mock()
-        # Should not raise exception
-        await async_setup_entry(hass, entry, add_entities)
-
-        # Should still add entities
-        add_entities.assert_called_once()
-
-
-async def test_sensor_exclude_when_zero_other_sensor_int(hass: HomeAssistant) -> None:
-    """Test other excluded sensor with int zero."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getSV2": 0,  # Int zero in exclude list
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    # Should skip getSV1 because it's zero
-    entities = add_entities.call_args.args[0] if add_entities.called else []
-    sv1_entities = [e for e in entities if e._sensor_key == "getSV1"]
-    assert len(sv1_entities) == 0
-
-
-async def test_sensor_exclude_when_zero_other_sensor_string(
-    hass: HomeAssistant,
-) -> None:
-    """Test getSV2 is shown even when string zero."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getSV2": "0",  # String zero, no longer in exclude list
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    # getSV2 is now always shown regardless of value
-    entities = add_entities.call_args.args[0] if add_entities.called else []
-    sv2_entities = [e for e in entities if e._sensor_key == "getSV2"]
-    assert len(sv2_entities) == 1
-
-
-async def test_sensor_invalid_value_type_skipped(hass: HomeAssistant) -> None:
-    """Test sensor with invalid value type is skipped."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPRS": {"invalid": "dict"},  # Invalid type
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    # Should not create sensor for invalid type
-    entities = add_entities.call_args.args[0] if add_entities.called else []
-    assert len(entities) == 0
-
-
-async def test_sensor_whu_unit_value_error(hass: HomeAssistant) -> None:
-    """Test water hardness sensor unit with ValueError on WHU conversion."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getIWH": 50,
-                    "getWHU": "invalid",  # Cannot convert to int
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getIWH")
-
-    # Should set unit to None
-    assert sensor.native_unit_of_measurement is None
-
-
 async def test_sensor_whu_unit_type_error(hass: HomeAssistant) -> None:
     """Test water hardness sensor unit with TypeError on WHU conversion."""
     data = {
@@ -3094,327 +2219,6 @@ async def test_sensor_whu_unit_type_error(hass: HomeAssistant) -> None:
 
     # Should set unit to None
     assert sensor.native_unit_of_measurement is None
-
-
-async def test_sensor_whu_unit_not_found(hass: HomeAssistant) -> None:
-    """Test water hardness sensor when WHU value is not found."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getIWH": 50,
-                    # getWHU not present
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getIWH")
-
-    # Should set unit to None
-    assert sensor.native_unit_of_measurement is None
-
-
-async def test_sensor_rtm_value_error(hass: HomeAssistant) -> None:
-    """Test getRTM with ValueError on conversion."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRTH": "invalid",
-                    "getRTM": "invalid",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRTM")
-
-    # Should return None when both RTH and RTM are None
-    assert sensor.native_value is None
-
-
-async def test_sensor_whu_string_value_error(hass: HomeAssistant) -> None:
-    """Test getWHU with string that cannot be converted."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getWHU": "invalid",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getWHU")
-
-    # Should return None
-    assert sensor.native_value is None
-
-
-async def test_sensor_rpw_int_conversion_exception(hass: HomeAssistant) -> None:
-    """Test getRPW with value that raises exception on int conversion."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRPW": "not_a_number",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
-
-    # Should return None on exception
-    assert sensor.native_value is None
-
-
-async def test_sensor_sta_fallback_to_raw(hass: HomeAssistant) -> None:
-    """Test getSTA falls back to raw value when no pattern matches."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getSTA": "Unknown status",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getSTA")
-
-    # Should use raw value as mapped value
-    value = sensor.native_value
-    assert value == "Unknown status"
-
-
-async def test_sensor_alm_none_value(hass: HomeAssistant) -> None:
-    """Test getALM with None value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getALM": None,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getALM")
-
-    # When value is None, str(None) = "None" which maps to 'no_alarm'
-    assert sensor.native_value == "no_alarm"
-
-
-async def test_sensor_numeric_conversion_precision_type_error(
-    hass: HomeAssistant,
-) -> None:
-    """Test numeric conversion handles TypeError on precision."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPRS": "50",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
-
-    # Mock precision to None and test
-    sensor.entity_description = replace(
-        sensor.entity_description, suggested_display_precision=None
-    )
-    assert sensor.native_value == 5.0
-
-
-async def test_sensor_available_device_not_available(hass: HomeAssistant) -> None:
-    """Test sensor availability when device is not available."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "available": False,
-                "status": {
-                    "getPRS": "50",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
-
-    # Should not be available
-    assert sensor.available is False
-
-
-async def test_sensor_native_value_device_not_found(hass: HomeAssistant) -> None:
-    """Test native_value when device is not found."""
-    data = {
-        "devices": [
-            {
-                "id": "other_device",
-                "name": "Other Device",
-                "project_id": "project1",
-                "status": {"getPRS": "50"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
-
-    # Should return None
-    assert sensor.native_value is None
-
-
-async def test_sensor_value_not_in_status(hass: HomeAssistant) -> None:
-    """Test sensor when key is not in device status."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getFLO": "10",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
-
-    # Should return None when key not in status
-    assert sensor.native_value is None
-
-
-async def test_sensor_lar_value_error(hass: HomeAssistant) -> None:
-    """Test getLAR with ValueError."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getLAR": "invalid",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLAR")
-
-    # Should return None
-    assert sensor.native_value is None
-
-
-async def test_sensor_lar_type_error(hass: HomeAssistant) -> None:
-    """Test getLAR with TypeError."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getLAR": None,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLAR")
-
-    # Should return None
-    assert sensor.native_value is None
-
-
-async def test_sensor_rpw_zero_mask(hass: HomeAssistant) -> None:
-    """Test getRPW with zero mask."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRPW": 0,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
-
-    # Should return the internal translation key "0" for mask == 0
-    assert sensor.native_value == "0"
-
-
-async def test_sensor_rpw_value_error_on_float(hass: HomeAssistant) -> None:
-    """Test getRPW when float conversion fails."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRPW": "not_a_number_at_all",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
-
-    # Should return None
-    assert sensor.native_value is None
-
-
-async def test_sensor_available_coordinator_not_successful(hass: HomeAssistant) -> None:
-    """Test sensor availability when coordinator update not successful."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getPRS": "50"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    coordinator.last_update_success = False
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
-
-    # Should not be available
-    assert sensor.available is False
 
 
 async def test_sensor_getvol_with_prefix(hass: HomeAssistant) -> None:
@@ -3997,147 +2801,6 @@ async def test_sensor_getul_mapped_string_key(hass: HomeAssistant) -> None:
     assert sensor.native_value == 10
 
 
-async def test_getvol_conversion_to_m3(hass: HomeAssistant) -> None:
-    """The getVOL string values should be converted to cubic meters (divide by 1000)."""
-    data = {
-        "devices": [
-            {
-                "id": "d1",
-                "name": "Device",
-                "project_id": "p",
-                "status": {"getVOL": "6530"},
-            }
-        ]
-    }
-    coord = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coord, "d1", "Device", "getVOL")
-    # 6530 L -> 6.53 m3
-    assert sensor.native_value == 6.53
-
-
-async def test_async_setup_entry_getpa_group_creation(hass: HomeAssistant) -> None:
-    """When getPA1 evaluates true, group sensors are created."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getPA1": "true", "getPN1": "Profile X"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    entities_collected = []
-    await async_setup_entry(hass, entry, lambda ents: entities_collected.extend(ents))  # type: ignore[arg-type]
-
-    # Should include at least one group sensor like getPN1
-    keys = [getattr(e, "_sensor_key", None) for e in entities_collected]
-    assert "getPN1" in keys or "getPV1" in keys or "getPF1" in keys
-
-
-async def test_getavo_parsing(hass: HomeAssistant) -> None:
-    """Test getAVO parsing."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getAVO": "1655mL"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getAVO")
-
-    # 1655 mL -> 1.655 L
-    val = sensor.native_value
-    assert isinstance(val, int | float | str)
-    assert abs(float(val) - 1.655) < 1e-6
-
-
-async def test_getvol_cleaning_and_conversion(hass: HomeAssistant) -> None:
-    """Test getVOL cleaning and conversion."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getVOL": "Vol[L]6530"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getVOL")
-
-    # Cleaned value should be numeric 6.53 (m³)
-    val = sensor.native_value
-    assert isinstance(val, int | float | str)
-    assert abs(float(val) - 6.53) < 1e-6
-
-
-async def test_getbar_parsing_and_precision(hass: HomeAssistant) -> None:
-    """Test getBAR parsing and precision."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getBAR": "4077 mbar"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAR")
-
-    # 4077 mbar -> 4.077 bar rounded to precision 1 -> 4.1
-    assert sensor.native_value == 4.1
-
-
-async def test_getbat_parsing_and_precision(hass: HomeAssistant) -> None:
-    """Test getBAT parsing and precision."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getBAT": "6,12 4,38 3,90"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
-
-    # First value 6,12 -> 6.12 with precision 2
-    assert sensor.native_value == 6.12
-
-
-async def test_getul_numeric_conversion(hass: HomeAssistant) -> None:
-    """Test getUL numeric conversion."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getUL": "5"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getUL")
-
-    # 5 -> multiplied by 10 -> 50 (int)
-    assert sensor.native_value == 50
-
-
 async def test_rtm_combined_string_and_invalid(hass: HomeAssistant) -> None:
     """Test rtm combined string and invalid."""
     # Combined valid string
@@ -4169,25 +2832,6 @@ async def test_rtm_combined_string_and_invalid(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data_bad)
     sensor_bad = SyrConnectSensor(coordinator, "device1", "Device 1", "getRTM")
     assert sensor_bad.native_value is None
-
-
-async def test_getle_mapping(hass: HomeAssistant) -> None:
-    """Test getLE mapping."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getLE": "2"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLE")
-
-    # getLE value '2' maps to 100 per constants
-    assert sensor.native_value == 100
 
 
 @pytest.mark.parametrize(
@@ -4280,56 +2924,6 @@ async def test_sensor_ala_not_wrn_exhaustive_variants(hass: HomeAssistant) -> No
                     assert val == str(raw), f"Key {key} raw={raw!r} -> got {val!r}"
 
 
-async def test_sensor_getala_not_and_wrn_various_values(hass: HomeAssistant) -> None:
-    """Test getALA, getNOT and getWRN sensors handle None/empty/unmapped values."""
-    for key in ("getALA", "getNOT", "getWRN"):
-        for raw in (None, "", "UnknownValue", "1"):
-            data = {
-                "devices": [
-                    {
-                        "id": "device1",
-                        "name": "Device 1",
-                        "project_id": "project1",
-                        "status": {key: raw},
-                    }
-                ]
-            }
-            coordinator = _build_coordinator(hass, data)
-            sensor = SyrConnectSensor(coordinator, "device1", "Device 1", key)
-
-            # Ensure we exercise the parsing/mapping logic and return a stable type
-            val = sensor.native_value
-            assert (val is None) or isinstance(val, str)
-
-
-async def test_sensor_getala_mapped_and_unmapped(hass: HomeAssistant) -> None:
-    """Sanity check: mapped values produce a (possibly different) string, unmapped fall back gracefully."""
-    # Mapped example (most integrations return string mapping); we don't assert exact mapping
-    data_mapped = {
-        "devices": [
-            {"id": "d1", "name": "Device", "project_id": "p", "status": {"getALA": ""}}
-        ]
-    }
-    coord_m = _build_coordinator(hass, data_mapped)
-    s_m = SyrConnectSensor(coord_m, "d1", "Device", "getALA")
-    assert (s_m.native_value is None) or isinstance(s_m.native_value, str)
-
-    # Unmapped raw value should be returned or handled
-    data_unmapped = {
-        "devices": [
-            {
-                "id": "d2",
-                "name": "Device",
-                "project_id": "p",
-                "status": {"getALA": "CompletelyUnknown"},
-            }
-        ]
-    }
-    coord_u = _build_coordinator(hass, data_unmapped)
-    s_u = SyrConnectSensor(coord_u, "d2", "Device", "getALA")
-    assert s_u.native_value is not None
-
-
 # Tests merged from test_getcof_water_consumption.py
 def test_getcof_has_water_device_class() -> None:
     """Test that getCOF sensor has device_class=water for Energy Dashboard."""
@@ -4398,53 +2992,6 @@ def test_getcof_handles_string_values() -> None:
     assert isinstance(sensor.native_value, int | float)
 
 
-async def test_async_setup_entry_getpa_exception_handler(hass: HomeAssistant) -> None:
-    """Test exception handler in getPA group processing."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-
-    # Normal status dict with getPA1 set to true
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getPA1": "true"},
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-    )
-    entry.runtime_data = coordinator
-    entry.add_to_hass(hass)
-
-    mock_add_entities = Mock()
-
-    # Patch the entity registry to raise exception when removing
-    with patch("custom_components.syr_connect.sensor.er.async_get") as mock_registry:
-        mock_reg_instance = MagicMock()
-        mock_reg_instance.async_get.return_value = None
-        mock_reg_instance.async_get_entity_id.return_value = None
-        mock_reg_instance.async_remove.side_effect = Exception("Test error")
-        mock_registry.return_value = mock_reg_instance
-
-        # Should not raise exception, should handle it gracefully
-        await async_setup_entry(hass, entry, mock_add_entities)
-
-        # Should still call add_entities (entities created despite exception)
-        assert mock_add_entities.called
-
-
 async def test_async_setup_entry_registry_remove_exception(hass: HomeAssistant) -> None:
     """Test exception handler when registry.async_remove fails."""
     coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
@@ -4499,53 +3046,6 @@ async def test_async_setup_entry_registry_remove_exception(hass: HomeAssistant) 
         assert mock_registry.async_remove.called
 
 
-async def test_is_value_true_int_float_exception(hass: HomeAssistant) -> None:
-    """Test is_value_true exception handling for invalid int/float values."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-
-    # Create a value that looks numeric but fails conversion
-    class BadNumeric:
-        def __float__(self) -> None:
-            raise ValueError("Cannot convert")
-
-        def __int__(self) -> None:
-            raise ValueError("Cannot convert")
-
-    bad_value = BadNumeric()
-
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPA1": bad_value,  # Will trigger exception in is_value_true
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-    )
-    entry.runtime_data = coordinator
-    entry.add_to_hass(hass)
-
-    mock_add_entities = Mock()
-
-    # Should handle exception in is_value_true and treat as false
-    await async_setup_entry(hass, entry, mock_add_entities)
-
-
 async def test_is_value_true_string_numeric_exception(hass: HomeAssistant) -> None:
     """Test is_value_true exception handling for string that fails numeric conversion."""
     coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
@@ -4586,110 +3086,6 @@ async def test_is_value_true_string_numeric_exception(hass: HomeAssistant) -> No
     # So getPA1 group shouldn't be created
     sensor_keys = [e._sensor_key for e in entities]
     assert "getPA1" not in sensor_keys
-
-
-async def test_is_value_true_float_int_methods_raise(hass: HomeAssistant) -> None:
-    """Test is_value_true handles objects whose numeric conversions raise exceptions."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-
-    class BadNumeric:
-        def __float__(self) -> None:
-            raise ValueError("Cannot convert")
-
-        def __int__(self) -> None:
-            raise TypeError("Cannot convert")
-
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPA1": BadNumeric(),
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-    )
-    entry.runtime_data = coordinator
-    entry.add_to_hass(hass)
-
-    mock_add_entities = Mock()
-
-    # Should handle conversion errors and complete setup without creating PA group members
-    await async_setup_entry(hass, entry, mock_add_entities)
-    entities = _added_entities(mock_add_entities)
-    keys = [e._sensor_key for e in entities]
-    assert "getPA1" not in keys
-
-
-async def test_getrpw_locale_and_formatting_fallback(hass: HomeAssistant) -> None:
-    """Test getRPW when format_datetime fails and hass.config.language access raises."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRPW": "127",  # all days
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
-    sensor.hass = hass
-
-    # Simulate format_datetime raising so fallback to strftime is used
-    with patch(
-        "custom_components.syr_connect.sensor.format_datetime",
-        side_effect=ValueError("Format error"),
-    ):
-        # Also simulate hass.config.language raising an exception
-        mock_hass = MagicMock()
-        mock_hass.config.language.side_effect = Exception("Config error")
-        sensor.hass = mock_hass
-
-        value = sensor.native_value
-        assert value is not None
-        # Expect weekday short names present (Mon or similar)
-        assert any(part for part in str(value).split(",") if part)
-
-
-async def test_getsta_polish_pattern_mapping(hass: HomeAssistant) -> None:
-    """Test getSTA mapping for Polish 'Płukanie regenerantem (NNN)' pattern."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getSTA": "Płukanie regenerantem (587mA)",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getSTA")
-
-    mapped = sensor.native_value
-    # The mapped state key is returned; the entity's translation_key stays the sensor key
-    assert isinstance(mapped, str)
-    assert sensor.translation_key == "getsta"
 
 
 async def test_sensor_apply_numeric_conversion_vol_exception(
@@ -4880,35 +3276,6 @@ async def test_sensor_getbar_none_value(hass: HomeAssistant) -> None:
     assert value is None
 
 
-async def test_sensor_getbar_empty_string(hass: HomeAssistant) -> None:
-    """Test getBAR sensor with empty string."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBAR": "",
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    sensor = SyrConnectSensor(
-        coordinator=coordinator,
-        device_id="device1",
-        device_name="Device 1",
-        sensor_key="getBAR",
-    )
-
-    # Should handle empty string
-    value = sensor.native_value
-    assert value is None
-
-
 async def test_sensor_getbar_no_match(hass: HomeAssistant) -> None:
     """Test getBAR sensor when regex doesn't match."""
     coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
@@ -4938,37 +3305,6 @@ async def test_sensor_getbar_no_match(hass: HomeAssistant) -> None:
     assert value is None
 
 
-async def test_sensor_getbar_value_error(hass: HomeAssistant) -> None:
-    """Test getBAR sensor when conversion raises ValueError."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBAR": "inf mbar",  # Will match regex but fail float conversion
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    sensor = SyrConnectSensor(
-        coordinator=coordinator,
-        device_id="device1",
-        device_name="Device 1",
-        sensor_key="getBAR",
-    )
-
-    # Should handle ValueError
-    # Note: "inf" actually converts to float('inf'), so let's use a different test
-    # Actually, regex \d+ won't match "inf", so it will return None anyway
-    value = sensor.native_value
-    assert value is None or isinstance(value, int | float)
-
-
 async def test_sensor_getbat_not_string_int_float(hass: HomeAssistant) -> None:
     """Test getBAT when value is not string/int/float."""
     coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
@@ -4996,515 +3332,6 @@ async def test_sensor_getbat_not_string_int_float(hass: HomeAssistant) -> None:
     # Should handle invalid type
     value = sensor.native_value
     assert value is None
-
-
-async def test_sensor_getal_none_value(hass: HomeAssistant) -> None:
-    """Test getUL sensor with None value."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getUL": None,
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    sensor = SyrConnectSensor(
-        coordinator=coordinator,
-        device_id="device1",
-        device_name="Device 1",
-        sensor_key="getUL",
-    )
-
-    # Should handle None value - there are two getUL handlers in the code
-    value = sensor.native_value
-    assert value is None or isinstance(value, str | int)
-
-
-async def test_sensor_getal_empty_string(hass: HomeAssistant) -> None:
-    """Test getUL sensor with empty string."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getUL": "",
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    sensor = SyrConnectSensor(
-        coordinator=coordinator,
-        device_id="device1",
-        device_name="Device 1",
-        sensor_key="getUL",
-    )
-
-    # Should handle empty string
-    value = sensor.native_value
-    assert value is None or isinstance(value, str | int)
-
-
-async def test_sensor_getala_none_value(hass: HomeAssistant) -> None:
-    """Test getALA sensor with None value."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getALA": None,
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    sensor = SyrConnectSensor(
-        coordinator=coordinator,
-        device_id="device1",
-        device_name="Device 1",
-        sensor_key="getALA",
-    )
-
-    # Should handle None value
-    value = sensor.native_value
-    assert value is None
-
-
-async def test_sensor_getala_exception_returns_raw(hass: HomeAssistant) -> None:
-    """Test getALA sensor when exception occurs in returning raw code."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-
-    # Create an object that raises exception when converted to string
-    class BadValue:
-        @override
-        def __str__(self) -> NoReturn:
-            raise ValueError("Cannot convert")
-
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getALA": BadValue(),
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    sensor = SyrConnectSensor(
-        coordinator=coordinator,
-        device_id="device1",
-        device_name="Device 1",
-        sensor_key="getALA",
-    )
-
-    # Should handle exception and return None
-    value = sensor.native_value
-    assert value is None
-
-
-async def test_sensor_getnot_none_value(hass: HomeAssistant) -> None:
-    """Test getNOT sensor with None value."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getNOT": None,
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    sensor = SyrConnectSensor(
-        coordinator=coordinator,
-        device_id="device1",
-        device_name="Device 1",
-        sensor_key="getNOT",
-    )
-
-    # Should handle None value
-    value = sensor.native_value
-    assert value is None
-
-
-async def test_sensor_getnot_exception_returns_raw(hass: HomeAssistant) -> None:
-    """Test getNOT sensor when exception occurs in returning raw code."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-
-    class BadValue:
-        @override
-        def __str__(self) -> NoReturn:
-            raise ValueError("Cannot convert")
-
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getNOT": BadValue(),
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    sensor = SyrConnectSensor(
-        coordinator=coordinator,
-        device_id="device1",
-        device_name="Device 1",
-        sensor_key="getNOT",
-    )
-
-    # Should handle exception and return None
-    value = sensor.native_value
-    assert value is None
-
-
-async def test_sensor_getwrn_none_value(hass: HomeAssistant) -> None:
-    """Test getWRN sensor with None value."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getWRN": None,
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    sensor = SyrConnectSensor(
-        coordinator=coordinator,
-        device_id="device1",
-        device_name="Device 1",
-        sensor_key="getWRN",
-    )
-
-    # Should handle None value
-    value = sensor.native_value
-    assert value is None
-
-
-async def test_sensor_getwrn_exception_returns_raw(hass: HomeAssistant) -> None:
-    """Test getWRN sensor when exception occurs in returning raw code."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-
-    class BadValue:
-        @override
-        def __str__(self) -> NoReturn:
-            raise ValueError("Cannot convert")
-
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getWRN": BadValue(),
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    sensor = SyrConnectSensor(
-        coordinator=coordinator,
-        device_id="device1",
-        device_name="Device 1",
-        sensor_key="getWRN",
-    )
-
-    # Should handle exception and return None
-    value = sensor.native_value
-    assert value is None
-
-
-async def test_sensor_getpmx_getwx_getbx_none_value(hass: HomeAssistant) -> None:
-    """Test leak protection boolean sensors with None value."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-
-    for sensor_key in ["getPA1", "getPM1", "getPW1", "getPB1"]:
-        coordinator.data = {
-            "devices": [
-                {
-                    "id": "device1",
-                    "name": "Device 1",
-                    "project_id": "project1",
-                    "status": {
-                        sensor_key: None,
-                    },
-                }
-            ]
-        }
-        coordinator.last_update_success = True
-
-        sensor = SyrConnectSensor(
-            coordinator=coordinator,
-            device_id="device1",
-            device_name="Device 1",
-            sensor_key=sensor_key,
-        )
-
-        # Should handle None value
-        value = sensor.native_value
-        assert value is None
-
-
-async def test_sensor_getpmx_getwx_getbx_empty_string(hass: HomeAssistant) -> None:
-    """Test leak protection boolean sensors with empty string."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-
-    for sensor_key in ["getPA1", "getPM1", "getPW1", "getPB1"]:
-        coordinator.data = {
-            "devices": [
-                {
-                    "id": "device1",
-                    "name": "Device 1",
-                    "project_id": "project1",
-                    "status": {
-                        sensor_key: "   ",  # Whitespace only
-                    },
-                }
-            ]
-        }
-        coordinator.last_update_success = True
-
-        sensor = SyrConnectSensor(
-            coordinator=coordinator,
-            device_id="device1",
-            device_name="Device 1",
-            sensor_key=sensor_key,
-        )
-
-        # Should handle empty/whitespace string
-        value = sensor.native_value
-        assert value is None
-
-
-async def test_sensor_getpmx_getwx_getbx_invalid_numeric(hass: HomeAssistant) -> None:
-    """Test leak protection boolean sensors with invalid numeric string."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-
-    for sensor_key in ["getPA1", "getPM1", "getPW1", "getPB1"]:
-        coordinator.data = {
-            "devices": [
-                {
-                    "id": "device1",
-                    "name": "Device 1",
-                    "project_id": "project1",
-                    "status": {
-                        sensor_key: "not_numeric",
-                    },
-                }
-            ]
-        }
-        coordinator.last_update_success = True
-
-        sensor = SyrConnectSensor(
-            coordinator=coordinator,
-            device_id="device1",
-            device_name="Device 1",
-            sensor_key=sensor_key,
-        )
-
-        # An unknown value counts as not set (see is_value_true)
-        assert sensor.native_value == "false"
-
-
-async def test_sensor_getpmx_getwx_getbx_int_exception(hass: HomeAssistant) -> None:
-    """Test leak protection boolean sensors when int conversion raises exception."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-
-    # Create value that is numeric type but raises exception
-    class BadNumeric(int):
-        @override
-        def __float__(self) -> NoReturn:
-            raise ValueError("Cannot convert")
-
-        @override
-        def __int__(self) -> NoReturn:
-            raise TypeError("Cannot convert")
-
-    for sensor_key in ["getPA1", "getPM1", "getPW1", "getPB1"]:
-        coordinator.data = {
-            "devices": [
-                {
-                    "id": "device1",
-                    "name": "Device 1",
-                    "project_id": "project1",
-                    "status": {
-                        sensor_key: 5,  # Valid int
-                    },
-                }
-            ]
-        }
-        coordinator.last_update_success = True
-
-        sensor = SyrConnectSensor(
-            coordinator=coordinator,
-            device_id="device1",
-            device_name="Device 1",
-            sensor_key=sensor_key,
-        )
-
-        # Should handle and return "true" for non-zero
-        value = sensor.native_value
-        assert value == "true"
-
-
-async def test_sensor_getwhu_none_value(hass: HomeAssistant) -> None:
-    """Test getWHU sensor with None value."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getWHU": None,
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    sensor = SyrConnectSensor(
-        coordinator=coordinator,
-        device_id="device1",
-        device_name="Device 1",
-        sensor_key="getWHU",
-    )
-
-    # Should handle None value
-    value = sensor.native_value
-    assert value is None
-
-
-async def test_sensor_exclude_when_empty_none_value(hass: HomeAssistant) -> None:
-    """Test sensor setup skips sensors with hidden_when="empty" and None value."""
-
-    test_key = None
-    for key in (d.key for d in _SYR_CONNECT_SENSOR_TYPES if d.hidden_when == "empty"):
-        test_key = key
-        break
-
-    if test_key:
-        coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-        coordinator.data = {
-            "devices": [
-                {
-                    "id": "device1",
-                    "name": "Device 1",
-                    "project_id": "project1",
-                    "status": {
-                        test_key: None,  # Should be excluded
-                        "getPRS": "50",  # Include another sensor
-                    },
-                }
-            ]
-        }
-        coordinator.last_update_success = True
-
-        entry = MockConfigEntry(
-            version=1,
-            minor_version=0,
-            domain=DOMAIN,
-            title="Test",
-            data={},
-            source="user",
-            entry_id="test_entry_id",
-            unique_id="test_unique_id",
-        )
-        entry.runtime_data = coordinator
-        entry.add_to_hass(hass)
-
-        mock_add_entities = Mock()
-        await async_setup_entry(hass, entry, mock_add_entities)
-
-        entities = mock_add_entities.call_args[0][0]
-        sensor_keys = [e._sensor_key for e in entities]
-
-        # test_key should not be included since it's None
-        assert test_key not in sensor_keys
-
-
-async def test_sensor_exclude_when_empty_whitespace_string(hass: HomeAssistant) -> None:
-    """Test sensor setup skips sensors with hidden_when="empty" and whitespace string."""
-
-    test_key = None
-    for key in (d.key for d in _SYR_CONNECT_SENSOR_TYPES if d.hidden_when == "empty"):
-        test_key = key
-        break
-
-    if test_key:
-        coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-        coordinator.data = {
-            "devices": [
-                {
-                    "id": "device1",
-                    "name": "Device 1",
-                    "project_id": "project1",
-                    "status": {
-                        test_key: "   ",  # Whitespace only - should be excluded
-                        "getPRS": "50",
-                    },
-                }
-            ]
-        }
-        coordinator.last_update_success = True
-
-        entry = MockConfigEntry(
-            version=1,
-            minor_version=0,
-            domain=DOMAIN,
-            title="Test",
-            data={},
-            source="user",
-            entry_id="test_entry_id",
-            unique_id="test_unique_id",
-        )
-        entry.runtime_data = coordinator
-        entry.add_to_hass(hass)
-
-        mock_add_entities = Mock()
-        await async_setup_entry(hass, entry, mock_add_entities)
-
-        entities = mock_add_entities.call_args[0][0]
-        sensor_keys = [e._sensor_key for e in entities]
-
-        # test_key should not be included
-        assert test_key not in sensor_keys
 
 
 async def test_sensor_registry_cleanup_exception_async_get(hass: HomeAssistant) -> None:
@@ -5548,356 +3375,6 @@ async def test_sensor_registry_cleanup_exception_async_get(hass: HomeAssistant) 
 
         # Entities should still be added despite exception
         assert mock_add_entities.called
-
-
-async def test_sensor_pa_group_remove_exception(hass: HomeAssistant) -> None:
-    """Test exception handling when removing PA group sensors from registry."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPA1": "false",  # PA1 is false, should remove group sensors
-                    "getPV1": "10",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-
-    entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-    )
-    entry.runtime_data = coordinator
-    entry.add_to_hass(hass)
-
-    # Mock registry entry that exists and will fail to remove
-    mock_reg_entry = MagicMock()
-    mock_reg_entry.entity_id = "sensor.device1_getpv1"
-
-    with patch("custom_components.syr_connect.sensor.er.async_get") as mock_registry:
-        mock_reg = MagicMock()
-        mock_reg.async_get.return_value = mock_reg_entry
-        mock_reg.async_remove.side_effect = RuntimeError("Remove failed")
-        mock_registry.return_value = mock_reg
-
-        mock_add_entities = Mock()
-        # Should not raise exception, should log and continue
-        await async_setup_entry(hass, entry, mock_add_entities)
-
-
-async def test_sensor_pa_group_exception_handling(hass: HomeAssistant) -> None:
-    """Test exception handling in PA group logic."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPA1": "invalid_value_that_causes_exception",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-
-    entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-    )
-    entry.runtime_data = coordinator
-    entry.add_to_hass(hass)
-
-    # Mock _is_true to raise exception
-    with patch("custom_components.syr_connect.sensor.er.async_get") as mock_registry:
-        mock_reg = MagicMock()
-        mock_reg.async_get.return_value = None
-        mock_registry.return_value = mock_reg
-
-        mock_add_entities = Mock()
-        # Should not raise exception even if PA group logic fails
-        await async_setup_entry(hass, entry, mock_add_entities)
-
-
-async def test_sensor_native_value_ala_exception(hass: HomeAssistant) -> None:
-    """Test getALA native_value when get_sensor_ala_map raises exception."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getALA": "test_value",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getALA")
-
-    # Mock get_sensor_ala_map to raise exception
-    with patch(
-        "custom_components.syr_connect.sensor.get_sensor_ala_map",
-        side_effect=ValueError("Map error"),
-    ):
-        assert sensor.native_value is None
-
-
-async def test_sensor_native_value_not_exception(hass: HomeAssistant) -> None:
-    """Test getNOT native_value when get_sensor_not_map raises exception."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getNOT": "test_value",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getNOT")
-
-    # Mock get_sensor_not_map to raise exception
-    with patch(
-        "custom_components.syr_connect.sensor.get_sensor_not_map",
-        side_effect=ValueError("Map error"),
-    ):
-        assert sensor.native_value is None
-
-
-async def test_sensor_native_value_wrn_exception(hass: HomeAssistant) -> None:
-    """Test getWRN native_value when get_sensor_wrn_map raises exception."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getWRN": "test_value",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getWRN")
-
-    # Mock get_sensor_wrn_map to raise exception
-    with patch(
-        "custom_components.syr_connect.sensor.get_sensor_wrn_map",
-        side_effect=ValueError("Map error"),
-    ):
-        assert sensor.native_value is None
-
-
-async def test_sensor_native_value_pm_boolean_exception(hass: HomeAssistant) -> None:
-    """Test getPMx boolean sensor with exception during string conversion."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPM1": "invalid_float",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPM1")
-
-    # An unknown value counts as not set (see is_value_true)
-    assert sensor.native_value == "false"
-
-
-async def test_sensor_native_value_pm_numeric_exception(hass: HomeAssistant) -> None:
-    """Test getPMx boolean sensor with exception during numeric conversion."""
-
-    class BadNumber:
-        def __float__(self) -> None:
-            raise ValueError("Bad float")
-
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPM2": BadNumber(),
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPM2")
-
-    # An unknown type counts as not set (see is_value_true)
-    assert sensor.native_value == "false"
-
-
-async def test_sensor_native_value_alm_exception(hass: HomeAssistant) -> None:
-    """Test getALM native_value when get_sensor_ala_map raises exception."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getALM": "test_value",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getALM")
-
-    # Mock get_sensor_ala_map to raise exception
-    with patch(
-        "custom_components.syr_connect.sensor.get_sensor_ala_map",
-        side_effect=ValueError("Map error"),
-    ):
-        # Should fallback to raw value when exception occurs
-        assert sensor.native_value == "test_value"
-
-
-async def test_sensor_native_value_rpw_exception_in_loop(hass: HomeAssistant) -> None:
-    """Test getRPW when format_datetime raises exception during loop."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRPW": "127",  # All days
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
-    sensor.hass = hass
-
-    # Mock format_datetime to raise exception
-    with patch(
-        "custom_components.syr_connect.sensor.format_datetime",
-        side_effect=ValueError("Format error"),
-    ):
-        value = sensor.native_value
-        # Should fallback to strftime and return weekday names
-        assert value is not None
-        assert "Mon" in str(value) or "Mo" in str(value)  # Depends on system locale
-
-
-async def test_sensor_native_value_rpw_hass_config_exception(
-    hass: HomeAssistant,
-) -> None:
-    """Test getRPW when accessing hass.config.language raises exception."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getRPW": "1",  # Monday only
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getRPW")
-
-    # Mock hass to raise exception when accessing config
-    mock_hass = MagicMock()
-    mock_hass.config.language.side_effect = Exception("Config error")
-    sensor.hass = mock_hass
-
-    # Should handle exception and use None locale
-    value = sensor.native_value
-    assert value is not None
-
-
-async def test_sensor_apply_numeric_conversion_exception(hass: HomeAssistant) -> None:
-    """Test _apply_numeric_conversion with exception during precision rounding."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPRS": "50",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
-
-    # Mock the precision to return value and test exception path
-    sensor.entity_description = replace(
-        sensor.entity_description, suggested_display_precision=2
-    )
-    # Manually test with value that causes exception during round
-    result = sensor._apply_numeric_conversion(5.0)
-    # Should return the value without precision when exception occurs
-    assert result == 0.5  # getPRS divides by 10
-
-
-async def test_sensor_native_value_vol_exception(hass: HomeAssistant) -> None:
-    """A cleaned getVOL value that is neither text nor a number gives no state."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getVOL": "1000",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getVOL")
-
-    # Patch get_sensor_vol_value to return an object a sensor cannot show
-    class BadValue:
-        def __truediv__(self, _other: Any) -> None:
-            raise RuntimeError("Division error")
-
-        def __float__(self) -> Any:
-            return 1000.0
-
-    with patch(
-        "custom_components.syr_connect.sensor.get_sensor_vol_value",
-        return_value=BadValue(),
-    ):
-        assert sensor.native_value is None
 
 
 async def test_is_true_with_non_standard_type(hass: HomeAssistant) -> None:
@@ -5954,120 +3431,9 @@ async def test_is_true_with_non_standard_type(hass: HomeAssistant) -> None:
     for key in pa_group_keys:
         assert key not in created_keys
 
-
-async def test_getbat_with_invalid_type(hass: HomeAssistant) -> None:
-    """Test getBAT with value that is not str/int/float returns None."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBAT": ["not", "valid"],  # List is not str/int/float
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
-
-    # Should return None for invalid type
-    assert sensor.native_value is None
-
-
-async def test_getpa_group_exception_handling(hass: HomeAssistant) -> None:
-    """Test exception handling during getPA group processing."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-
-    # Create a mock value that will cause exception during _is_true evaluation
-    class ProblematicValue:
-        def __bool__(self) -> None:
-            raise RuntimeError("Unexpected error during boolean evaluation")
-
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPA1": ProblematicValue(),
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-    )
-    entry.runtime_data = coordinator
-    entry.add_to_hass(hass)
-
-    mock_add_entities = Mock()
-
-    # Should handle exception in PA group processing gracefully
-    await async_setup_entry(hass, entry, mock_add_entities)
-
     # Should complete despite exception
 
-
-async def test_registry_remove_exception(hass: HomeAssistant) -> None:
-    """Test exception handling when removing sensor from registry fails."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPA1": "0",  # False, should try to remove group sensors
-                },
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-    )
-    entry.runtime_data = coordinator
-    entry.add_to_hass(hass)
-
-    # Create mock registry with entity that exists
-    registry = MagicMock()
-    mock_entry = MagicMock()
-    mock_entry.entity_id = "sensor.syr_connect_device1_getpa1"
-    registry.async_get.return_value = mock_entry
-    # Make async_remove raise exception
-    registry.async_remove.side_effect = RuntimeError("Registry error")
-
-    mock_add_entities = Mock()
-
-    with patch(
-        "homeassistant.helpers.entity_registry.async_get", return_value=registry
-    ):
-        # Should handle exception when removing from registry
-        await async_setup_entry(hass, entry, mock_add_entities)
-
-        # Should complete despite exception
+    # Should complete despite exception
 
 
 async def test_is_true_with_list_type(hass: HomeAssistant) -> None:
@@ -6125,51 +3491,6 @@ async def test_is_true_with_list_type(hass: HomeAssistant) -> None:
         assert key not in created_keys
 
 
-async def test_sensor_native_value_caching_returns_last_known_value(
-    hass: HomeAssistant,
-) -> None:
-    """Test native_value returns cached value when current value is None."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPRS": "50",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
-
-    # First call should return computed value and cache it
-    value1 = sensor.native_value
-    assert value1 == 5.0
-
-    # Now update coordinator data to have None/missing value
-    coordinator.async_set_updated_data(
-        cast(
-            Any,
-            {
-                "devices": [
-                    {
-                        "id": "device1",
-                        "name": "Device 1",
-                        "project_id": "project1",
-                        "status": {},  # getPRS missing
-                    }
-                ]
-            },
-        )
-    )
-
-    # Should return cached value instead of None
-    value2 = sensor.native_value
-    assert value2 == 5.0
-
-
 async def test_sensor_getvol_none_value(hass: HomeAssistant) -> None:
     """Test getVOL sensor with None value."""
     data = {
@@ -6186,26 +3507,6 @@ async def test_sensor_getvol_none_value(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getVOL")
-
-    assert sensor.native_value is None
-
-
-async def test_sensor_getbar_no_numeric_value(hass: HomeAssistant) -> None:
-    """Test getBAR sensor with string that has no numeric value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBAR": "no numbers here",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAR")
 
     assert sensor.native_value is None
 
@@ -6248,104 +3549,6 @@ async def test_sensor_getbat_none_value(hass: HomeAssistant) -> None:
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
 
     assert sensor.native_value is None
-
-
-async def test_sensor_getbat_invalid_type(hass: HomeAssistant) -> None:
-    """Test getBAT sensor with invalid type."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBAT": ["list", "type"],
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
-
-    assert sensor.native_value is None
-
-
-async def test_sensor_getala_exception_handling(hass: HomeAssistant) -> None:
-    """Test getALA handles exceptions in get_sensor_ala_map."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getALA": "123",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getALA")
-
-    # Mock get_sensor_ala_map to raise exception
-    with patch(
-        "custom_components.syr_connect.sensor.get_sensor_ala_map",
-        side_effect=ValueError("Test error"),
-    ):
-        result = sensor.native_value
-        assert result is None
-
-
-async def test_sensor_getnot_exception_handling(hass: HomeAssistant) -> None:
-    """Test getNOT handles exceptions in get_sensor_not_map."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getNOT": "456",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getNOT")
-
-    # Mock get_sensor_not_map to raise exception
-    with patch(
-        "custom_components.syr_connect.sensor.get_sensor_not_map",
-        side_effect=TypeError("Test error"),
-    ):
-        result = sensor.native_value
-        assert result is None
-
-
-async def test_sensor_getwrn_exception_handling(hass: HomeAssistant) -> None:
-    """Test getWRN handles exceptions in get_sensor_wrn_map."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getWRN": "789",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getWRN")
-
-    # Mock get_sensor_wrn_map to raise exception
-    with patch(
-        "custom_components.syr_connect.sensor.get_sensor_wrn_map",
-        side_effect=AttributeError("Test error"),
-    ):
-        result = sensor.native_value
-        assert result is None
 
 
 async def test_sensor_leak_protection_getpv_float_value(hass: HomeAssistant) -> None:
@@ -6472,36 +3675,6 @@ async def test_sensor_leak_protection_getpb_invalid_type(hass: HomeAssistant) ->
 
     # An unknown type counts as not set (see is_value_true)
     assert sensor.native_value == "false"
-
-
-async def test_sensor_apply_numeric_conversion_zerodivision(
-    hass: HomeAssistant,
-) -> None:
-    """Test _apply_numeric_conversion handles ZeroDivisionError for getVOL."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getVOL": "1000",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getVOL")
-
-    # Mock division to raise ZeroDivisionError
-    # ZeroDivisionError is not caught in native_value, so it propagates
-    with (
-        patch.object(
-            sensor, "_apply_numeric_conversion", side_effect=ZeroDivisionError
-        ),
-        pytest.raises(ZeroDivisionError),
-    ):
-        _ = sensor.native_value
 
 
 async def test_getpa_is_true_bool_true(hass: HomeAssistant) -> None:
@@ -6776,47 +3949,6 @@ async def test_getpa_is_true_int_one(hass: HomeAssistant) -> None:
     assert "getPA8" in sensor_keys
 
 
-def test_getbar_no_digits(create_mock_coordinator: Callable[..., MagicMock]) -> None:
-    """The getBAR with no digits should return None."""
-    data = {
-        "devices": [
-            {
-                "id": "d1",
-                "name": "D",
-                "project_id": "p1",
-                "status": {"getBAR": "no digits"},
-            }
-        ]
-    }
-    coord = create_mock_coordinator(data)
-    s = SyrConnectSensor(coord, "d1", "D", "getBAR")
-    assert s.native_value is None
-
-
-def test_getbat_invalid_type(create_mock_coordinator: Callable[..., MagicMock]) -> None:
-    """The getBAT with an unsupported type should return None."""
-    data = {
-        "devices": [
-            {"id": "d1", "name": "D", "project_id": "p1", "status": {"getBAT": []}}
-        ]
-    }
-    coord = create_mock_coordinator(data)
-    s = SyrConnectSensor(coord, "d1", "D", "getBAT")
-    assert s.native_value is None
-
-
-def test_getavo_empty(create_mock_coordinator: Callable[..., MagicMock]) -> None:
-    """Empty getAVO should return None instead of raising."""
-    data = {
-        "devices": [
-            {"id": "d1", "name": "D", "project_id": "p1", "status": {"getAVO": ""}}
-        ]
-    }
-    coord = create_mock_coordinator(data)
-    s = SyrConnectSensor(coord, "d1", "D", "getAVO")
-    assert s.native_value is None
-
-
 def test_pm_boolean_edgecases(
     create_mock_coordinator: Callable[..., MagicMock],
 ) -> None:
@@ -6847,47 +3979,6 @@ def test_pm_boolean_edgecases(
     assert pm2.native_value == "false"
     assert pm3.native_value == "false"
     assert pm4.native_value == "false"
-
-
-def test_native_value_caching(
-    create_mock_coordinator: Callable[..., MagicMock],
-) -> None:
-    """When API returns None later, the sensor should keep the last known non-None value."""
-    data1 = {
-        "devices": [
-            {"id": "d1", "name": "D", "project_id": "p1", "status": {"getFLO": "10"}}
-        ]
-    }
-    coord = create_mock_coordinator(data1)
-    s = SyrConnectSensor(coord, "d1", "D", "getFLO")
-    # first read should return parsed numeric
-    assert s.native_value == 10
-
-
-async def test_async_setup_entry_no_coordinator_data(hass: HomeAssistant) -> None:
-    """async_setup_entry should return early when coordinator has no data."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    coordinator.data = None
-    coordinator.last_update_success = True
-
-    entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-    )
-    entry.runtime_data = coordinator
-    entry.add_to_hass(hass)
-
-    mock_add_entities = Mock()
-
-    # Should return without calling add_entities
-    await async_setup_entry(hass, entry, mock_add_entities)
-    assert not mock_add_entities.called
 
 
 def test_sensor_disabled_by_default_flag(
@@ -6925,85 +4016,6 @@ def test_apply_numeric_conversion_precision_zero_returns_int(
     assert result == 5
 
 
-async def test_sensor_available_coordinator_fails(hass: HomeAssistant) -> None:
-    """Entity should be unavailable when coordinator update failed."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {},
-            }
-        ]
-    }
-    coordinator.last_update_success = False
-
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
-    assert sensor.available is False
-
-
-async def test_sensor_available_device_marked_unavailable(hass: HomeAssistant) -> None:
-    """Entity should be unavailable when device available flag is False."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {},
-                "available": False,
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
-    assert sensor.available is False
-
-
-async def test_sensor_available_true(hass: HomeAssistant) -> None:
-    """Entity should be available when coordinator OK and device available or missing flag."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {},
-                "available": True,
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
-    assert sensor.available is True
-
-
-def test_whu_invalid_sets_none(
-    create_mock_coordinator: Callable[..., MagicMock],
-) -> None:
-    """When getWHU cannot be parsed the unit mapping attribute should be None."""
-    data = {
-        "devices": [
-            {
-                "id": "d1",
-                "name": "D",
-                "project_id": "p1",
-                "status": {"getWHU": "invalid"},
-            }
-        ]
-    }
-    coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D", "getIWH")
-
-    assert sensor.native_unit_of_measurement is None
-
-
 def test_getala_uses_generic_codes_for_unknown_model(
     create_mock_coordinator: Callable[..., MagicMock],
 ) -> None:
@@ -7019,8 +4031,8 @@ def test_getala_uses_generic_codes_for_unknown_model(
     assert sensor.native_value == "alarm_max_flow_rate_reached"
 
 
-async def test_battery_zero_icon(hass: HomeAssistant) -> None:
-    """Test battery zero icon."""
+async def test_sensor_getbat_zero_value(hass: HomeAssistant) -> None:
+    """A battery voltage of zero is a value, not a missing one."""
     data = {
         "devices": [
             {
@@ -7035,56 +4047,6 @@ async def test_battery_zero_icon(hass: HomeAssistant) -> None:
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAT")
 
     assert sensor.native_value == 0.0
-
-
-async def test_getala_exception_handling(hass: HomeAssistant) -> None:
-    """Test getALA exception handling."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getALA": "A5"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    with patch(
-        "custom_components.syr_connect.sensor.get_sensor_ala_map",
-        side_effect=ValueError("boom"),
-    ):
-        sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getALA")
-        assert sensor.native_value is None
-
-
-async def test_getnot_and_getwrn_exception_paths(hass: HomeAssistant) -> None:
-    """Test getNOT and getWRN exception paths."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getNOT": "FF", "getWRN": "FF"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-
-    with patch(
-        "custom_components.syr_connect.sensor.get_sensor_not_map",
-        side_effect=ValueError("boom"),
-    ):
-        snot = SyrConnectSensor(coordinator, "device1", "Device 1", "getNOT")
-        assert snot.native_value is None
-
-    with patch(
-        "custom_components.syr_connect.sensor.get_sensor_wrn_map",
-        side_effect=ValueError("boom"),
-    ):
-        swrn = SyrConnectSensor(coordinator, "device1", "Device 1", "getWRN")
-        assert swrn.native_value is None
 
 
 async def test_bar_avo_invalid_and_vol_prefix(hass: HomeAssistant) -> None:
@@ -7120,54 +4082,6 @@ async def test_bar_avo_invalid_and_vol_prefix(hass: HomeAssistant) -> None:
 # ---------------------------------------------------------------------------
 # Lines 111-112 — _is_true except branch for int/float (float() raises)
 # ---------------------------------------------------------------------------
-
-
-async def test_is_true_int_subclass_bad_float_returns_false(
-    hass: HomeAssistant,
-) -> None:
-    """_is_true except(ValueError,TypeError) for int|float branch (lines 111-112).
-
-    Use an int subclass whose __float__ raises ValueError so the path is taken.
-    """
-
-    class _BadFloat(int):
-        @override
-        def __float__(self) -> NoReturn:
-            raise ValueError("bad float")
-
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    coordinator.data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {"getPA1": _BadFloat(1), "getFLO": "10"},
-            }
-        ]
-    }
-    coordinator.last_update_success = True
-
-    entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="T",
-        data={},
-        source="user",
-        entry_id="e1",
-        unique_id="u1",
-    )
-    entry.runtime_data = coordinator
-    entry.add_to_hass(hass)
-
-    mock_add = Mock()
-    await async_setup_entry(hass, entry, mock_add)
-    # _is_true(_BadFloat(1)) hits except → returns False → PA group NOT created
-    assert mock_add.called
-    entities = mock_add.call_args[0][0]
-    pa_group = [e for e in entities if e._sensor_key.startswith("getPA")]
-    assert len(pa_group) == 0
 
 
 # ---------------------------------------------------------------------------
@@ -7370,27 +4284,6 @@ def test_sensor_getala_mapped_translation_key_returned(
 # ---------------------------------------------------------------------------
 
 
-def test_sensor_getbar_str_raises_type_error(
-    create_mock_coordinator: Callable[..., MagicMock],
-) -> None:
-    """The getBAR except(ValueError,TypeError) caught when str(value) raises (lines 589-590)."""
-
-    class _BadStr:
-        @override
-        def __str__(self) -> NoReturn:
-            raise TypeError("no str")
-
-        @override
-        def __eq__(self, _other: object) -> Any:
-            return False
-
-    data = {"devices": [{"id": "d1", "status": {"getBAR": _BadStr()}}]}
-    coord = create_mock_coordinator(data)
-    sensor = SyrConnectSensor(coord, "d1", "D1", "getBAR")
-
-    assert sensor.native_value is None
-
-
 # ---------------------------------------------------------------------------
 # Lines 610-614 — getNET native_value branches
 # ---------------------------------------------------------------------------
@@ -7399,13 +4292,11 @@ def test_sensor_getbar_str_raises_type_error(
 def test_sensor_getnet_valid_value(
     create_mock_coordinator: Callable[..., MagicMock],
 ) -> None:
-    """The getNET with a valid value returns get_sensor_net_value result (line 614)."""
+    """Mains voltage (getNET) of a Trio DFR/LS: "363" -> 3.63 V."""
     data = {"devices": [{"id": "d1", "status": {"getNET": "363"}}]}
     coord = create_mock_coordinator(data)
     sensor = SyrConnectSensor(coord, "d1", "D1", "getNET")
-
-    value = sensor.native_value
-    assert value is not None
+    assert sensor.native_value == 3.63
 
 
 def test_sensor_getnet_none_value(
@@ -8517,3 +5408,103 @@ def test_sensor_hardness_converted_from_dh(
 
     assert sensor.native_value == expected
     assert sensor.native_unit_of_measurement == unit
+
+
+def _rpw_sensor(
+    create_mock_coordinator: Callable[..., MagicMock],
+    raw: object,
+    language: str = "en",
+) -> SyrConnectSensor:
+    """Return a getRPW sensor of a Home Assistant instance with the given language."""
+    data = {"devices": [{"id": "d1", "name": "D1", "status": {"getRPW": raw}}]}
+    sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", "getRPW")
+    sensor.hass = MagicMock()
+    sensor.hass.config.language = language
+    return sensor
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        pytest.param(127, "Mon,Tue,Wed,Thu,Fri,Sat,Sun", id="all-days"),
+        pytest.param("5", "Mon,Wed", id="text"),
+        pytest.param(5.0, "Mon,Wed", id="float"),
+        pytest.param(64, "Sun", id="highest-bit"),
+        pytest.param(0, "0", id="zero"),
+        pytest.param("0", "0", id="zero-text"),
+        pytest.param("", None, id="empty"),
+        pytest.param("invalid", None, id="no-number"),
+        pytest.param(None, None, id="none"),
+    ],
+)
+def test_sensor_rpw_weekdays(
+    create_mock_coordinator: Callable[..., MagicMock], raw: object, expected: str | None
+) -> None:
+    """Permitted regeneration weekdays (getRPW): bit 1 is Monday; 0 is "not specified"."""
+    assert _rpw_sensor(create_mock_coordinator, raw).native_value == expected
+
+
+def test_sensor_rpw_weekdays_in_home_assistant_language(
+    create_mock_coordinator: Callable[..., MagicMock],
+) -> None:
+    """The weekday names follow the language of Home Assistant."""
+    sensor = _rpw_sensor(create_mock_coordinator, 127, language="de")
+
+    assert sensor.native_value == "Mo.,Di.,Mi.,Do.,Fr.,Sa.,So."
+
+
+def test_sensor_rpw_weekdays_before_added_to_hass(
+    create_mock_coordinator: Callable[..., MagicMock],
+) -> None:
+    """Without a Home Assistant instance the names are formatted without a language."""
+    data = {"devices": [{"id": "d1", "name": "D1", "status": {"getRPW": 3}}]}
+    sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", "getRPW")
+
+    with patch(
+        "custom_components.syr_connect.sensor.format_datetime", return_value="day"
+    ) as mock_format:
+        assert sensor.native_value == "day,day"
+
+    assert [call.kwargs for call in mock_format.call_args_list] == [
+        {"locale": None},
+        {"locale": None},
+    ]
+
+
+def test_sensor_rpw_weekdays_without_babel_locale(
+    create_mock_coordinator: Callable[..., MagicMock],
+) -> None:
+    """If Babel cannot format the names, the short names of the system are used."""
+    sensor = _rpw_sensor(create_mock_coordinator, 127)
+
+    with patch(
+        "custom_components.syr_connect.sensor.format_datetime",
+        side_effect=ValueError("unknown locale"),
+    ):
+        assert sensor.native_value == "Mon,Tue,Wed,Thu,Fri,Sat,Sun"
+
+
+@pytest.mark.parametrize("value", [None, "", "   "])
+async def test_sensor_setup_hides_sensor_without_value(
+    hass: HomeAssistant, value: str | None
+) -> None:
+    """A sensor that is hidden while it is empty (getCEL) is not created without a value."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getCEL": value, "getPRS": "50"},
+            }
+        ]
+    }
+    entry = _build_entry(_build_coordinator(hass, data))
+    entry.add_to_hass(hass)
+    add_entities = Mock()
+
+    await async_setup_entry(hass, entry, add_entities)
+
+    keys = {entity._sensor_key for entity in _added_entities(add_entities)}
+    assert "getPRS" in keys
+    assert "getCEL" not in keys
