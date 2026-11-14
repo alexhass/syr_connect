@@ -2,6 +2,7 @@
 
 # The unit tests in this module check private helpers and attributes directly.
 # ruff: noqa: SLF001
+from collections.abc import AsyncIterator, Callable
 from dataclasses import replace
 from datetime import UTC, datetime
 import importlib
@@ -11,6 +12,7 @@ from types import SimpleNamespace
 from typing import Any, cast
 from unittest.mock import MagicMock, patch
 
+import aiohttp
 import pytest
 from pytest_homeassistant.common import MockConfigEntry
 
@@ -2572,3 +2574,103 @@ def test_build_user_agent(integration_version: str) -> None:
         build_user_agent(integration_version, "2026.11.0")
         == f"syr_connect/{integration_version} HomeAssistant/2026.11.0"
     )
+
+
+async def test_read_response_text_in_chunks(
+    set_response_body: Callable[..., None],
+) -> None:
+    """A body that arrives in several chunks is joined and decoded as UTF-8."""
+    response = MagicMock()
+    set_response_body(response, "<sc>Wasserhärte</sc>", chunk_size=4)
+
+    assert await helpers.read_response_text(response) == "<sc>Wasserhärte</sc>"
+
+
+@pytest.mark.parametrize(
+    ("charset", "expected"),
+    [
+        pytest.param("latin-1", "Wasserhärte", id="announced"),
+        # An unknown charset falls back to UTF-8, which cannot decode this body
+        pytest.param("utf-8", None, id="wrong"),
+    ],
+)
+async def test_read_response_text_charset(
+    set_response_body: Callable[..., None], charset: str, expected: str | None
+) -> None:
+    """The body is decoded with the charset the server announces."""
+    response = MagicMock()
+    set_response_body(response, "Wasserhärte".encode("latin-1"))
+    response.charset = charset
+
+    if expected is None:
+        with pytest.raises(UnicodeDecodeError):
+            await helpers.read_response_text(response)
+    else:
+        assert await helpers.read_response_text(response) == expected
+
+
+async def test_read_response_text_unknown_charset(
+    set_response_body: Callable[..., None],
+) -> None:
+    """A charset Python does not know falls back to UTF-8."""
+    response = MagicMock()
+    set_response_body(response, "Wasserhärte")
+    response.charset = "no-such-charset"
+
+    assert await helpers.read_response_text(response) == "Wasserhärte"
+
+
+async def test_read_response_text_at_the_limit(
+    set_response_body: Callable[..., None],
+) -> None:
+    """A body of exactly the maximum size is still accepted."""
+    limit = helpers._SYR_CONNECT_API_RESPONSE_SIZE_MAXIMUM
+    response = MagicMock()
+    set_response_body(response, "x" * limit, chunk_size=64 * 1024)
+    response.content_length = limit
+
+    assert len(await helpers.read_response_text(response)) == limit
+
+
+async def test_read_response_text_announced_size_too_large(
+    set_response_body: Callable[..., None],
+) -> None:
+    """A response that announces more than the maximum size is not read at all."""
+    limit = helpers._SYR_CONNECT_API_RESPONSE_SIZE_MAXIMUM
+    response = MagicMock()
+    set_response_body(response, "ignored")
+    response.content_length = limit + 1
+    response.content.iter_chunked = MagicMock()
+
+    with pytest.raises(
+        aiohttp.ClientPayloadError,
+        match="Response of 1048577 bytes exceeds the limit of 1048576 bytes",
+    ):
+        await helpers.read_response_text(response)
+
+    response.content.iter_chunked.assert_not_called()
+
+
+async def test_read_response_text_stops_reading_above_the_limit() -> None:
+    """A body without an announced size is dropped as soon as it passes the maximum size."""
+    limit = helpers._SYR_CONNECT_API_RESPONSE_SIZE_MAXIMUM
+    chunk = b"x" * (64 * 1024)
+    sent = 0
+
+    async def _endless(_size: int) -> AsyncIterator[bytes]:
+        nonlocal sent
+        while True:
+            sent += len(chunk)
+            yield chunk
+
+    response = MagicMock()
+    response.content_length = None
+    response.content.iter_chunked = _endless
+
+    with pytest.raises(
+        aiohttp.ClientPayloadError, match="Response exceeds the limit of 1048576 bytes"
+    ):
+        await helpers.read_response_text(response)
+
+    # Reading stopped with the first chunk above the limit
+    assert sent == limit + len(chunk)

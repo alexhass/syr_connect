@@ -20,6 +20,7 @@ XML API client so it can be integrated into the coordinator later.
 
 from datetime import UTC, datetime, timedelta
 import ipaddress
+import json
 import logging
 from typing import Any
 from urllib.parse import quote
@@ -35,7 +36,7 @@ from .exceptions import (
     SyrConnectHTTPError,
     SyrConnectInvalidResponseError,
 )
-from .helpers import build_user_agent
+from .helpers import build_user_agent, read_response_text
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -356,7 +357,7 @@ class SyrConnectJsonAPI:
                 # This helps debug 400/500 errors where the body contains error details
                 if resp.status >= 400:
                     try:
-                        response_text = await resp.text()
+                        response_text = await read_response_text(resp)
                         _LOGGER.debug(
                             "JSON API: %s - Error response: %r",
                             operation,
@@ -374,9 +375,10 @@ class SyrConnectJsonAPI:
                 _raise_for_redirect(resp)
 
                 # --- Parse and Validate JSON Response ---
-                # Note: SYR devices return JSON without proper Content-Type header (application/json).
-                # Use content_type=None to skip Content-Type validation
-                data = await resp.json(content_type=None)
+                # Note: SYR devices return JSON without proper Content-Type header (application/json),
+                # so the body is parsed whatever the Content-Type says
+                text = await read_response_text(resp)
+                data = json.loads(text) if text.strip() else None
 
         # --- HTTP Error Handling ---
         except aiohttp.ClientResponseError as err:

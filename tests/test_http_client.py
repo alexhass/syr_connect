@@ -1,8 +1,9 @@
 """Tests for the HTTP client helper."""
 
+from collections.abc import Callable
+
 # The unit tests in this module check private helpers and attributes directly.
 # ruff: noqa: SLF001
-
 import re
 from unittest.mock import AsyncMock, MagicMock
 
@@ -108,12 +109,12 @@ async def test_http_client_get_headers_custom_content_type() -> None:
     assert headers["Content-Type"] == "application/json"
 
 
-async def test_http_client_post_success() -> None:
+async def test_http_client_post_success(set_response_body: Callable[..., None]) -> None:
     """Test successful HTTP POST request."""
     mock_session = MagicMock(spec=aiohttp.ClientSession)
     mock_response = AsyncMock()
     mock_response.status = 200
-    mock_response.text = AsyncMock(return_value="<response>Success</response>")
+    set_response_body(mock_response, "<response>Success</response>")
     mock_response.raise_for_status = MagicMock()
 
     # Create context manager mock
@@ -128,6 +129,29 @@ async def test_http_client_post_success() -> None:
 
     assert result == "<response>Success</response>"
     assert mock_session.post.call_count == 1
+
+
+async def test_http_client_post_rejects_oversized_response(
+    set_response_body: Callable[..., None],
+) -> None:
+    """A response above the maximum size fails the request like a connection error."""
+    mock_session = MagicMock(spec=aiohttp.ClientSession)
+    mock_response = AsyncMock()
+    mock_response.status = 200
+    mock_response.raise_for_status = MagicMock()
+    set_response_body(mock_response, "x" * (1024 * 1024 + 1))
+
+    mock_context = AsyncMock()
+    mock_context.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_context.__aexit__ = AsyncMock(return_value=None)
+    mock_session.post = MagicMock(return_value=mock_context)
+
+    client = HTTPClient(mock_session, "TestAgent/1.0")
+
+    with pytest.raises(
+        aiohttp.ClientError, match="Response exceeds the limit of 1048576 bytes"
+    ):
+        await client.post("https://example.com/api", {"key": "value"})
 
 
 async def test_http_client_post_does_not_follow_redirects() -> None:
@@ -148,15 +172,17 @@ async def test_http_client_post_does_not_follow_redirects() -> None:
         await client.post("https://example.com/api", {"key": "value"})
 
     assert mock_session.post.call_args.kwargs["allow_redirects"] is False
-    mock_response.text.assert_not_called()
+    mock_response.content.iter_chunked.assert_not_called()
 
 
-async def test_http_client_post_with_string_data() -> None:
+async def test_http_client_post_with_string_data(
+    set_response_body: Callable[..., None],
+) -> None:
     """Test HTTP POST request with string data."""
     mock_session = MagicMock(spec=aiohttp.ClientSession)
     mock_response = AsyncMock()
     mock_response.status = 200
-    mock_response.text = AsyncMock(return_value="<response>OK</response>")
+    set_response_body(mock_response, "<response>OK</response>")
     mock_response.raise_for_status = MagicMock()
 
     mock_context = AsyncMock()

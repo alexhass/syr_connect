@@ -6,6 +6,7 @@ from typing import Any
 import aiohttp
 
 from .const import _SYR_CONNECT_CLIENT_OS_LANGUAGE
+from .helpers import read_response_text
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -103,7 +104,7 @@ class HTTPClient:
                         status=response.status,
                         message="Redirect not followed",
                     )
-                text = await response.text()
+                text = await read_response_text(response)
                 _LOGGER.debug("Response received (length: %d)", len(text))
                 return text
         except (TimeoutError, aiohttp.ClientError) as err:

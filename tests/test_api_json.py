@@ -1,8 +1,9 @@
 """Tests for the local JSON API client using fixtures."""
 
+from collections.abc import Callable
+
 # The unit tests in this module check private helpers and attributes directly.
 # ruff: noqa: SLF001
-
 from datetime import UTC, datetime, timedelta
 import json
 import logging
@@ -225,13 +226,15 @@ async def test_login_no_base_url_raises(integration_version: str) -> None:
         await client.login()
 
 
-async def test_login_success(integration_version: str) -> None:
+async def test_login_success(
+    integration_version: str, set_response_body: Callable[..., None]
+) -> None:
     """Test login makes GET request and updates session state."""
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"setADM(2)f": "OK"})
+    set_response_body(mock_response, json.dumps({"setADM(2)f": "OK"}))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -282,14 +285,16 @@ async def test_login_http_error(integration_version: str) -> None:
         await client.login()
 
 
-async def test_login_invalid_response_status(integration_version: str) -> None:
+async def test_login_invalid_response_status(
+    integration_version: str, set_response_body: Callable[..., None]
+) -> None:
     """Test login raises exception when response status is not 'OK'."""
 
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"setADM(2)f": "ERROR"})
+    set_response_body(mock_response, json.dumps({"setADM(2)f": "ERROR"}))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -307,14 +312,16 @@ async def test_login_invalid_response_status(integration_version: str) -> None:
         await client.login()
 
 
-async def test_login_missing_status_key(integration_version: str) -> None:
+async def test_login_missing_status_key(
+    integration_version: str, set_response_body: Callable[..., None]
+) -> None:
     """Test login raises exception when response is missing the status key."""
 
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"someOtherKey": "value"})
+    set_response_body(mock_response, json.dumps({"someOtherKey": "value"}))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -332,14 +339,16 @@ async def test_login_missing_status_key(integration_version: str) -> None:
         await client.login()
 
 
-async def test_login_mima_status(integration_version: str) -> None:
+async def test_login_mima_status(
+    integration_version: str, set_response_body: Callable[..., None]
+) -> None:
     """Test login raises exception when response status is MIMA."""
 
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"setADM(2)f": "MIMA"})
+    set_response_body(mock_response, json.dumps({"setADM(2)f": "MIMA"}))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -358,14 +367,16 @@ async def test_login_mima_status(integration_version: str) -> None:
         await client.login()
 
 
-async def test_login_nsc_status(integration_version: str) -> None:
+async def test_login_nsc_status(
+    integration_version: str, set_response_body: Callable[..., None]
+) -> None:
     """Test login raises exception when response status is NSC."""
 
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"setADM(2)f": "NSC"})
+    set_response_body(mock_response, json.dumps({"setADM(2)f": "NSC"}))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -404,14 +415,16 @@ async def test_login_404_treated_as_not_required(integration_version: str) -> No
     assert client._login_required is False
 
 
-async def test_login_factory_treated_as_required(integration_version: str) -> None:
+async def test_login_factory_treated_as_required(
+    integration_version: str, set_response_body: Callable[..., None]
+) -> None:
     """Test login treats response 'FACTORY' as 'login required'."""
 
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"setADM(2)f": "FACTORY"})
+    set_response_body(mock_response, json.dumps({"setADM(2)f": "FACTORY"}))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -431,7 +444,9 @@ async def test_login_factory_treated_as_required(integration_version: str) -> No
     assert client.projects and client.projects[0]["id"] == "local"
 
 
-async def test_login_factory_without_set_prefix(integration_version: str) -> None:
+async def test_login_factory_without_set_prefix(
+    integration_version: str, set_response_body: Callable[..., None]
+) -> None:
     """Test login accepts response key without 'set' prefix (e.g. Floorsensor firmware).
 
     Some devices return {"ADM(2)f":"FACTORY"} instead of {"setADM(2)f":"FACTORY"}.
@@ -440,7 +455,7 @@ async def test_login_factory_without_set_prefix(integration_version: str) -> Non
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"ADM(2)f": "FACTORY"})
+    set_response_body(mock_response, json.dumps({"ADM(2)f": "FACTORY"}))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -495,14 +510,16 @@ async def test_request_json_data_no_base_url_raises(integration_version: str) ->
         await client.request_json_data("/get/all")
 
 
-async def test_request_json_data_non_dict_raises(integration_version: str) -> None:
+async def test_request_json_data_non_dict_raises(
+    integration_version: str, set_response_body: Callable[..., None]
+) -> None:
     """Test request_json_data raises SyrConnectInvalidResponseError when response is not a dict."""
 
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value=["not", "a", "dict"])
+    set_response_body(mock_response, json.dumps(["not", "a", "dict"]))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -547,13 +564,15 @@ async def test_request_json_data_http_error(integration_version: str) -> None:
         await client.request_json_data("/get/all")
 
 
-async def test_request_json_data_success(integration_version: str) -> None:
+async def test_request_json_data_success(
+    integration_version: str, set_response_body: Callable[..., None]
+) -> None:
     """Test request_json_data returns dict on success."""
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"getAB": "value", "getCD": "123"})
+    set_response_body(mock_response, json.dumps({"getAB": "value", "getCD": "123"}))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -624,13 +643,15 @@ async def test_set_device_status_no_base_url_raises(integration_version: str) ->
         await client.set_device_status("device1", [("setAB", "true")])
 
 
-async def test_set_device_status_strips_set_prefix(integration_version: str) -> None:
+async def test_set_device_status_strips_set_prefix(
+    integration_version: str, set_response_body: Callable[..., None]
+) -> None:
     """Test set_device_status strips 'set' prefix from command."""
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={})
+    set_response_body(mock_response, json.dumps({}))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -650,13 +671,15 @@ async def test_set_device_status_strips_set_prefix(integration_version: str) -> 
     assert result is True
 
 
-async def test_set_device_status_success(integration_version: str) -> None:
+async def test_set_device_status_success(
+    integration_version: str, set_response_body: Callable[..., None]
+) -> None:
     """Test set_device_status returns True when response status is OK."""
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"setXY123": "OK"})
+    set_response_body(mock_response, json.dumps({"setXY123": "OK"}))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -724,13 +747,14 @@ async def test_get_device_status_skips_login_with_base_url(
 async def test_request_json_data_logs_nsc_error(
     caplog: pytest.LogCaptureFixture,
     integration_version: str,
+    set_response_body: Callable[..., None],
 ) -> None:
     """Test request_json_data logs warning when response contains NSC error code."""
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"getXYZ": "NSC", "getABC": "value"})
+    set_response_body(mock_response, json.dumps({"getXYZ": "NSC", "getABC": "value"}))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -751,6 +775,7 @@ async def test_request_json_data_logs_nsc_error(
 async def test_request_json_data_logs_mima_error(
     caplog: pytest.LogCaptureFixture,
     integration_version: str,
+    set_response_body: Callable[..., None],
 ) -> None:
     """Test request_json_data logs warning when response contains MIMA error code."""
     sess = MagicMock()
@@ -758,7 +783,7 @@ async def test_request_json_data_logs_mima_error(
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
     # Use a GET key (not SET) to test warning logging for error codes
-    mock_response.json = AsyncMock(return_value={"getPRF": "MIMA", "getABC": "value"})
+    set_response_body(mock_response, json.dumps({"getPRF": "MIMA", "getABC": "value"}))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -776,14 +801,16 @@ async def test_request_json_data_logs_mima_error(
     assert "JSON API: 'getPRF' Value is outside valid range (MIMA error)" in caplog.text
 
 
-async def test_set_device_status_raises_on_nsc_error(integration_version: str) -> None:
+async def test_set_device_status_raises_on_nsc_error(
+    integration_version: str, set_response_body: Callable[..., None]
+) -> None:
     """Test set_device_status raises SyrConnectInvalidResponseError when response contains NSC error code."""
 
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"setINVALIDvalue": "NSC"})
+    set_response_body(mock_response, json.dumps({"setINVALIDvalue": "NSC"}))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -800,14 +827,16 @@ async def test_set_device_status_raises_on_nsc_error(integration_version: str) -
         await client.set_device_status("device1", [("INVALID", "value")])
 
 
-async def test_set_device_status_raises_on_mima_error(integration_version: str) -> None:
+async def test_set_device_status_raises_on_mima_error(
+    integration_version: str, set_response_body: Callable[..., None]
+) -> None:
     """Test set_device_status raises SyrConnectInvalidResponseError when response contains MIMA error code."""
 
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"setPRF9999": "MIMA"})
+    set_response_body(mock_response, json.dumps({"setPRF9999": "MIMA"}))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -827,13 +856,14 @@ async def test_set_device_status_raises_on_mima_error(integration_version: str) 
 
 async def test_set_device_status_sends_special_characters_unencoded(
     integration_version: str,
+    set_response_body: Callable[..., None],
 ) -> None:
     """Colons and slashes of a value are sent as they are, the firmware decodes nothing."""
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"setRTM02:15": "OK"})
+    set_response_body(mock_response, json.dumps({"setRTM02:15": "OK"}))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -854,7 +884,7 @@ async def test_set_device_status_sends_special_characters_unencoded(
     assert result is True
 
     # Test with value containing slash - also sent without encoding
-    mock_response.json = AsyncMock(return_value={"setCMDvalue/with/slash": "OK"})
+    set_response_body(mock_response, json.dumps({"setCMDvalue/with/slash": "OK"}))
     result2 = await client.set_device_status("device1", [("CMD", "value/with/slash")])
     called_url2 = str(sess.get.call_args[0][0])
     assert "value/with/slash" in called_url2
@@ -864,13 +894,14 @@ async def test_set_device_status_sends_special_characters_unencoded(
 async def test_set_device_status_missing_response_key(
     caplog: pytest.LogCaptureFixture,
     integration_version: str,
+    set_response_body: Callable[..., None],
 ) -> None:
     """Test set_device_status handles missing response key gracefully."""
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"someOtherKey": "OK"})
+    set_response_body(mock_response, json.dumps({"someOtherKey": "OK"}))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -892,13 +923,14 @@ async def test_set_device_status_missing_response_key(
 async def test_set_device_status_unknown_status_code(
     caplog: pytest.LogCaptureFixture,
     integration_version: str,
+    set_response_body: Callable[..., None],
 ) -> None:
     """Test set_device_status handles unknown status codes gracefully."""
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"setUNKNOWN42": "WEIRD"})
+    set_response_body(mock_response, json.dumps({"setUNKNOWN42": "WEIRD"}))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -1203,7 +1235,9 @@ async def test_get_devices_calls_login_when_session_invalid(
     assert devices[0]["project_id"] == "local"
 
 
-async def test_execute_http_get_404_error(integration_version: str) -> None:
+async def test_execute_http_get_404_error(
+    integration_version: str, set_response_body: Callable[..., None]
+) -> None:
     """Test _execute_http_get raises SyrConnectConnectionError on 404."""
 
     sess = MagicMock()
@@ -1217,7 +1251,7 @@ async def test_execute_http_get_404_error(integration_version: str) -> None:
             message="Not Found",
         )
     )
-    mock_response.text = AsyncMock(return_value="Endpoint not found")
+    set_response_body(mock_response, "Endpoint not found")
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -1234,13 +1268,14 @@ async def test_execute_http_get_404_error(integration_version: str) -> None:
 
 async def test_execute_http_get_does_not_follow_redirects(
     integration_version: str,
+    set_response_body: Callable[..., None],
 ) -> None:
     """A redirect is not followed and fails the request."""
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 302
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"getSRN": "12345"})
+    set_response_body(mock_response, json.dumps({"getSRN": "12345"}))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -1259,13 +1294,15 @@ async def test_execute_http_get_does_not_follow_redirects(
     mock_response.json.assert_not_called()
 
 
-async def test_execute_http_get_sends_the_user_agent(integration_version: str) -> None:
+async def test_execute_http_get_sends_the_user_agent(
+    integration_version: str, set_response_body: Callable[..., None]
+) -> None:
     """The User-Agent names the integration and Home Assistant, as for the cloud API."""
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"getSRN": "12345"})
+    set_response_body(mock_response, json.dumps({"getSRN": "12345"}))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -1336,6 +1373,7 @@ async def test_execute_http_get_unexpected_error(integration_version: str) -> No
 async def test_execute_http_get_logs_error_response_body(
     caplog: pytest.LogCaptureFixture,
     integration_version: str,
+    set_response_body: Callable[..., None],
 ) -> None:
     """Test _execute_http_get logs error response body for debugging."""
 
@@ -1350,7 +1388,7 @@ async def test_execute_http_get_logs_error_response_body(
             message="Internal Server Error",
         )
     )
-    mock_response.text = AsyncMock(return_value="Server encountered an error")
+    set_response_body(mock_response, "Server encountered an error")
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -1385,7 +1423,10 @@ async def test_execute_http_get_logs_error_response_read_failure(
         )
     )
     # Simulate error when trying to read response body
-    mock_response.text = AsyncMock(side_effect=Exception("Cannot read response"))
+    mock_response.content_length = None
+    mock_response.content.iter_chunked = MagicMock(
+        side_effect=aiohttp.ClientPayloadError("Cannot read response")
+    )
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -1403,8 +1444,59 @@ async def test_execute_http_get_logs_error_response_read_failure(
     assert "Could not read error response" in caplog.text
 
 
+@pytest.mark.parametrize(
+    ("body", "error", "message"),
+    [
+        pytest.param(
+            "x" * (1024 * 1024 + 1),
+            SyrConnectConnectionError,
+            "Response exceeds the limit of 1048576 bytes",
+            id="too-large",
+        ),
+        pytest.param(
+            '{"getSRN": ',
+            SyrConnectConnectionError,
+            "Unexpected error",
+            id="broken-json",
+        ),
+        pytest.param(
+            "  ",
+            SyrConnectInvalidResponseError,
+            "API returned unexpected payload type",
+            id="empty",
+        ),
+    ],
+)
+async def test_execute_http_get_unusable_body(
+    integration_version: str,
+    set_response_body: Callable[..., None],
+    body: str,
+    error: type[Exception],
+    message: str,
+) -> None:
+    """A body that is too large, no JSON or empty fails the request."""
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.raise_for_status = MagicMock()
+    set_response_body(mock_response, body)
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(
+        sess,
+        base_url="http://test:5333/trio/",
+        integration_version=integration_version,
+    )
+
+    with pytest.raises(error, match=message):
+        await client._execute_http_get("http://test:5333/trio/get/all")
+
+
 async def test_execute_http_get_reraises_invalid_response_error(
     integration_version: str,
+    set_response_body: Callable[..., None],
 ) -> None:
     """Test _execute_http_get re-raises SyrConnectInvalidResponseError without wrapping."""
 
@@ -1412,7 +1504,7 @@ async def test_execute_http_get_reraises_invalid_response_error(
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value=[])  # Returns list instead of dict
+    set_response_body(mock_response, json.dumps([]))  # Returns list instead of dict
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -1484,13 +1576,15 @@ async def test_request_json_data_returns_none_raises(integration_version: str) -
         await client.request_json_data("/get/all")
 
 
-async def test_login_clears_cached_data(integration_version: str) -> None:
+async def test_login_clears_cached_data(
+    integration_version: str, set_response_body: Callable[..., None]
+) -> None:
     """Test login clears any cached _get_all data from previous session."""
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"setADM(2)f": "OK"})
+    set_response_body(mock_response, json.dumps({"setADM(2)f": "OK"}))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -1548,13 +1642,15 @@ async def test_construct_encoded_url_with_encode_true(integration_version: str) 
     assert "02:30" not in str(url)
 
 
-async def test_request_json_data_strips_leading_slash(integration_version: str) -> None:
+async def test_request_json_data_strips_leading_slash(
+    integration_version: str, set_response_body: Callable[..., None]
+) -> None:
     """Test request_json_data strips leading slash from path."""
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"key": "value"})
+    set_response_body(mock_response, json.dumps({"key": "value"}))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -1576,13 +1672,14 @@ async def test_request_json_data_strips_leading_slash(integration_version: str) 
 
 async def test_request_json_data_without_leading_slash(
     integration_version: str,
+    set_response_body: Callable[..., None],
 ) -> None:
     """Test request_json_data works with path without leading slash."""
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    mock_response.json = AsyncMock(return_value={"key": "value"})
+    set_response_body(mock_response, json.dumps({"key": "value"}))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -1666,7 +1763,9 @@ async def test_get_device_status_returns_none_on_invalid_payload(
     assert result is None
 
 
-async def test_execute_http_get_401_auth_error(integration_version: str) -> None:
+async def test_execute_http_get_401_auth_error(
+    integration_version: str, set_response_body: Callable[..., None]
+) -> None:
     """Test _execute_http_get raises SyrConnectAuthError on 401/403."""
 
     sess = MagicMock()
@@ -1680,7 +1779,7 @@ async def test_execute_http_get_401_auth_error(integration_version: str) -> None
             message="Unauthorized",
         )
     )
-    mock_response.text = AsyncMock(return_value="Unauthorized")
+    set_response_body(mock_response, "Unauthorized")
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)

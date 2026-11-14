@@ -7,6 +7,8 @@ import math
 import re
 from typing import Any
 
+import aiohttp
+
 from homeassistant.components.recorder import get_instance
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_USERNAME, __version__ as HA_VERSION
@@ -18,6 +20,7 @@ from homeassistant.util import dt as dt_util, slugify
 
 from .const import (
     _SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT,
+    _SYR_CONNECT_API_RESPONSE_SIZE_MAXIMUM,
     _SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT,
     _SYR_CONNECT_SCAN_INTERVAL_CONF,
     _SYR_CONNECT_SENSOR_ALA_CODES_GENERIC,
@@ -35,6 +38,9 @@ from .devices import WHU_FACTORS_FROM_DH
 from .models import MODEL_SIGNATURES, UNKNOWN_MODEL, SyrConnectModel, detect_model
 
 _LOGGER = logging.getLogger(__name__)
+
+# Number of bytes read at once from a response body
+_SYR_CONNECT_HELPERS_RESPONSE_CHUNK_SIZE = 64 * 1024
 
 
 def is_value_true(val: object) -> bool:
@@ -1569,6 +1575,44 @@ def get_api_locale(language: str | None, country: str | None) -> str:
     if region is None:
         region = country.upper() if country else "US"
     return f"{lang}-{region}"
+
+
+async def read_response_text(response: aiohttp.ClientResponse) -> str:
+    """Read the body of a response as text, up to the maximum response size.
+
+    The body is read in chunks, so that a server or device that sends endless data
+    cannot fill the memory. A wrong or missing charset falls back to UTF-8.
+
+    Args:
+        response: Response whose body has not been read yet
+
+    Returns:
+        The decoded body
+
+    Raises:
+        aiohttp.ClientPayloadError: If the body is larger than the maximum response size
+    """
+    limit = _SYR_CONNECT_API_RESPONSE_SIZE_MAXIMUM
+    # The announced size saves reading an oversized body; it is the compressed size and
+    # may be missing, so the bytes that arrive are counted as well
+    announced = response.content_length
+    if announced is not None and announced > limit:
+        raise aiohttp.ClientPayloadError(
+            f"Response of {announced} bytes exceeds the limit of {limit} bytes"
+        )
+    body = bytearray()
+    async for chunk in response.content.iter_chunked(
+        _SYR_CONNECT_HELPERS_RESPONSE_CHUNK_SIZE
+    ):
+        body.extend(chunk)
+        if len(body) > limit:
+            raise aiohttp.ClientPayloadError(
+                f"Response exceeds the limit of {limit} bytes"
+            )
+    try:
+        return body.decode(response.charset or "utf-8")
+    except LookupError:
+        return body.decode("utf-8")
 
 
 def mask_ug_value(payload: str) -> str:

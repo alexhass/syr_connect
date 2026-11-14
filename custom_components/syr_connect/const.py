@@ -22,6 +22,10 @@ _SYR_CONNECT_API_XML_SCAN_INTERVAL_MINIMUM = 60  # seconds
 _SYR_CONNECT_API_JSON_SCAN_INTERVAL_MINIMUM = 10  # seconds
 _SYR_CONNECT_API_SCAN_INTERVAL_MAXIMUM = 600  # seconds
 
+# Largest response body the cloud or a device may send. Real answers stay far below it;
+# the limit keeps a broken or hostile server from filling the memory.
+_SYR_CONNECT_API_RESPONSE_SIZE_MAXIMUM = 1024 * 1024  # bytes
+
 # Client-side re-login interval of the local JSON API (ADM login, minutes). Assumed; the device
 # itself is not known to time out the login. The XML (cloud) API has no client-side timeout; it
 # logs in again when the server rejects the token.
