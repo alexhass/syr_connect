@@ -93,7 +93,6 @@ _SYR_CONNECT_SELECT_TYPES: tuple[SyrConnectSelectEntityDescription, ...] = (
     SyrConnectSelectEntityDescription(
         key="getSRO",  # Display rotation / orientation (0 / 90 / 180 / 270 degrees)
         entity_category=EntityCategory.CONFIG,
-        entity_registry_enabled_default=False,
     ),
     SyrConnectSelectEntityDescription(
         key="getSV1",  # Salt amount - container 1 (kg)

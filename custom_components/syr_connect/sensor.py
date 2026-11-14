@@ -652,7 +652,6 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
     ),
     SyrConnectSensorEntityDescription(
         key="getNOT",  # Current notification code
-        entity_registry_enabled_default=False,
         value_fn=_value_not,
     ),
     SyrConnectSensorEntityDescription(
@@ -1983,7 +1982,6 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         key="getSRO",  # Display rotation / orientation (0 / 90 / 180 / 270 degrees)
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
     ),
     # --- Device Info & Diagnostics ---
     SyrConnectSensorEntityDescription(
