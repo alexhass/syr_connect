@@ -788,6 +788,9 @@
       "getbar2": {
         "name": "Ciśnienie wyjściowe"
       },
+      "getbar_system": {
+        "name": "Ciśnienie instalacji"
+      },
       "getbat": {
         "name": "Napięcie baterii"
       },
@@ -1014,6 +1017,9 @@
       },
       "gethmd": {
         "name": "Wilgotność"
+      },
+      "getiba": {
+        "name": "Ciśnienie wejściowe"
       },
       "getinr": {
         "name": "Regeneracje (niekompletne)"

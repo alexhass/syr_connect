@@ -788,6 +788,9 @@
       "getbar2": {
         "name": "Outlet pressure"
       },
+      "getbar_system": {
+        "name": "System pressure"
+      },
       "getbat": {
         "name": "Battery voltage"
       },
@@ -1014,6 +1017,9 @@
       },
       "gethmd": {
         "name": "Humidity"
+      },
+      "getiba": {
+        "name": "Inlet pressure"
       },
       "getinr": {
         "name": "Regenerations (incomplete)"

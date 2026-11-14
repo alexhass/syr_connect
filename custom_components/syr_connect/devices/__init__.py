@@ -83,6 +83,9 @@ class SyrConnectDeviceProfile:
 
     # Alarm code family (getALA) of the device; None means the generic codes
     ala_codes: Mapping[str, str] | None = None
+    # getBAR is the pressure of the system (heating system) instead of the inlet
+    # pressure; the device reports the inlet pressure in getIBA
+    bar_is_system_pressure: bool = False
     # The device reports the battery (getBAT) in % instead of a voltage
     bat_in_percent: bool = False
     binary_sensor: AbstractSet[str]

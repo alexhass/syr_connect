@@ -34,6 +34,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_PASSWORD,
     CONF_USERNAME,
+    UnitOfPressure,
     UnitOfTemperature,
     UnitOfVolume,
 )
@@ -426,6 +427,35 @@ def test_allinoneplus_fixture_mac_and_temperature(
     cel = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", "getCEL")
     assert cel.native_value == temperature
     assert cel.native_unit_of_measurement == UnitOfTemperature.CELSIUS
+
+
+@pytest.mark.parametrize(
+    "fixture",
+    [
+        pytest.param("json/SyrAllInOnePlus_get_all.json", id="json"),
+        pytest.param("xml/SyrAllInOnePlus_GetDeviceCollectionStatus.xml", id="xml"),
+    ],
+)
+def test_allinoneplus_fixture_system_and_inlet_pressure(
+    create_mock_coordinator: Callable[..., MagicMock],
+    fixture: str,
+) -> None:
+    """On the All-in-One+, getBAR is the system pressure and getIBA the inlet pressure."""
+    status = _fixture_status(fixture)
+    model = detect_model(status)
+
+    assert {"getBAR", "getIBA"} <= set(
+        sensor_module.sensor_keys_for_status(status, model)
+    )
+    data = {"devices": [{"id": "d1", "name": "D1", "model": model, "status": status}]}
+    coordinator = create_mock_coordinator(data)
+    bar = SyrConnectSensor(coordinator, "d1", "D1", "getBAR")
+    iba = SyrConnectSensor(coordinator, "d1", "D1", "getIBA")
+    assert bar.translation_key == "getbar_system"
+    assert bar.native_value == 1.7
+    assert iba.translation_key == "getiba"
+    assert iba.native_value == 2.3
+    assert iba.native_unit_of_measurement == UnitOfPressure.BAR
 
 
 async def test_async_setup_entry_creates_allinoneplus_manual_filling(

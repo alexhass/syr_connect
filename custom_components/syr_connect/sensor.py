@@ -176,7 +176,7 @@ def _value_bap(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
 
 
 def _value_bar(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
-    """Pressure (getBAR / getBAR2, Safe-T+ / TRIO Lock): "4077 mbar" -> bar."""
+    """Pressure (getBAR / getBAR2 / getIBA): "4077 mbar" -> bar."""
     if value is None or value == "":
         return None
     match = re.search(r"\d+", str(value))
@@ -660,7 +660,7 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
     ),
     # --- Pressure ---
     SyrConnectSensorEntityDescription(
-        key="getBAR",  # Inlet pressure - mbar sensor (Safe-T+)
+        key="getBAR",  # Inlet pressure, system pressure on the All-in-One+ (mbar)
         device_class=SensorDeviceClass.PRESSURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPressure.BAR,
@@ -670,6 +670,14 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
     ),
     SyrConnectSensorEntityDescription(
         key="getBAR2",  # Outlet pressure - mbar sensor (SYR TRIO Lock Connect)
+        device_class=SensorDeviceClass.PRESSURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPressure.BAR,
+        suggested_display_precision=1,
+        value_fn=_value_bar,
+    ),
+    SyrConnectSensorEntityDescription(
+        key="getIBA",  # Inlet pressure - mbar sensor (All-in-One+)
         device_class=SensorDeviceClass.PRESSURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPressure.BAR,
@@ -2874,6 +2882,12 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
                 self._attr_device_class = SensorDeviceClass.BATTERY
                 self._attr_suggested_display_precision = 0
                 self._attr_translation_key = "getbap"
+
+        # On devices that report the inlet pressure in getIBA, getBAR is the system pressure
+        if sensor_key == "getBAR":
+            profile = self.device_model.device_profile
+            if profile is not None and profile.bar_is_system_pressure:
+                self._attr_translation_key = "getbar_system"
 
         # A device may report a key in another scale than its description, e.g. milliliters
         # instead of liters or l/min instead of l/h. The value keeps the unit of the

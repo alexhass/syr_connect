@@ -783,12 +783,13 @@ The sensor settings `getTSD`, `getPSD` and `getCSD` are read with `get` and chan
 
 | Property | Example | Unit | Access level | Default | Description |
 | --- | --- | --- | --- | --- | --- |
-| getBAR | "4077" | mbar | USER | | Measured inlet pressure (Safe-T+, SafeTech+). Example: "4077 mbar" = 4.077 bar |
+| getBAR | "4077" | mbar | USER | | Measured inlet pressure (Safe-T+, SafeTech+). On the All-in-One+ the pressure of the heating system; it reports the inlet pressure in getIBA. Example: "4077 mbar" = 4.077 bar |
 | getAVO | "0mL" | mL | FACTORY | | Volume of the current water withdrawal in mL; resets when the withdrawal is finished. Syr Apps shows value in "L" |
 | getBAR2 | "3479" | mbar | | | Measured outlet pressure (Trio DFR/LS / SYR TRIO Lock Connect, Sanibel). Example: "3479 mbar" = 3.479 bar |
 | getCS1<br>getCS2<br>getCS3 | "63"<br>"0"<br>"0" | % | | | Remaining capacity of the resin in tank 1, 2 or 3 |
 | getFLO | "0" | L/h | USER | | Measured water flow. Range: 0–5000 (official API), 0–6000 (SafeTech). The LEX family (LEX, L20, i-LEX, LEXplus10S/10SL) reports it in L/min, e.g. "4" = 240 L/h |
 | getHMD | "43" | % | | | Humidity in % (SafeFloor) |
+| getIBA | "2300 mbar" | mbar | | | Measured inlet pressure (All-in-One+). Example: "2300 mbar" = 2.3 bar |
 | getLTV | "1655" | L | USER | | Last volume tapped |
 | getMNP | "40" | 1/10 bar | | | The minimum measured water pressure (reset at midnight) |
 | getMPO | "0" | | | | Max pressure offset (Sanibel Leak Protection Module A25) |

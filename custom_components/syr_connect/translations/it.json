@@ -788,6 +788,9 @@
       "getbar2": {
         "name": "Pressione di uscita"
       },
+      "getbar_system": {
+        "name": "Pressione dell'impianto"
+      },
       "getbat": {
         "name": "Tensione batteria"
       },
@@ -1014,6 +1017,9 @@
       },
       "gethmd": {
         "name": "Umidità"
+      },
+      "getiba": {
+        "name": "Pressione di ingresso"
       },
       "getinr": {
         "name": "Rigenerazioni (incomplete)"

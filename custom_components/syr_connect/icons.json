@@ -255,6 +255,9 @@
       "getbar": {
         "default": "mdi:gauge"
       },
+      "getbar_system": {
+        "default": "mdi:gauge"
+      },
       "getbat": {
         "default": "mdi:car-battery",
         "range": {
@@ -422,6 +425,9 @@
       },
       "gethmd": {
         "default": "mdi:water-percent"
+      },
+      "getiba": {
+        "default": "mdi:gauge"
       },
       "getinr": {
         "default": "mdi:counter"

@@ -788,6 +788,9 @@
       "getbar2": {
         "name": "Uitlaatdruk"
       },
+      "getbar_system": {
+        "name": "Installatiedruk"
+      },
       "getbat": {
         "name": "Batterijspanning"
       },
@@ -1014,6 +1017,9 @@
       },
       "gethmd": {
         "name": "Luchtvochtigheid"
+      },
+      "getiba": {
+        "name": "Inlaatdruk"
       },
       "getinr": {
         "name": "Regeneraties (onvolledig)"

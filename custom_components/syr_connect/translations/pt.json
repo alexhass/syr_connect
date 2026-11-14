@@ -788,6 +788,9 @@
       "getbar2": {
         "name": "Pressão de saída"
       },
+      "getbar_system": {
+        "name": "Pressão da instalação"
+      },
       "getbat": {
         "name": "Tensão da bateria"
       },
@@ -1014,6 +1017,9 @@
       },
       "gethmd": {
         "name": "Humidade"
+      },
+      "getiba": {
+        "name": "Pressão de entrada"
       },
       "getinr": {
         "name": "Regenerações (incompletas)"

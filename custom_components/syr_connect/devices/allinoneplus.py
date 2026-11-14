@@ -26,6 +26,7 @@ SENSOR_SUPPORTED_KEYS = {
     "getALM",
     # --- Pressure ---
     "getBAR",
+    "getIBA",
     # --- Voltage / Battery ---
     "getBAT",
     "getNET",
@@ -142,6 +143,7 @@ HARDNESS_RANGES = {
 
 
 PROFILE = SyrConnectDeviceProfile(
+    bar_is_system_pressure=True,
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
     cartridge_keys={
