@@ -16,15 +16,15 @@ This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists of the platforms which have to
 cover every supported model at once.
 
-Unlike every other device file so far, this model IS the genuine home of the
-"(Trio DFR/LS)"-tagged sensor.py keys: the full microleakage-test group
+This model is the home of the "(Trio DFR/LS)"-tagged sensor.py keys: the full
+microleakage-test group
 (getDBD/getDMA/getDRP/getDSV/getDTT/getNPS) and self-learning-phase group
 (getSLE/getSLF/getSLP/getSLT/getSLV) are both included outright - getDSV=3 in
 both fixtures, and getSLT/getSLV are non-zero (612/116) in both, proving the
 self-learning phase was genuinely active, not a constant-0 stub. getNPS also
 differs between the two fixtures (612 vs 6466), confirming it's a live value.
 getPA1-8/etc. (leak-protection profiles) and getAB/getVLV (valve control) are
-kept for the same reason as the muco_leakprotect/safetplus leak-protection variants.
+included: the fixtures report them with real values.
 
 Deliberately NOT included:
 - getBAR, getBAR2, getCEL, getCND: null/empty in both fixtures.

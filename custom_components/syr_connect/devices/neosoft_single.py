@@ -2,9 +2,8 @@
 
 Single-tank NeoSoft platform (dk=1200-1222), shared by "neosoft2500" and
 every single-tank rebrand-only sibling signature in this dk range via
-device_profile=neosoft_single.PROFILE. Dual-tank rebrands ("*duo"/"twin"/NeoSoft 5000)
-use the sibling neosoft_duo.py instead - see that file for the second-tank keys
-(getRE2/getSS2/getSV2/getVPS2) this file deliberately omits.
+device_profile=neosoft_single.PROFILE. It has one tank: the second-tank keys
+(getRE2/getSS2/getSV2/getVPS2) are not included.
 
 Derived from BOTH tests/fixtures/json/SyrNeoSoft2500_get_all.json (JSON API) and
 tests/fixtures/xml/SyrNeoSoft2500_GetDeviceCollectionStatus.xml (XML API) - the
@@ -15,16 +14,15 @@ getVPS1), confirming they are genuinely live rather than stubs.
 XML comment as "Just for model tests. We need a test machine to verify" - a
 synthetic capture for model-detection unit tests only, NOT used here.)
 
-Unlike the "lex" family, this platform uses a "reserve capacity" salt/tank
-schema (getRE1/getRE2) instead of the "resin capacity %" schema (getCS1-3),
-and it does have Wi-Fi (getWFC/getWFL/getWFR/getWFS/getWGW/getWIP) instead of
-the LAN-only getDGW/getIPA/getMAC used by the lex family. It has NO shutoff
-valve (no getAB/getVLV) and NO battery (no getBAT/getBAP).
+This platform uses a "reserve capacity" salt/tank schema (getRE1) instead of
+the "resin capacity %" schema (getCS1-3), and it connects via Wi-Fi
+(getWFC/getWFL/getWFR/getWFS/getWGW/getWIP). It has NO shutoff valve (no
+getAB/getVLV) and NO battery (no getBAT/getBAP).
 
-Unlike models where getSV1 is a manually-configured salt refill amount, this
-platform has a built-in salt level sensor - getSV1 is read-only telemetry
-here, so it stays sensor-only (SENSOR_SUPPORTED_KEYS) and is deliberately left
-out of SELECT_SUPPORTED_KEYS to avoid exposing a control nobody should use.
+This platform has a built-in salt level sensor - getSV1 is read-only telemetry
+here, not a manually configured salt refill amount, so it stays sensor-only
+(SENSOR_SUPPORTED_KEYS) and is deliberately left out of SELECT_SUPPORTED_KEYS to
+avoid exposing a control nobody should use.
 
 Deliberately NOT included:
 - getALD: 600 in JSON but empty ("") in XML - inconsistent, and 600 is the
@@ -34,8 +32,7 @@ Deliberately NOT included:
   docs/syrconnect-protocol.md.
 - getBAR, getCEL, getCND: empty ("") in the XML fixture and absent from the
   JSON fixture entirely. The official "Per-model validity" matrix confirms
-  X (not available) for NeoSoft 2500 specifically (✓ for NeoSoft 5000 -
-  see neosoft_duo.py, which correctly includes them).
+  X (not available) for NeoSoft 2500 specifically.
 - getCNL: empty ("") in the XML fixture and absent from the JSON fixture.
   The conductivity limit needs a conductivity sensor, which NeoSoft 2500
   does not have (see getCND).

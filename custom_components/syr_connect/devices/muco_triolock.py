@@ -7,38 +7,29 @@ are listed, unlike the shared global allowlists of the platforms which have to
 cover every supported model at once.
 
 Derived from tests/fixtures/xml/SyrTrioLock_GetDeviceCollectionStatus.xml,
-the first real-device capture for this model. Like muco_leakprotect (the
-other dkv=506 role that genuinely controls a valve), this "Lock Connect"
-role DOES report a shutoff valve (getAB=False/getVLV=20) and the full
-8-slot leak-protection-profile family populated with real distinct values
+the first real-device capture for this model. This "Lock Connect" role
+reports a shutoff valve (getAB=False/getVLV=20) and the full 8-slot
+leak-protection-profile family populated with real distinct values
 (getPA1/getPA2=True, getPN1="Anwesend"/getPN2="Abwesend", getPRF=1).
-Unlike muco_leakprotect's all-stub-zero microleakage-test config, this
-fixture also has genuinely populated values (getDBD=10, getDMA=1, getDRP=2,
-getDTT="04:00" - a real formatted duration, not a zero stub), so those are
-included here too, along with setDEX (gated on getDSV presence, matching
-the getDSV-gating in muco_leakprotect).
+The microleakage-test config has genuinely populated values (getDBD=10,
+getDMA=1, getDRP=2, getDTT="04:00" - a real formatted duration, not a zero
+stub), so those are included too, along with setDEX (gated on getDSV
+presence).
 
 Deliberately NOT included:
 - getCEL, getBAR, getCND: 0 in the fixture, and the official "Per-model
   validity" matrix (docs/syrconnect-protocol.md) explicitly marks CEL/BAR/
-  CND as X (not available) for TRIO Lock specifically - the matrix takes
-  precedence over the muco_leakprotect sibling's inclusion of getCND, since
-  that file's fixture is actually the unrelated A25 Leak Protection Module
-  (dkv=501), a product not covered by this TRIO-Lock-specific matrix.
-- getTYP: 0 in the fixture; no other muco_*.py sibling includes it either.
+  CND as X (not available) for TRIO Lock specifically.
+- getTYP: 0 in the fixture.
 - getCNL: reported (10 in the JSON fixture), but the conductivity limit needs
   a conductivity sensor, which the matrix marks X (CND) for TRIO Lock.
 - getT2: appears alone without its usual getT1/getLE/getUL siblings (the
-  single-profile leak keys) - too little evidence to include alone, same
-  reasoning as lexplus10sl.py.
-- getVPS1, getVPS2, getIWH, getOWH, getWHU, getSTA: not present in the fixture
-  at all.
+  single-profile leak keys) - too little evidence to include alone.
 
 The self-learning phase and the temporary deactivation (getTMP) are included
 although the fixture reports no self-learning results and no getTMP: the
-official API documentation lists both for TRIO Lock Connect, and the
-muco_leakprotect sibling with the same firmware reports real self-learning
-results.
+official API documentation lists both for TRIO Lock Connect, and other
+roles of the same MultiController firmware report real self-learning results.
 
 If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_SUPPORTED_KEYS below.
@@ -218,7 +209,7 @@ BINARY_SENSOR_SUPPORTED_KEYS = {
     "getVTO",
 }
 
-# setDEX (microleakage test) gated on getDSV presence, matching muco_leakprotect.
+# setDEX (microleakage test) gated on getDSV presence.
 BUTTON_SUPPORTED_KEYS = {
     "setALA",
     "setNOT",

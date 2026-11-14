@@ -170,7 +170,6 @@ Other devices are also of interest, but may need to be integrated or at least te
 - SYR Trio LS Connect
 - TAKE Dual Water Softener
 - TAKE Single Water Softener
-- Other SYR models with Connect capability or a retrofitted gateway that show up in the SYR Connect portal
 
 **Note**: If a device is visible in the SYR Connect account, the integration discovers it and creates the entities automatically. For an "untested device", shared diagnostics help to find unknown values and to check whether everything works as intended. This also allows the list of tested devices to be expanded.
 

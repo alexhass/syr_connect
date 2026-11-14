@@ -9,18 +9,14 @@ for this family). Both fixtures agree on every key below; where a value
 differs between the two (e.g. getMAN="Oceanic"/"Syr", getIWH=36/20), that is
 treated as strong evidence the key is genuinely live, not a stub.
 
-Unlike the LEX Plus 10 SL / SafeTech(+) / Trio DFR/LS variants, this is a
-conventional column softener with NO shutoff valve (no getAB/getVLV) and NO
-buzzer (no getBUZ). It connects via LAN (getDGW/getIPA/getMAC) by default,
-but some units (e.g. LEX10) have an optional Wi-Fi module - the Wi-Fi keys
-are included below even though neither fixture has them, since they are
-only ever created when actually present in a device's status. It has NO
+This is a conventional column softener with NO shutoff valve (no getAB/getVLV)
+and NO buzzer (no getBUZ). It connects via LAN (getDGW/getIPA/getMAC). It has NO
 leak-protection-profile family or microleakage test.
 
 Deliberately NOT included:
-- getPA1, getPA2, getPA3: constant 0 in both fixtures, and only 3 slots (not
-  the 8-slot leak-protection-profile family used elsewhere) - no confirmed
-  meaning for this device.
+- getPA1, getPA2, getPA3: constant 0 in both fixtures, and only 3 slots instead
+  of an 8-slot leak-protection-profile family - no confirmed meaning for this
+  device.
 - getWRN: not present in either fixture (no warning-code feature on this
   family; getNOT/getALM are present and used instead).
 - getHED, getHEM, getHEY, getHSD, getHSM, getHSY, getVAC: present in the
@@ -89,17 +85,6 @@ SENSOR_SUPPORTED_KEYS = {
     "getSRN",
     "getTYP",
     "getVER",
-    # --- Wi-Fi (optional module on some units, e.g. LEX10) ---
-    "getAPT",
-    "getEGW",
-    "getEIP",
-    "getMAC1",
-    "getMAC2",
-    "getWFC",
-    "getWFR",
-    "getWFS",
-    "getWGW",
-    "getWIP",
 }
 
 SELECT_SUPPORTED_KEYS = {

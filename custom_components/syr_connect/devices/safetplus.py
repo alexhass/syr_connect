@@ -6,9 +6,8 @@ This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists of the platforms which have to
 cover every supported model at once.
 
-Unlike the LEXplus10SL / SafeTech(+) leak-protection variants, this model has
-only a SINGLE leak-protection profile (no getPA1-8/getPRF numbered-profile
-family) - it uses the plain getLE/getT1/getT2/getUL/getTMP keys instead.
+This model has only a SINGLE leak-protection profile (no getPA1-8/getPRF
+numbered-profile family) - it uses the plain getLE/getT1/getT2/getUL/getTMP keys.
 It also has no Wi-Fi module (no getWFC/getWFR/getWFS/getEGW/getEIP/getMAC1/
 getMAC2/getAPT in the fixture) and no getFLO/getNOT/getWRN/getDSV/getDTT.
 getDMA (microleakage alarm mode) is present with a real value and included.
@@ -16,9 +15,8 @@ getDOM (microleakage test valve open time) is included: the Safe-T+ reports it
 with its unit ("1 min"), which the sensor converts to seconds.
 
 Deliberately NOT included, pending confirmation on a real device:
-- getDST, getDTC, getDBT, getDCM, getDPL: present in the fixture, but in other
-  formats than on the SafeTech ("5 min", "3 3"), so their meaning on the
-  Safe-T+ is not confirmed.
+- getDST, getDTC, getDBT, getDCM, getDPL: present in the fixture, but in
+  formats whose meaning is not confirmed ("5 min", "3 3").
 - getBSA, getBSI, getBLT, getUNI, getTC, getTO, getTPA, getTBS, getREL,
   getEXI, getEXT, getFLL, getINT, get71: same as above - not in the global
   allowlist, meaning not confirmed for use across the integration.

@@ -170,7 +170,6 @@ Andere Geräte sind auch interessant, müssen aber noch integriert oder zumindes
 - SYR Trio LS Connect
 - TAKE Doppelenthärtungsanlage
 - TAKE Einzelenthärtungsanlage
-- Andere SYR-Modelle mit Connect-Funktion oder nachgerüstetem Gateway
 
 **Hinweis**: Wenn ein Gerät im SYR Connect-Konto sichtbar ist, entdeckt die Integration es automatisch und erstellt die Entitäten. Bei einem „ungetesteten Gerät“ helfen die geteilten Diagnosedaten, unbekannte Werte zu analysieren und die Liste getesteter Geräte zu erweitern.
 

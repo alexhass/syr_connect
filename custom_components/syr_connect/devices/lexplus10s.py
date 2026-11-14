@@ -7,14 +7,10 @@ family, differing only in maximum_salt_volume-style metadata already handled
 elsewhere - pending confirmation if a real "LEX Plus 10" fixture ever exists.
 
 Derived from tests/fixtures/xml/SyrLEXplus10S_GetDeviceCollectionStatus.xml (no
-JSON fixture exists for this model). Unlike the LEXplus10SL sibling, this
-model has NO shutoff valve (no getAB/getVLV) and NO buzzer (no getBUZ), and
-NO leak-protection-profile/microleakage-test family - it is a conventional
-column softener, same shape as the plain "lex" family but with a few extra
-regeneration-history diagnostics (getINR/getLAR/getNOR). It connects via LAN
-by default, but - like LEX10 - may have an optional Wi-Fi module; the Wi-Fi
-keys are included below even though the fixture doesn't have them, since
-they are only ever created when actually present in a device's status.
+JSON fixture exists for this model). This model has NO shutoff valve (no
+getAB/getVLV), NO buzzer (no getBUZ) and NO leak-protection-profile/
+microleakage-test family - it is a conventional column softener with
+regeneration-history diagnostics (getINR/getLAR/getNOR). It connects via LAN.
 
 Deliberately NOT included:
 - getSTA: empty ("") in the fixture.
@@ -78,17 +74,6 @@ SENSOR_SUPPORTED_KEYS = {
     "getSRN",
     "getTYP",
     "getVER",
-    # --- Wi-Fi (optional module, same as the plain "lex" family) ---
-    "getAPT",
-    "getEGW",
-    "getEIP",
-    "getMAC1",
-    "getMAC2",
-    "getWFC",
-    "getWFR",
-    "getWFS",
-    "getWGW",
-    "getWIP",
 }
 
 SELECT_SUPPORTED_KEYS = {

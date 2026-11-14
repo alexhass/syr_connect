@@ -142,7 +142,6 @@ SENSOR_SUPPORTED_KEYS = {
     "getEIP",
     "getFFM",
     "getLNG",
-    "getMAC",
     "getMAC1",
     "getMAC2",
     "getSRN",
@@ -150,7 +149,6 @@ SENSOR_SUPPORTED_KEYS = {
     "getSRV",
     "getT2",
     "getTMP",
-    "getTYP",
     "getVER",
     # --- Wi-Fi ---
     "getWFC",

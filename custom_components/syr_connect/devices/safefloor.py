@@ -6,11 +6,10 @@ This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists of the platforms which have to
 cover every supported model at once.
 
-Unlike every other device file so far, this model IS the genuine home of the
-"(SafeFloor)"-tagged sensor.py keys (getALD, getHMD, getMIH, getMXH, getMIT,
-getMXT) that muco_leakprotect/muco_filling excluded as "a different product" - it is a
-standalone humidity/temperature/leak sensor with no valve, no flow, no
-buzzer, and no leak-protection-profile family.
+This model is the home of the "(SafeFloor)"-tagged sensor.py keys (getALD,
+getHMD, getMIH, getMXH, getMIT, getMXT): it is a standalone humidity/
+temperature/leak sensor with no valve, no flow, no buzzer, and no
+leak-protection-profile family.
 
 Deliberately NOT included:
 - getALI, getAOA, getBDE, getBMP, getDEF, getECP, getEMR, getISN, getRTC,

@@ -11,8 +11,8 @@ This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists of the platforms which have to
 cover every supported model at once.
 
-Unlike the muco_filling (filling controller) variant, the leak-protection-profile
-keys ARE the core feature here (populated with real distinct values in the
+The leak-protection-profile keys are the core feature here (populated with
+real distinct values in the
 fixture, e.g. getPN1="Anwesend"/getPN2="Abwesend") and getAB/getVLV are kept
 since this model genuinely controls a shutoff valve. getNMT/getNPT/getNMS are
 included for the SafeTech Lock Connect variant, per the official validity
@@ -38,8 +38,8 @@ Deliberately NOT included, pending confirmation on a real device:
   getALD is the one exception (see SENSOR_SUPPORTED_KEYS below).
 - getCRS, getCRT, getLOT, getLRC, getOHW, getPRC, getRCC, getRCD, getRCN, getRMN,
   getRMT, getRVT, getTPR: labeled "(Conel Clear Pro Fill)" water treatment / filling
-  feature in sensor.py - belongs to the muco_filling filling-controller variant, not
-  this leak-protection variant, despite being present (shared firmware).
+  feature in sensor.py - a filling-controller feature, not part of this
+  leak-protection role, despite being present (shared firmware).
 - getSRV: labeled "(Trio DFR/LS)" in sensor.py and empty ("") in the fixture.
 - getBAR: labeled "(Safe-T+)" in sensor.py, unrelated product; 0 in fixture.
 - getCEL: temperature reading with no clear tie to leak protection; 0 in fixture.
@@ -212,8 +212,8 @@ SELECT_SUPPORTED_KEYS = {
     "getSRO",
 }
 
-# getDFI (Conel Clear Pro Fill filling mode) deliberately excluded - belongs to the
-# muco_filling variant, not this leak-protection variant.
+# getDFI (Conel Clear Pro Fill filling mode) deliberately excluded - a filling-controller
+# feature, not part of this leak-protection role.
 SWITCH_SUPPORTED_KEYS = {
     "getBUZ",
 }
@@ -228,9 +228,9 @@ BINARY_SENSOR_SUPPORTED_KEYS = {
 }
 
 # setSIR (no regeneration) deliberately excluded. setDEX (microleakage test) is
-# tentatively included: unlike the muco_filling fixture, getDSV is non-zero (3) here and
-# a microleakage test is thematically consistent with a leak-protection module -
-# verify against a real device before relying on this.
+# tentatively included: getDSV is non-zero (3) in the fixture and a microleakage test
+# is thematically consistent with a leak-protection module - verify against a real
+# device before relying on this.
 BUTTON_SUPPORTED_KEYS = {
     "setALA",
     "setNOT",

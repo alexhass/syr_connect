@@ -3,34 +3,28 @@
 LEX Plus 10 SL Connect (dk=80/dkv=25, sbt=7).
 
 Derived from tests/fixtures/xml/SyrLEXplus10SL_GetDeviceCollectionStatus.xml (no
-JSON fixture exists for this model). Unlike the plain "lex"/lexplus10s
-siblings, this is the flagship hybrid model: a full column softener (resin/
-salt/regeneration) PLUS a shutoff valve (getAB/getVLV) PLUS the full 8-slot
+JSON fixture exists for this model). This is a hybrid model: a full column
+softener (resin/salt/regeneration) PLUS a shutoff valve (getAB/getVLV) PLUS the full 8-slot
 leak-protection-profile family (getPA-PW1-8/getPRF, all populated with real
 distinct values, e.g. getPN1="Anwesend"/getPN3="Neues Profil") PLUS a
 self-learning phase that is genuinely active (getSLF=1818, getSLT=732,
 getSLV=169 - all non-zero) PLUS partial microleakage-test config
 (getDBD/getDMA/getDRP/getNPS=3713, all real).
 
-NOTE: unlike its lexplus10/lexplus10s siblings, this fixture reports getALA
-(not getALM) for the current alarm code; models.py sets "alarm_style_alm":
-False for this signature (sbt=7) accordingly, so button.py gates setALA on
-getALA presence here.
+NOTE: this fixture reports getALA (not getALM) for the current alarm code;
+models.py sets "alarm_style_alm": False for this signature (sbt=7) accordingly,
+so button.py gates setALA on getALA presence here.
 
 Deliberately NOT included:
-- getDSV, getDTT: not present in this fixture, unlike getDBD/getDMA/getDRP/getNPS
-  (present with real values) - the microleakage-test config keys are there,
-  but the two status/result keys are missing from this capture.
+- getDSV, getDTT: not present in this fixture; getDBD/getDMA/getDRP/getNPS are
+  (with real values) - the microleakage-test config keys are there, but the
+  two status/result keys are missing from this capture.
 - getT2, getTMP is kept but getT1/getLE/getUL are absent: only getT2 appears
-  without its usual getT1/getLE/getUL siblings (the single-profile leak
-  keys used by e.g. safetplus) - too little evidence to include getT2 alone.
+  without the other single-profile leak keys getT1/getLE/getUL - too little
+  evidence to include getT2 alone.
 - getBUZ: present but empty ("") in the fixture.
 - getSIR is present but getWRN/getALM are not present at all in this fixture.
 - getCNO: empty ("") in the fixture.
-- No Wi-Fi keys in the fixture (LAN-only via getDGW/getIPA/getMAC), but like
-  LEX10 an optional Wi-Fi module is possible - the Wi-Fi keys are included
-  in SENSOR_SUPPORTED_KEYS below anyway, since they are only ever created when
-  actually present in a device's status.
 
 If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_SUPPORTED_KEYS below.
@@ -183,7 +177,7 @@ SENSOR_SUPPORTED_KEYS = {
     "getPST",
     # --- Maintenance ---
     "getDWF",
-    # --- Device Info & Diagnostics (Lex10-only language field confirmed here) ---
+    # --- Device Info & Diagnostics (language field confirmed here) ---
     "getCNA",
     "getDGW",
     "getFIR",
@@ -195,17 +189,6 @@ SENSOR_SUPPORTED_KEYS = {
     "getTMZ",
     "getTYP",
     "getVER",
-    # --- Wi-Fi (optional module, same as the plain "lex"/lexplus10s siblings) ---
-    "getAPT",
-    "getEGW",
-    "getEIP",
-    "getMAC1",
-    "getMAC2",
-    "getWFC",
-    "getWFR",
-    "getWFS",
-    "getWGW",
-    "getWIP",
 }
 
 SELECT_SUPPORTED_KEYS = {
