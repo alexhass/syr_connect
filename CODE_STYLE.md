@@ -60,6 +60,8 @@ Conventions for all Python code in `custom_components/syr_connect/` and `tests/`
 - Chain exceptions with `raise ... from err`.
 - Temporary connection problems are logged, and the entities keep their previous values. See the deliberate decisions in `AGENTS.md`.
 - Do not catch `Exception` without logging it. Broad catches are only acceptable where a failure must never stop the caller (diagnostics, cleanup).
+- Catch only exceptions that real input can raise. No defensive `try`/`except` (or `contextlib.suppress`) around code that cannot fail: `int()` of a digit group matched by a regex, `round()` or `float()` of a number, `re` with a constant pattern, `str()` of a string, an assignment to a dict. Such a branch can only be tested by patching builtins and was removed on purpose; do not add it back.
+- The API layer (`http_client.py`, `api_xml.py`, `api_json.py`, `response_parser.py`) logs a failure at debug level and raises; it does not log it as warning or error, and does not log and re-raise. The coordinator, the config flow and the entities decide what the user sees, for example a failed update once instead of at every poll.
 
 ## Values and XML
 
