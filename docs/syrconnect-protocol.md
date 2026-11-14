@@ -679,7 +679,7 @@ Non-critical warnings, same device family as the alarm codes above.
 | getHTD / setHTD | "0" | | USER | 0 | HTTPS connection disabled: 0 = HTTPS not disabled, 1 = HTTPS disabled (MQTT only) |
 | getIPA | "123.123.123.1" | | | | IP-Adress |
 | getMAC | "01:23:45:67:89:AB" | | USER | | MAC address of the network port (SafeTech: Wi-Fi interface) |
-| getMQT / setMQT | "1" | | USER | 1 | Connection type: 0 = no MQTT (HTTPS), 1 = MQTT |
+| getMQT / setMQT | "1" | | USER | 1 | Protokoll: 0 = no MQTT (HTTPS), 1 = MQTT |
 | getMRT / setMRT | "5" | min | SERVICE | 10 | MQTT reconnect time after a disconnect: 0 = disabled (the device then uses 7 h), 1–60 min |
 | getMSC / setMSC | "0" | | SERVICE | 0 | Connection to the maintenance server (Husty): 0 = disabled, 1 = enabled |
 | getSNM | "255.255.255.0" | | | | Subnet mask |
