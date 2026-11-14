@@ -40,6 +40,7 @@ from homeassistant.const import (
     UnitOfVolume,
 )
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ServiceValidationError
 
 _SYR_CONNECT_TEST_ALLINONEPLUS_MODEL = next(
     model for model in MODEL_SIGNATURES if model.name == "allinoneplus"
@@ -580,3 +581,108 @@ async def test_async_setup_entry_creates_allinoneplus_manual_filling(
     assert set(switches) == {"getDFI", "getIFL", "getMFL"}
     assert switches["getIFL"].is_on is False
     assert switches["getMFL"].is_on is True
+
+
+def _filling_switch(
+    create_mock_coordinator: Callable[..., MagicMock],
+    key: str,
+    status: dict[str, Any],
+) -> tuple[switch_module.SyrConnectBooleanSwitch, MagicMock]:
+    """Return a filling switch of an All-in-One+ with the status and its coordinator."""
+    data = {
+        "devices": [
+            {
+                "id": "d1",
+                "name": "D1",
+                "model": _signature("allinoneplus"),
+                "status": {key: "0", **status},
+            }
+        ]
+    }
+    coordinator = create_mock_coordinator(data)
+    return switch_module.SyrConnectBooleanSwitch(
+        coordinator, "d1", "D1", key
+    ), coordinator
+
+
+@pytest.mark.parametrize(
+    ("key", "status", "translation_key"),
+    [
+        pytest.param(
+            "getIFL",
+            {"getDFI": "0", "getSTA": "0"},
+            "filling_blocked_by_filling_mode",
+            id="initial-filling-mode-on",
+        ),
+        pytest.param(
+            "getMFL",
+            {"getDFI": "0", "getSTA": "0"},
+            "filling_blocked_by_filling_mode",
+            id="manual-filling-mode-on",
+        ),
+        pytest.param(
+            "getIFL",
+            {"getDFI": "1", "getSTA": "2"},
+            "filling_requires_standby",
+            id="initial-not-in-standby",
+        ),
+    ],
+)
+async def test_allinoneplus_filling_start_blocked(
+    create_mock_coordinator: Callable[..., MagicMock],
+    key: str,
+    status: dict[str, Any],
+    translation_key: str,
+) -> None:
+    """A filling is not started while the filling mode is on or, initially, outside standby."""
+    switch, coordinator = _filling_switch(create_mock_coordinator, key, status)
+
+    with pytest.raises(ServiceValidationError) as exc_info:
+        await switch.async_turn_on()
+
+    assert exc_info.value.translation_key == translation_key
+    assert exc_info.value.translation_placeholders == {
+        "device": "D1",
+        "entity": switch._entity_name,
+    }
+    coordinator.async_set_device_value.assert_not_awaited()
+
+
+@pytest.mark.parametrize(
+    ("key", "status"),
+    [
+        pytest.param("getIFL", {"getDFI": "1", "getSTA": "0"}, id="initial-standby"),
+        pytest.param("getMFL", {"getDFI": "1", "getSTA": "2"}, id="manual-any-state"),
+        pytest.param("getIFL", {}, id="initial-state-unknown"),
+    ],
+)
+async def test_allinoneplus_filling_start_allowed(
+    create_mock_coordinator: Callable[..., MagicMock],
+    key: str,
+    status: dict[str, Any],
+) -> None:
+    """A filling is started while the filling mode is off and, initially, in standby."""
+    switch, coordinator = _filling_switch(create_mock_coordinator, key, status)
+
+    await switch.async_turn_on()
+
+    coordinator.async_set_device_value.assert_awaited_once_with(
+        "d1", f"set{key[3:]}", "1"
+    )
+
+
+@pytest.mark.parametrize("key", ["getIFL", "getMFL"])
+async def test_allinoneplus_filling_stop_always_allowed(
+    create_mock_coordinator: Callable[..., MagicMock],
+    key: str,
+) -> None:
+    """A running filling can be stopped while the filling mode is on and outside standby."""
+    switch, coordinator = _filling_switch(
+        create_mock_coordinator, key, {key: "1", "getDFI": "0", "getSTA": "1"}
+    )
+
+    await switch.async_turn_off()
+
+    coordinator.async_set_device_value.assert_awaited_once_with(
+        "d1", f"set{key[3:]}", "0"
+    )

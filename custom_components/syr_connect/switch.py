@@ -5,7 +5,7 @@ from typing import Any, override
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -192,7 +192,44 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
     @override
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the setting on."""
+        if self._sensor_key in ("getIFL", "getMFL"):
+            self._check_filling_allowed()
         await self._set_value(True)
+
+    def _check_filling_allowed(self) -> None:
+        """Refuse to start a filling that the device does not allow now.
+
+        The initial (getIFL) and the manual filling (getMFL) can only be started
+        while the automatic filling mode (getDFI) is off, the initial filling also
+        only while the device is idle (getSTA 0). Turning a filling off is always
+        allowed.
+
+        Raises:
+            ServiceValidationError: If the filling cannot be started.
+        """
+        dfi = self._status.get("getDFI")
+        if dfi is not None:
+            profile = self.device_model.device_profile
+            dfi_inverted = profile is not None and "getDFI" in profile.inverted_switches
+            if is_value_true(dfi) is not dfi_inverted:
+                raise ServiceValidationError(
+                    translation_domain=DOMAIN,
+                    translation_key="filling_blocked_by_filling_mode",
+                    translation_placeholders={
+                        "device": self._device_name,
+                        "entity": self._entity_name,
+                    },
+                )
+        sta = self._status.get("getSTA")
+        if self._sensor_key == "getIFL" and sta is not None and str(sta) != "0":
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="filling_requires_standby",
+                translation_placeholders={
+                    "device": self._device_name,
+                    "entity": self._entity_name,
+                },
+            )
 
     @override
     async def async_turn_off(self, **kwargs: Any) -> None:

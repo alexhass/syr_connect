@@ -1920,6 +1920,12 @@
     "device_not_found": {
       "message": "El dispositivo ya no está disponible en SYR Connect"
     },
+    "filling_blocked_by_filling_mode": {
+      "message": "{entity} no se puede iniciar en el dispositivo {device} mientras el modo de llenado esté activado"
+    },
+    "filling_requires_standby": {
+      "message": "{entity} solo se puede iniciar en el dispositivo {device} en espera"
+    },
     "firmware_update_failed": {
       "message": "No se pudo iniciar la actualización del firmware del dispositivo {device}"
     },

@@ -1920,6 +1920,12 @@
     "device_not_found": {
       "message": "Het apparaat is niet meer beschikbaar in SYR Connect"
     },
+    "filling_blocked_by_filling_mode": {
+      "message": "{entity} kan op het apparaat {device} niet worden gestart zolang de vulmodus is ingeschakeld"
+    },
+    "filling_requires_standby": {
+      "message": "{entity} kan op het apparaat {device} alleen in stand-by worden gestart"
+    },
     "firmware_update_failed": {
       "message": "De firmware-update voor het apparaat {device} kon niet worden gestart"
     },

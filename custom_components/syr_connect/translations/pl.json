@@ -1920,6 +1920,12 @@
     "device_not_found": {
       "message": "Urządzenie nie jest już dostępne w SYR Connect"
     },
+    "filling_blocked_by_filling_mode": {
+      "message": "Nie można uruchomić {entity} na urządzeniu {device}, gdy tryb napełniania jest włączony"
+    },
+    "filling_requires_standby": {
+      "message": "{entity} można uruchomić na urządzeniu {device} tylko w trybie czuwania"
+    },
     "firmware_update_failed": {
       "message": "Nie udało się uruchomić aktualizacji oprogramowania urządzenia {device}"
     },
