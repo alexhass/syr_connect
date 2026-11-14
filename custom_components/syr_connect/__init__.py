@@ -6,11 +6,7 @@ import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import (
-    ConfigEntryAuthFailed,
-    ConfigEntryError,
-    ConfigEntryNotReady,
-)
+from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
@@ -303,17 +299,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: SyrConnectConfigEntry) -
         config_entry=entry,
     )
 
-    try:
-        await coordinator.async_config_entry_first_refresh()
-    except ConfigEntryAuthFailed:
-        # Propagate authentication failures so Home Assistant triggers re-auth flows
-        raise
-    except Exception as err:
-        _LOGGER.error("Failed to connect to SYR Connect API: %s", err)
-        raise ConfigEntryNotReady(
-            translation_domain=DOMAIN,
-            translation_key="setup_cannot_connect",
-        ) from err
+    # Raises ConfigEntryNotReady if the first update fails (Home Assistant retries the
+    # setup and logs it) and ConfigEntryAuthFailed for wrong credentials (re-auth flow)
+    await coordinator.async_config_entry_first_refresh()
 
     entry.runtime_data = coordinator
 

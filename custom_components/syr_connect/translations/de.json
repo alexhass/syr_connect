@@ -1938,9 +1938,6 @@
     "set_value_failed": {
       "message": "Das Gerät {device} konnte {entity} nicht einstellen"
     },
-    "setup_cannot_connect": {
-      "message": "Keine Verbindung zu SYR Connect möglich"
-    },
     "update_connection_error": {
       "message": "Verbindung zu SYR Connect fehlgeschlagen"
     },

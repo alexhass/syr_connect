@@ -1938,9 +1938,6 @@
     "set_value_failed": {
       "message": "Não foi possível definir {entity} no dispositivo {device}"
     },
-    "setup_cannot_connect": {
-      "message": "Não é possível ligar ao SYR Connect"
-    },
     "update_connection_error": {
       "message": "A ligação ao SYR Connect falhou"
     },

@@ -158,31 +158,42 @@ async def test_async_migrate_entry_v1_with_username(hass: HomeAssistant) -> None
     assert call_kwargs["unique_id"] == f"{API_TYPE_XML}_legacy_user@example.com"
 
 
-async def test_async_setup_entry_connection_failure(hass: HomeAssistant) -> None:
-    """Test setup fails when connection to API fails."""
+async def test_async_setup_entry_connection_failure(
+    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
+) -> None:
+    """An unreachable cloud makes Home Assistant retry the setup; the integration logs no error."""
     config_entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
         domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
+        version=ConfigFlow.VERSION,
+        data={
+            CONF_API_TYPE: API_TYPE_XML,
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "password",
+            CONF_SERVICE: "de.consoft.syr.connect",
+        },
     )
     config_entry.add_to_hass(hass)
 
-    with patch(
-        "custom_components.syr_connect.SyrConnectDataUpdateCoordinator"
-    ) as mock_coordinator_class:
-        mock_coordinator = MagicMock()
-        mock_coordinator.async_config_entry_first_refresh = AsyncMock(
-            side_effect=Exception("Connection failed")
-        )
-        mock_coordinator_class.return_value = mock_coordinator
+    with (
+        caplog.at_level(logging.DEBUG, logger="custom_components.syr_connect"),
+        patch(
+            "custom_components.syr_connect.coordinator.SyrConnectXmlAPI"
+        ) as mock_api_class,
+    ):
+        mock_api = mock_api_class.return_value
+        mock_api.is_session_valid = MagicMock(return_value=False)
+        mock_api.login = AsyncMock(side_effect=SyrConnectConnectionError("down"))
 
-        with pytest.raises(ConfigEntryNotReady, match="setup_cannot_connect"):
-            await async_setup_entry(hass, config_entry)
+        assert not await hass.config_entries.async_setup(config_entry.entry_id)
+        await hass.async_block_till_done()
+
+    assert config_entry.state is ConfigEntryState.SETUP_RETRY
+    assert [
+        record.getMessage()
+        for record in caplog.records
+        if record.name.startswith("custom_components.syr_connect")
+        and record.levelno > logging.DEBUG
+    ] == []
 
 
 async def test_async_setup_entry_with_custom_scan_interval(hass: HomeAssistant) -> None:

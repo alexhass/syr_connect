@@ -207,7 +207,8 @@ class SyrConnectDataUpdateCoordinator(
         except ConfigEntryAuthFailed:
             raise
         except SyrConnectAuthError as err:
-            _LOGGER.error("Authentication failed: %s", err)
+            # Home Assistant logs the failed update and starts the re-authentication
+            _LOGGER.debug("Authentication failed: %s", err)
             raise ConfigEntryAuthFailed(
                 translation_domain=DOMAIN,
                 translation_key="auth_failed",
@@ -226,8 +227,9 @@ class SyrConnectDataUpdateCoordinator(
                 )
                 self.device_list_complete = False
                 return previous
-            # First refresh: nothing to keep, setup is retried (ConfigEntryNotReady)
-            _LOGGER.error("Connection failed: %s", err)
+            # First refresh: nothing to keep, setup is retried (ConfigEntryNotReady), which
+            # Home Assistant logs itself
+            _LOGGER.debug("Connection failed: %s", err)
             raise UpdateFailed(
                 translation_domain=DOMAIN,
                 translation_key="update_connection_error",

@@ -1938,9 +1938,6 @@
     "set_value_failed": {
       "message": "{entity} kon niet worden ingesteld voor het apparaat {device}"
     },
-    "setup_cannot_connect": {
-      "message": "Kan geen verbinding maken met SYR Connect"
-    },
     "update_connection_error": {
       "message": "Verbinding met SYR Connect mislukt"
     },
