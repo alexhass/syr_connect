@@ -57,16 +57,6 @@ from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
 
-@pytest.fixture(autouse=True)
-def auto_enable_custom_integrations(
-    recorder_db_url: str, enable_custom_integrations: None
-) -> None:
-    """Prepare the recorder database before hass is set up (overrides conftest.py).
-
-    The recorder test of the measurement history needs the database before hass.
-    """
-
-
 def _consume_coro_return_task(coro: Any) -> Any:
     """Safely consume a coroutine passed to `async_create_task` in tests.
 

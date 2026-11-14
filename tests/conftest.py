@@ -22,12 +22,6 @@ def setup_in_progress_config_entry() -> Any:
     return entry
 
 
-@pytest.fixture(autouse=True)
-def auto_enable_custom_integrations(enable_custom_integrations: None) -> Any:
-    """Enable custom integrations for all tests."""
-    return enable_custom_integrations
-
-
 @pytest.fixture(name="integration_version")
 def integration_version_fixture() -> str:
     """Return the version of the integration from its manifest."""

@@ -7,10 +7,10 @@
 
 ## Development Requirements
 
-For running tests and development:
+For running tests and development (the tests need Linux or WSL, they do not run on Windows):
 
 ```bash
-pip install pytest pytest-homeassistant pytest-cov
+pip install -r requirements-dev.txt
 ```
 
 Run tests with:
@@ -62,7 +62,7 @@ The following packages will be automatically installed by Home Assistant:
    - License: BSD, Public Domain
    - Note: Uses `pycryptodomex` (not `pycryptodome`) to avoid conflicts with Home Assistant's crypto libraries
 
-2. **defusedxml** (==0.7.1)
+2. **defusedxml** (>=0.7.1,<1.0)
    - Purpose: Secure XML parsing to prevent XXE (XML External Entity) attacks
    - License: Python Software Foundation License
    - Note: Replaces the built-in `xml.etree.ElementTree` with a hardened version
@@ -139,20 +139,28 @@ config/
       ├── models.py
       ├── checksum.py
       ├── coordinator.py
+      ├── data.py
       ├── sensor.py
       ├── binary_sensor.py
       ├── button.py
       ├── select.py
       ├── switch.py
+      ├── update.py
       ├── valve.py
       ├── diagnostics.py
       ├── encryption.py
+      ├── entity.py
       ├── exceptions.py
       ├── helpers.py
       ├── http_client.py
+      ├── icons.json
+      ├── migrations.py
       ├── payload_builder.py
       ├── repairs.py
       ├── response_parser.py
+      ├── devices/
+      │  ├── __init__.py
+      │  └── <one file per device family>.py
       ├── brand/
       │  ├── icon.png
       │  ├── icon@2x.png
@@ -164,6 +172,8 @@ config/
          ├── es.json
          ├── fr.json
          ├── it.json
+         ├── nl.json
+         ├── pl.json
          └── pt.json
 ```
 
