@@ -264,7 +264,7 @@ def build_device_info(
         sw_version=sw_version,
         hw_version=hw_version,
         serial_number=device_id,
-        connections=connections or set(),
+        connections=connections,
         configuration_url=configuration_url,
     )
 
@@ -642,10 +642,7 @@ def registry_cleanup(
                         domain,
                         entry.entity_id,
                     )
-                    try:
-                        registry.async_remove(entry.entity_id)
-                    except Exception:
-                        _LOGGER.exception("Failed to remove entity %s", entry.entity_id)
+                    registry.async_remove(entry.entity_id)
 
             # Remove the entities the platform hides for the current device status. Found by
             # unique_id, so a renamed or "_2"-suffixed entity is removed as well; the unique_id
@@ -660,10 +657,7 @@ def registry_cleanup(
                         domain,
                         entity_id,
                     )
-                    try:
-                        registry.async_remove(entity_id)
-                    except Exception:
-                        _LOGGER.exception("Failed to remove entity %s", entity_id)
+                    registry.async_remove(entity_id)
     except Exception:
         _LOGGER.exception(
             "Failed to cleanup excluded %s entities from registry", domain
@@ -692,15 +686,15 @@ def is_empty_ip(value: Any) -> bool:
 
 
 def get_current_mac(status: dict[str, Any]) -> str | None:
-    """Return the current MAC address following priority rules.
+    """Return the MAC address of the active network connection.
 
-    Priority:
+    The connections are checked in this order; the first one with an address and a
+    non-empty MAC address is used:
     1. If `getIPA` not empty -> use `getMAC`
     2. If `getWIP` not empty and getWFS = 2 (Wi-Fi is connected) -> use `getMAC1`
     3. If `getEIP` not empty -> use `getMAC2`
 
-    If the selected MAC is missing or empty, fall back to any available
-    non-empty `getMAC` / `getMAC1` / `getMAC2`.
+    Returns None if no connection has both.
     """
     if not status:
         return None
@@ -1112,9 +1106,10 @@ def get_sensor_iwh_value(status: dict[str, Any]) -> int | float | None:
     """Compute or return incoming water hardness (getIWH).
 
     Rules:
-    1. If `getIWH` exists and is numeric, return it (int if whole).
-    2. If `getIWH` missing/empty but `getCND` exists and is numeric,
-       default `getWHU` to 0 when missing and compute `getIWH = getCND / 35` (°dH).
+    1. If `getIWH` and `getWHU` (its unit) exist and `getIWH` is numeric, return
+       `getIWH` (int if whole).
+    2. Otherwise, if `getCND` exists and is numeric, default `getWHU` to 0 when
+       missing and compute `getIWH = getCND / 35` (°dH).
     3. Return None when values are missing or unparsable.
     """
     if not status:
@@ -1193,7 +1188,7 @@ def set_sensor_rtm_value(status: dict[str, Any], option: str) -> list[tuple[str,
         parts = option.split(":")
         h = int(parts[0])
         m = int(parts[1])
-    except (ValueError, IndexError, AttributeError) as err:
+    except (ValueError, IndexError) as err:
         _LOGGER.debug("Failed to parse time option '%s': %s", option, err)
         return commands
 
