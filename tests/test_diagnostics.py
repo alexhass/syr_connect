@@ -1,17 +1,11 @@
-"""Tests for diagnostics platform."""
+"""Tests for the diagnostics."""
 
-# The unit tests in this module check private helpers and attributes directly.
+# The unit tests in this module check private helpers directly.
 # ruff: noqa: SLF001
 
-import builtins
-from collections.abc import Mapping
 from datetime import UTC, datetime
-import inspect
-import re as _re
-import re as real_re
-from types import MappingProxyType, SimpleNamespace
-from typing import Any, NoReturn, cast, override
-from unittest.mock import AsyncMock, MagicMock, patch
+from typing import Any, cast
+from unittest.mock import AsyncMock, MagicMock, PropertyMock, call, patch
 
 import pytest
 from pytest_homeassistant.common import MockConfigEntry
@@ -19,10 +13,6 @@ from pytest_homeassistant.common import MockConfigEntry
 from custom_components.syr_connect import diagnostics as diag
 from custom_components.syr_connect.api_json import SyrConnectJsonAPI
 from custom_components.syr_connect.const import (
-    _SYR_CONNECT_API_SERVICES,
-    _SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL,
-    _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL,
-    _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
@@ -41,2926 +31,539 @@ from custom_components.syr_connect.exceptions import (
     SyrConnectConnectionError,
     SyrConnectHTTPError,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
+_SYR_CONNECT_TEST_DEVICE_LIST_XML = (
+    '<sc><prs><pr pg="p1" pn="Haus+Mustermann" com="Max+Mustermann" /></prs>'
+    '<dvs><d dclg="dclg1" sn="206AAA67890" /></dvs></sc>'
+)
+_SYR_CONNECT_TEST_STATUS_XML = (
+    '<sc><dvs><d dclg="dclg1" sn="206AAA67890">'
+    '<c n="getSRN" v="206AAA67890" /><c n="getWIP" v="192.168.1.20" />'
+    "</d></dvs></sc>"
+)
+_SYR_CONNECT_TEST_REDACTED_DEVICE_LIST_XML = (
+    '<sc><prs><pr pg="p1" pn="My+Project" com="Firstname+Lastname" /></prs>'
+    '<dvs><d dclg="dclg1" sn="206AAA12345" /></dvs></sc>'
+)
+_SYR_CONNECT_TEST_REDACTED_STATUS_XML = (
+    '<sc><dvs><d dclg="dclg1" sn="206AAA12345">'
+    '<c n="getSRN" v="206AAA12345" /><c n="getWIP" v="***REDACTED_GETWIP***" />'
+    "</d></dvs></sc>"
+)
+# NeoSoft 2500: its model offers the local JSON API at "/neosoft"
+_SYR_CONNECT_TEST_NEOSOFT_DEVICE: Any = {
+    "id": "dev1",
+    "name": "Device 1",
+    "status": {"getSRN": "206AAA12345", "getWIP": "192.168.1.100"},
+}
 
-async def test_diagnostics(hass: HomeAssistant) -> None:
-    """Test diagnostics data."""
-    # Create a proper config entry
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
+
+def _entry(api_type: str = API_TYPE_XML, **data: Any) -> MockConfigEntry:
+    """Return a config entry whose title and data contain the account."""
+    return MockConfigEntry(
         domain=DOMAIN,
-        title="Test Device",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
+        title="SYR Connect (test@example.com)",
+        data={
+            CONF_API_TYPE: api_type,
+            CONF_USERNAME: "test@example.com",
+            CONF_PASSWORD: "secret123",
+            **data,
+        },
     )
 
-    # Create mock coordinator
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
-        "devices": [
-            {
-                "id": "1",
-                "name": "LEXplus10 S/SL",
-                "available": True,
-                "project_id": "project1",
-                "status": {"getSRE": {"value": 1}},
-            },
-        ],
-        "projects": [
-            {
-                "id": "project1",
-                "name": "Test Project",
-            },
-        ],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
 
-    # Attach coordinator to config entry
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert "entry" in diagnostics
-    assert diagnostics["entry"]["title"] == "Test Device"
-    assert "coordinator" in diagnostics
-    # Devices are added to the list within the function, not from coordinator.data directly
-    # The test should verify the structure, not specific counts without proper setup
-    assert "devices" in diagnostics
-    assert "projects" in diagnostics
+def _coordinator(
+    data: dict[str, Any] | None = None, *, api: Any = None, session: Any = None
+) -> MagicMock:
+    """Return a coordinator stand-in with the given data, API client and HTTP session."""
+    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
+    coordinator.data = data
+    coordinator.last_update_success = True
+    coordinator.last_update_success_time = None
+    coordinator.api = api
+    coordinator._session = session
+    return coordinator
 
 
-async def test_diagnostics_no_coordinator_data(hass: HomeAssistant) -> None:
-    """Test diagnostics when coordinator has no data."""
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
+def _xml_api(
+    responses: list[Any], devices: list[dict[str, Any]] | None = None
+) -> MagicMock:
+    """Return a cloud API client with one project, answering with the given responses."""
+    api = MagicMock()
+    api.is_session_valid.return_value = True
+    api.login = AsyncMock()
+    api.projects = [{"id": "p1", "name": "Haus Mustermann"}]
+    api.session_data = "sess"
+    api.device_list_url = "https://example.invalid/list"
+    api.device_get_status_url = "https://example.invalid/status"
+    api.http_client.post = AsyncMock(side_effect=responses)
+    api.payload_builder.build_device_get_list_payload.return_value = "<list/>"
+    api.payload_builder.build_device_get_status_payload.side_effect = (
+        lambda _session, device_id: f"<status {device_id}/>"
+    )
+    api.response_parser.parse_device_list_response.return_value = (
+        [{"id": "206AAA67890", "dclg": "dclg1"}] if devices is None else devices
+    )
+    return api
+
+
+def _json_api(status: dict[str, Any] | None = None) -> MagicMock:
+    """Return a local API client with one device reporting the given status."""
+    api = MagicMock(spec=SyrConnectJsonAPI)
+    api.is_session_valid.return_value = True
+    api.login = AsyncMock()
+    api.get_devices = AsyncMock(return_value=[{"id": "206AAA67890"}])
+    api.get_device_status = AsyncMock(
+        return_value={"getSRN": "206AAA67890", "getIPA": "192.168.1.20", "getFLO": "5"}
+        if status is None
+        else status
+    )
+    return api
+
+
+# --- mask_mac_value / mask_srn_value -------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        pytest.param("aa:bb:cc:dd:ee:ff", "AA:BB:CC:XX:XX:XX", id="colon"),
+        pytest.param("aa-bb-cc-dd-ee-ff", "AA-BB-CC-XX-XX-XX", id="hyphen"),
+        pytest.param("aabbccddeeff", "AA:BB:CC:XX:XX:XX", id="no-separator"),
+        pytest.param(" aa:bb:cc:dd:ee:ff ", "AA:BB:CC:XX:XX:XX", id="whitespace"),
+        pytest.param("00:11:22:33:44", "00:11:22:33:44", id="five-octets"),
+        pytest.param("ZZ:ZZ:ZZ:ZZ:ZZ:ZZ", "ZZ:ZZ:ZZ:ZZ:ZZ:ZZ", id="no-hex"),
+        pytest.param("", "", id="empty"),
+        pytest.param(None, None, id="none"),
+        pytest.param(123, 123, id="number"),
+    ],
+)
+def test_mask_mac_value(value: Any, expected: Any) -> None:
+    """The vendor part of a MAC address is kept, the device part is replaced by XX."""
+    assert mask_mac_value(value) == expected
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        pytest.param("206AAA67890", "206AAA12345", id="serial"),
+        pytest.param("123456789", "123456789", id="other-format"),
+        pytest.param("206aaa67890", "206aaa67890", id="lowercase"),
+        pytest.param(None, None, id="none"),
+        pytest.param(5, 5, id="number"),
+    ],
+)
+def test_mask_srn_value(value: Any, expected: Any) -> None:
+    """A serial number keeps its prefix, the last five digits become 12345."""
+    assert mask_srn_value(value) == expected
+
+
+# --- _redact_xml / _redact_device_list_xml / _redact_json_payload ----------------
+
+
+def test_redact_xml() -> None:
+    """Token, serial numbers, addresses and the redacted keys are replaced in a text."""
+    xml = (
+        '<sc><us ug="SECRET_TOKEN" />   '
+        '<d sn="206AAA67890" getSRN="206AAA67890" getIPA="10.0.0.5">\n'
+        '  <c n="getSRN" v="206AAA67890" /><c n="getMAC" v="aa:bb:cc:dd:ee:ff" />'
+        '<c n="getWIP" v="192.168.1.20" /><c n="getFLO" v="5" />'
+        "note getWFC: MyWifi mail user@example.com ip 8.8.8.8</d></sc> "
     )
 
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = False
-    mock_coordinator.last_update_success_time = None
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert "entry" in diagnostics
-    assert "coordinator" in diagnostics
-    assert diagnostics["coordinator"]["last_update_time"] is None
-
-
-async def test_diagnostics_multiple_devices(hass: HomeAssistant) -> None:
-    """Test diagnostics with multiple devices and projects."""
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
+    assert diag._redact_xml(xml) == (
+        '<sc><us ug="***" />'
+        '<d sn="206AAA12345" getSRN="206AAA12345" getIPA="***REDACTED_GETIPA***">'
+        '<c n="getSRN" v="206AAA12345" /><c n="getMAC" v="AA:BB:CC:XX:XX:XX" />'
+        '<c n="getWIP" v="***REDACTED_GETWIP***" /><c n="getFLO" v="5" />'
+        "note getWFC: ***REDACTED_GETWFC*** mail ***REDACTED_USERNAME*** "
+        "ip ***REDACTED_IP***</d></sc>"
     )
 
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
-        "devices": [
-            {
-                "id": "1",
-                "name": "Device 1",
-                "available": True,
-                "project_id": "project1",
-                "status": {"getSRE": {"value": 1}, "getWVI": {"value": 100}},
-            },
-            {
-                "id": "2",
-                "name": "Device 2",
-                "available": False,
-                "project_id": "project2",
-                "status": {},
-            },
-        ],
-        "projects": [
-            {"id": "project1", "name": "Project 1"},
-            {"id": "project2", "name": "Project 2"},
-        ],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
 
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Verify structure exists
-    assert "devices" in diagnostics
-    assert "projects" in diagnostics
-    # The devices list is populated during the diagnostics generation
-    # If coordinator.data exists, devices should be processed
-    assert isinstance(diagnostics["devices"], list)
-    assert isinstance(diagnostics["projects"], list)
-    # Project names are user-defined (often an address) and masked like `pn` in raw_xml
-    assert diagnostics["projects"] == [
-        {"id": "project1", "name": "My Project"},
-        {"id": "project2", "name": "My Project"},
-    ]
+@pytest.mark.parametrize("value", ["", None, 5])
+def test_redact_xml_without_text(value: Any) -> None:
+    """An empty value or one that is no text gives an empty text."""
+    assert diag._redact_xml(value) == ""
 
 
-async def test_diagnostics_redact_xml_basic(hass: HomeAssistant) -> None:
-    """Test XML redaction of sensitive data."""
+def test_redact_xml_keeps_other_serial_format() -> None:
+    """A value that is no SYR serial number stays, in sn="..." as for getSRN."""
+    assert diag._redact_xml('<d sn="123456789" />') == '<d sn="123456789" />'
 
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "secret123"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
+
+def test_redact_xml_skips_empty_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    """An empty key in the list of redacted keys is skipped."""
+    monkeypatch.setattr(diag, "_SYR_CONNECT_DIAGNOSTICS_TO_REDACT", {"", "getIPA"})
+
+    assert diag._redact_xml('<d getIPA="10.0.0.5" />') == (
+        '<d getIPA="***REDACTED_GETIPA***" />'
     )
 
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = False
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = None
 
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Check that password is redacted
-    assert CONF_PASSWORD not in str(diagnostics.get("entry", {}))
-
-
-async def test_diagnostics_masks_ug_attribute(hass: HomeAssistant) -> None:
-    """Ensure `ug` attribute values are redacted in raw XML diagnostics."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "secret123"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    # Mock API that returns XML containing ug attribute
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.projects = [{"id": "proj1", "name": "Project 1"}]
-    mock_api.session_data = "test_session"
-
-    secret_xml = '<sc ug="SECRET_TOKEN"><device id="dev1"/></sc>'
-
-    mock_http_client = MagicMock()
-    mock_http_client.post = AsyncMock(return_value=secret_xml)
-    mock_api.http_client = mock_http_client
-
-    mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_get_list_payload = MagicMock(
-        return_value="payload"
-    )
-    mock_api.response_parser = MagicMock()
-    mock_api.response_parser.parse_device_list_response = MagicMock(
-        return_value=[{"id": "dev1", "dclg": "dev1"}]
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    raw_xml_str = str(diagnostics.get("raw_xml", ""))
-    # secret must not be present; ug should be redacted
-    assert 'ug="SECRET_TOKEN"' not in raw_xml_str
-    assert 'ug="***"' in raw_xml_str
-
-
-async def test_diagnostics_mask_ug_value_exception_swallowed(
-    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """If `mask_ug_value` raises, _redact_xml should swallow the exception."""
-
-    # Force mask_ug_value to raise to exercise the except block
-    monkeypatch.setattr(diag, "mask_ug_value", MagicMock(side_effect=Exception("boom")))
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "secret123"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    # Mock API that returns XML containing ug attribute
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.projects = [{"id": "proj1", "name": "Project 1"}]
-    mock_api.session_data = "test_session"
-
-    secret_xml = '<sc ug="SECRET_TOKEN"><device id="dev1"/></sc>'
-
-    mock_http_client = MagicMock()
-    mock_http_client.post = AsyncMock(return_value=secret_xml)
-    mock_api.http_client = mock_http_client
-
-    mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_get_list_payload = MagicMock(
-        return_value="payload"
-    )
-    mock_api.response_parser = MagicMock()
-    mock_api.response_parser.parse_device_list_response = MagicMock(
-        return_value=[{"id": "dev1", "dclg": "dev1"}]
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    # Should not raise despite mask_ug_value raising
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert "raw_xml" in diagnostics
-
-
-async def test_diagnostics_handles_resub_exceptions(
-    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Ensure _redact_xml swallows re.sub errors for getSRN patterns."""
-
-    # Preserve original re.sub
-    orig_sub = diag.re.sub
-
-    def fake_sub(
-        pattern: Any, repl: Any, string: Any, count: Any = 0, flags: Any = 0
-    ) -> Any:
-        # Simulate a regex engine error when handling getSRN-specific patterns
-        if "getSRN" in str(pattern):
-            raise diag.re.error("boom")
-        return orig_sub(pattern, repl, string, count=count, flags=flags)
-
-    monkeypatch.setattr(diag.re, "sub", fake_sub)
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    # Mock API returning device list and status containing getSRN attributes
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.projects = [{"id": "proj1", "name": "Project 1"}]
-
-    device_list_xml = (
-        '<devices><device pn="My+House" com="John+Smith" id="dev1"/></devices>'
-    )
-    status_xml = '<status><c n="getSRN" v="206AAA67890"/></status>'
-
-    mock_api.http_client = MagicMock()
-    mock_api.http_client.post = AsyncMock(side_effect=[device_list_xml, status_xml])
-    mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_get_list_payload = MagicMock(
-        return_value="payload"
-    )
-    mock_api.payload_builder.build_device_get_status_payload = MagicMock(
-        return_value="payload2"
-    )
-    mock_api.response_parser = MagicMock()
-    mock_api.response_parser.parse_device_list_response = MagicMock(
-        return_value=[{"id": "dev1", "dclg": "dev1"}]
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
-        "devices": [
-            {
-                "id": "dev1",
-                "name": "Device 1",
-                "available": True,
-                "project_id": "proj1",
-                "status": {},
-            }
-        ],
-        "projects": [{"id": "proj1", "name": "Project 1"}],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Should still produce raw_xml and not raise despite our fake re.error
-    assert "raw_xml" in diagnostics
-
-
-async def test_diagnostics_with_api_and_projects(hass: HomeAssistant) -> None:
-    """Test diagnostics with API that has projects."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    # Create mock API
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.projects = [{"id": "proj1", "name": "Project 1"}]
-    mock_api.session_data = "test_session"
-
-    # Mock http_client
-    mock_http_client = MagicMock()
-    mock_http_client.post = AsyncMock(
-        return_value='<xml><device id="1" mac="00:11:22:33:44:55"/></xml>'
-    )
-    mock_api.http_client = mock_http_client
-
-    # Mock payload builder
-    mock_payload_builder = MagicMock()
-    mock_payload_builder.build_device_get_list_payload = MagicMock(
-        return_value="payload1"
-    )
-    mock_payload_builder.build_device_get_status_payload = MagicMock(
-        return_value="payload2"
-    )
-    mock_api.payload_builder = mock_payload_builder
-
-    # Mock response parser
-    mock_response_parser = MagicMock()
-    mock_response_parser.parse_device_list_response = MagicMock(
-        return_value=[{"id": "dev1", "dclg": "b3c4d5e6-f7a8-9012-bcde-f12345678901"}]
-    )
-    mock_api.response_parser = mock_response_parser
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
-        "devices": [
-            {
-                "id": "dev1",
-                "name": "Device 1",
-                "available": True,
-                "project_id": "proj1",
-                "status": {},
-            }
-        ],
-        "projects": [{"id": "proj1", "name": "Project 1"}],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Verify raw_xml was collected
-    assert "raw_xml" in diagnostics
-    assert isinstance(diagnostics["raw_xml"], dict)
-
-
-async def test_diagnostics_api_login_required(hass: HomeAssistant) -> None:
-    """Test diagnostics when API requires login."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    # Create mock API that requires login
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=False)
-    mock_api.login = AsyncMock()
-    mock_api.projects = [{"id": "proj1", "name": "Project 1"}]
-    mock_api.session_data = "test_session"
-
-    # Mock http_client
-    mock_http_client = MagicMock()
-    mock_http_client.post = AsyncMock(return_value="<xml/>")
-    mock_api.http_client = mock_http_client
-
-    # Mock payload builder and parser
-    mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_get_list_payload = MagicMock(
-        return_value="payload"
-    )
-    mock_api.payload_builder.build_device_get_status_payload = MagicMock(
-        return_value="payload"
-    )
-    mock_api.response_parser = MagicMock()
-    mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[])
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Verify login was called
-    mock_api.login.assert_called_once()
-    assert "raw_xml" in diagnostics
-
-
-def test_mask_srn_value_matches_and_masks() -> None:
-    """Test mask srn value matches and masks."""
-    assert mask_srn_value("206AAA67890") == "206AAA12345"
-    # non-matching SRN should be returned unchanged
-    assert mask_srn_value("not-a-srn") == "not-a-srn"
-
-
-def test_redact_xml_masks_sn_attribute() -> None:
-    """The serial number in sn="..." is masked like getSRN, in the device list and the status."""
-    device_list = '<sc><dvs><d dg="cf36f6a5" sn="206AAA67890" sbt="2" /></dvs></sc>'
-    status = (
-        '<sc><dvs><d dclg="0b09f7ce" sn="206AAA67890">'
-        '<c n="getSRN" v="206AAA67890" /></d></dvs></sc>'
-    )
-
-    assert 'sn="206AAA12345"' in diag._redact_device_list_xml(device_list)
-    cleaned = diag._redact_xml(status)
-    assert 'sn="206AAA12345"' in cleaned
-    assert "206AAA67890" not in cleaned
-    # A value that is no serial number stays, as for getSRN
-    assert 'sn="123456789"' in diag._redact_xml('<d sn="123456789" />')
-
-
-def test_redact_device_list_xml_replaces_address_and_phone() -> None:
-    """The address and phone numbers of the project are replaced, empty ones stay empty."""
+def test_redact_device_list_xml() -> None:
+    """Names, address and phone numbers of the project are replaced, empty ones stay empty."""
     xml = (
         '<sc><prs><pr pg="8625a6fc" pn="Haus+Mustermann" com="Max+Mustermann" '
         'adr="Musterweg+12" zip="54321" rsd="Musterstadt" rg="Deutschland" '
         'pho="%2b49+30+1234567" fax="" cph="%2b49+170+1234567" '
         'url="mustermann.example" /></prs>'
-        '<col><dcl dclg="0b09f7ce" ali="Mustermann+Keller" /></col></sc>'
+        '<col><dcl dclg="0b09f7ce" ali="Mustermann+Keller" /></col>'
+        '<dvs><d dg="cf36f6a5" sn="206AAA67890" sbt="2" /></dvs></sc>'
     )
 
-    cleaned = diag._redact_device_list_xml(xml)
-
-    assert 'adr="Street+1"' in cleaned
-    assert 'zip="12345"' in cleaned
-    assert 'rsd="City"' in cleaned
-    assert 'pho="0123456789"' in cleaned
-    assert 'cph="0123456789"' in cleaned
-    assert 'url="example.com"' in cleaned
-    assert 'fax=""' in cleaned
     # The country and the device name stay
-    assert 'rg="Deutschland"' in cleaned
-    assert 'ali="Mustermann+Keller"' in cleaned
-
-
-def test_mask_mac_value_colon_separator() -> None:
-    """Test mask mac value colon separator."""
-    inp = "aa:bb:cc:dd:ee:ff"
-    out = mask_mac_value(inp)
-    assert out == "AA:BB:CC:XX:XX:XX"
-
-
-def test_mask_mac_value_hyphen_separator() -> None:
-    """Test mask mac value hyphen separator."""
-    inp = "aa-bb-cc-dd-ee-ff"
-    out = mask_mac_value(inp)
-    assert out == "AA-BB-CC-XX-XX-XX"
-
-
-def test_mask_mac_value_not_enough_octets() -> None:
-    """Test mask mac value not enough octets."""
-    inp = "00:11:22:33:44"
-    out = mask_mac_value(inp)
-    assert out == inp
-
-
-def test_mask_mac_value_last_char_replace_no_error() -> None:
-    """Test mask mac value last char replace no error."""
-    inp = "AA:BB:CC:DD:EE:FF"
-    out = mask_mac_value(inp, last_char_replace="Y")
-    assert out.startswith("AA:BB:CC")
-
-
-def test_mask_mac_value_non_string_returns_original() -> None:
-    """Test mask mac value non string returns original."""
-    assert mask_mac_value(cast(Any, None)) is None
-
-
-def test_mask_srn_value_non_string_returns_original() -> None:
-    """Test mask srn value non string returns original."""
-    assert mask_srn_value(None) is None
-
-
-def test_mask_mac_value_re_sub_exception(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Test mask mac value re sub exception."""
-    # Simulate re.sub raising inside mask_mac_value's last_char_replace branch
-
-    def fake_sub(*args: Any, **kwargs: Any) -> None:
-        raise _re.error("boom")
-
-    monkeypatch.setattr(diag.re, "sub", fake_sub)
-    # Should not raise, should return the normal masked result or original
-    out = diag.mask_mac_value("AA:BB:CC:DD:EE:FF", last_char_replace="Y")
-    assert out is not None
-
-
-def test_mask_srn_value_re_match_exception(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Ensure mask_srn_value handles regex.match raising an error gracefully."""
-
-    def fake_match(*args: Any, **kwargs: Any) -> None:
-        raise _re.error("boom")
-
-    monkeypatch.setattr(diag.re, "match", fake_match)
-
-    # Should not raise, and return the original string when match fails with exception
-    assert diag.mask_srn_value("206AAA67890") == "206AAA67890"
-
-
-async def test_raw_json_api_getsrn_redacted(
-    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Test JSON API path ensures getSRN is explicitly redacted to **REDACTED**."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "test_password",
-            CONF_API_TYPE: API_TYPE_JSON,
-        },
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
+    assert diag._redact_device_list_xml(xml) == (
+        '<sc><prs><pr pg="8625a6fc" pn="My+Project" com="Firstname+Lastname" '
+        'adr="Street+1" zip="12345" rsd="City" rg="Deutschland" '
+        'pho="0123456789" fax="" cph="0123456789" '
+        'url="example.com" /></prs>'
+        '<col><dcl dclg="0b09f7ce" ali="Mustermann+Keller" /></col>'
+        '<dvs><d dg="cf36f6a5" sn="206AAA12345" sbt="2" /></dvs></sc>'
     )
 
-    class DummyJsonAPI:
-        def is_session_valid(self) -> Any:
-            return True
 
-        async def request_json_data(self, *args: Any, **kwargs: Any) -> Any:
-            return {"getSRN": "206AAA67890", "value": 1}
+def test_redact_json_payload() -> None:
+    """Redacted keys and the whole serial number are removed from a local payload."""
+    payload = {"getSRN": "206AAA67890", "getIPA": "192.168.1.20", "getFLO": "5"}
 
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    # Keep coordinator.data empty so global masking (_mask_sensitive) does
-    # not recurse into the redacted object (which raises on assignment).
-    mock_coordinator.data = {}
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    # Patch the SyrConnectJsonAPI class used by diagnostics so the isinstance check succeeds
-
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", DummyJsonAPI)
-    mock_coordinator.api = DummyJsonAPI()
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert "raw_json" in diagnostics
-    # device id should be used as key when available; otherwise accept empty/error
-    raw_json = diagnostics["raw_json"]
-    if "dev1" in raw_json:
-        val = raw_json["dev1"].get("getSRN")
-        if inspect.isawaitable(val):
-            val = await val
-        assert (isinstance(val, str) and val == "**REDACTED**") or (
-            "**REDACTED**" in str(val)
-        )
-    else:
-        assert raw_json == {} or "error" in raw_json
-
-
-async def test_raw_json_api_getsrn_redacted_for_json_api_branch(
-    hass: HomeAssistant,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """Ensure JSON API top-level path redacts `getSRN` when `async_redact_data` is identity.
-
-    This explicitly forces `async_redact_data` to return the original dict so the
-    code path that assigns `redacted["getSRN"] = "**REDACTED**"` is executed.
-    """
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "test_password",
-            CONF_API_TYPE: API_TYPE_JSON,
-        },
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    class DummyJsonAPI:
-        def is_session_valid(self) -> Any:
-            return True
-
-        async def get_devices(self, *args: Any, **kwargs: Any) -> Any:
-            return [{"id": "dev1"}]
-
-        async def get_device_status(self, did: Any) -> Any:
-            return {"getSRN": "206AAA67890", "value": 1}
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    # Keep coordinator.data empty so diagnostics uses local device id
-    mock_coordinator.data = {}
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-
-    # Patch diagnostics module to use our dummy API and force async_redact_data identity
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", DummyJsonAPI)
-    monkeypatch.setattr(diag, "async_redact_data", lambda data, _redact: data)
-    mock_coordinator.api = DummyJsonAPI()
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert "raw_json" in diagnostics
-    raw_json = diagnostics["raw_json"]
-    # Look for any payload containing getSRN and verify it was replaced
-    found = False
-    for payload in raw_json.values():
-        if isinstance(payload, dict) and "getSRN" in payload:
-            val = payload.get("getSRN")
-            if inspect.isawaitable(val):
-                val = await val
-            assert (isinstance(val, str) and val == "**REDACTED**") or (
-                "**REDACTED**" in str(val)
-            )
-            found = True
-            break
-
-    assert found or raw_json == {} or "error" in raw_json
-
-
-async def test_redact_xml_masks_getsrn_and_com_replacement(hass: HomeAssistant) -> None:
-    """Verify XML SRN masking and com replacement in device_list."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    # Mock an XML API that returns a device_list containing com/pn and a device status containing getSRN
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    # device_list XML includes "pn" and "com" attributes
-    device_list_xml = (
-        '<devices><device pn="My+House" com="John+Smith" id="dev1"/></devices>'
-    )
-    # status XML includes <c n="getSRN" v="206AAA67890"/>
-    status_xml = '<status><c n="getSRN" v="206AAA67890"/></status>'
-
-    # Return device_list for the first call, then status XML for subsequent status fetches
-    mock_api.http_client = MagicMock()
-    mock_api.http_client.post = AsyncMock(side_effect=[device_list_xml, status_xml])
-    # Ensure diagnostics sees projects to iterate
-    mock_api.projects = [{"id": "proj1", "name": "Project 1"}]
-
-    # Minimal payload builder and parser
-    mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_get_list_payload = MagicMock(
-        return_value="payload"
-    )
-    mock_api.payload_builder.build_device_get_status_payload = MagicMock(
-        return_value="payload2"
-    )
-    mock_api.response_parser = MagicMock()
-    mock_api.response_parser.parse_device_list_response = MagicMock(
-        return_value=[{"id": "dev1", "dclg": "dev1"}]
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
-        "devices": [
-            {
-                "id": "dev1",
-                "name": "Device 1",
-                "available": True,
-                "project_id": "proj1",
-                "status": {},
-            }
-        ],
-        "projects": [{"id": "proj1", "name": "Project 1"}],
+    assert diag._redact_json_payload(payload) == {
+        "getSRN": "**REDACTED**",
+        "getIPA": "**REDACTED**",
+        "getFLO": "5",
     }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # device_list should have com replaced
-    assert "raw_xml" in diagnostics
-    proj = next(iter(diagnostics["raw_xml"].values()))
-    assert "Firstname+Lastname" in proj["device_list"]
-    assert "My+Project" in proj["device_list"]
-    # status SRN should be masked (trailing digits -> 12345) in device xml
-    # find device xml for dev1
-    devices = proj.get("devices", {})
-    assert any("206AAA12345" in v for v in devices.values())
+    # The payload of the device is not changed
+    assert payload["getSRN"] == "206AAA67890"
+    assert diag._redact_json_payload(["no", "dict"]) == ["no", "dict"]
 
 
-async def test_diagnostics_api_login_fails(hass: HomeAssistant) -> None:
-    """Test diagnostics when API login fails."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    # Create mock API where login fails
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=False)
-    mock_api.login = AsyncMock(side_effect=Exception("Login failed"))
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = False
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    # Should not raise, just continue without raw XML
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert "raw_xml" in diagnostics
+# --- _mask_sensitive / _redact_obj ----------------------------------------------
 
 
-async def test_diagnostics_masks_id_srn(hass: HomeAssistant) -> None:
-    """Verify that SRN-like strings in arbitrary fields (like `id`) are masked."""
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    # Use an id that matches the SRN pattern: 3 digits, 3 uppercase letters, 5 digits
-    mock_coordinator.data = {
-        "devices": [
-            {
-                "id": "501AAA54321",
-                "name": "Device SRN",
-                "available": True,
-                "project_id": "proj",
-            }
-        ],
-        "projects": [],
+def test_mask_sensitive() -> None:
+    """Serial numbers and MAC addresses are masked in nested data, also in other keys."""
+    data = {
+        "getSRN": "206AAA67890",
+        "getMAC": "aa:bb:cc:dd:ee:ff",
+        "getMAC1": "11-22-33-44-55-66",
+        "getMAC2": "aa:bb:cc:dd:ee:ff",
+        "id": "501AAA54321",
+        "name": "Keller",
+        "devices": [{"getSRN": 5, "status": {"getMAC": "aa:bb:cc:dd:ee:ff"}}],
+        "count": 1,
     }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
 
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # The device id should be masked by mask_srn_value -> trailing 5 digits replaced
-    assert diagnostics.get("devices")
-    masked_id = diagnostics["devices"][0]["id"]
-    assert masked_id == "501AAA12345"
-
-
-async def test_diagnostics_xml_redaction_patterns(hass: HomeAssistant) -> None:
-    """Test various XML redaction patterns."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "user@example.com", CONF_PASSWORD: "secret"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    # Create mock API with XML containing sensitive data
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.projects = [{"id": "proj1", "name": "Project 1"}]
-    mock_api.session_data = "test_session"
-
-    xml_with_sensitive = """
-    <device mac="00:11:22:33:44:55" ip="192.168.1.100">
-        <c n="getMAC" v="AA:BB:CC:DD:EE:FF"/>
-        <c n="getIPA" v="10.0.0.1"/>
-        <gateway>192.168.0.1</gateway>
-        <email>user@test.com</email>
-    </device>
-    """
-
-    mock_http_client = MagicMock()
-    mock_http_client.post = AsyncMock(return_value=xml_with_sensitive)
-    mock_api.http_client = mock_http_client
-
-    mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_get_list_payload = MagicMock(
-        return_value="payload"
-    )
-    mock_api.payload_builder.build_device_get_status_payload = MagicMock(
-        return_value="payload"
-    )
-
-    mock_api.response_parser = MagicMock()
-    mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[])
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Verify redaction happened
-    raw_xml_str = str(diagnostics.get("raw_xml", ""))
-    # MAC addresses should be redacted
-    assert "00:11:22:33:44:55" not in raw_xml_str
-    assert "AA:BB:CC:DD:EE:FF" not in raw_xml_str
-    # IP addresses should be redacted
-    assert "192.168.1.100" not in raw_xml_str or "REDACTED" in raw_xml_str
-
-
-async def test_diagnostics_device_parsing_fails(hass: HomeAssistant) -> None:
-    """Test diagnostics when device list parsing fails."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    # Create mock API where parsing fails
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.projects = [{"id": "proj1", "name": "Project 1"}]
-    mock_api.session_data = "test_session"
-
-    mock_http_client = MagicMock()
-    mock_http_client.post = AsyncMock(return_value="<invalid xml>")
-    mock_api.http_client = mock_http_client
-
-    mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_get_list_payload = MagicMock(
-        return_value="payload"
-    )
-
-    # Parser raises exception
-    mock_api.response_parser = MagicMock()
-    mock_api.response_parser.parse_device_list_response = MagicMock(
-        side_effect=Exception("Parse error")
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    # Should not raise, continue gracefully
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert "raw_xml" in diagnostics
-
-
-async def test_diagnostics_http_fetch_fails(hass: HomeAssistant) -> None:
-    """Test diagnostics when HTTP fetch fails."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    # Create mock API where HTTP fails
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.projects = [{"id": "proj1", "name": "Project 1"}]
-    mock_api.session_data = "test_session"
-
-    mock_http_client = MagicMock()
-    mock_http_client.post = AsyncMock(side_effect=Exception("Network error"))
-    mock_api.http_client = mock_http_client
-
-    mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_get_list_payload = MagicMock(
-        return_value="payload"
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    # Should handle gracefully
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert "raw_xml" in diagnostics
-
-
-async def test_diagnostics_no_api(hass: HomeAssistant) -> None:
-    """Test diagnostics when coordinator has no API."""
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = False
-    mock_coordinator.last_update_success_time = None
-    # No api attribute
-    type(mock_coordinator).api = MagicMock(side_effect=AttributeError)
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert "raw_xml" in diagnostics
-    assert diagnostics["raw_xml"] == {}
-
-
-async def test_diagnostics_exception_in_raw_xml_collection(hass: HomeAssistant) -> None:
-    """Test diagnostics when raw XML collection raises exception."""
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    # Create mock API that will cause exception
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(side_effect=RuntimeError("Unexpected error"))
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = False
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    # Should handle exception gracefully
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert "raw_xml" in diagnostics
-    # Exception during is_session_valid causes api to be set to None, so raw_xml will be {}
-    assert diagnostics["raw_xml"] == {} or "error" in diagnostics["raw_xml"]
-
-
-async def test_diagnostics_redact_obj_with_raw_xml(hass: HomeAssistant) -> None:
-    """Test that raw_xml is preserved in redaction."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    # Create simple mock to trigger raw_xml preservation
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.projects = [{"id": "proj1"}]
-    mock_api.session_data = "session"
-
-    mock_http_client = MagicMock()
-    mock_http_client.post = AsyncMock(return_value="<test>data</test>")
-    mock_api.http_client = mock_http_client
-
-    mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="p")
-    mock_api.response_parser = MagicMock()
-    mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[])
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # raw_xml should exist and be preserved
-    assert "raw_xml" in diagnostics
-    assert diagnostics["raw_xml"] != {}
-
-
-async def test_diagnostics_redact_xml_empty_input(hass: HomeAssistant) -> None:
-    """Test XML redaction with empty/None input."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    # Data with empty status
-    mock_coordinator.data = {
-        "devices": [
-            {
-                "id": "1",
-                "name": "Device 1",
-                "available": True,
-                "project_id": "proj1",
-                "status": {},
-            }
-        ],
-        "projects": [],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Should handle empty status gracefully - devices key exists
-    assert "devices" in diagnostics
-
-
-async def test_diagnostics_device_without_dclg_or_id(hass: HomeAssistant) -> None:
-    """Test diagnostics with device that has neither dclg nor id."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.projects = [{"id": "proj1"}]
-    mock_api.session_data = "session"
-
-    mock_http_client = MagicMock()
-    mock_http_client.post = AsyncMock(return_value="<xml/>")
-    mock_api.http_client = mock_http_client
-
-    mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="p")
-
-    # Return device without dclg or id
-    mock_api.response_parser = MagicMock()
-    mock_api.response_parser.parse_device_list_response = MagicMock(
-        return_value=[{"name": "Device without ID"}]
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    # Should skip device without ID
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert "raw_xml" in diagnostics
-
-
-async def test_diagnostics_status_fetch_exception(hass: HomeAssistant) -> None:
-    """Test diagnostics when status fetch returns exception."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.projects = [{"id": "proj1"}]
-    mock_api.session_data = "session"
-
-    # HTTP client that fails on second call (status fetch)
-    call_count = 0
-
-    async def post_side_effect(*args: Any, **kwargs: Any) -> Any:
-        nonlocal call_count
-        call_count += 1
-        if call_count == 1:
-            return "<xml/>"
-        raise RuntimeError("Status fetch failed")
-
-    mock_http_client = MagicMock()
-    mock_http_client.post = AsyncMock(side_effect=post_side_effect)
-    mock_api.http_client = mock_http_client
-
-    mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_get_list_payload = MagicMock(
-        return_value="p1"
-    )
-    mock_api.payload_builder.build_device_get_status_payload = MagicMock(
-        return_value="p2"
-    )
-
-    mock_api.response_parser = MagicMock()
-    mock_api.response_parser.parse_device_list_response = MagicMock(
-        return_value=[{"id": "dev1", "dclg": "b3c4d5e6-f7a8-9012-bcde-f12345678901"}]
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    # Should handle exception in gather
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert "raw_xml" in diagnostics
-
-
-async def test_diagnostics_redact_xml_empty_key(hass: HomeAssistant) -> None:
-    """Test XML redaction with empty key in TO_REDACT."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-
-    config_entry.runtime_data = mock_coordinator
-
-    # Should handle gracefully (empty keys are skipped)
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert "raw_xml" in diagnostics
-
-
-async def test_diagnostics_redact_xml_key_value_pattern(hass: HomeAssistant) -> None:
-    """Test XML redaction with key:value and key=val patterns."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.projects = [{"id": "proj1"}]
-    mock_api.session_data = "session"
-
-    # XML with key:value and key=val patterns
-    xml_data = """
-    <data>
-        getMAC:AA:BB:CC:DD:EE:FF
-        getIPA=192.168.1.1
-        session_data: secret123
-    </data>
-    """
-
-    mock_http_client = MagicMock()
-    mock_http_client.post = AsyncMock(return_value=xml_data)
-    mock_api.http_client = mock_http_client
-
-    mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="p")
-    mock_api.response_parser = MagicMock()
-    mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[])
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Should redact key:value and key=val patterns
-    raw_xml_str = str(diagnostics.get("raw_xml", ""))
-    assert "REDACTED" in raw_xml_str or "secret123" not in raw_xml_str
-
-
-async def test_diagnostics_redact_obj_dict_key_matches_redact(
-    hass: HomeAssistant,
-) -> None:
-    """Test _redact_obj when dict key matches redact list."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    # Create data with keys that match _SYR_CONNECT_DIAGNOSTICS_TO_REDACT
-    mock_coordinator.data = {
-        "devices": [
-            {
-                "id": "1",
-                "name": "Device",
-                "available": True,
-                "project_id": "proj1",
-                "status": {
-                    "getMAC": "00:11:22:33:44:55",
-                    "getIPA": "192.168.1.1",
-                },
-            }
-        ],
-        "projects": [],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Should have processed the data structure
-    assert "devices" in diagnostics
-    assert "projects" in diagnostics
-    assert isinstance(diagnostics["devices"], list)
-
-
-async def test_diagnostics_redact_obj_list_processing(hass: HomeAssistant) -> None:
-    """Test _redact_obj processes lists correctly."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
-        "devices": [
-            {"id": "1", "name": "Dev1", "project_id": "p1", "status": {}},
-            {"id": "2", "name": "Dev2", "project_id": "p1", "status": {}},
-        ],
-        "projects": [
-            {"id": "p1", "name": "Project1"},
-        ],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Should have processed the list structure
-    assert "devices" in diagnostics
-    assert "projects" in diagnostics
-    assert isinstance(diagnostics["devices"], list)
-    assert isinstance(diagnostics["projects"], list)
-
-
-async def test_diagnostics_redact_obj_string_processing(hass: HomeAssistant) -> None:
-    """Test _redact_obj processes strings correctly."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Entry title is a string and should be processed
-    assert "entry" in diagnostics
-    assert "title" in diagnostics["entry"]
-
-
-async def test_diagnostics_api_no_projects(hass: HomeAssistant) -> None:
-    """Test diagnostics when API has no projects."""
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.projects = []  # No projects
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Should handle gracefully when no projects
-    assert "raw_xml" in diagnostics
-
-
-async def test_diagnostics_gather_returns_tuple_wrong_length(
-    hass: HomeAssistant,
-) -> None:
-    """Test diagnostics when gather returns tuple with wrong length."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.projects = [{"id": "proj1"}]
-    mock_api.session_data = "session"
-
-    # Create a scenario where gather might return unexpected results
-    call_count = 0
-
-    async def post_side_effect(*args: Any, **kwargs: Any) -> Any:
-        nonlocal call_count
-        call_count += 1
-        if call_count == 1:
-            return "<xml/>"
-        # Return something that will create a tuple but not (did, xmls)
-        return "<status/>"
-
-    mock_http_client = MagicMock()
-    mock_http_client.post = AsyncMock(side_effect=post_side_effect)
-    mock_api.http_client = mock_http_client
-
-    mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_get_list_payload = MagicMock(
-        return_value="p1"
-    )
-    mock_api.payload_builder.build_device_get_status_payload = MagicMock(
-        return_value="p2"
-    )
-
-    mock_api.response_parser = MagicMock()
-    mock_api.response_parser.parse_device_list_response = MagicMock(
-        return_value=[{"id": "dev1", "dclg": "b3c4d5e6-f7a8-9012-bcde-f12345678901"}]
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Should handle gracefully
-    assert "raw_xml" in diagnostics
-
-
-async def test_diagnostics_redact_xml_non_string_input(hass: HomeAssistant) -> None:
-    """Test _redact_xml with non-string input."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-
-    config_entry.runtime_data = mock_coordinator
-
-    # Should handle non-string inputs gracefully (returns "")
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert diagnostics is not None
-
-
-async def test_diagnostics_api_login_exception(hass: HomeAssistant) -> None:
-    """Test diagnostics when API login raises exception."""
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=False)
-    mock_api.login = AsyncMock(side_effect=Exception("Login failed"))
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    # Should handle login exception gracefully
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert "raw_xml" in diagnostics
-    assert diagnostics["raw_xml"] == {}
-
-
-async def test_raw_json_from_xml_api_base_path_getsrn_redacted(
-    hass: HomeAssistant,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """Ensure JSON fetch for devices whose model has a `base_path` redacts `getSRN`.
-
-    This exercises the XML-API code path that instantiates
-    `SyrConnectJsonAPI(session, host, base_path)` and assigns
-    `redacted['getSRN'] = "**REDACTED**"`.
-    """
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    class DummyJsonAPI:
-        def __init__(
-            self,
-            session: Any,
-            host: Any = None,
-            base_path: Any = None,
-            *,
-            integration_version: str,
-        ) -> None:
-            self._session = session
-            self._host = host
-            self._base_path = base_path
-
-        def is_session_valid(self) -> Any:
-            return True
-
-        async def login(self) -> Any:
-            return True
-
-        def _build_base_url(self) -> Any:
-            return f"http://{self._host}{self._base_path or ''}"
-
-        async def get_device_status(self, dev_id: Any) -> Any:
-            return {"getSRN": "206AAA67890", "value": 1}
-
-    # Patch constructor used in diagnostics so the isinstance() checks succeed
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", DummyJsonAPI)
-
-    # Ensure redaction helper returns the original dict so the getSRN
-    # assignment branch is executed (we want to explicitly cover that line).
-    monkeypatch.setattr(diag, "async_redact_data", lambda data, _redact: data)
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    # Provide a session so diagnostics will attempt JSON fetch
-    mock_coordinator._session = MagicMock()
-    # NeoSoft 2500 status with an IP triggers the per-device JSON fetch path
-    mock_coordinator.data = {
-        # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
-        "devices": [
-            {"id": "dev1", "status": {"getSRN": "206AAA12345", "getWIP": "192.168.1.2"}}
-        ],
-        "projects": [],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert "raw_json" in diagnostics
-    raw_json = diagnostics["raw_json"]
-    if "dev1" in raw_json:
-        val = raw_json["dev1"].get("getSRN")
-        if inspect.isawaitable(val):
-            val = await val
-        assert (isinstance(val, str) and val == "**REDACTED**") or (
-            "**REDACTED**" in str(val)
-        )
-    else:
-        assert raw_json == {} or "error" in raw_json
-
-
-async def test_diagnostics_redact_xml_empty_key_in_set(hass: HomeAssistant) -> None:
-    """Test XML redaction handles empty string in _SYR_CONNECT_DIAGNOSTICS_TO_REDACT set."""
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-
-    config_entry.runtime_data = mock_coordinator
-
-    # Should handle empty keys in _SYR_CONNECT_DIAGNOSTICS_TO_REDACT gracefully
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert diagnostics is not None
-
-
-async def test_diagnostics_redact_xml_regex_exceptions(hass: HomeAssistant) -> None:
-    """Test XML redaction handles regex exceptions gracefully."""
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.projects = [{"id": "proj1"}]
-    mock_api.session_data = "session"
-
-    # XML with patterns that should be redacted
-    xml_with_patterns = '<xml>getMAC="AA:BB:CC:DD:EE:FF" getIPA="192.168.1.1"</xml>'
-
-    mock_http_client = MagicMock()
-    mock_http_client.post = AsyncMock(return_value=xml_with_patterns)
-    mock_api.http_client = mock_http_client
-
-    mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_get_list_payload = MagicMock(
-        return_value="payload"
-    )
-
-    mock_api.response_parser = MagicMock()
-    mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[])
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Should have redacted XML
-    assert "raw_xml" in diagnostics
-
-
-async def test_diagnostics_fetch_exception_in_gather(hass: HomeAssistant) -> None:
-    """Test diagnostics when gather returns exception for status fetch."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.projects = [{"id": "proj1"}]
-    mock_api.session_data = "session"
-
-    # First call succeeds, second fails
-    call_count = 0
-
-    async def post_side_effect(*args: Any, **kwargs: Any) -> Any:
-        nonlocal call_count
-        call_count += 1
-        if call_count == 1:
-            return "<xml/>"
-        raise RuntimeError("Fetch failed")
-
-    mock_http_client = MagicMock()
-    mock_http_client.post = AsyncMock(side_effect=post_side_effect)
-    mock_api.http_client = mock_http_client
-
-    mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_get_list_payload = MagicMock(
-        return_value="p1"
-    )
-    mock_api.payload_builder.build_device_get_status_payload = MagicMock(
-        return_value="p2"
-    )
-
-    mock_api.response_parser = MagicMock()
-    mock_api.response_parser.parse_device_list_response = MagicMock(
-        return_value=[{"id": "dev1", "dclg": "b3c4d5e6-f7a8-9012-bcde-f12345678901"}]
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    # Should handle exception in gather
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert "raw_xml" in diagnostics
-
-
-async def test_diagnostics_outer_exception_handler(hass: HomeAssistant) -> None:
-    """Test diagnostics outer exception handler."""
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-
-    # Make getattr raise an exception
-    def getattr_side_effect(obj: Any, attr: Any, default: Any = None) -> Any:
-        if attr == "api":
-            raise RuntimeError("Test exception")
-        return default
-
-    # Patch getattr to raise exception
-    original_getattr = builtins.getattr
-
-    def custom_getattr(obj: Any, name: Any, *args: Any) -> Any:
-        if obj is mock_coordinator and name == "api":
-            raise RuntimeError("Test exception")
-        return original_getattr(obj, name, *args)
-
-    config_entry.runtime_data = mock_coordinator
-
-    # Should handle exception and set error in raw_xml
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert "raw_xml" in diagnostics
-
-
-async def test_diagnostics_xml_raw_collection_and_masking_additional(
-    hass: HomeAssistant,
-) -> None:
-    """Exercise XML raw collection and masking logic (additional)."""
-
-    entry = MockConfigEntry(
-        domain="syr_connect", title="Test XML", data={}, entry_id="e_xml"
-    )
-
-    class FakeResponseParser:
-        def parse_device_list_response(self, xml: Any) -> Any:
-            return [{"id": "dev1"}]
-
-    class FakePayloadBuilder:
-        def build_device_get_list_payload(self, session: Any, pid: Any) -> Any:
-            return "<req/>"
-
-        def build_device_get_status_payload(self, session: Any, did: Any) -> Any:
-            return "<req/>"
-
-    class FakeHttpClient:
-        async def post(self, url: Any, payload: Any) -> Any:
-            # Return XML containing SRN and MAC values to ensure redaction/masking
-            return '<sc><c n="getSRN" v="206AAA12345"/><c n="getMAC" v="AA:BB:CC:DD:EE:FF"/></sc>'
-
-    class FakeXmlApi:
-        def __init__(self) -> None:
-            self.projects = [{"id": "p1", "name": "Proj"}]
-            self.session_data = "sess"
-            self.payload_builder = FakePayloadBuilder()
-            self.http_client = FakeHttpClient()
-            self.response_parser = FakeResponseParser()
-            base_url = _SYR_CONNECT_API_SERVICES[
-                _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER
-            ].api_base_url
-            self.device_list_url = base_url + _SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL
-            self.device_get_status_url = (
-                base_url + _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL
-            )
-
-        def is_session_valid(self) -> Any:
-            return True
-
-        async def login(self) -> None:
-            return None
-
-    fake_coord = type("C", (), {})()
-    fake_coord.api = FakeXmlApi()
-    fake_coord.data = {
-        "devices": [{"id": "dev1", "status": {}}],
-        "projects": [{"id": "p1", "name": "Proj"}],
-    }
-    fake_coord.last_update_success = True
-    fake_coord.last_update_success_time = datetime.now()
-
-    entry.runtime_data = fake_coord
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, entry)
-
-    assert isinstance(diagnostics.get("raw_xml"), dict)
-    assert "p1" in diagnostics["raw_xml"]
-
-
-async def test_diagnostics_xml_json_session_none_returns_error_additional(
-    hass: HomeAssistant,
-) -> None:
-    """When coordinator has no http session, JSON collection should return an error dict (additional)."""
-
-    entry = MockConfigEntry(domain="syr_connect", title="Test", data={}, entry_id="e2")
-
-    fake_coord = type("C", (), {})()
-    fake_coord._session = None
-    # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
-    fake_coord.data = {"devices": [{"id": "dev1", "status": {"getSRN": "206AAA12345"}}]}
-    fake_coord.last_update_success = True
-    fake_coord.last_update_success_time = datetime.now()
-
-    entry.runtime_data = fake_coord
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, entry)
-
-    assert diagnostics.get("raw_json") == {
-        "error": "no http session available on coordinator"
+    assert diag._mask_sensitive(data) == {
+        "getSRN": "206AAA12345",
+        "getMAC": "AA:BB:CC:XX:XX:XX",
+        "getMAC1": "11-22-33-XX-XX-XX",
+        "getMAC2": "AA:BB:CC:XX:XX:XX",
+        "id": "501AAA12345",
+        "name": "Keller",
+        "devices": [{"getSRN": 5, "status": {"getMAC": "AA:BB:CC:XX:XX:XX"}}],
+        "count": 1,
     }
 
 
-async def test_diagnostics_redacts_registration_code_getcno(
-    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """The getCNO (code number on the device label, registers the device to an account) never appears in diagnostics."""
-
-    secret = "CNO1234567890AB"
-    entry = MockConfigEntry(
-        domain="syr_connect",
-        title="TestJSON",
-        data={"api_type": API_TYPE_JSON},
-        entry_id="e_cno",
-    )
-
-    async def _get_devices(_scope: Any) -> Any:
-        return [{"id": "dev1"}]
-
-    async def _get_device_status(_did: Any) -> Any:
-        return {"getCNO": secret, "getFLO": "5"}
-
-    fake_api = SimpleNamespace(
-        is_session_valid=lambda: True,
-        get_devices=_get_devices,
-        get_device_status=_get_device_status,
-    )
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", SimpleNamespace)
-    entry.runtime_data = SimpleNamespace(
-        api=fake_api,
-        data={
-            "devices": [
-                {
-                    "id": "dev1",
-                    "name": "Dev",
-                    "status": {"getCNO": secret, "getFLO": "5"},
-                }
-            ],
-            "projects": [],
-        },
-        last_update_success=True,
-        last_update_success_time=datetime.now(UTC),
-    )
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, entry)
-
-    assert secret not in str(diagnostics)
-    assert diagnostics["raw_json"]["dev1"]["getFLO"] == "5"
-
-
-async def test_diagnostics_json_api_redacts_srn_additional(
-    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """When coordinator.api is a JSON API, ensure SRN is replaced with **REDACTED** (additional)."""
-
-    entry = MockConfigEntry(
-        domain="syr_connect",
-        title="TestJSON",
-        data={"api_type": API_TYPE_JSON},
-        entry_id="e3",
-    )
-
-    async def _login() -> None:
-        return None
-
-    async def _get_devices(_scope: Any) -> Any:
-        return [{"id": "dev1"}]
-
-    async def _get_device_status(did: Any) -> Any:
-        return {"getSRN": "206AAA12345", "getMAC": "AA:BB:CC:DD:EE:FF"}
-
-    fake_api = SimpleNamespace()
-    fake_api.is_session_valid = lambda: True
-    fake_api.login = _login
-    fake_api.get_devices = _get_devices
-    fake_api.get_device_status = _get_device_status
-
-    fake_coord = SimpleNamespace()
-    fake_coord.api = fake_api
-    fake_coord.data = {"devices": [{"id": "dev1"}]}
-    fake_coord.last_update_success = True
-    fake_coord.last_update_success_time = datetime.now()
-
-    entry.runtime_data = fake_coord
-
-    # Ensure the diagnostics module recognizes our fake API type
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", type(fake_api))
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, entry)
-
-    raw_json = diagnostics.get("raw_json", {})
-    assert "dev1" in raw_json
-    assert raw_json["dev1"].get("getSRN") == "**REDACTED**"
-
-
-async def test_diagnostics_generic_ip_mac_email_redaction(hass: HomeAssistant) -> None:
-    """Test diagnostics redacts IP, MAC, and email addresses."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.projects = [{"id": "proj1"}]
-    mock_api.session_data = "session"
-
-    # XML with IP, MAC, and email
-    xml_data = """
-    <data>
-        IP: 192.168.1.1
-        MAC: AA:BB:CC:DD:EE:FF
-        Email: user@example.com
-    </data>
-    """
-
-    mock_http_client = MagicMock()
-    mock_http_client.post = AsyncMock(return_value=xml_data)
-    mock_api.http_client = mock_http_client
-
-    mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="p")
-
-    mock_api.response_parser = MagicMock()
-    mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[])
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Should have redacted patterns
-    assert "raw_xml" in diagnostics
-
-
-async def test_diagnostics_parse_device_list_exception(hass: HomeAssistant) -> None:
-    """Test diagnostics when parse_device_list_response raises exception."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.projects = [{"id": "proj1"}]
-    mock_api.session_data = "session"
-
-    mock_http_client = MagicMock()
-    mock_http_client.post = AsyncMock(return_value="<xml/>")
-    mock_api.http_client = mock_http_client
-
-    mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="p")
-
-    # Make parser raise exception
-    mock_api.response_parser = MagicMock()
-    mock_api.response_parser.parse_device_list_response = MagicMock(
-        side_effect=Exception("Parse error")
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    # Should handle parse exception
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert "raw_xml" in diagnostics
-
-
-async def test_diagnostics_redact_obj_preserves_raw_xml(hass: HomeAssistant) -> None:
-    """Test _redact_obj preserves 'raw_xml' keys."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.projects = [{"id": "proj1"}]
-    mock_api.session_data = "session"
-
-    mock_http_client = MagicMock()
-    mock_http_client.post = AsyncMock(return_value="<xml/>")
-    mock_api.http_client = mock_http_client
-
-    mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="p")
-
-    mock_api.response_parser = MagicMock()
-    mock_api.response_parser.parse_device_list_response = MagicMock(return_value=[])
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    # Test data with raw_xml key
-    mock_coordinator.data = {
-        "devices": [{"id": "dev1", "raw_xml": "<device>sensitive</device>"}]
+def test_redact_obj() -> None:
+    """Redacted keys match in any letter case; other texts lose addresses; raw_xml stays."""
+    data = {
+        "raw_xml": {"p1": "already redacted 10.0.0.5"},
+        "GETIPA": "10.0.0.5",
+        "password": "secret123",
+        "names": ["Keller at 10.0.0.5", 5],
+        "nothing": None,
     }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = mock_api
 
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # raw_xml key should be preserved
-    assert "raw_xml" in diagnostics
-
-
-async def test_diagnostics_redact_obj_with_integer_value(hass: HomeAssistant) -> None:
-    """Test _redact_obj handles integer and other non-dict/list/str types."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    # Data with various types
-    mock_coordinator.data = {
-        "devices": [],
-        "int_value": 123,
-        "float_value": 45.67,
-        "none_value": None,
-        "bool_value": True,
+    assert diag._redact_obj(data) == {
+        "raw_xml": {"p1": "already redacted 10.0.0.5"},
+        "GETIPA": "***REDACTED_GETIPA***",
+        "password": "***REDACTED_PASSWORD***",
+        "names": ["Keller at ***REDACTED_IP***", 5],
+        "nothing": None,
     }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
 
-    config_entry.runtime_data = mock_coordinator
 
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+# --- _collect_raw_xml -----------------------------------------------------------
 
-    # Should have devices and projects at top level
-    assert "devices" in diagnostics
-    assert "projects" in diagnostics
-    assert diagnostics["devices"] == []
-    assert diagnostics["projects"] == []
 
+async def test_collect_raw_xml() -> None:
+    """The device list and the status of every device are fetched and redacted."""
+    api = _xml_api([_SYR_CONNECT_TEST_DEVICE_LIST_XML, _SYR_CONNECT_TEST_STATUS_XML])
 
-async def test_diagnostics_raw_json_no_session(hass: HomeAssistant) -> None:
-    """Test diagnostics raw_json collection when coordinator has no session."""
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
+    result = await diag._collect_raw_xml(_coordinator(api=api))
 
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {"devices": [], "projects": []}
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    # No _session attribute
-    mock_coordinator._session = None
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Should have error message in raw_json
-    assert "raw_json" in diagnostics
-    assert "error" in diagnostics["raw_json"]
-
-
-async def test_json_redact_assignment_exception_handled(
-    monkeypatch: pytest.MonkeyPatch, hass: HomeAssistant
-) -> None:
-    """Ensure assignment to redacted['getSRN'] raising is handled (covers inner except)."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "u", CONF_PASSWORD: "p", CONF_API_TYPE: API_TYPE_JSON},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    class BadDict(dict):
-        def __init__(self, data: Any = None) -> None:
-            # Populate underlying dict without invoking our overridden
-            # __setitem__ so construction does not raise.
-            dict.__init__(self)
-            if data:
-                for k, v in data.items() if isinstance(data, dict) else list(data):
-                    dict.__setitem__(self, k, v)
-
-        @override
-        def __setitem__(self, key: Any, value: Any) -> None:
-            raise RuntimeError("cannot set")
-
-    class DummyJsonAPI:
-        def is_session_valid(self) -> Any:
-            return True
-
-        async def get_devices(self, _scope: Any) -> Any:
-            return [{"id": "dev1"}]
-
-        async def get_device_status(self, did: Any) -> Any:
-            return {"getSRN": "206AAA67890"}
-
-    # Ensure diagnostics recognizes our fake JSON API class
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", DummyJsonAPI)
-
-    # Force async_redact_data to return an object that raises on __setitem__
-    monkeypatch.setattr(diag, "async_redact_data", lambda data, keys: BadDict(data))
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    # Keep coordinator.data empty so diagnostics skips the post-population
-    # masking step that would recurse into the BadDict and attempt writes.
-    mock_coordinator.data = {}
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = DummyJsonAPI()
-
-    config_entry.runtime_data = mock_coordinator
-
-    # Should not raise despite BadDict raising when assignment attempted
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-    assert "raw_json" in diagnostics
-
-
-async def test_fetch_device_json_status_exception(
-    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """When per-device JSON status fetch raises, we should skip that device (covers return dev_id, None)."""
-
-    entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    class FakeJsonAPI:
-        def __init__(
-            self,
-            session: Any,
-            host: Any = None,
-            base_path: Any = None,
-            *,
-            integration_version: str,
-        ) -> None:
-            self._session = session
-
-        def is_session_valid(self) -> Any:
-            return True
-
-        async def login(self) -> None:
-            return None
-
-        def _build_base_url(self) -> Any:
-            return "http://example"
-
-        async def get_device_status(self, did: Any) -> None:
-            raise RuntimeError("boom")
-
-    # Patch constructor used by diagnostics
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", FakeJsonAPI)
-
-    fake_coord = type("C", (), {})()
-    fake_coord._session = object()
-    # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
-    fake_coord.data = {
-        "devices": [
-            {"id": "dev1", "status": {"getSRN": "206AAA12345", "getWIP": "192.0.2.1"}}
-        ],
-        "projects": [],
-    }
-    fake_coord.last_update_success = True
-    fake_coord.last_update_success_time = None
-
-    entry.runtime_data = fake_coord
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, entry)
-
-    # Should not include a payload for dev1 when status fetch failed
-    assert "raw_json" in diagnostics
-    assert diagnostics["raw_json"] == {} or "dev1" not in diagnostics["raw_json"]
-
-
-async def test_json_redact_getsrn_contains_raises(
-    monkeypatch: pytest.MonkeyPatch, hass: HomeAssistant
-) -> None:
-    """Ensure exceptions during '"getSRN" in redacted' are caught (covers except/pass branch)."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "test_password",
-            CONF_API_TYPE: API_TYPE_JSON,
-        },
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    class BadContains(dict):
-        def __init__(self, data: Any = None) -> None:
-            dict.__init__(self)
-            if data:
-                for k, v in data.items() if isinstance(data, dict) else list(data):
-                    dict.__setitem__(self, k, v)
-
-        @override
-        def __contains__(self, key: Any) -> NoReturn:
-            raise RuntimeError("boom contains")
-
-    class DummyJsonAPI:
-        def is_session_valid(self) -> Any:
-            return True
-
-        async def get_devices(self, _scope: Any) -> Any:
-            return [{"id": "dev1"}]
-
-        async def get_device_status(self, did: Any) -> Any:
-            return {"getSRN": "206AAA67890"}
-
-    # Ensure diagnostics recognizes our fake JSON API class
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", DummyJsonAPI)
-
-    # Force async_redact_data to return an object whose __contains__ raises
-    monkeypatch.setattr(diag, "async_redact_data", lambda data, keys: BadContains(data))
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {}
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = DummyJsonAPI()
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Should not raise. async_redact_data was monkeypatched to return a mapping
-    # that raises on `__contains__`; convert mapping to a plain `dict` first
-    # so `in` checks do not call the mapping's `__contains__`.
-
-    if isinstance(diagnostics, Mapping):
-        diagnostics = dict(diagnostics)
-
-    # Should include raw_json (possibly empty or with error)
-    assert "raw_json" in diagnostics
-
-
-async def test_json_raw_redaction_and_getmac2_masking(
-    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Ensure keys like `getIPA` are redacted and `getMAC2` is masked (covers dict-key redact and getMAC2 masking)."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "test_password",
-            CONF_API_TYPE: API_TYPE_JSON,
-        },
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    class DummyJsonAPI2:
-        def is_session_valid(self) -> Any:
-            return True
-
-        async def get_devices(self, _scope: Any) -> Any:
-            return [{"id": "dev1"}]
-
-        async def get_device_status(self, did: Any) -> Any:
-            # Include both a redaction-key and a MAC2 value
-            return {"getIPA": "192.0.2.5", "getMAC2": "AA:BB:CC:DD:EE:FF"}
-
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", DummyJsonAPI2)
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {"devices": [{"id": "dev1"}], "projects": []}
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = DummyJsonAPI2()
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert "raw_json" in diagnostics
-    raw = diagnostics["raw_json"]
-    # If device key exists, ensure getIPA was redacted and getMAC2 was masked
-    if "dev1" in raw:
-        val = raw["dev1"].get("getIPA")
-        assert val is None or "REDACTED" in str(val)
-
-        mac2 = raw["dev1"].get("getMAC2")
-        # Masked result should preserve vendor prefix
-        assert mac2 is None or str(mac2).upper().startswith("AA:BB:CC")
-
-
-async def test_redact_xml_handles_re_sub_exceptions(
-    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Force `re.sub` to raise for getSRN/com patterns and ensure diagnostics handles it."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    # XML with getSRN, com, and pn attributes
-    device_list_xml = (
-        '<devices><device com="John Smith" pn="Zuhause" id="dev1"/></devices>'
-    )
-    status_xml = '<status><c n="getSRN" v="206AAA67890"/></status>'
-
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.http_client = MagicMock()
-    mock_api.http_client.post = AsyncMock(side_effect=[device_list_xml, status_xml])
-    mock_api.payload_builder = MagicMock()
-    mock_api.payload_builder.build_device_get_list_payload = MagicMock(return_value="p")
-    mock_api.payload_builder.build_device_get_status_payload = MagicMock(
-        return_value="p2"
-    )
-    mock_api.response_parser = MagicMock()
-    mock_api.response_parser.parse_device_list_response = MagicMock(
-        return_value=[{"id": "dev1", "dclg": "dev1"}]
-    )
-    mock_api.projects = [{"id": "proj1", "name": "Project 1"}]
-
-    # Monkeypatch re.sub to raise when pattern contains getSRN or com
-    orig_sub = diag.re.sub
-
-    def fake_sub(
-        pattern: Any, repl: Any, string: Any, *args: Any, **kwargs: Any
-    ) -> Any:
-        if "getSRN" in str(pattern) or "com" in str(pattern) or "\\bpn" in str(pattern):
-            raise diag.re.error("boom")
-        return orig_sub(pattern, repl, string, *args, **kwargs)
-
-    monkeypatch.setattr(diag.re, "sub", fake_sub)
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
-        "devices": [
-            {
-                "id": "dev1",
-                "name": "Device 1",
-                "available": True,
-                "project_id": "proj1",
-                "status": {},
-            }
-        ],
-        "projects": [{"id": "proj1", "name": "Project 1"}],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    # Should not raise despite re.sub raising for some patterns
-    diagnostics = await diag.async_get_config_entry_diagnostics(hass, config_entry)
-    assert "raw_xml" in diagnostics
-
-
-async def test_json_redact_assignment_exception(
-    monkeypatch: pytest.MonkeyPatch, hass: HomeAssistant
-) -> None:
-    """Force async_redact_data to return a dict-like that raises on setitem."""
-
-    class BadDict(dict):
-        @override
-        def __setitem__(self, key: Any, value: Any) -> None:
-            raise RuntimeError("cannot set")
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_API_TYPE: API_TYPE_JSON, CONF_USERNAME: "u", CONF_PASSWORD: "p"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_json_api = MagicMock()
-    mock_json_api.is_session_valid = MagicMock(return_value=True)
-
-    async def fake_request(*args: Any, **kwargs: Any) -> Any:
-        return {"getSRN": "206AAA67890"}
-
-    mock_json_api.request_json_data = AsyncMock(side_effect=fake_request)
-
-    # Make async_redact_data return our BadDict so assignment to getSRN raises
-    monkeypatch.setattr(diag, "async_redact_data", lambda data, keys: BadDict(data))
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {"devices": [{"id": "dev1"}], "projects": []}
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = mock_json_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await diag.async_get_config_entry_diagnostics(hass, config_entry)
-    assert "raw_json" in diagnostics
-
-
-async def test_xml_jsonapi_constructor_raises(
-    monkeypatch: pytest.MonkeyPatch, hass: HomeAssistant
-) -> None:
-    """If `SyrConnectJsonAPI` constructor raises, diagnostics should set an error."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
-    mock_coordinator.data = {
-        "devices": [{"id": "dev1", "status": {"getSRN": "206AAA12345"}}],
-        "projects": [],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator._session = MagicMock()
-
-    # Make the SyrConnectJsonAPI constructor raise when called
-    class FakeExc:
-        def __init__(self, *args: Any, **kwargs: Any) -> None:
-            raise RuntimeError("fail")
-
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", FakeExc)
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await diag.async_get_config_entry_diagnostics(hass, config_entry)
-    assert "raw_json" in diagnostics
-    # Constructor raising may cause per-device fetches to return None, resulting
-    # in an empty `raw_json` dict. Accept either an explicit error or empty dict.
-    if diagnostics["raw_json"]:
-        err = diagnostics["raw_json"].get("error", "")
-        assert "no http session" in err.lower() or err in {
-            "failed to collect raw json for devices",
-            "failed to collect raw json from api",
+    assert result == {
+        "p1": {
+            "device_list": _SYR_CONNECT_TEST_REDACTED_DEVICE_LIST_XML,
+            "devices": {"dclg1": _SYR_CONNECT_TEST_REDACTED_STATUS_XML},
         }
+    }
+    assert api.http_client.post.await_args_list == [
+        call("https://example.invalid/list", {"xml": "<list/>"}),
+        call("https://example.invalid/status", {"xml": "<status dclg1/>"}),
+    ]
+    api.payload_builder.build_device_get_list_payload.assert_called_once_with(
+        "sess", "p1"
+    )
+    # The devices are read from the response as the cloud sent it
+    api.response_parser.parse_device_list_response.assert_called_once_with(
+        _SYR_CONNECT_TEST_DEVICE_LIST_XML
+    )
+    api.login.assert_not_awaited()
 
 
-async def test_diagnostics_raw_json_with_base_path(hass: HomeAssistant) -> None:
-    """Test diagnostics raw_json collection with devices whose model has a base_path."""
+async def test_collect_raw_xml_logs_in_without_session() -> None:
+    """Without a valid session the client logs in first."""
+    api = _xml_api([_SYR_CONNECT_TEST_DEVICE_LIST_XML], devices=[])
+    api.is_session_valid.return_value = False
 
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
+    result = await diag._collect_raw_xml(_coordinator(api=api))
+
+    api.login.assert_awaited_once()
+    assert result == {
+        "p1": {
+            "device_list": _SYR_CONNECT_TEST_REDACTED_DEVICE_LIST_XML,
+            "devices": {},
+        }
+    }
+
+
+@pytest.mark.parametrize("case", ["no_api", "login_fails", "no_projects"])
+async def test_collect_raw_xml_without_usable_session(case: str) -> None:
+    """Without an API client, a login or projects there is no raw XML."""
+    api: MagicMock | None = _xml_api([])
+    assert api is not None
+    if case == "login_fails":
+        api.is_session_valid.return_value = False
+        api.login.side_effect = SyrConnectConnectionError("down")
+    elif case == "no_projects":
+        api.projects = []
+    post = api.http_client.post
+    if case == "no_api":
+        api = None
+
+    assert await diag._collect_raw_xml(_coordinator(api=api)) == {}
+    post.assert_not_awaited()
+
+
+async def test_collect_raw_xml_skips_project_without_id() -> None:
+    """A project without an id is not requested."""
+    api = _xml_api([])
+    api.projects = [{"name": "No id"}]
+
+    assert await diag._collect_raw_xml(_coordinator(api=api)) == {}
+    api.http_client.post.assert_not_awaited()
+
+
+async def test_collect_raw_xml_failed_device_list_request() -> None:
+    """A failed request leaves an empty device list for the project."""
+    api = _xml_api([SyrConnectConnectionError("down")], devices=[])
+
+    assert await diag._collect_raw_xml(_coordinator(api=api)) == {
+        "p1": {"device_list": "", "devices": {}}
+    }
+
+
+async def test_collect_raw_xml_unparsable_device_list() -> None:
+    """A device list that cannot be parsed is kept, without device status."""
+    api = _xml_api([_SYR_CONNECT_TEST_DEVICE_LIST_XML])
+    api.response_parser.parse_device_list_response.side_effect = ValueError("broken")
+
+    assert await diag._collect_raw_xml(_coordinator(api=api)) == {
+        "p1": {
+            "device_list": _SYR_CONNECT_TEST_REDACTED_DEVICE_LIST_XML,
+            "devices": {},
+        }
+    }
+    assert api.http_client.post.await_count == 1
+
+
+async def test_collect_raw_xml_device_ids_and_failed_status() -> None:
+    """The status is fetched by dclg or id; a failing device does not stop the others."""
+    devices = [
+        {"dclg": "bad"},
+        {"id": "only-id"},
+        {"name": "neither dclg nor id"},
+        {"dclg": "offline"},
+    ]
+    api = _xml_api(
+        [
+            _SYR_CONNECT_TEST_DEVICE_LIST_XML,
+            "<sc><ok /></sc>",
+            SyrConnectConnectionError("down"),
+        ],
+        devices=devices,
     )
 
-    mock_session = MagicMock()
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
-        "devices": [
-            {
-                "id": "dev1",
-                "name": "Device 1",
-                # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
-                "status": {
-                    "getSRN": "206AAA12345",
-                    "getWIP": "192.168.1.100",
-                    "getWVI": {"value": 100},
-                },
-            }
-        ],
-        "projects": [],
+    def _status_payload(_session: str, device_id: str) -> str:
+        if device_id == "bad":
+            raise RuntimeError("payload cannot be built")
+        return f"<status {device_id}/>"
+
+    api.payload_builder.build_device_get_status_payload.side_effect = _status_payload
+
+    result = await diag._collect_raw_xml(_coordinator(api=api))
+
+    # "bad" raised, "offline" got no answer
+    assert result["p1"]["devices"] == {"only-id": "<sc><ok /></sc>", "offline": ""}
+
+
+async def test_collect_raw_xml_unexpected_error() -> None:
+    """An unexpected error is reported instead of raised."""
+    api = _xml_api([])
+    type(api).projects = PropertyMock(side_effect=RuntimeError("boom"))
+
+    assert await diag._collect_raw_xml(_coordinator(api=api)) == {
+        "error": "failed to collect raw xml for all projects"
     }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator._session = mock_session
 
-    config_entry.runtime_data = mock_coordinator
 
-    # Mock SyrConnectJsonAPI
-    with patch(
-        "custom_components.syr_connect.diagnostics.SyrConnectJsonAPI"
-    ) as mock_json_api_class:
-        mock_json_api = MagicMock()
-        mock_json_api.is_session_valid = MagicMock(return_value=True)
-        mock_json_api._build_base_url = MagicMock(return_value="http://192.168.1.100")
-        mock_json_api.request_json_data = AsyncMock(
-            return_value={"status": "ok", "data": {"test": "value"}}
+# --- _collect_raw_json_local_entry ----------------------------------------------
+
+
+async def test_collect_raw_json_local_entry() -> None:
+    """The status of the local device is stored under its id of the coordinator data."""
+    api = _json_api()
+    coordinator = _coordinator({"devices": [{"id": "206AAA67890"}]}, api=api)
+
+    assert await diag._collect_raw_json_local_entry(coordinator) == {
+        "206AAA67890": {
+            "getSRN": "**REDACTED**",
+            "getIPA": "**REDACTED**",
+            "getFLO": "5",
+        }
+    }
+    api.get_devices.assert_awaited_once_with("local")
+    api.get_device_status.assert_awaited_once_with("206AAA67890")
+    api.login.assert_not_awaited()
+
+
+@pytest.mark.parametrize("data", [None, {"devices": []}])
+async def test_collect_raw_json_local_entry_without_coordinator_device(
+    data: dict[str, Any] | None,
+) -> None:
+    """Without a device in the coordinator data the status is stored as "local_device"."""
+    coordinator = _coordinator(data, api=_json_api({"getFLO": "5"}))
+
+    assert await diag._collect_raw_json_local_entry(coordinator) == {
+        "local_device": {"getFLO": "5"}
+    }
+
+
+async def test_collect_raw_json_local_entry_failed_login_still_fetches() -> None:
+    """A failed login does not stop the request of the status."""
+    api = _json_api({"getFLO": "5"})
+    api.is_session_valid.return_value = False
+    api.login.side_effect = SyrConnectConnectionError("down")
+
+    assert await diag._collect_raw_json_local_entry(_coordinator(api=api)) == {
+        "local_device": {"getFLO": "5"}
+    }
+    api.login.assert_awaited_once()
+
+
+@pytest.mark.parametrize("case", ["no_devices", "devices_fail", "status_fails"])
+async def test_collect_raw_json_local_entry_fetch_fails(case: str) -> None:
+    """Without an answer of the device an error is reported."""
+    api = _json_api()
+    if case == "no_devices":
+        api.get_devices.return_value = []
+    elif case == "devices_fail":
+        api.get_devices.side_effect = SyrConnectConnectionError("down")
+    else:
+        api.get_device_status.side_effect = SyrConnectConnectionError("down")
+
+    assert await diag._collect_raw_json_local_entry(_coordinator(api=api)) == {
+        "error": "failed to fetch JSON data from device"
+    }
+
+
+async def test_collect_raw_json_local_entry_other_api() -> None:
+    """Without a local API client nothing is collected."""
+    assert await diag._collect_raw_json_local_entry(_coordinator(api=MagicMock())) == {}
+    assert await diag._collect_raw_json_local_entry(_coordinator()) == {}
+
+
+async def test_collect_raw_json_local_entry_unexpected_error() -> None:
+    """An unexpected error is reported instead of raised."""
+    with patch.object(diag, "_redact_json_payload", side_effect=RuntimeError("boom")):
+        result = await diag._collect_raw_json_local_entry(_coordinator(api=_json_api()))
+
+    assert result == {"error": "failed to collect raw json for JSON API"}
+
+
+# --- _fetch_local_device_json ---------------------------------------------------
+
+
+async def test_fetch_local_device_json(integration_version: str) -> None:
+    """A cloud device is asked at its IP address with the base path of its model."""
+    session = MagicMock()
+    with patch.object(diag, "SyrConnectJsonAPI") as mock_api_class:
+        api = mock_api_class.return_value
+        api.is_session_valid.return_value = True
+        api.login = AsyncMock()
+        api.get_device_status = AsyncMock(
+            return_value={"getSRN": "206AAA67890", "getFLO": "5"}
         )
-        mock_json_api_class.return_value = mock_json_api
 
-        diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
+        result = await diag._fetch_local_device_json(
+            session, _SYR_CONNECT_TEST_NEOSOFT_DEVICE, "/neosoft", integration_version
+        )
 
-        # Should have collected raw_json (or be empty/error in some environments)
-        assert "raw_json" in diagnostics
-        raw_json = diagnostics["raw_json"]
-        if "dev1" not in raw_json:
-            assert raw_json == {} or "error" in raw_json
-
-
-async def test_diagnostics_raw_json_device_no_ip(hass: HomeAssistant) -> None:
-    """Test diagnostics raw_json collection when device has no IP."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
+    assert result == ("dev1", {"getSRN": "**REDACTED**", "getFLO": "5"})
+    mock_api_class.assert_called_once_with(
+        session,
+        host="192.168.1.100",
+        base_path="/neosoft",
+        integration_version=integration_version,
     )
+    api.get_device_status.assert_awaited_once_with("dev1")
+    api.login.assert_not_awaited()
 
-    mock_session = MagicMock()
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
-        "devices": [
-            {
-                "id": "dev1",
-                "name": "Device 1",
-                # No ip, getWIP, getEIP, or getIPA
-                # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
-                "status": {"getSRN": "206AAA12345"},
-            }
-        ],
-        "projects": [],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator._session = mock_session
 
-    config_entry.runtime_data = mock_coordinator
+@pytest.mark.parametrize(
+    ("status", "host"),
+    [
+        pytest.param(
+            {"getWIP": "192.168.1.1", "getEIP": "192.168.1.2", "getIPA": "192.168.1.3"},
+            "192.168.1.1",
+            id="wifi-first",
+        ),
+        pytest.param(
+            {"getWIP": "", "getEIP": "192.168.1.2", "getIPA": "192.168.1.3"},
+            "192.168.1.2",
+            id="ethernet",
+        ),
+        pytest.param({"getIPA": "192.168.1.3"}, "192.168.1.3", id="generic"),
+    ],
+)
+async def test_fetch_local_device_json_address(
+    status: dict[str, str], host: str, integration_version: str
+) -> None:
+    """The address is the Wi-Fi, then the Ethernet, then the generic IP address."""
+    with patch.object(diag, "SyrConnectJsonAPI") as mock_api_class:
+        mock_api_class.return_value.get_device_status = AsyncMock(return_value={})
 
-    with patch(
-        "custom_components.syr_connect.diagnostics.SyrConnectJsonAPI"
-    ) as mock_json_api_class:
-        mock_json_api = MagicMock()
-        mock_json_api._build_base_url = MagicMock(
-            return_value=None
-        )  # No base URL without IP
-        mock_json_api_class.return_value = mock_json_api
+        await diag._fetch_local_device_json(
+            MagicMock(),
+            cast(Any, {"id": "dev1", "status": status}),
+            "/trio",
+            integration_version,
+        )
 
-        diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-        assert "raw_json" in diagnostics
+    assert mock_api_class.call_args.kwargs["host"] == host
 
 
 @pytest.mark.parametrize(
     "ip",
     [
+        None,
+        "",
+        "0.0.0.0",
+        "::",
         "8.8.8.8",
         "2001:4860:4860::8888",
         "device.example.com",
@@ -2968,1069 +571,418 @@ async def test_diagnostics_raw_json_device_no_ip(hass: HomeAssistant) -> None:
         "::1",
         "169.254.1.2",
         "fe80::1",
-        "::",
     ],
 )
-async def test_diagnostics_raw_json_skips_non_private_ip(
-    hass: HomeAssistant, ip: str
+async def test_fetch_local_device_json_skips_other_addresses(
+    ip: str | None, integration_version: str
 ) -> None:
-    """The device IP comes from the cloud: only private LAN addresses are contacted.
+    """The IP address comes from the cloud: only private LAN addresses are contacted.
 
-    Public addresses, hostnames, loopback, link-local and unspecified addresses are not.
+    Missing, public, loopback, link-local and unspecified addresses and host names are not.
     """
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
-        # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
-        "devices": [
-            {
-                "id": "dev1",
-                "name": "Device 1",
-                "status": {"getSRN": "206AAA12345", "getWIP": ip},
-            }
-        ],
-        "projects": [],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator._session = MagicMock()
-
-    config_entry.runtime_data = mock_coordinator
-
-    with patch(
-        "custom_components.syr_connect.diagnostics.SyrConnectJsonAPI"
-    ) as mock_json_api_class:
-        diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert "raw_json" in diagnostics
-    mock_json_api_class.assert_not_called()
-
-
-async def test_diagnostics_raw_json_login_fails(hass: HomeAssistant) -> None:
-    """Test diagnostics raw_json collection when JSON API login fails."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_session = MagicMock()
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
-        "devices": [
-            {
-                "id": "dev1",
-                "name": "Device 1",
-                # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
-                "status": {"getSRN": "206AAA12345", "getWIP": "192.168.1.100"},
-            }
-        ],
-        "projects": [],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator._session = mock_session
-
-    config_entry.runtime_data = mock_coordinator
-
-    with patch(
-        "custom_components.syr_connect.diagnostics.SyrConnectJsonAPI"
-    ) as mock_json_api_class:
-        mock_json_api = MagicMock()
-        mock_json_api.is_session_valid = MagicMock(return_value=False)
-        mock_json_api.login = AsyncMock(side_effect=Exception("Login failed"))
-        mock_json_api._build_base_url = MagicMock(return_value="http://192.168.1.100")
-        mock_json_api.request_json_data = AsyncMock(return_value={"data": "value"})
-        mock_json_api_class.return_value = mock_json_api
-
-        diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-        # Should still attempt fetch even if login fails
-        assert "raw_json" in diagnostics
-
-
-async def test_diagnostics_raw_json_fetch_fails(hass: HomeAssistant) -> None:
-    """Test diagnostics raw_json collection when fetch fails."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_session = MagicMock()
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
-        "devices": [
-            {
-                "id": "dev1",
-                "name": "Device 1",
-                # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
-                "status": {"getSRN": "206AAA12345", "getWIP": "192.168.1.100"},
-            }
-        ],
-        "projects": [],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator._session = mock_session
-
-    config_entry.runtime_data = mock_coordinator
-
-    with patch(
-        "custom_components.syr_connect.diagnostics.SyrConnectJsonAPI"
-    ) as mock_json_api_class:
-        mock_json_api = MagicMock()
-        mock_json_api.is_session_valid = MagicMock(return_value=True)
-        mock_json_api._build_base_url = MagicMock(return_value="http://192.168.1.100")
-        mock_json_api.request_json_data = AsyncMock(
-            side_effect=Exception("Fetch failed")
+    with patch.object(diag, "SyrConnectJsonAPI") as mock_api_class:
+        result = await diag._fetch_local_device_json(
+            MagicMock(),
+            cast(Any, {"id": "dev1", "status": {"getWIP": ip}}),
+            "/trio",
+            integration_version,
         )
-        mock_json_api_class.return_value = mock_json_api
 
-        diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-        # Should handle fetch failure gracefully
-        assert "raw_json" in diagnostics
+    assert result == ("dev1", None)
+    mock_api_class.assert_not_called()
 
 
-async def test_diagnostics_raw_json_exception_handler(hass: HomeAssistant) -> None:
-    """Test diagnostics raw_json outer exception handler."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
+@pytest.mark.parametrize(
+    ("device", "device_id"),
+    [
+        pytest.param({"dclg": "dclg1"}, "dclg1", id="dclg"),
+        pytest.param({}, "unknown", id="neither"),
+    ],
+)
+async def test_fetch_local_device_json_device_id(
+    device: dict[str, Any], device_id: str, integration_version: str
+) -> None:
+    """A device without an id is named by its dclg, else "unknown"."""
+    result = await diag._fetch_local_device_json(
+        MagicMock(), cast(Any, device), "/trio", integration_version
     )
 
-    # Create a mock that will fail during attribute access in raw_json section
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-
-    # Set up data that works initially but causes issues later
-    call_count = [0]
-
-    def get_side_effect(key: Any, default: Any = None) -> Any:
-        call_count[0] += 1
-        # First call (for final device/project section) works
-        if call_count[0] == 1:
-            return []
-        # Second call (if any) raises exception
-        raise RuntimeError("Test error")
-
-    mock_data: dict[str, list[Any]] = {"devices": [], "projects": []}
-    # Make the mock return a special object that raises on getattr
-    mock_coordinator.data = mock_data
-
-    # Make _session raise an exception to trigger the raw_json exception handler
-    def session_property_get(self: Any) -> NoReturn:
-        raise RuntimeError("Session access error")
-
-    type(mock_coordinator)._session = property(session_property_get)
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Should have error in raw_json due to exception during session access
-    assert "raw_json" in diagnostics
-    assert "error" in diagnostics["raw_json"]
+    assert result == (device_id, None)
 
 
-async def test_diagnostics_raw_json_device_ip_from_status(hass: HomeAssistant) -> None:
-    """Test diagnostics raw_json gets IP from device status."""
+@pytest.mark.parametrize(
+    "error",
+    [
+        pytest.param(SyrConnectHTTPError("Endpoint not found", status=404), id="http"),
+        pytest.param(RuntimeError("boom"), id="unexpected"),
+    ],
+)
+async def test_fetch_local_device_json_failed_login_still_fetches(
+    error: Exception, integration_version: str
+) -> None:
+    """A device that answers the login with an error is still fetched."""
+    with patch.object(diag, "SyrConnectJsonAPI") as mock_api_class:
+        api = mock_api_class.return_value
+        api.is_session_valid.return_value = False
+        api.login = AsyncMock(side_effect=error)
+        api.get_device_status = AsyncMock(return_value={"getFLO": "5"})
 
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_session = MagicMock()
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
-        "devices": [
-            {
-                "id": "dev1",
-                "name": "Device 1",
-                # IP is in status, not top-level
-                # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
-                "status": {"getSRN": "206AAA12345", "getWIP": "192.168.1.100"},
-            }
-        ],
-        "projects": [],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator._session = mock_session
-
-    config_entry.runtime_data = mock_coordinator
-
-    with patch(
-        "custom_components.syr_connect.diagnostics.SyrConnectJsonAPI"
-    ) as mock_json_api_class:
-        mock_json_api = MagicMock()
-        mock_json_api.is_session_valid = MagicMock(return_value=True)
-        mock_json_api._build_base_url = MagicMock(return_value="http://192.168.1.100")
-        mock_json_api.request_json_data = AsyncMock(return_value={"status": "ok"})
-        mock_json_api_class.return_value = mock_json_api
-
-        diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-        assert "raw_json" in diagnostics
-
-
-async def test_diagnostics_title_redact_exception(hass: HomeAssistant) -> None:
-    """Test diagnostics title redaction exception handling."""
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="SYR Connect (user@example.com)",  # Title with username
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Should have redacted username in title
-    assert "entry" in diagnostics
-    assert "REDACTED_USERNAME" in diagnostics["entry"]["title"]
-
-
-async def test_diagnostics_title_redact_not_string(hass: HomeAssistant) -> None:
-    """Test diagnostics title redaction when title is not string."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title=cast(Any, None),  # Not a string
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-
-    config_entry.runtime_data = mock_coordinator
-
-    # Should handle non-string title gracefully
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert "entry" in diagnostics
-
-
-async def test_diagnostics_raw_json_gather_exception(hass: HomeAssistant) -> None:
-    """Test diagnostics raw_json when gather returns exception."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_session = MagicMock()
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
-        "devices": [
-            {
-                "id": "dev1",
-                "name": "Device 1",
-                # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
-                "status": {"getSRN": "206AAA12345", "getWIP": "192.168.1.100"},
-            }
-        ],
-        "projects": [],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator._session = mock_session
-
-    config_entry.runtime_data = mock_coordinator
-
-    with patch(
-        "custom_components.syr_connect.diagnostics.SyrConnectJsonAPI"
-    ) as mock_json_api_class:
-        mock_json_api = MagicMock()
-        mock_json_api.is_session_valid = MagicMock(
-            side_effect=Exception("Test exception")
+        result = await diag._fetch_local_device_json(
+            MagicMock(), _SYR_CONNECT_TEST_NEOSOFT_DEVICE, "/trio", integration_version
         )
-        mock_json_api_class.return_value = mock_json_api
 
-        diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-        # Should handle exception in task
-        assert "raw_json" in diagnostics
+    assert result == ("dev1", {"getFLO": "5"})
 
 
-async def test_diagnostics_raw_json_result_not_tuple(hass: HomeAssistant) -> None:
-    """Test diagnostics raw_json when result is not a tuple."""
+async def test_fetch_local_device_json_not_reachable(
+    caplog: pytest.LogCaptureFixture, integration_version: str
+) -> None:
+    """An unreachable device (login timeout) is logged in one line and not fetched again."""
+    caplog.set_level("DEBUG", logger="custom_components.syr_connect.diagnostics")
+    with patch.object(diag, "SyrConnectJsonAPI") as mock_api_class:
+        api = mock_api_class.return_value
+        api.is_session_valid.return_value = False
+        api.login = AsyncMock(
+            side_effect=SyrConnectConnectionError("Connection failed: TimeoutError()")
+        )
+        api.get_device_status = AsyncMock()
 
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
+        result = await diag._fetch_local_device_json(
+            MagicMock(), _SYR_CONNECT_TEST_NEOSOFT_DEVICE, "/trio", integration_version
+        )
 
-    mock_session = MagicMock()
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
+    assert result == ("dev1", None)
+    api.get_device_status.assert_not_called()
+    assert (
+        "device dev1 is not reachable at 192.168.1.100: "
+        "Connection failed: TimeoutError()"
+    ) in caplog.text
+    assert "Traceback" not in caplog.text
+
+
+@pytest.mark.parametrize("failing", ["status", "redaction"])
+async def test_fetch_local_device_json_failure_gives_no_data(
+    failing: str, integration_version: str
+) -> None:
+    """A failed request or redaction gives no data for the device."""
+    with (
+        patch.object(diag, "SyrConnectJsonAPI") as mock_api_class,
+        patch.object(
+            diag,
+            "_redact_json_payload",
+            side_effect=RuntimeError("boom") if failing == "redaction" else None,
+        ),
+    ):
+        api = mock_api_class.return_value
+        api.is_session_valid.return_value = True
+        api.get_device_status = AsyncMock(
+            side_effect=SyrConnectConnectionError("down")
+            if failing == "status"
+            else None,
+            return_value={"getFLO": "5"},
+        )
+
+        result = await diag._fetch_local_device_json(
+            MagicMock(), _SYR_CONNECT_TEST_NEOSOFT_DEVICE, "/trio", integration_version
+        )
+
+    assert result == ("dev1", None)
+
+
+# --- _collect_raw_json_cloud_devices --------------------------------------------
+
+
+async def test_collect_raw_json_cloud_devices(
+    hass: HomeAssistant, integration_version: str
+) -> None:
+    """Only devices whose model offers the local API are asked; no answer, no entry."""
+    session = MagicMock()
+    silent = {**_SYR_CONNECT_TEST_NEOSOFT_DEVICE, "id": "dev2"}
+    data = {
         "devices": [
-            {
-                "id": "dev1",
-                "name": "Device 1",
-                # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
-                "status": {"getSRN": "206AAA12345", "getWIP": "192.168.1.100"},
-            }
-        ],
-        "projects": [],
+            _SYR_CONNECT_TEST_NEOSOFT_DEVICE,
+            # LEX Plus 10 S: no local API
+            {"id": "lex", "status": {"getCNA": "LEXplus10S", "getWIP": "192.168.1.5"}},
+            silent,
+            "no device",
+        ]
     }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator._session = mock_session
 
-    config_entry.runtime_data = mock_coordinator
+    async def _fetch(
+        _session: Any, device: dict[str, Any], _base_path: str, _version: str
+    ) -> tuple[str, Any]:
+        return device["id"], {"getFLO": "5"} if device["id"] == "dev1" else None
 
-    with patch(
-        "custom_components.syr_connect.diagnostics.SyrConnectJsonAPI"
-    ) as mock_json_api_class:
-        mock_json_api = MagicMock()
-        mock_json_api.is_session_valid = MagicMock(return_value=True)
-        mock_json_api._build_base_url = MagicMock(return_value="http://192.168.1.100")
-        mock_json_api.request_json_data = AsyncMock(return_value={"data": "value"})
-        mock_json_api_class.return_value = mock_json_api
+    with patch.object(diag, "_fetch_local_device_json", side_effect=_fetch) as fetch:
+        result = await diag._collect_raw_json_cloud_devices(
+            hass, _coordinator(data, session=session)
+        )
 
-        diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-        # Result should be properly handled
-        assert "raw_json" in diagnostics
-
-
-async def test_diagnostics_json_api_collects_raw_json(
-    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Test diagnostics with JSON API collects raw_json, not raw_xml."""
-
-    # Create config entry with JSON API
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="SafeTech Plus Connect",
-        data={
-            CONF_API_TYPE: API_TYPE_JSON,
-            CONF_MODEL: "safetechplus",
-            CONF_HOST: "192.168.1.100",
-        },
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    # Create mock coordinator with JSON API
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
-        "devices": [
-            {
-                "id": "12345",
-                "name": "SafeTech Plus Connect",
-                "available": True,
-                "status": {"getSRN": "12345"},
-            },
-        ],
-        "projects": [],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
-
-    # Mock the JSON API
-    mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
-    mock_json_api.is_session_valid = MagicMock(return_value=True)
-    mock_json_api.request_json_data = AsyncMock(
-        return_value={"getSRN": "12345", "getFLO": "10"}
-    )
-    mock_coordinator.api = mock_json_api
-    mock_coordinator._session = MagicMock()
-    # Ensure diagnostics module recognizes our MagicMock as the JSON API class
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", mock_json_api.__class__)
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Should have raw_json with device data (or an empty/error dict in some envs)
-    assert "raw_json" in diagnostics
-    raw_json = diagnostics["raw_json"]
-    if "12345" in raw_json:
-        val = raw_json["12345"].get("getSRN")
-        if inspect.isawaitable(val):
-            val = await val
-        s = val if isinstance(val, str) else str(val)
-        # Accept either a fully redacted string, the substring redaction,
-        # or an AsyncMock representation on environments where redaction
-        # ran into an AsyncMock/awaitable and couldn't resolve it.
-        assert s == "**REDACTED**" or "**REDACTED**" in s or "AsyncMock" in s
-    else:
-        assert raw_json == {} or "error" in raw_json
-
-    # Should NOT have raw_xml (only for XML API)
-    assert "raw_xml" in diagnostics
+    assert result == {"dev1": {"getFLO": "5"}}
+    assert fetch.await_args_list == [
+        call(
+            session, _SYR_CONNECT_TEST_NEOSOFT_DEVICE, "/neosoft", integration_version
+        ),
+        call(session, silent, "/neosoft", integration_version),
+    ]
 
 
-async def test_fetch_device_json_assignment_exception_handled(
-    monkeypatch: pytest.MonkeyPatch, hass: HomeAssistant
-) -> None:
-    """Ensure assignment to redacted['getSRN'] in per-device JSON fetch raising is handled.
-
-    This forces the per-device path to return an object that raises on
-    `__setitem__`, exercising the inner except/pass branch in diagnostics.
-    """
-
-    entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    class DummyJsonAPI:
-        def __init__(
-            self,
-            session: Any,
-            host: Any = None,
-            base_path: Any = None,
-            *,
-            integration_version: str,
-        ) -> None:
-            self._session = session
-            self._host = host
-            self._base_path = base_path
-
-        def is_session_valid(self) -> Any:
-            return True
-
-        async def login(self) -> Any:
-            return True
-
-        def _build_base_url(self) -> Any:
-            return f"http://{self._host}{self._base_path or ''}"
-
-        async def get_device_status(self, dev_id: Any) -> Any:
-            return {"getSRN": "206AAA67890", "value": 1}
-
-    # Inject DummyJsonAPI into diagnostics module
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", DummyJsonAPI)
-
-    class FlakyDict(dict):
-        """Dict that raises on the first attempt to set 'getSRN', then allows sets.
-
-        This simulates a transient assignment failure that should be caught
-        by the per-device assignment try/except, while still allowing later
-        masking to succeed during the global `_mask_sensitive` pass.
-        """
-
-        def __init__(self, data: Any = None) -> None:
-            dict.__init__(self)
-            if data:
-                for k, v in data.items() if isinstance(data, dict) else list(data):
-                    dict.__setitem__(self, k, v)
-            self._raised_getsrn = False
-
-        @override
-        def __setitem__(self, key: Any, value: Any) -> Any:
-            if str(key) == "getSRN" and not self._raised_getsrn:
-                # Simulate a failure the first time 'getSRN' is set
-                self._raised_getsrn = True
-                raise RuntimeError("cannot set")
-            return dict.__setitem__(self, key, value)
-
-    # Force async_redact_data to return FlakyDict so the first assignment fails
-    monkeypatch.setattr(diag, "async_redact_data", lambda data, keys: FlakyDict(data))
-
-    fake_coord = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    fake_coord._session = object()
-    # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
-    fake_coord.data = {
-        "devices": [
-            {"id": "dev1", "status": {"getSRN": "206AAA12345", "getWIP": "192.0.2.1"}}
-        ],
-        "projects": [],
-    }
-    fake_coord.last_update_success = True
-    fake_coord.last_update_success_time = None
-    entry.runtime_data = fake_coord
-
-    # Should not raise despite BadDict raising when assignment attempted
-    diagnostics = await async_get_config_entry_diagnostics(hass, entry)
-    assert "raw_json" in diagnostics
-    assert diagnostics["raw_xml"] == {}
-
-
-async def test_diagnostics_json_api_login_required(
-    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Test diagnostics with JSON API when login is required."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="SafeTech Plus Connect",
-        data={
-            CONF_API_TYPE: API_TYPE_JSON,
-            CONF_MODEL: "safetechplus",
-            CONF_HOST: "192.168.1.100",
-        },
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
-        "devices": [{"id": "12345", "status": {}}],
-        "projects": [],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
-
-    # Mock JSON API that requires login with proper spec
-    mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
-    mock_json_api.is_session_valid = MagicMock(return_value=False)
-    mock_json_api.login = AsyncMock()
-    mock_json_api.request_json_data = AsyncMock(return_value={"data": "value"})
-    mock_coordinator.api = mock_json_api
-    mock_coordinator._session = MagicMock()
-    # Make diagnostics.isinstance check succeed for our mock
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", mock_json_api.__class__)
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Login should have been called
-    mock_json_api.login.assert_called_once()
-    assert "raw_json" in diagnostics
-
-
-async def test_diagnostics_json_api_login_fails(hass: HomeAssistant) -> None:
-    """Test diagnostics with JSON API when login fails."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="SafeTech Plus Connect",
-        data={
-            CONF_API_TYPE: API_TYPE_JSON,
-            CONF_MODEL: "safetechplus",
-            CONF_HOST: "192.168.1.100",
-        },
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
-        "devices": [{"id": "12345"}],
-        "projects": [],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
-
-    # Mock JSON API where login fails with proper spec
-    mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
-    mock_json_api.is_session_valid = MagicMock(return_value=False)
-    mock_json_api.login = AsyncMock(side_effect=Exception("Login failed"))
-    mock_json_api.request_json_data = AsyncMock(return_value={"data": "value"})
-    mock_coordinator.api = mock_json_api
-    mock_coordinator._session = MagicMock()
-
-    config_entry.runtime_data = mock_coordinator
-
-    # Should not raise, diagnostics should continue
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-    assert "raw_json" in diagnostics
-
-
-async def test_diagnostics_json_api_fetch_fails(
-    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Test diagnostics with JSON API when fetch fails."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="SafeTech Plus Connect",
-        data={
-            CONF_API_TYPE: API_TYPE_JSON,
-            CONF_MODEL: "safetechplus",
-            CONF_HOST: "192.168.1.100",
-        },
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
-        "devices": [{"id": "12345"}],
-        "projects": [],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
-
-    # Mock JSON API where fetch fails with proper spec
-    mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
-    mock_json_api.is_session_valid = MagicMock(return_value=True)
-    mock_json_api.request_json_data = AsyncMock(side_effect=Exception("Fetch failed"))
-    mock_coordinator.api = mock_json_api
-    mock_coordinator._session = MagicMock()
-    # Make diagnostics recognize our mock as the JSON API class
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", mock_json_api.__class__)
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Should have error message in raw_json (or be empty depending on mocks)
-    assert "raw_json" in diagnostics
-    raw_json = diagnostics["raw_json"]
-    if "error" in raw_json:
-        assert raw_json.get("error") == "failed to fetch JSON data from device"
-
-
-async def test_diagnostics_xml_api_skips_raw_xml_collection(
+async def test_collect_raw_json_cloud_devices_without_session(
     hass: HomeAssistant,
 ) -> None:
-    """Test diagnostics with XML API properly collects raw_xml."""
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test Device",
-        data={
-            CONF_API_TYPE: API_TYPE_XML,
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "password",
-        },
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
+    """Without the HTTP session of the coordinator an error is reported."""
+    coordinator = _coordinator({"devices": [_SYR_CONNECT_TEST_NEOSOFT_DEVICE]})
 
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
-        "devices": [],
-        "projects": [],
+    assert await diag._collect_raw_json_cloud_devices(hass, coordinator) == {
+        "error": "no http session available on coordinator"
     }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
-
-    # Mock XML API without projects
-    mock_xml_api = MagicMock()
-    mock_xml_api.projects = []
-    mock_xml_api.is_session_valid = MagicMock(return_value=True)
-    mock_coordinator.api = mock_xml_api
-    mock_coordinator._session = MagicMock()
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Should have raw_xml (even if empty)
-    assert "raw_xml" in diagnostics
-    # Should have raw_json (empty)
-    assert "raw_json" in diagnostics
 
 
-async def test_diagnostics_json_api_no_devices(
-    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
+async def test_collect_raw_json_cloud_devices_without_data(hass: HomeAssistant) -> None:
+    """Without coordinator data there is nothing to ask."""
+    coordinator = _coordinator(session=MagicMock())
+
+    assert await diag._collect_raw_json_cloud_devices(hass, coordinator) == {}
+
+
+async def test_collect_raw_json_cloud_devices_failing_device(
+    hass: HomeAssistant,
 ) -> None:
-    """Test diagnostics with JSON API when coordinator has no devices."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="SafeTech Plus Connect",
-        data={
-            CONF_API_TYPE: API_TYPE_JSON,
-            CONF_MODEL: "safetechplus",
-            CONF_HOST: "192.168.1.100",
-        },
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
+    """A device whose request raises is left out."""
+    coordinator = _coordinator(
+        {"devices": [_SYR_CONNECT_TEST_NEOSOFT_DEVICE]}, session=MagicMock()
     )
 
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
-        "devices": [],  # No devices
-        "projects": [],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
-
-    # Mock JSON API with proper spec
-    mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
-    mock_json_api.is_session_valid = MagicMock(return_value=True)
-    mock_json_api.request_json_data = AsyncMock(return_value={"data": "value"})
-    mock_coordinator.api = mock_json_api
-    mock_coordinator._session = MagicMock()
-    # Patch diagnostics module to accept our MagicMock class for isinstance checks
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", mock_json_api.__class__)
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Should still have raw_json with local_device key
-    assert "raw_json" in diagnostics
-    assert "local_device" in diagnostics["raw_json"]
+    with patch.object(
+        diag, "_fetch_local_device_json", side_effect=RuntimeError("boom")
+    ):
+        assert await diag._collect_raw_json_cloud_devices(hass, coordinator) == {}
 
 
-async def test_diagnostics_device_info_xml_api(hass: HomeAssistant) -> None:
-    """Test that devices_info contains all expected fields for XML API."""
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="LEX Plus 10 S",
-        data={
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "password",
-            CONF_API_TYPE: API_TYPE_XML,
-        },
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
+async def test_collect_raw_json_cloud_devices_unexpected_error(
+    hass: HomeAssistant,
+) -> None:
+    """An unexpected error is reported instead of raised."""
+    coordinator = _coordinator(
+        {"devices": [_SYR_CONNECT_TEST_NEOSOFT_DEVICE]}, session=MagicMock()
     )
 
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
+    with patch.object(
+        diag, "get_integration_version", side_effect=RuntimeError("boom")
+    ):
+        assert await diag._collect_raw_json_cloud_devices(hass, coordinator) == {
+            "error": "failed to collect raw json for devices"
+        }
+
+
+# --- async_get_config_entry_diagnostics -----------------------------------------
+
+
+async def test_diagnostics_cloud_entry(hass: HomeAssistant) -> None:
+    """The diagnostics of a cloud entry: entry, coordinator, devices, projects and raw data."""
+    data = {
         "devices": [
             {
-                "id": "SN12345",
+                "id": "206AAA67890",
                 "name": "LEX Plus 10 S",
-                "dclg": "device_collection_id",
+                "dclg": "dclg1",
                 "available": True,
-                "project_id": "project1",
+                "project_id": "p1",
                 "status": {
                     "getCNA": "LEXplus10S",
                     "getVER": "1.2.3",
-                    "getFIR": "HW_V1",
-                    "getMAC": "AA:BB:CC:DD:EE:FF",
+                    "getFIR": "SLPS",
+                    "getMAC": "aa:bb:cc:dd:ee:ff",
                     "getFLO": "100",
                 },
             },
         ],
-        "projects": [{"id": "project1", "name": "Main Project"}],
+        "projects": [
+            {"id": "p1", "name": "Haus Mustermann"},
+            {"id": "p2", "name": ""},
+        ],
+        "service": None,
     }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
+    api = _xml_api([_SYR_CONNECT_TEST_DEVICE_LIST_XML, _SYR_CONNECT_TEST_STATUS_XML])
+    coordinator = _coordinator(data, api=api, session=MagicMock())
+    coordinator.last_update_success_time = datetime(2026, 11, 14, 12, 0, tzinfo=UTC)
+    entry = _entry()
+    entry.runtime_data = coordinator
 
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.projects = [{"id": "project1", "name": "Main Project"}]
-    mock_coordinator.api = mock_api
+    result = await async_get_config_entry_diagnostics(hass, entry)
 
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Verify devices_info contains all expected fields
-    assert "devices" in diagnostics
-    assert len(diagnostics["devices"]) == 1
-
-    device = diagnostics["devices"][0]
-    assert device["id"] == "SN12345"
-    assert device["name"] == "LEX Plus 10 S"
-    assert device["available"] is True
-    assert device["project_id"] == "project1"
-    assert device["model"] == "LEX Plus 10 S Connect"  # Mapped from getCNA
-    assert device["sw_version"] == "1.2.3"
-    assert device["hw_version"] == "HW_V1"
-    assert device["api_type"] == API_TYPE_XML
-    assert device["dclg"] == "device_collection_id"  # XML API specific
-    assert device["base_path"] is None  # LEX Plus 10 S has no local access
-    assert device["status_count"] == 5
-    assert "getCNA" in device["status_keys"]
-    assert "getVER" in device["status_keys"]
-
-
-async def test_diagnostics_device_info_json_api(hass: HomeAssistant) -> None:
-    """Test that devices_info contains all expected fields for JSON API."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="SafeTech Plus Connect",
-        data={
-            CONF_API_TYPE: API_TYPE_JSON,
-            CONF_MODEL: "safetechplus",
-            CONF_HOST: "192.168.1.100",
+    assert result == {
+        "entry": {
+            "title": "SYR Connect (***REDACTED_USERNAME***)",
+            "version": 1,
+            "options": {},
+            "service": None,
+            "model": None,
         },
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
+        "coordinator": {
+            "last_update_success": True,
+            "last_update_time": "2026-11-14T12:00:00+00:00",
+        },
         "devices": [
             {
-                "id": "SAFETECH01",
+                "id": "206AAA12345",
+                "name": "LEX Plus 10 S",
+                "available": True,
+                "project_id": "p1",
+                "manufacturer": "SYR",
+                "model": "LEX Plus 10 S Connect",
+                # LEX Plus 10 S has no local access
+                "base_path": None,
+                "sw_version": "1.2.3",
+                "hw_version": "SLPS",
+                "api_type": API_TYPE_XML,
+                "status_count": 5,
+                "status_keys": ["getCNA", "getFIR", "getFLO", "getMAC", "getVER"],
+                "dclg": "dclg1",
+            }
+        ],
+        # Project names are entered by the user (often an address) and replaced
+        "projects": [{"id": "p1", "name": "My Project"}, {"id": "p2", "name": ""}],
+        "raw_xml": {
+            "p1": {
+                "device_list": _SYR_CONNECT_TEST_REDACTED_DEVICE_LIST_XML,
+                "devices": {"dclg1": _SYR_CONNECT_TEST_REDACTED_STATUS_XML},
+            }
+        },
+        "raw_json": {},
+    }
+    assert "secret123" not in str(result)
+    assert "test@example.com" not in str(result)
+
+
+async def test_diagnostics_without_coordinator_data(hass: HomeAssistant) -> None:
+    """Without coordinator data the diagnostics have no devices and projects."""
+    entry = _entry()
+    entry.runtime_data = _coordinator()
+
+    assert await async_get_config_entry_diagnostics(hass, entry) == {
+        "entry": {
+            "title": "SYR Connect (***REDACTED_USERNAME***)",
+            "version": 1,
+            "options": {},
+            "service": None,
+            "model": None,
+        },
+        "coordinator": {"last_update_success": True, "last_update_time": None},
+        "devices": [],
+        "projects": [],
+        "raw_xml": {},
+        "raw_json": {"error": "no http session available on coordinator"},
+    }
+
+
+async def test_diagnostics_local_entry(hass: HomeAssistant) -> None:
+    """A local entry has no raw XML; its raw JSON loses addresses and serial number."""
+    status = {
+        "getSRN": "112AAA12345",
+        "getVER": "Safe-Tech-2.0.5",
+        "getFIR": "FW_ST_01",
+        "getWIP": "192.168.1.100",
+        "getMAC1": "11:22:33:44:55:66",
+        "getMAC2": "aa:bb:cc:dd:ee:ff",
+        "getCNO": "CNO1234567890AB",
+        "getFLO": "5",
+    }
+    data = {
+        "devices": [
+            {
+                "id": "112AAA12345",
                 "name": "SafeTech Plus Connect",
                 "available": True,
-                "status": {
-                    "getSRN": "112AAA12345",
-                    "getCNA": "Safe-Tech",
-                    "getVER": "Safe-Tech-2.0.5",
-                    "getFIR": "FW_ST_01",
-                    "getWIP": "192.168.1.100",
-                    "getMAC1": "11:22:33:44:55:66",
-                    "getPRS": "50",
-                },
-            },
+                "status": status,
+            }
         ],
         "projects": [],
     }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
-
-    mock_json_api = MagicMock(spec=SyrConnectJsonAPI)
-    mock_json_api.is_session_valid = MagicMock(return_value=True)
-    mock_json_api.request_json_data = AsyncMock(return_value={"data": "value"})
-    mock_coordinator.api = mock_json_api
-    mock_coordinator._session = MagicMock()
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Verify devices_info contains all expected fields
-    assert "devices" in diagnostics
-    assert len(diagnostics["devices"]) == 1
-
-    device = diagnostics["devices"][0]
-    assert device["id"] == "SAFETECH01"
-    assert device["name"] == "SafeTech Plus Connect"
-    assert device["available"] is True
-    assert device["model"] == "SafeTech Plus Connect"  # Mapped from getCNA
-    assert device["sw_version"] == "Safe-Tech-2.0.5"
-    assert device["hw_version"] == "FW_ST_01"
-    assert device["api_type"] == API_TYPE_JSON
-    assert device["base_path"] == "/trio"
-    assert diagnostics["entry"]["model"] == "safetechplus"
-    # Only the sensors SafeTech Plus gets: getCNA, getFIR and getPRS are not in its allowlist
-    assert device["status_keys"] == ["getMAC1", "getSRN", "getVER", "getWIP"]
-    assert device["status_count"] == 4
-    assert "dclg" not in device  # Should not be present for JSON API
-
-
-async def test_diagnostics_device_info_minimal_status(hass: HomeAssistant) -> None:
-    """Test devices_info with minimal status data (fallbacks)."""
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Unknown Device",
-        data={
-            CONF_API_TYPE: API_TYPE_XML,
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "password",
-        },
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
+    entry = _entry(
+        API_TYPE_JSON, **{CONF_MODEL: "safetechplus", CONF_HOST: "192.168.1.100"}
     )
+    entry.runtime_data = _coordinator(data, api=_json_api(dict(status)))
 
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
+    result = await async_get_config_entry_diagnostics(hass, entry)
+
+    assert result["entry"]["model"] == "safetechplus"
+    assert result["raw_xml"] == {}
+    assert result["raw_json"] == {
+        "112AAA12345": {
+            "getSRN": "**REDACTED**",
+            "getVER": "Safe-Tech-2.0.5",
+            "getFIR": "FW_ST_01",
+            "getWIP": "**REDACTED**",
+            "getMAC1": "11:22:33:XX:XX:XX",
+            "getMAC2": "AA:BB:CC:XX:XX:XX",
+            "getCNO": "**REDACTED**",
+            "getFLO": "5",
+        }
+    }
+    assert result["devices"] == [
+        {
+            "id": "112AAA12345",
+            "name": "SafeTech Plus Connect",
+            "available": True,
+            "project_id": None,
+            "manufacturer": "SYR",
+            "model": "SafeTech Plus Connect",
+            "base_path": "/trio",
+            "sw_version": "Safe-Tech-2.0.5",
+            "hw_version": "FW_ST_01",
+            "api_type": API_TYPE_JSON,
+            # Only the sensors a SafeTech Plus gets; getFIR is not in its allowlist
+            "status_count": 6,
+            "status_keys": [
+                "getFLO",
+                "getMAC1",
+                "getMAC2",
+                "getSRN",
+                "getVER",
+                "getWIP",
+            ],
+        }
+    ]
+    # The code number on the device label registers the device to an account
+    assert "CNO1234567890AB" not in str(result)
+    assert "192.168.1.100" not in str(result)
+
+
+async def test_diagnostics_device_without_status(hass: HomeAssistant) -> None:
+    """A device without status is listed as unknown model without sensors."""
+    data = {
         "devices": [
-            {
-                "id": "UNKNOWN01",
-                "name": "Unknown Device",
-                "available": False,
-                "status": {},  # Empty status
-            },
+            {"id": "UNKNOWN01", "name": "Unknown", "available": False, "status": {}}
         ],
         "projects": [],
     }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
+    entry = _entry()
+    entry.runtime_data = _coordinator(data, session=MagicMock())
 
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.projects = []
-    mock_coordinator.api = mock_api
+    result = await async_get_config_entry_diagnostics(hass, entry)
 
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # Verify devices_info handles missing data gracefully
-    assert "devices" in diagnostics
-    assert len(diagnostics["devices"]) == 1
-
-    device = diagnostics["devices"][0]
-    assert device["id"] == "UNKNOWN01"
-    assert device["name"] == "Unknown Device"
-    assert device["available"] is False
-    assert device["model"] == "Unknown model"  # Unknown model detected
-    assert device["sw_version"] is None  # No getVER in status
-    assert device["hw_version"] is None  # No getFIR in status
-    assert device["api_type"] == API_TYPE_XML
-    assert device["status_count"] == 0
-    assert device["status_keys"] == []
-    assert "dclg" not in device  # No dclg in device dict
+    assert result["devices"] == [
+        {
+            "id": "UNKNOWN01",
+            "name": "Unknown",
+            "available": False,
+            "project_id": None,
+            "manufacturer": "Unknown",
+            "model": "Unknown model",
+            "base_path": None,
+            "sw_version": None,
+            "hw_version": None,
+            "api_type": API_TYPE_XML,
+            "status_count": 0,
+            "status_keys": [],
+        }
+    ]
 
 
 async def test_diagnostics_service_branding(hass: HomeAssistant) -> None:
     """Diagnostics name the cloud service and the model names of that service."""
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="CONEL CLEAR PRO",
-        data={
-            CONF_API_TYPE: API_TYPE_XML,
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "password",
-            CONF_SERVICE: "de.consoft.gc.conel.connect",
-        },
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
+    data = {
         "devices": [
             {
                 "id": "FLOOR01",
@@ -4041,1146 +993,38 @@ async def test_diagnostics_service_branding(hass: HomeAssistant) -> None:
         "projects": [],
         "service": "de.consoft.gc.conel.connect",
     }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = datetime(2024, 1, 1, 12, 0, 0)
-
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.projects = []
-    mock_coordinator.api = mock_api
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert diagnostics["entry"]["service"] == "de.consoft.gc.conel.connect"
-    assert diagnostics["entry"]["model"] is None
-    device = diagnostics["devices"][0]
-    assert device["manufacturer"] == "CONEL"
-    assert device["model"] == "CLEAR PRO Floor Sensor"
-
-
-async def test_diagnostics_xml_redacts_raw_xml(hass: HomeAssistant) -> None:
-    """Ensure raw XML collection redacts MAC/IP/emails and includes raw_xml."""
-    # Build a fake coordinator with api that mimics SyrConnectXmlAPI
-    coordinator = MagicMock()
-    coordinator.last_update_success = True
-    coordinator.last_update_success_time = datetime.now(UTC)
-    coordinator.data = {"devices": [], "projects": []}
-
-    class FakeHTTPClient:
-        async def post(self, url: Any, payload: Any) -> Any:
-            # include items that should be redacted
-            return '<root getMAC="AA:BB:CC:DD:EE:FF">Contact me at alice@example.com 1.2.3.4</root>'
-
-    fake_api = MagicMock()
-    fake_api.is_session_valid.return_value = True
-    fake_api.projects = [{"id": "p1"}]
-    fake_api.payload_builder.build_device_get_list_payload.return_value = "<p/>"
-    fake_api.response_parser.parse_device_list_response.return_value = [{"id": "d1"}]
-    fake_api.payload_builder.build_device_get_status_payload.return_value = "<s/>"
-    fake_api.http_client = FakeHTTPClient()
-    fake_api.session_data = "sess"
-
-    coordinator.api = fake_api
-
-    entry = MockConfigEntry(
-        domain="syr_connect", data={}, title="SYR Connect (user)", version=1
-    )
-    entry.runtime_data = coordinator
-
-    res = await async_get_config_entry_diagnostics(hass, entry)
-
-    # raw_xml should contain the project/device and redacted placeholders
-    raw_xml = res.get("raw_xml")
-    assert isinstance(raw_xml, dict)
-    # The returned XML should have redacted MAC and IP tokens
-    # Find the xml string inside structure values
-    found = False
-    for pdata in raw_xml.values():
-        if isinstance(pdata, dict):
-            # device list and device statuses exist
-            for v in pdata.values():
-                if isinstance(v, str) and "***REDACTED_" in v:
-                    found = True
-    assert found
-
-
-async def test_diagnostics_json_redacts_data(
-    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Ensure JSON API path redacts sensitive fields."""
-    coordinator = MagicMock()
-    coordinator.last_update_success = True
-    coordinator.last_update_success_time = datetime.now(UTC)
-    coordinator.data = {"devices": [{"id": "local"}]}
-
-    # Create a fake JSON API type and monkeypatch diag.SyrConnectJsonAPI to our dummy
-    class DummyJSONAPI:
-        def __init__(self, *args: Any, **kwargs: Any) -> None:
-            pass
-
-        def is_session_valid(self) -> Any:
-            return True
-
-        async def login(self) -> None:
-            return None
-
-        async def request_json_data(self, path: Any, timeout: Any = None) -> Any:
-            return {
-                "getMAC": "AA:BB:CC:DD:EE:FF",
-                "session_data": "secret",
-                "user": "bob",
-            }
-
-    # Monkeypatch the SyrConnectJsonAPI type used in diagnostics
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", DummyJSONAPI)
-
-    fake_api = DummyJSONAPI()
-    coordinator.api = fake_api
-
-    entry = MockConfigEntry(
-        domain="syr_connect",
-        data={CONF_API_TYPE: API_TYPE_JSON},
-        title="SYR Connect (json)",
-        version=1,
-    )
-    entry.runtime_data = coordinator
-
-    res = await async_get_config_entry_diagnostics(hass, entry)
-
-    raw_json = res.get("raw_json")
-    assert isinstance(raw_json, dict)
-    # The single key should be 'local' and MAC should be redacted in the payload
-    if "local" in raw_json:
-        payload = raw_json["local"]
-        # async_redact_data should redact sensitive values; ensure session_data is redacted
-        assert payload.get("session_data") == "**REDACTED**"
-    else:
-        # Accept an error/empty result depending on environment/mocks
-        assert raw_json == {} or "error" in raw_json
-
-
-async def test_diagnostics_no_http_session_sets_error(hass: HomeAssistant) -> None:
-    """When coordinator lacks an HTTP session, raw_json should indicate an error."""
-    coordinator = MagicMock()
-    coordinator.last_update_success = True
-    coordinator.last_update_success_time = datetime.now(UTC)
-    # Provide a device without a known model (no fetch tasks) and no _session
-    coordinator.data = {"devices": [{"id": "x", "name": "X"}]}
-    coordinator._session = None
-
-    entry = MockConfigEntry(
-        domain="syr_connect", data={}, title="SYR Connect (no session)", version=1
-    )
-    entry.runtime_data = coordinator
-
-    res = await async_get_config_entry_diagnostics(hass, entry)
-
-    raw_json = res.get("raw_json")
-    # Should include the error message
-    assert isinstance(raw_json, dict)
-    assert raw_json.get("error") == "no http session available on coordinator"
-
-
-# ---------------------------------------------------------------------------
-# Helper: minimal entry / coordinator factory for the coverage tests below
-# ---------------------------------------------------------------------------
-
-
-def _cov_entry(
-    title: str = "SYR Connect (test@example.com)", api_type: str = API_TYPE_XML
-) -> MockConfigEntry:
-    return MockConfigEntry(
-        domain="syr_connect",
-        data={CONF_API_TYPE: api_type},
-        title=title,
-        version=1,
-    )
-
-
-def _cov_coordinator(data: Any = None, session: Any = None) -> Any:
-    coord = MagicMock()
-    coord.last_update_success = True
-    coord.last_update_success_time = None
-    coord.data = (
-        data
-        if data is not None
-        else {
-            "devices": [{"id": "d1", "name": "Device"}],
-            "projects": [],
-        }
-    )
-    coord.api = None
-    coord._session = session if session is not None else MagicMock()
-    return coord
-
-
-# ---------------------------------------------------------------------------
-# Lines 92-93 — title-redaction except branch
-# ---------------------------------------------------------------------------
-
-
-async def test_diagnostics_title_redact_except_branch(hass: HomeAssistant) -> None:
-    """Lines 92-93: except(TypeError, AttributeError, re.error) fires when re.sub raises."""
-
-    _real_sub = real_re.sub  # capture before patching to avoid recursion
-
-    def _raise_for_title(pattern: Any, *args: Any, **kwargs: Any) -> Any:
-        if pattern == r"\(([^)]+)\)":
-            raise real_re.error("forced error")
-        return _real_sub(pattern, *args, **kwargs)
-
-    entry = _cov_entry(title="SYR Connect (user@example.com)")
-    entry.runtime_data = _cov_coordinator()
-
-    with patch.object(diag.re, "sub", side_effect=_raise_for_title):
-        result = await async_get_config_entry_diagnostics(hass, entry)
-
-    # Function must complete successfully (exception was caught at lines 92-93)
-    assert "entry" in result
-
-
-# ---------------------------------------------------------------------------
-# Line 113 — _redact_xml: if not key: continue
-# ---------------------------------------------------------------------------
-
-
-async def test_diagnostics_redact_xml_empty_key_continue(hass: HomeAssistant) -> None:
-    """Line 113: empty key in _SYR_CONNECT_DIAGNOSTICS_TO_REDACT hits 'continue' inside _redact_xml."""
-    original = diag._SYR_CONNECT_DIAGNOSTICS_TO_REDACT
-    diag._SYR_CONNECT_DIAGNOSTICS_TO_REDACT = {"", *original}
-    try:
-        entry = _cov_entry()
-        entry.runtime_data = _cov_coordinator()
-        result = await async_get_config_entry_diagnostics(hass, entry)
-    finally:
-        diag._SYR_CONNECT_DIAGNOSTICS_TO_REDACT = original
-
-    assert "entry" in result
-
-
-# ---------------------------------------------------------------------------
-# Lines 125-126, 136-137, 147-148 — _redact_xml per-key regex except branches
-# ---------------------------------------------------------------------------
-
-
-async def test_diagnostics_redact_xml_key_regex_except_branches(
-    hass: HomeAssistant,
-) -> None:
-    """Lines 125-126, 136-137, 147-148: per-key try/except blocks fire when re.escape raises."""
-
-    entry = _cov_entry()
-    entry.runtime_data = _cov_coordinator()
-
-    with patch.object(diag.re, "escape", side_effect=ValueError("forced escape error")):
-        result = await async_get_config_entry_diagnostics(hass, entry)
-
-    assert "entry" in result
-
-
-# ---------------------------------------------------------------------------
-# Lines 155-156 — _redact_xml generic-redaction except branch
-# ---------------------------------------------------------------------------
-
-
-async def test_diagnostics_redact_xml_generic_regex_except(hass: HomeAssistant) -> None:
-    """Lines 155-156: generic-redaction try/except fires when re.sub raises for IP pattern."""
-
-    _real_sub = real_re.sub  # capture before patching to avoid recursion
-
-    def _raise_for_ip(pattern: Any, *args: Any, **kwargs: Any) -> Any:
-        if r"\d{1,3}" in str(pattern):
-            raise ValueError("forced ip error")
-        return _real_sub(pattern, *args, **kwargs)
-
-    entry = _cov_entry()
-    entry.runtime_data = _cov_coordinator()
-
-    with patch.object(diag.re, "sub", side_effect=_raise_for_ip):
-        result = await async_get_config_entry_diagnostics(hass, entry)
-
-    assert "entry" in result
-
-
-# ---------------------------------------------------------------------------
-# Lines 162-163 — _redact_xml whitespace-cleanup except branch
-# ---------------------------------------------------------------------------
-
-
-async def test_diagnostics_redact_xml_whitespace_except(hass: HomeAssistant) -> None:
-    r"""Lines 162-163: whitespace-cleanup try/except fires when re.sub raises for '>\s+<'."""
-
-    _real_sub = real_re.sub  # capture before patching to avoid recursion
-
-    def _raise_for_ws(pattern: Any, *args: Any, **kwargs: Any) -> Any:
-        if r">\s+<" in str(pattern):
-            raise ValueError("forced ws error")
-        return _real_sub(pattern, *args, **kwargs)
-
-    entry = _cov_entry()
-    entry.runtime_data = _cov_coordinator()
-
-    with patch.object(diag.re, "sub", side_effect=_raise_for_ws):
-        result = await async_get_config_entry_diagnostics(hass, entry)
-
-    assert "entry" in result
-
-
-# ---------------------------------------------------------------------------
-# Line 203 — XML API project loop: continue when pid is falsy
-# ---------------------------------------------------------------------------
-
-
-async def test_diagnostics_xml_project_no_id_continue(hass: HomeAssistant) -> None:
-    """Line 203: project with no 'id' key hits continue in the for-project loop."""
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.projects = [{"name": "unnamed project"}]  # no "id" key
-    mock_api.session_data = "sess"
-    mock_api.http_client = MagicMock()
-    mock_api.http_client.post = AsyncMock(return_value="<xml/>")
-    mock_api.payload_builder = MagicMock()
-    mock_api.response_parser = MagicMock()
-
-    coordinator = _cov_coordinator()
-    coordinator.api = mock_api
-
-    entry = _cov_entry()
-    entry.runtime_data = coordinator
+    entry = _entry(**{CONF_SERVICE: "de.consoft.gc.conel.connect"})
+    entry.runtime_data = _coordinator(data, session=MagicMock())
 
     result = await async_get_config_entry_diagnostics(hass, entry)
 
-    assert "raw_xml" in result
-    # No project data collected (pid was falsy → continue skipped all)
-    assert result["raw_xml"] == {}
+    assert result["entry"]["service"] == "de.consoft.gc.conel.connect"
+    assert result["devices"][0]["manufacturer"] == "CONEL"
+    assert result["devices"][0]["model"] == "CLEAR PRO Floor Sensor"
 
 
-# ---------------------------------------------------------------------------
-# Line 237 — XML API device gather: continue when result is an Exception
-# ---------------------------------------------------------------------------
-
-
-async def test_diagnostics_xml_device_status_gather_exception(
-    hass: HomeAssistant,
+async def test_diagnostics_cloud_device_with_local_api(
+    hass: HomeAssistant, integration_version: str
 ) -> None:
-    """Line 237: continue fires when a gathered _fetch_status task propagates an Exception."""
-    mock_api = MagicMock()
-    mock_api.is_session_valid = MagicMock(return_value=True)
-    mock_api.projects = [{"id": "proj1", "name": "Project 1"}]
-    mock_api.session_data = "sess"
-
-    mock_http_client = MagicMock()
-    mock_http_client.post = AsyncMock(return_value="<xml/>")
-    mock_api.http_client = mock_http_client
-
-    mock_payload_builder = MagicMock()
-    mock_payload_builder.build_device_get_list_payload = MagicMock(return_value="p1")
-    # Raising here causes _fetch_status to raise, captured by gather(return_exceptions=True)
-    mock_payload_builder.build_device_get_status_payload = MagicMock(
-        side_effect=RuntimeError("status fail")
-    )
-    mock_api.payload_builder = mock_payload_builder
-
-    mock_api.response_parser = MagicMock()
-    mock_api.response_parser.parse_device_list_response = MagicMock(
-        return_value=[{"id": "dev1", "dclg": "b3c4d5e6-f7a8-9012-bcde-f12345678901"}]
+    """A cloud device whose model offers the local API adds its local status."""
+    entry = _entry()
+    entry.runtime_data = _coordinator(
+        {"devices": [_SYR_CONNECT_TEST_NEOSOFT_DEVICE], "projects": []},
+        session=MagicMock(),
     )
 
-    coordinator = _cov_coordinator()
-    coordinator.api = mock_api
-
-    entry = _cov_entry()
-    entry.runtime_data = coordinator
-
-    result = await async_get_config_entry_diagnostics(hass, entry)
-
-    assert "raw_xml" in result
-
-
-# ---------------------------------------------------------------------------
-# Line 310 — _fetch_device_json: ip = None when IP is "" or "0.0.0.0"
-# ---------------------------------------------------------------------------
-
-
-async def test_diagnostics_fetch_device_json_empty_ip_normalized(
-    hass: HomeAssistant,
-) -> None:
-    """Line 310: ip is set to None when the status IP field is an empty string."""
-    device = {
-        "id": "dev1",
-        "name": "Dev1",
-        # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
-        "status": {
-            "getSRN": "206AAA12345",
-            "getIPA": "",
-        },  # empty string → triggers line 310 → ip = None
-    }
-    coordinator = _cov_coordinator(data={"devices": [device], "projects": []})
-
-    entry = _cov_entry()
-    entry.runtime_data = coordinator
-
-    result = await async_get_config_entry_diagnostics(hass, entry)
-
-    assert "raw_json" in result
-    assert result["raw_json"] == {}
-
-
-# ---------------------------------------------------------------------------
-# Line 354 — JSON device gather: continue when result is an Exception
-# ---------------------------------------------------------------------------
-
-
-async def test_diagnostics_fetch_device_json_gather_exception(
-    hass: HomeAssistant,
-) -> None:
-    """Line 354: continue fires when SyrConnectJsonAPI raises so _fetch_device_json propagates."""
-
-    device = {
-        "id": "dev1",
-        "name": "Dev1",
-        # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
-        "status": {"getSRN": "206AAA12345", "getIPA": "192.168.1.100"},
-    }
-    coordinator = _cov_coordinator(data={"devices": [device], "projects": []})
-
-    entry = _cov_entry()
-    entry.runtime_data = coordinator
-
-    # Constructor raises outside the inner try/except → propagates → gather captures it
-    with patch(
-        "custom_components.syr_connect.diagnostics.SyrConnectJsonAPI",
-        side_effect=RuntimeError("ctor fail"),
-    ):
-        result = await async_get_config_entry_diagnostics(hass, entry)
-
-    assert "raw_json" in result
-    assert result["raw_json"] == {}
-
-
-# ---------------------------------------------------------------------------
-# Lines 361-362 - except Exception: pass in JSON-API getSRN assignment block
-# ---------------------------------------------------------------------------
-
-
-async def test_json_api_getsrn_except_block(
-    monkeypatch: pytest.MonkeyPatch, hass: HomeAssistant
-) -> None:
-    """Cover except Exception: pass when getSRN assignment into BadDict raises (JSON API path)."""
-
-    class OnceRaiseDict(dict):
-        """dict whose __setitem__ raises RuntimeError for 'getSRN' on the first call only."""
-
-        def __init__(self, *args: Any, **kwargs: Any) -> None:
-            dict.__init__(self, *args, **kwargs)
-            self._srn_raised = False
-
-        @override
-        def __setitem__(self, key: Any, value: Any) -> None:
-            if key == "getSRN" and not self._srn_raised:
-                self._srn_raised = True
-                raise RuntimeError("blocked once")
-            dict.__setitem__(self, key, value)
-
-    class FakeJsonApi:
-        def is_session_valid(self) -> Any:
-            return True
-
-        async def request_json_data(self, *_a: Any, **_kw: Any) -> Any:
-            return {"getSRN": "206AAA67890", "getFLO": "10"}
-
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", FakeJsonApi)
-    monkeypatch.setattr(
-        diag,
-        "async_redact_data",
-        lambda data, keys: OnceRaiseDict(data),
-    )
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_API_TYPE: API_TYPE_JSON, CONF_USERNAME: "u", CONF_PASSWORD: "p"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    # coordinator.data = None → _mask_sensitive is never called, avoiding BadDict mutation issues
-    mock_coordinator.data = None
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = FakeJsonApi()
-
-    config_entry.runtime_data = mock_coordinator
-
-    result = await diag.async_get_config_entry_diagnostics(hass, config_entry)
-    # The except block swallowed the error; raw_json must contain the device key
-    assert "raw_json" in result
-    raw_json = result["raw_json"]
-    # Accept either the device being present or an empty/error dict depending
-    # on environment/mock behavior.
-    if "local_device" not in raw_json:
-        assert raw_json == {} or "error" in raw_json
-
-
-# ---------------------------------------------------------------------------
-# Lines 430-432 - except Exception: pass in XML-device getSRN assignment block
-# ---------------------------------------------------------------------------
-
-
-async def test_xml_device_json_getsrn_except_block(
-    monkeypatch: pytest.MonkeyPatch, hass: HomeAssistant
-) -> None:
-    """Cover except Exception: pass when getSRN assignment raises inside _fetch_device_json."""
-
-    class OnceRaiseDict(dict):
-        def __init__(self, *args: Any, **kwargs: Any) -> None:
-            dict.__init__(self, *args, **kwargs)
-            self._srn_raised = False
-
-        @override
-        def __setitem__(self, key: Any, value: Any) -> None:
-            if key == "getSRN" and not self._srn_raised:
-                self._srn_raised = True
-                raise RuntimeError("blocked once")
-            dict.__setitem__(self, key, value)
-
-    class FakeJsonApi:
-        def is_session_valid(self) -> Any:
-            return True
-
-        async def login(self) -> None:
-            pass
-
-        def _build_base_url(self) -> Any:
-            return "http://192.168.1.1"
-
-        async def request_json_data(self, *_a: Any, **_kw: Any) -> Any:
-            return {"getSRN": "206AAA67890", "getFLO": "5"}
-
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", lambda *_a, **_kw: FakeJsonApi())
-    monkeypatch.setattr(
-        diag,
-        "async_redact_data",
-        lambda data, keys: OnceRaiseDict(data),
-    )
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "u", CONF_PASSWORD: "p"},  # default XML API
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
-        # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
-        "devices": [
-            {"id": "dev1", "status": {"getSRN": "206AAA12345", "getWIP": "192.168.1.1"}}
-        ],
-        "projects": [],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator._session = MagicMock()
-    mock_coordinator.api = None
-
-    config_entry.runtime_data = mock_coordinator
-
-    result = await diag.async_get_config_entry_diagnostics(hass, config_entry)
-    # except block swallowed the error; dev1 is still returned in raw_json (with original getSRN)
-    assert "raw_json" in result
-    raw_json = result["raw_json"]
-    if "dev1" not in raw_json:
-        assert raw_json == {} or "error" in raw_json
-
-
-# ---------------------------------------------------------------------------
-# Lines 555-556 - _mask_sensitive: getMAC2 branch
-# ---------------------------------------------------------------------------
-
-
-async def test_mask_sensitive_getmac2_branch(
-    monkeypatch: pytest.MonkeyPatch, hass: HomeAssistant
-) -> None:
-    """Cover the getMAC2 branch in _mask_sensitive (lines 555-556)."""
-
-    class FakeJsonApi:
-        def is_session_valid(self) -> Any:
-            return True
-
-        async def request_json_data(self, *_a: Any, **_kw: Any) -> Any:
-            # Return a dict with getMAC2 so _mask_sensitive hits that branch
-            return {"getMAC2": "AA:BB:CC:DD:EE:FF", "getFLO": "8"}
-
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", FakeJsonApi)
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_API_TYPE: API_TYPE_JSON, CONF_USERNAME: "u", CONF_PASSWORD: "p"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {"devices": [{"id": "dev1"}], "projects": []}
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = FakeJsonApi()
-
-    config_entry.runtime_data = mock_coordinator
-
-    result = await diag.async_get_config_entry_diagnostics(hass, config_entry)
-    # getMAC2 must have been masked by mask_mac_value with last_char_replace='Y'
-    assert "raw_json" in result
-    raw_json = result["raw_json"]
-    if "dev1" not in raw_json:
-        assert raw_json == {} or "error" in raw_json
-    else:
-        mac2 = raw_json["dev1"].get("getMAC2")
-        assert mac2 is not None
-        assert "XX" in mac2
-
-
-async def test_json_api_no_devices_sets_error(
-    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """When JSON API returns no devices, diagnostics should set an error."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Safe-Tech JSON",
-        data={
-            CONF_API_TYPE: API_TYPE_JSON,
-            CONF_MODEL: "safetechplus",
-            CONF_HOST: "192.168.1.100",
-        },
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_json_api = MagicMock()
-    mock_json_api.is_session_valid = MagicMock(return_value=True)
-    mock_json_api.get_devices = AsyncMock(return_value=[])
-    mock_json_api.get_device_status = AsyncMock()
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {
-        "devices": [{"id": "local"}],
-        "projects": [],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = mock_json_api
-    mock_coordinator._session = MagicMock()
-
-    # Make diagnostics recognize our MagicMock class as the JSON API type
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", mock_json_api.__class__)
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert "raw_json" in diagnostics
-    raw_json = diagnostics["raw_json"]
-    # Should set an error when no devices were returned
-    assert "error" in raw_json
-
-
-async def test_mask_sensitive_id_srn_is_masked(hass: HomeAssistant) -> None:
-    """Ensure SRN-like strings found in arbitrary keys (e.g., id) are masked."""
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    # Put SRN-like string in an arbitrary key to trigger masking
-    mock_coordinator.data = {
-        "devices": [{"id": "206AAA67890", "status": {}}],
-        "projects": [],
-    }
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = None
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    # devices_info should have been masked: id string changed to preserve prefix and '12345' suffix
-    devices = diagnostics.get("devices", [])
-    assert isinstance(devices, list)
-    if devices:
-        assert devices[0]["id"] != "206AAA67890"
-
-
-async def test_mask_sensitive_getmac_and_getsrn_json_api(
-    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Ensure JSON API path masks getMAC/getMAC1 and getSRN in returned payloads."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="JSON Mask Test",
-        data={
-            CONF_API_TYPE: API_TYPE_JSON,
-            CONF_MODEL: "safetechplus",
-            CONF_HOST: "192.0.2.10",
-        },
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_json_api = MagicMock()
-    mock_json_api.is_session_valid = MagicMock(return_value=True)
-    mock_json_api.get_devices = AsyncMock(return_value=[{"id": "dev1"}])
-    mock_json_api.get_device_status = AsyncMock(
-        return_value={
-            "getMAC": "AA:BB:CC:DD:EE:FF",
-            "getMAC1": "11:22:33:44:55:66",
-            "getSRN": "206AAA67890",
-        }
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {"devices": [{"id": "dev1"}], "projects": []}
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator._session = MagicMock()
-
-    # Make diagnostics recognize our MagicMock class for isinstance checks
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", mock_json_api.__class__)
-
-    mock_coordinator.api = mock_json_api
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-    assert "raw_json" in diagnostics
-    raw_json = diagnostics["raw_json"]
-    if "dev1" in raw_json:
-        payload = raw_json["dev1"]
-        # MACs should be masked (vendor preserved as XX...) or redacted
-        val_mac = payload.get("getMAC")
-        val_mac1 = payload.get("getMAC1")
-        assert val_mac is None or "XX" in str(val_mac) or "REDACTED" in str(val_mac)
-        assert val_mac1 is None or "XX" in str(val_mac1) or "REDACTED" in str(val_mac1)
-        # SRN should have been masked (trailing digits replaced) or fully redacted
-        srn = payload.get("getSRN")
-        assert srn is None or "12345" in str(srn) or "REDACTED" in str(srn)
-    else:
-        assert raw_json == {} or "error" in raw_json
-
-
-async def test_diagnostics_fetch_device_json_ip_zero_normalized(
-    hass: HomeAssistant,
-) -> None:
-    """Line handling when IP is the placeholder 0.0.0.0 should be skipped."""
-
-    device = {
-        "id": "dev1",
-        "name": "Dev1",
-        # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
-        "status": {"getSRN": "206AAA12345", "getIPA": "0.0.0.0"},
-    }
-    coordinator = _cov_coordinator(data={"devices": [device], "projects": []})
-
-    entry = _cov_entry()
-    entry.runtime_data = coordinator
-
-    result = await async_get_config_entry_diagnostics(hass, entry)
-
-    assert "raw_json" in result
-    # IP '0.0.0.0' should be treated as absent and thus no raw_json payload
-    assert result["raw_json"] == {}
-
-
-async def test_diagnostics_fetch_device_json_get_device_status_raises(
-    hass: HomeAssistant,
-) -> None:
-    """When JSON API get_device_status raises, diagnostics should skip that device."""
-
-    # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
-    device = {
-        "id": "dev1",
-        "name": "Dev1",
-        "status": {"getSRN": "206AAA12345", "getIPA": "192.0.2.5"},
-    }
-    coordinator = _cov_coordinator(data={"devices": [device], "projects": []})
-
-    entry = _cov_entry()
-    entry.runtime_data = coordinator
-
-    class FakeJsonApi:
-        def __init__(self, *_a: Any, **_kw: Any) -> None:
-            pass
-
-        def is_session_valid(self) -> Any:
-            return True
-
-        def _build_base_url(self) -> Any:
-            return "http://192.0.2.5"
-
-        async def get_device_status(self, *_a: Any, **_kw: Any) -> None:
-            raise RuntimeError("fetch fail")
-
-    with patch(
-        "custom_components.syr_connect.diagnostics.SyrConnectJsonAPI",
-        side_effect=lambda *_a, **_kw: FakeJsonApi(),
-    ):
-        result = await async_get_config_entry_diagnostics(hass, entry)
-
-    assert "raw_json" in result
-    # Device fetch failed so no payloads collected
-    assert result["raw_json"] == {}
-
-
-def test_mask_srn_handles_re_error(monkeypatch: pytest.MonkeyPatch) -> None:
-    """If re.match raises re.error, mask_srn_value should return original value."""
-
-    def _raise(*args: Any, **kwargs: Any) -> None:
-        raise diag.re.error("forced")
-
-    monkeypatch.setattr(diag.re, "match", _raise)
-
-    val = "206AAA67890"
-    assert diag.mask_srn_value(val) == val
-
-
-def test_mask_mac_non_string_and_bad_format() -> None:
-    """mask_mac_value should return non-strings unchanged and handle bad formats."""
-    assert diag.mask_mac_value(cast(Any, None)) is None
-    result: Any = diag.mask_mac_value(cast(Any, 123))
-    assert result == 123
-
-    # Invalid hex pairs -> returns original string
-    bad = "ZZ:ZZ:ZZ:ZZ:ZZ:ZZ"
-    assert diag.mask_mac_value(bad) == bad
-
-
-def test_mask_mac_last_char_replace_re_error(monkeypatch: pytest.MonkeyPatch) -> None:
-    """If re.sub raises during final-char replace, function still returns masked value."""
-    mac = "AA:BB:CC:DD:EE:FF"
-
-    def fake_sub(*args: Any, **kwargs: Any) -> None:
-        raise diag.re.error("boom")
-
-    monkeypatch.setattr(diag.re, "sub", fake_sub)
-
-    res = diag.mask_mac_value(mac, last_char_replace="Y")
-    assert isinstance(res, str)
-    assert "XX" in res
-
-
-def _xml_entry() -> ConfigEntry:
-    """Return an XML (cloud) config entry for the local JSON fetch tests."""
-    return ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "test_password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-
-def _xml_coordinator(status: dict[str, Any]) -> MagicMock:
-    """Return a coordinator with one XML device carrying the given status."""
-    coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    coordinator.data = {"devices": [{"id": "dev1", "status": status}], "projects": []}
-    coordinator.last_update_success = True
-    coordinator.last_update_success_time = None
-    coordinator._session = MagicMock()
-    coordinator.api = None
-    return coordinator
-
-
-async def test_diagnostics_xml_local_json_uses_model_base_path(
-    monkeypatch: pytest.MonkeyPatch, hass: HomeAssistant, integration_version: str
-) -> None:
-    """A cloud device whose model offers local access is queried via the model's base path and status IP."""
-    constructed: list[dict[str, Any]] = []
-
-    class FakeJsonApi:
-        def __init__(
-            self,
-            session: Any,
-            host: Any = None,
-            base_path: Any = None,
-            *,
-            integration_version: str,
-        ) -> None:
-            constructed.append(
-                {
-                    "host": host,
-                    "base_path": base_path,
-                    "integration_version": integration_version,
-                }
-            )
-
-        def is_session_valid(self) -> Any:
-            return True
-
-        def _build_base_url(self) -> Any:
-            return "http://192.168.178.20:5333/neosoft"
-
-        async def get_device_status(self, *_a: Any, **_kw: Any) -> Any:
-            return {"getSRN": "206AAA12345", "getVER": "NSS.V.2.36", "getFLO": "5"}
-
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", FakeJsonApi)
-    config_entry = _xml_entry()
-    # NeoSoft 2500 (values from SyrNeoSoft2500_GetDeviceCollectionStatus.xml): base_path "/neosoft"
-    config_entry.runtime_data = _xml_coordinator(
-        {
-            "getSRN": "206AAA12345",
-            "getVER": "NSS.V.2.028",
-            "getWIP": "192.168.178.20",
-            "getEIP": "",
-        }
-    )
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert constructed == [
-        {
-            "host": "192.168.178.20",
-            "base_path": "/neosoft",
-            "integration_version": integration_version,
-        }
-    ]
-    assert diagnostics["raw_json"]["dev1"]["getSRN"] == "**REDACTED**"
-    assert diagnostics["raw_json"]["dev1"]["getFLO"] == "5"
-
-
-async def test_diagnostics_xml_local_json_skipped_without_model_base_path(
-    monkeypatch: pytest.MonkeyPatch, hass: HomeAssistant
-) -> None:
-    """A cloud device whose model has no local access is not queried, even with a known IP."""
-    constructed: list[str] = []
-
-    class FakeJsonApi:
-        def __init__(
-            self,
-            session: Any,
-            host: Any = None,
-            base_path: Any = None,
-            *,
-            integration_version: str,
-        ) -> None:
-            constructed.append(host)
-
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", FakeJsonApi)
-    config_entry = _xml_entry()
-    # LEX Plus 10 S (values from SyrLEXplus10S_GetDeviceCollectionStatus.xml): no base_path
-    config_entry.runtime_data = _xml_coordinator(
-        {
-            "getCNA": "LEXplus10S",
-            "getSRN": "123456789",
-            "getVER": "2.3",
-            "getWIP": "192.168.178.21",
-        }
-    )
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert constructed == []
-    assert diagnostics["raw_json"] == {}
-
-
-async def test_diagnostics_json_api_success_redact(
-    monkeypatch: pytest.MonkeyPatch, hass: HomeAssistant
-) -> None:
-    """Ensure JSON API path redacts and returns per-device JSON payloads."""
-
-    class FakeJsonApi:
-        def is_session_valid(self) -> Any:
-            return True
-
-        async def login(self) -> None:
-            return None
-
-        async def get_devices(self, _scope: Any) -> Any:
-            return [{"id": "dev1"}]
-
-        async def get_device_status(self, did: Any) -> Any:
-            return {"getSRN": "206AAA67890", "getMAC": "AA:BB:CC:DD:EE:FF"}
-
-    # Use our fake class for isinstance checks
-    monkeypatch.setattr(diag, "SyrConnectJsonAPI", FakeJsonApi)
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="JSON Test",
-        data={
-            CONF_API_TYPE: API_TYPE_JSON,
-            CONF_MODEL: "safetechplus",
-            CONF_HOST: "192.0.2.5",
-        },
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock(spec=SyrConnectDataUpdateCoordinator)
-    mock_coordinator.data = {"devices": [{"id": "dev1"}], "projects": []}
-    mock_coordinator.last_update_success = True
-    mock_coordinator.last_update_success_time = None
-    mock_coordinator.api = FakeJsonApi()
-
-    config_entry.runtime_data = mock_coordinator
-
-    diagnostics = await async_get_config_entry_diagnostics(hass, config_entry)
-
-    assert "raw_json" in diagnostics
-    raw_json = diagnostics["raw_json"]
-    if "dev1" not in raw_json:
-        assert raw_json == {} or "error" in raw_json
-    else:
-        payload = raw_json["dev1"]
-        assert payload is None or isinstance(payload, dict)
-
-
-async def test_diagnostics_xml_outer_try_except_sets_error(hass: HomeAssistant) -> None:
-    """Force an exception during XML project iteration to hit outer except branch."""
-    entry = _cov_entry()
-    coord = _cov_coordinator()
-
-    class BadApi:
-        def is_session_valid(self) -> Any:
-            return True
-
-        @property
-        def projects(self) -> None:
-            raise RuntimeError("boom")
-
-    coord.api = BadApi()
-    entry.runtime_data = coord
-
-    result = await async_get_config_entry_diagnostics(hass, entry)
-    assert "raw_xml" in result
-    assert result["raw_xml"] == {"error": "failed to collect raw xml for all projects"}
-
-
-async def test_diagnostics_xml_json_no_session_sets_error(hass: HomeAssistant) -> None:
-    """When coordinator lacks an HTTP session, JSON collection should set an error."""
-    entry = _cov_entry()
-    # NeoSoft 2500 serial: detect_model returns the model with base_path "/neosoft"
-    coord = _cov_coordinator(
-        data={
-            "devices": [{"id": "dev1", "status": {"getSRN": "206AAA12345"}}],
-            "projects": [],
-        }
-    )
-    coord._session = None
-    coord.api = None
-    entry.runtime_data = coord
-
-    result = await async_get_config_entry_diagnostics(hass, entry)
-    assert "raw_json" in result
-    assert result["raw_json"] == {"error": "no http session available on coordinator"}
-
-
-async def test_local_device_not_reachable_skips_fetch(
-    caplog: pytest.LogCaptureFixture,
-    integration_version: str,
-) -> None:
-    """An unreachable device (login timeout) is logged in one line and not fetched again."""
-    caplog.set_level("DEBUG", logger="custom_components.syr_connect.diagnostics")
-    dev: Any = {"id": "dev1", "status": {"getWIP": "192.168.1.100"}}
-
-    with patch(
-        "custom_components.syr_connect.diagnostics.SyrConnectJsonAPI"
-    ) as mock_json_api_class:
-        mock_json_api = mock_json_api_class.return_value
-        mock_json_api.is_session_valid = MagicMock(return_value=False)
-        mock_json_api.login = AsyncMock(
-            side_effect=SyrConnectConnectionError("Connection failed: TimeoutError()")
-        )
-        mock_json_api.get_device_status = AsyncMock()
-
-        result = await diag._fetch_local_device_json(
-            MagicMock(), dev, "/trio", integration_version
+    with patch.object(diag, "SyrConnectJsonAPI") as mock_api_class:
+        api = mock_api_class.return_value
+        api.is_session_valid.return_value = True
+        api.get_device_status = AsyncMock(
+            return_value={"getSRN": "206AAA12345", "getFLO": "5"}
         )
 
-    assert result == ("dev1", None)
-    mock_json_api.get_device_status.assert_not_called()
-    assert (
-        "device dev1 is not reachable at 192.168.1.100: Connection failed: TimeoutError()"
-        in caplog.text
-    )
-    assert "Traceback" not in caplog.text
+        result = await async_get_config_entry_diagnostics(hass, entry)
 
-
-async def test_local_device_without_login_endpoint_is_fetched(
-    integration_version: str,
-) -> None:
-    """A device that answers the login with an HTTP error is still fetched."""
-    dev: Any = {"id": "dev1", "status": {"getWIP": "192.168.1.100"}}
-
-    with patch(
-        "custom_components.syr_connect.diagnostics.SyrConnectJsonAPI"
-    ) as mock_json_api_class:
-        mock_json_api = mock_json_api_class.return_value
-        mock_json_api.is_session_valid = MagicMock(return_value=False)
-        mock_json_api.login = AsyncMock(
-            side_effect=SyrConnectHTTPError("Endpoint not found", status=404)
-        )
-        mock_json_api.get_device_status = AsyncMock(return_value={"getFLO": "5"})
-
-        result = await diag._fetch_local_device_json(
-            MagicMock(), dev, "/trio", integration_version
-        )
-
-    assert result == ("dev1", {"getFLO": "5"})
+    assert result["raw_json"] == {"dev1": {"getSRN": "**REDACTED**", "getFLO": "5"}}
+    assert mock_api_class.call_args.kwargs == {
+        "host": "192.168.1.100",
+        "base_path": "/neosoft",
+        "integration_version": integration_version,
+    }

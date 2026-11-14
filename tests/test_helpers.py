@@ -7,9 +7,8 @@ from datetime import UTC, datetime
 import importlib
 import logging
 import pkgutil
-import re
 from types import SimpleNamespace
-from typing import Any, NoReturn, cast, override
+from typing import Any, cast
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -769,21 +768,6 @@ def test_get_sensor_iwh_whu_invalid_string_defaults_to_zero_and_persists() -> No
     assert status.get("getWHU") == 0
 
 
-def test_get_sensor_iwh_set_whu_assignment_raises_does_not_crash() -> None:
-    """If assigning to status['getWHU'] raises, function still returns value."""
-
-    class BadStatus(dict):
-        @override
-        def __setitem__(self, key: Any, value: Any) -> Any:
-            if key == "getWHU":
-                raise RuntimeError("boom")
-            return super().__setitem__(key, value)
-
-    status = BadStatus({"getCND": 350})
-    # Should compute 350/35 == 10 and not raise despite assignment error
-    assert get_sensor_iwh_value(status) == 10
-
-
 def test_get_sensor_iwh_whole_float_string_returns_int() -> None:
     """A getIWH text with a whole number ("12.0") is returned as int."""
     value = get_sensor_iwh_value({"getIWH": "12.0", "getWHU": 0})
@@ -796,21 +780,6 @@ def test_get_sensor_iwh_invalid_getiwh_falls_back_to_derive() -> None:
     """If explicit getIWH is invalid but getCND exists, derive from getCND."""
     status = {"getIWH": "bad", "getWHU": 0, "getCND": 350}
     # Should fall back and compute 350 / 35 == 10
-    assert get_sensor_iwh_value(status) == 10
-
-
-def test_get_sensor_iwh_derived_assignment_raises_does_not_crash() -> None:
-    """If persisting derived getIWH raises, function still returns value."""
-
-    class BadStatus2(dict):
-        @override
-        def __setitem__(self, key: Any, value: Any) -> Any:
-            if key == "getIWH":
-                raise RuntimeError("boom")
-            return super().__setitem__(key, value)
-
-    status = BadStatus2({"getCND": 350})
-    # Should compute 350/35 == 10 and not raise despite assignment error
     assert get_sensor_iwh_value(status) == 10
 
 
@@ -1599,25 +1568,6 @@ def test_is_sensor_visible_group_control_and_cs_and_empty_ip() -> None:
     assert is_sensor_visible({}, key_ip, "0.0.0.0") is False
 
 
-def test_get_default_scan_interval_entry_getattr_raises() -> None:
-    """If accessing attributes on entry raises, function should handle it and return XML default."""
-
-    class BadEntry:
-        @property
-        def options(self) -> None:
-            raise AttributeError("no options")
-
-        @property
-        def data(self) -> None:
-            raise AttributeError("no data")
-
-    be = BadEntry()
-    assert (
-        helpers.get_default_scan_interval_for_entry(cast(Any, be))
-        == helpers._SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT
-    )
-
-
 def test_get_sensor_ala_map_known_model_unmapped_codes() -> None:
     """Known models but with unmapped raw codes should return (None, raw)."""
     model = _signature("lexplus10")
@@ -1716,6 +1666,20 @@ def test_get_sensor_bat_value_first_token_unparseable() -> None:
     assert get_sensor_bat_value("bad 4,38 3,90") is None
 
 
+@pytest.mark.parametrize(
+    "value",
+    [
+        pytest.param("a,b", id="comma-without-number"),
+        # str.isdigit() accepts superscript digits, int() does not
+        pytest.param("²", id="superscript-digit"),
+    ],
+)
+def test_get_sensor_net_and_bat_value_unparsable_text(value: str) -> None:
+    """A text that only looks like a voltage gives no value."""
+    assert get_sensor_net_value(value) is None
+    assert get_sensor_bat_value(value) is None
+
+
 def test_get_current_mac_eip_fallback_when_wfs_unparsable() -> None:
     """When getWFS unparsable, ensure getEIP/getMAC2 fallback is used."""
     status = {
@@ -1763,79 +1727,11 @@ def test_get_sensor_avo_value_non_string_non_numeric_returns_none() -> None:
     assert get_sensor_avo_value({"v": 1}) is None
 
 
-def test_get_sensor_net_value_numeric_type_error() -> None:
-    """Numeric path exception branch in get_sensor_net_value (lines 369-370)."""
-    with patch("builtins.round", side_effect=ValueError("boom")):
-        assert get_sensor_net_value(363) is None
-
-
-def test_get_sensor_net_value_comma_decimal_exception() -> None:
-    """Comma-decimal exception branch in get_sensor_net_value (lines 394-395)."""
-    with patch("builtins.round", side_effect=ValueError("boom")):
-        assert get_sensor_net_value("11,86") is None
-
-
-def test_get_sensor_net_value_digit_only_exception() -> None:
-    """Digit-only exception branch in get_sensor_net_value (lines 401-402)."""
-    with patch("builtins.round", side_effect=ValueError("boom")):
-        assert get_sensor_net_value("363") is None
-
-
-def test_get_sensor_bat_value_numeric_exception() -> None:
-    """Numeric path exception branch in get_sensor_bat_value (lines 424-425)."""
-    with patch("builtins.round", side_effect=TypeError("boom")):
-        assert get_sensor_bat_value(363) is None
-
-
-def test_get_sensor_bat_value_comma_decimal_exception() -> None:
-    """Comma-decimal exception branch in get_sensor_bat_value (lines 446-447)."""
-    with patch("builtins.round", side_effect=ValueError("boom")):
-        assert get_sensor_bat_value("9,36") is None
-
-
-def test_get_sensor_bat_value_digit_only_exception() -> None:
-    """Digit-only exception branch in get_sensor_bat_value (lines 453-454)."""
-    with patch("builtins.round", side_effect=ValueError("boom")):
-        assert get_sensor_bat_value("363") is None
-
-
-def test_get_sensor_rtm_combined_mode_exception_in_parse() -> None:
-    """RTM combined-mode parse exception branch (lines 490-492).
-
-    A match is found by the regex but int() on the group raises - this is
-    only reachable via the except block since int/IndexError are caught.
-    Force by patching int() on the re match groups via a bad match object.
-    """
-    # Patch re.match to return a match whose group() raises ValueError
-    mock_match = MagicMock()
-    mock_match.group.side_effect = ValueError("bad group")
-    with patch(
-        "custom_components.syr_connect.helpers.re.match", return_value=mock_match
-    ):
-        result = helpers.get_sensor_rtm_value({"getRTH": None, "getRTM": "12:30"})
-    assert result is None
-
-
 def test_set_sensor_rtm_value_empty_option_returns_empty() -> None:
     """set_sensor_rtm_value returns [] for empty/non-string option (line 521)."""
     assert helpers.set_sensor_rtm_value({}, "") == []
     assert helpers.set_sensor_rtm_value({}, None) == []  # type: ignore[arg-type]
     assert helpers.set_sensor_rtm_value({}, 123) == []  # type: ignore[arg-type]
-
-
-def test_get_sensor_ab_value_unexpected_exception() -> None:
-    """Unexpected exception in getAB parse is caught and returns None (lines 599-601)."""
-
-    class _BadInt(int):
-        """int subclass whose float() conversion raises TypeError."""
-
-        @override
-        def __float__(self) -> NoReturn:
-            raise TypeError("unexpected error in float()")
-
-    # Pass a numeric-like object that causes TypeError inside the try block
-    result = get_sensor_ab_value({"getAB": _BadInt(2)})
-    assert result is None
 
 
 def test_get_sensor_ala_map_unrecognized_known_model() -> None:
@@ -1888,78 +1784,14 @@ def test_is_value_true_infinity_returns_false() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_get_sensor_avo_value_ml_pattern_except() -> None:
-    """Lines 297-298: except(ValueError, TypeError) in the mL pattern block.
-
-    Patch re.match so the first call ('^(<digits>)mL$') returns a mock whose
-    group(1) raises ValueError, triggering the inner except branch.
-    """
-
-    bad_match = MagicMock()
-    bad_match.group = MagicMock(side_effect=ValueError("bad group"))
-
-    # Only intercept the first re.match call (the mL pattern)
-    with patch(
-        "custom_components.syr_connect.helpers.re.match", return_value=bad_match
-    ):
-        result = get_sensor_avo_value("1655mL")
-
-    assert result is None
-
-
 # ---------------------------------------------------------------------------
 # Lines 306-307 — get_sensor_avo_value: fallback-pattern except branch
 # ---------------------------------------------------------------------------
 
 
-def test_get_sensor_avo_value_fallback_pattern_except() -> None:
-    """Lines 306-307: except(ValueError, TypeError) in the fallback pattern block.
-
-    Make the first re.match (mL pattern) return None so the code falls
-    through to the ^(<digits>) fallback, then patch that match's group(1) to raise.
-    """
-
-    bad_match = MagicMock()
-    bad_match.group = MagicMock(side_effect=ValueError("bad group"))
-
-    call_count = 0
-
-    def _match_side_effect(pattern: Any, string: Any) -> Any:
-        nonlocal call_count
-        call_count += 1
-        if call_count == 1:
-            return None  # mL pattern misses → fall through
-        return bad_match  # fallback pattern → group(1) raises
-
-    with patch(
-        "custom_components.syr_connect.helpers.re.match", side_effect=_match_side_effect
-    ):
-        result = get_sensor_avo_value("1655")
-
-    assert result is None
-
-
 # ---------------------------------------------------------------------------
 # Lines 793-794 — is_sensor_visible is_value_true: int/float except branch
 # ---------------------------------------------------------------------------
-
-
-def test_is_sensor_visible_is_value_true_int_subclass_float_raises() -> None:
-    """Lines 793-794: is_value_true except(ValueError, TypeError) for int|float branch.
-
-    Use an int subclass whose __float__ raises ValueError so the except path
-    fires and is_value_true returns False, hiding the getPA group sensor.
-    """
-
-    class _BadFloat(int):
-        @override
-        def __float__(self) -> NoReturn:
-            raise ValueError("bad float")
-
-    status = {"getPA1": _BadFloat(1), "getPN1": "value"}
-    # getPN1 is a PA-group key controlled by getPA1; is_value_true(_BadFloat(1))
-    # hits the except → returns False → getPN1 is hidden
-    assert is_sensor_visible(status, "getPN1", "value") is False
 
 
 def test_mask_ug_value_basic() -> None:
@@ -2040,15 +1872,6 @@ def test_mask_ug_value_non_string_returns_input() -> None:
     assert mask_ug_value(cast(Any, None)) is None
     result: Any = mask_ug_value(cast(Any, 123))
     assert result == 123
-
-
-def test_mask_ug_value_re_error_returns_original() -> None:
-    """If re.sub raises re.error, the original payload must be returned."""
-    payload = '<sc ug="SECRET"></sc>'
-    with patch(
-        "custom_components.syr_connect.helpers.re.sub", side_effect=re.error("boom")
-    ):
-        assert mask_ug_value(payload) == payload
 
 
 # ---------------------------------------------------------------------------

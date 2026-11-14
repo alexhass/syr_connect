@@ -1,7 +1,6 @@
 """Helper functions for SYR Connect integration."""
 
 from collections.abc import Callable, Mapping, Set as AbstractSet
-import contextlib
 import ipaddress
 import logging
 import math
@@ -773,23 +772,16 @@ def get_sensor_avo_value(value: Any) -> float | None:
     # Extract the numeric part before 'mL'
     match = re.match(r"^(\d+)mL$", value)
     if match:
-        try:
-            flow_ml = int(match.group(1))
-            flow_l = flow_ml / 1000  # Convert mL to L
-            _LOGGER.debug("Extracted flow value from '%s' to %.3f L", value, flow_l)
-        except ValueError, TypeError:
-            return None
-        else:
-            return flow_l
+        flow_ml = int(match.group(1))
+        flow_l = flow_ml / 1000  # Convert mL to L
+        _LOGGER.debug("Extracted flow value from '%s' to %.3f L", value, flow_l)
+        return flow_l
 
     # If pattern doesn't match, try to extract any number at the start and convert
     match = re.match(r"^(\d+)", value)
     if match:
-        try:
-            flow_ml = int(match.group(1))
-            return flow_ml / 1000  # Convert mL to L
-        except ValueError, TypeError:
-            return None
+        flow_ml = int(match.group(1))
+        return flow_ml / 1000  # Convert mL to L
 
     return None
 
@@ -887,10 +879,7 @@ def get_sensor_net_value(value: Any) -> float | None:
 
     # If already numeric, assume it's in 1/100 V (int) and divide
     if isinstance(value, (int | float)):
-        try:
-            return round(float(value) / 100.0, 2)
-        except TypeError, ValueError:
-            return None
+        return round(float(value) / 100.0, 2)
 
     if not isinstance(value, str):
         return None
@@ -1019,10 +1008,7 @@ def get_sensor_bat_value(value: Any) -> float | None:
 
     # If already numeric, assume it's in 1/100 V (int) and divide
     if isinstance(value, (int | float)):
-        try:
-            return round(float(value) / 100.0, 2)
-        except TypeError, ValueError:
-            return None
+        return round(float(value) / 100.0, 2)
 
     if not isinstance(value, str):
         return None
@@ -1081,15 +1067,11 @@ def get_sensor_rtm_value(status: dict[str, Any]) -> str | None:
             m_match = re.match(r"\s*(\d{2}):(\d{2})\s*$", rtm)
             if not m_match:
                 return None
-            try:
-                hh = int(m_match.group(1))
-                mm = int(m_match.group(2))
-                # Strict validation: hours 0-23, minutes 0-59
-                if 0 <= hh <= 23 and 0 <= mm <= 59:
-                    return f"{hh:02d}:{mm:02d}"
-            except (ValueError, IndexError, AttributeError) as err:
-                _LOGGER.debug("Failed to parse time from match: %s", err)
-                return None
+            hh = int(m_match.group(1))
+            mm = int(m_match.group(2))
+            # Strict validation: hours 0-23, minutes 0-59
+            if 0 <= hh <= 23 and 0 <= mm <= 59:
+                return f"{hh:02d}:{mm:02d}"
         return None
 
     # Case B: Separate numeric values
@@ -1139,8 +1121,7 @@ def get_sensor_iwh_value(status: dict[str, Any]) -> int | float | None:
         try:
             val = float(raw_iwh)
             # Persist normalized numeric getiwh back into status
-            with contextlib.suppress(Exception):
-                status["getIWH"] = int(val) if val.is_integer() else val
+            status["getIWH"] = int(val) if val.is_integer() else val
             # Return int when it's an exact whole number
             return int(val) if val.is_integer() else val
         except ValueError, TypeError:
@@ -1162,14 +1143,12 @@ def get_sensor_iwh_value(status: dict[str, Any]) -> int | float | None:
         whu = int(float(raw_whu)) if (raw_whu is not None and raw_whu != "") else 0
     except ValueError, TypeError, OverflowError:
         whu = 0
-    with contextlib.suppress(Exception):
-        status["getWHU"] = whu
+    status["getWHU"] = whu
 
     # Compute and persist getIWH in °dH with the factor SYR uses
     iwh = cnd / _SYR_CONNECT_SENSOR_CND_PER_DH
     iwh_out = int(iwh) if iwh.is_integer() else iwh
-    with contextlib.suppress(Exception):
-        status["getIWH"] = iwh_out
+    status["getIWH"] = iwh_out
     return iwh_out
 
 
@@ -1605,8 +1584,5 @@ def mask_ug_value(payload: str) -> str:
     """
     if not isinstance(payload, str) or payload == "":
         return payload
-    try:
-        # The lookbehind keeps `ug` from matching inside longer names such as `xug` or `a:ug`.
-        return re.sub(r'(?i)(?<![\w:.-])(ug\s*=\s*")[^"]*', r"\1***", payload)
-    except re.error:
-        return payload
+    # The lookbehind keeps `ug` from matching inside longer names such as `xug` or `a:ug`.
+    return re.sub(r'(?i)(?<![\w:.-])(ug\s*=\s*")[^"]*', r"\1***", payload)

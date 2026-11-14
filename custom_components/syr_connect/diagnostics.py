@@ -107,10 +107,7 @@ def mask_srn_value(val: Any) -> Any:
     """
     if not isinstance(val, str):
         return val
-    try:
-        m = re.match(r"^(\d{3}[A-Z]{3})(\d{5})$", val)
-    except re.error:
-        return val
+    m = re.match(r"^(\d{3}[A-Z]{3})(\d{5})$", val)
     return f"{m.group(1)}12345" if m else val
 
 
@@ -200,30 +197,20 @@ def _redact_xml(xml: str) -> str:
             )
 
     # Generic redactions
-    try:
-        cleaned = re.sub(r"\b\d{1,3}(?:\.\d{1,3}){3}\b", "***REDACTED_IP***", cleaned)
+    cleaned = re.sub(r"\b\d{1,3}(?:\.\d{1,3}){3}\b", "***REDACTED_IP***", cleaned)
 
-        # Replace standalone MAC addresses in text using the shared helper
-        cleaned = re.sub(
-            r"\b(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\b",
-            lambda m: mask_mac_value(m.group(0), None),
-            cleaned,
-        )
+    # Replace standalone MAC addresses in text using the shared helper
+    cleaned = re.sub(
+        r"\b(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\b",
+        lambda m: mask_mac_value(m.group(0), None),
+        cleaned,
+    )
 
-        cleaned = re.sub(
-            r"[\w.+-]+@[\w-]+\.[\w.-]+", "***REDACTED_USERNAME***", cleaned
-        )
-    except re.error, TypeError, ValueError:
-        pass
+    cleaned = re.sub(r"[\w.+-]+@[\w-]+\.[\w.-]+", "***REDACTED_USERNAME***", cleaned)
 
     # Remove any whitespace (including newlines) between XML tags: '>   <' -> '><'
-    try:
-        cleaned = re.sub(r">\s+<", "><", cleaned)
-        cleaned = cleaned.strip()
-    except re.error, TypeError, ValueError:
-        pass
-
-    return cleaned
+    cleaned = re.sub(r">\s+<", "><", cleaned)
+    return cleaned.strip()
 
 
 def _redact_device_list_xml(xml: str) -> str:
@@ -701,16 +688,13 @@ async def async_get_config_entry_diagnostics(
 
     # Redact username in entry title if present, e.g. "SYR Connect (username)" ->
     # "SYR Connect (***REDACTED_USERNAME***)" to avoid leaking usernames in diagnostics.
-    try:
-        entry_obj = diagnostics_data.get("entry")
-        if isinstance(entry_obj, dict):
-            title_obj = entry_obj.get("title")
-            if isinstance(title_obj, str):
-                entry_obj["title"] = re.sub(
-                    r"\(([^)]+)\)", "(***REDACTED_USERNAME***)", title_obj
-                )
-    except TypeError, AttributeError, re.error:
-        pass
+    entry_obj = diagnostics_data.get("entry")
+    if isinstance(entry_obj, dict):
+        title_obj = entry_obj.get("title")
+        if isinstance(title_obj, str):
+            entry_obj["title"] = re.sub(
+                r"\(([^)]+)\)", "(***REDACTED_USERNAME***)", title_obj
+            )
 
     # Determine API type from config entry
     api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML)
