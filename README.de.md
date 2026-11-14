@@ -245,11 +245,11 @@ Die Integration bietet eine umfangreiche Überwachung der Geräte:
 - Batteriestand (%)
 - Alarmstatus
 
-#### Filter (NeoSoft)
+#### Filter und Rückspülung
 
-- Rückspülzähler des Filters
-- Filtertyp
-- Eisengehaltsmessung
+- Filtertyp (SafeTech, SafeTech Lock, TRIO Lock, AC All-in-One 3228 Connect)
+- Eisengehalt (LEX-Familie)
+- Zähler der automatischen und der manuellen Rückspülung (Rückspülautomatik RSA)
 
 #### Wartung
 
@@ -288,7 +288,8 @@ Die Integration bietet eine umfangreiche Überwachung der Geräte:
 
 - **Signalton bei Alarm**: Signalton bei Alarm aktivieren oder deaktivieren.
 - **Profilwechsel am Gerät erlauben**: Wechsel des Leckageschutz-Profils mit der Taste am Gerät erlauben oder sperren.
-- **Füllmodus**: Automatische Befüllung aktivieren oder deaktivieren (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect).
+- **Füllmodus**: Automatische Befüllung aktivieren oder deaktivieren (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+).
+- **Erstbefüllung**, **Manuelle Befüllung**: Erstbefüllung und manuelle Befüllung starten oder beenden (All-in-One+).
 - **Automatische Rückspülung**: Automatische Rückspülung aktivieren oder deaktivieren (Rückspülautomatik RSA).
 - **Rückspülerinnerung**: Erinnerung an die Rückspülung aktivieren oder deaktivieren (Rückspülautomatik RSA).
 - **Stagnationsspülung**, **Temperaturspülung**, **Periodische Spülung**: Die drei Spülfunktionen aktivieren oder deaktivieren (HygBox).
@@ -298,11 +299,11 @@ Die Integration bietet eine umfangreiche Überwachung der Geräte:
 - **Regenerationsuhrzeit**: Tägliche Uhrzeit der Regeneration einstellen (15-Minuten-Intervalle).
 - **Aktives Leckageschutz-Profil**: Aktives Leckageschutz-Profil auswählen (bei Geräten mit mehreren Profilen).
 - **Salzmenge in Behälter 1–3**: Salzmenge je Behälter einstellen (je nach Modell, bis zu 3 Behälter).
-- **Regenerationsintervall**: Regenerationshäufigkeit einstellen (modellabhängig: 1–4 Tage).
+- **Regenerationsintervall**: Regenerationshäufigkeit einstellen (modellabhängig: bis zu 3, 4 oder 99 Tage).
 - **Display-Orientierung**: Ausrichtung des Displays einstellen (0 / 90 / 180 / 270 Grad, für Geräte mit Display).
 - **Regenerationsmodus**: Standard / ECO / Power / Automatisch auswählen (für Geräte, die dies unterstützen).
-- **Rohwasserhärte**, **Weichwasserhärte**: Rohwasser- und Weichwasserhärte einstellen (nur LEX-Familie). Die Einheit folgt der am Gerät eingestellten Härteeinheit (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l oder mval/l).
-- **Wasseraufbereitung und Befüllung** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect): Kartuschengröße und -typ, Weichwasserhärte oder maximale Ausgangsleitfähigkeit (je nach Kartusche), Zeitraum der Füllungen, Anzahl der Füllzyklen, maximale Fülldauer und -menge, Solldruck.
+- **Rohwasserhärte**, **Weichwasserhärte**: Rohwasser- und Weichwasserhärte einstellen (LEX-Familie, CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+). Die Einheit folgt der am Gerät eingestellten Härteeinheit (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l oder mval/l).
+- **Wasseraufbereitung und Befüllung** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+): Kartuschengröße und -typ, Weichwasserhärte oder maximale Ausgangsleitfähigkeit (je nach Kartusche), Zeitraum der Füllungen, Anzahl der Füllzyklen, maximale Fülldauer und -menge, Solldruck.
 - **Bodensensor** (SafeFloor): Alarmdauer, minimale und maximale Schwellwerte für Luftfeuchtigkeit und Temperatur („Aus“ deaktiviert einen Schwellwert), Messintervall und Synchronisationsintervall der Einstellungen.
 - **Hygienespülung** (HygBox): Wasserart, Stagnationszeit und Spülmenge, Start- und Stopptemperatur, maximale Spüldauer und Spülungen pro Tag, Intervall und Spülmenge der periodischen Spülung, Synchronisationsintervall der Einstellungen.
 - **Hygienespülung** (Hygienemodul, Safe-T Hygienemodul): Stagnationszeit, Spülintervall, Temperaturgrenze, maximale Spüldauer und maximale Spülmenge der Kalt- und der Warmwasserleitung.
@@ -339,7 +340,7 @@ Die Integration unterstützt zwei API-Modi:
 - **Vorteile**: Keine Internetabhängigkeit, schnellere Reaktionszeiten, keine Cloud-Rate-Limits.
 - **Voraussetzungen**: Gerät muss im selben Netzwerk wie Home Assistant sein, Gerät benötigt statische IP-Adresse oder Hostnamen.
 
-Die Integration erkennt automatisch, welcher API-Modus basierend auf der bei der Einrichtung angegebenen Konfiguration zu verwenden ist.
+Der API-Modus wird bei der Einrichtung gewählt (Cloud oder Lokal).
 
 ## Aktualisierung der Daten
 

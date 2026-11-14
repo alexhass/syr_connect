@@ -1620,13 +1620,6 @@
       "getscr": {
         "name": "Ciclos de regeneración de servicio"
       },
-      "getsir": {
-        "name": "Regeneración inmediata",
-        "state": {
-          "0": "Iniciar inmediatamente",
-          "1": "No iniciar"
-        }
-      },
       "getsle": {
         "name": "Tiempo restante en fase de autoaprendizaje"
       },

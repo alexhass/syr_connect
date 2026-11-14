@@ -1620,13 +1620,6 @@
       "getscr": {
         "name": "Cykle regeneracji serwisowej"
       },
-      "getsir": {
-        "name": "Natychmiastowa regeneracja",
-        "state": {
-          "0": "Uruchom natychmiast",
-          "1": "Nie uruchamiaj"
-        }
-      },
       "getsle": {
         "name": "Pozostały czas fazy samouczenia"
       },

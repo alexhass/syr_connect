@@ -1620,13 +1620,6 @@
       "getscr": {
         "name": "Service regeneration cycles"
       },
-      "getsir": {
-        "name": "Immediate regeneration",
-        "state": {
-          "0": "Start immediately",
-          "1": "Do not start"
-        }
-      },
       "getsle": {
         "name": "Remaining time in self-learning phase"
       },

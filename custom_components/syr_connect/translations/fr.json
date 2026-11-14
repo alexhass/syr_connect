@@ -1620,13 +1620,6 @@
       "getscr": {
         "name": "Cycles de régénération de service"
       },
-      "getsir": {
-        "name": "Régénération immédiate",
-        "state": {
-          "0": "Démarrer immédiatement",
-          "1": "Ne pas démarrer"
-        }
-      },
       "getsle": {
         "name": "Temps restant en phase d'apprentissage"
       },

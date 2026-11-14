@@ -51,7 +51,7 @@ repository.
 
 ### 3. Percent-encoding and literal special characters
 
-- Tentavly be considered a bug in current firmware. Every webserver on this planet works this way except SYR devices.
+- Tentatively be considered a bug in current firmware. Every webserver on this planet works this way except SYR devices.
 - Description: Firmwares do not decode percent-encoded path components correctly. For example, `02:30` encoded as `02%3A30` may be rejected; the device expects the literal `:`.
 - Impact: `set` requests must be sent with literal characters (no percent-encoding) to be accepted.
 - Mitigation in this project:
@@ -107,7 +107,7 @@ curl -i "http://localhost:5333/trio/set/ab/false"  # -> {"setABtrue":"OK"}
 
 ### 6. API error code inconsistencies (HTTP 404)
 
-- Tentavly be considered a bug in current firmware.
+- Tentatively be considered a bug in current firmware.
 - Trio DFRLS devices models do not return an `"NSC"` value for unknown commands; instead the endpoint responds with HTTP 404 (Not Found). Impact: HTTP 404 causes the HTTP layer (`_execute_http_get`) to raise an HTTP/connection error instead of returning a JSON error code. Mitigation: callers should treat HTTP 404 from command endpoints as "no such command" where appropriate and handle it the same way as an `NSC` response.
 - Mitigation in this project:
   - Catch and normalize to "no such command" if 404 is returned

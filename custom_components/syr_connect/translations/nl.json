@@ -1620,13 +1620,6 @@
       "getscr": {
         "name": "Serviceregeneratiecycli"
       },
-      "getsir": {
-        "name": "Onmiddellijke regeneratie",
-        "state": {
-          "0": "Onmiddellijk starten",
-          "1": "Niet starten"
-        }
-      },
       "getsle": {
         "name": "Resterende tijd in zelfleerfase"
       },
