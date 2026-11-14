@@ -106,6 +106,7 @@ Tested and reported as working:
 - Sanibel Leak Protection Module A25
 - Sanibel Softwater UNO A25
 - Sanibel Wireless Floor Sensor A25
+- SYR All-in-One+
 - SYR LEX 1500 Connect Single (LEX10/LEX20/LEX30/LEX40/LEX60/LEX80/LEX100)
 - SYR LEX Plus 10 Connect
 - SYR LEX Plus 10 S Connect
@@ -149,7 +150,6 @@ Other devices are also of interest, but may need to be integrated or at least te
 - Sanibel Softwater DUO A25
 - SYR AC 3200 Connect
 - SYR AC All-in-One 3228 Connect
-- SYR All-in-One+
 - SYR CONTROLICmini
 - SYR HVA
 - SYR HygBox Connect

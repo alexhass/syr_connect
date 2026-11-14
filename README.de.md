@@ -106,6 +106,7 @@ Getestet und gemeldet als funktionierend:
 - Sanibel Funk-Bodensensor A25
 - Sanibel Leckageschutzmodul A25
 - Sanibel Softwater UNO A25
+- SYR All-in-One+
 - SYR LEX 1500 Connect Einzel (LEX10/LEX20/LEX30/LEX40/LEX60/LEX80/LEX100)
 - SYR LEX Plus 10 Connect
 - SYR LEX Plus 10 S Connect
@@ -149,7 +150,6 @@ Andere Geräte sind auch interessant, müssen aber noch integriert oder zumindes
 - Sanibel Softwater DUO A25
 - SYR AC 3200 Connect
 - SYR AC All-in-One 3228 Connect
-- SYR All-in-One+
 - SYR CONTROLICmini
 - SYR HVA
 - SYR HygBox Connect
