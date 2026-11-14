@@ -105,6 +105,10 @@ class SyrConnectXmlAPI:
         self.session_data: str = ""
         # Serializes (re-)logins from parallel requests (see _ensure_session/_relogin)
         self._login_lock = asyncio.Lock()
+        # Number of logins finished by _login_shared and the error of the last one, so
+        # requests waiting for that login share its failure instead of repeating it
+        self._logins_finished = 0
+        self._login_error: Exception | None = None
 
         # --- Project structure ---
         # Cloud API organizes devices into projects (locations/buildings)
@@ -180,11 +184,12 @@ class SyrConnectXmlAPI:
         """Log in if there is no session token yet (first request)."""
         if self.is_session_valid():
             return
+        attempt = self._logins_finished
         # Requests run in parallel (projects, devices): only the first one logs in
         async with self._login_lock:
             if self.is_session_valid():
                 return
-            await self.login()
+            await self._login_shared(attempt)
 
     async def _relogin(self, rejected_token: str) -> None:
         """Log in again after the webservice rejected `rejected_token`.
@@ -192,10 +197,35 @@ class SyrConnectXmlAPI:
         Parallel requests usually get the rejection at the same time; only the first one
         logs in, the others find a new token already and reuse it.
         """
+        attempt = self._logins_finished
         async with self._login_lock:
             if self.session_data and self.session_data != rejected_token:
                 return
+            await self._login_shared(attempt)
+
+    async def _login_shared(self, attempt: int) -> None:
+        """Log in, unless a login has failed while the request waited for the lock.
+
+        Must be called with the login lock held. A request that waited for the lock while
+        another one logged in gets the error of that login: during a cloud outage the
+        webservice rejects every login (docs/known_issues_xml_api.md, issues 3 and 4), and
+        after a password change each attempt would send the wrong password again. The next
+        update tries again.
+
+        Args:
+            attempt: Value of `_logins_finished` when the request found it needs a login
+        """
+        if attempt != self._logins_finished and self._login_error is not None:
+            raise self._login_error
+        try:
             await self.login()
+        except Exception as err:
+            self._login_error = err
+            raise
+        else:
+            self._login_error = None
+        finally:
+            self._logins_finished += 1
 
     async def _post_with_session(
         self, url: str, build_payload: Callable[[str], str], name: str

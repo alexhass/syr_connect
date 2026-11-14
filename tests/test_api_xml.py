@@ -205,6 +205,34 @@ async def test_parallel_rejections_relogin_only_once(
     assert api_client.session_data == "new"
 
 
+@pytest.mark.parametrize("rejected", [True, False], ids=["rejected-token", "no-token"])
+async def test_parallel_requests_share_a_failed_login(
+    api_client: SyrConnectXmlAPI, rejected: bool
+) -> None:
+    """A failed login is not repeated by the requests that waited for it; the next update tries again."""
+    api_client.session_data = "old" if rejected else ""
+    error = SyrConnectLoginFailedError("Login rejected.")
+
+    async def _login() -> Any:
+        await asyncio.sleep(0)  # let the other tasks reach the lock meanwhile
+        raise error
+
+    def _request() -> Any:
+        return api_client._relogin("old") if rejected else api_client._ensure_session()
+
+    with patch.object(api_client, "login", side_effect=_login) as login:
+        results = await asyncio.gather(
+            *(_request() for _ in range(5)), return_exceptions=True
+        )
+        assert login.await_count == 1
+        assert results == [error] * 5
+
+        # The next update logs in again
+        with pytest.raises(SyrConnectLoginFailedError):
+            await _request()
+        assert login.await_count == 2
+
+
 @pytest.mark.parametrize(
     ("method", "args", "parser"),
     [
