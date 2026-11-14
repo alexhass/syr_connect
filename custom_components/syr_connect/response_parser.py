@@ -323,7 +323,10 @@ class ResponseParser:
                 for dcl in dcl_list:
                     if "@dclg" in dcl and "@ali" in dcl:
                         # URL-decode the alias (replace + with space and decode %XX sequences)
-                        device_aliases[dcl["@dclg"]] = unquote_plus(dcl["@ali"])
+                        alias = unquote_plus(dcl["@ali"])
+                        # A device without a name keeps its serial number as name
+                        if alias.strip():
+                            device_aliases[dcl["@dclg"]] = alias
                     if "@dclg" in dcl:
                         device_kind_versions[dcl["@dclg"]] = int(dcl.get("@dkv") or 0)
 

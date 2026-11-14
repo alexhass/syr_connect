@@ -835,6 +835,22 @@ def test_parse_device_list_alias_not_found_fallback_to_serial(
     assert devices[0]["name"] == "SN123"
 
 
+@pytest.mark.parametrize("alias", ["", "+", "%20%20"])
+def test_parse_device_list_empty_alias_falls_back_to_serial(
+    parser: ResponseParser, alias: str
+) -> None:
+    """A device without a name in the app gets its serial number as name."""
+    xml = (
+        '<sc><prs><pr pg="p1"/></prs>'
+        f'<col><dcl dclg="abc" ali="{alias}"/></col>'
+        '<dvs><d dclg="abc" sn="SN123"/></dvs></sc>'
+    )
+
+    [device] = parser.parse_device_list_response(xml)
+
+    assert device["name"] == "SN123"
+
+
 def test_parse_device_list_col_with_single_dcl(parser: ResponseParser) -> None:
     """Test parsing device list when col contains single dcl (not a list)."""
     xml = """<sc><prs><pr pg="p1"/></prs>
