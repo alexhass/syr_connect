@@ -14,6 +14,7 @@ from pytest_homeassistant.common import MockConfigEntry
 from custom_components.syr_connect.api_json import SyrConnectJsonAPI
 from custom_components.syr_connect.const import CONF_SERVICE
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+from custom_components.syr_connect.exceptions import SyrConnectConnectionError
 from custom_components.syr_connect.helpers import build_set_ab_command
 from custom_components.syr_connect.models import MODEL_SIGNATURES
 from custom_components.syr_connect.valve import SyrConnectValve, async_setup_entry
@@ -64,10 +65,10 @@ async def test_open_close_calls_set(hass: HomeAssistant) -> None:
 
     valve = SyrConnectValve(coordinator, "device1", "Device 1")
 
-    await valve.async_open()
+    await valve.async_open_valve()
     coordinator.async_set_device_value.assert_called_with("device1", "setAB", 1)
 
-    await valve.async_close()
+    await valve.async_close_valve()
     coordinator.async_set_device_value.assert_called_with("device1", "setAB", 2)
 
 
@@ -268,22 +269,6 @@ async def test_is_closed_none_when_device_missing(hass: HomeAssistant) -> None:
     assert valve.is_closed is None
 
 
-async def test_async_setup_entry_with_no_coordinator_data(hass: HomeAssistant) -> None:
-    """Test async setup entry with no coordinator data."""
-    # If entry.runtime_data.data is falsy, async_setup_entry should not call add_entities
-    coordinator = _build_coordinator(hass, {"devices": []})
-    # Simulate missing data
-    coordinator.data = None
-    entry = _build_entry(coordinator)
-    entry.add_to_hass(hass)
-
-    add_entities = Mock()
-    await async_setup_entry(hass, entry, add_entities)
-
-    # add_entities should not be called when coordinator.data is falsy
-    assert not add_entities.called
-
-
 async def test_invalid_getvlv_does_not_raise_and_falls_back(
     hass: HomeAssistant,
 ) -> None:
@@ -322,23 +307,6 @@ async def test_supported_features_and_device_class_and_reports_position() -> Non
     assert int(valve.supported_features) & int(ValveEntityFeature.CLOSE) == int(
         ValveEntityFeature.CLOSE
     )
-
-
-async def test_async_service_entrypoints_call_underlying(hass: HomeAssistant) -> None:
-    """Test async service entrypoints call underlying."""
-    data = {"devices": [{"id": "as1", "name": "AS1", "status": {}}]}
-    coordinator = _build_coordinator(hass, data)
-    valve = SyrConnectValve(coordinator, "as1", "AS1")
-
-    # Patch async_open/async_close to verify they are awaited
-    valve.async_open = AsyncMock()
-    valve.async_close = AsyncMock()
-
-    await valve.async_open_valve()
-    valve.async_open.assert_awaited()
-
-    await valve.async_close_valve()
-    valve.async_close.assert_awaited()
 
 
 async def test_state_open(hass: HomeAssistant) -> None:
@@ -424,12 +392,12 @@ async def test_async_open_close_with_boolean_string_status(hass: HomeAssistant) 
 
     valve = SyrConnectValve(coordinator, "b1", "B1")
 
-    await valve.async_open()
+    await valve.async_open_valve()
     # Opening should send 'false' to open
     coordinator.async_set_device_value.assert_awaited_with("b1", "setAB", "false")
 
     coordinator.async_set_device_value.reset_mock()
-    await valve.async_close()
+    await valve.async_close_valve()
     # Closing should send 'true' to close
     coordinator.async_set_device_value.assert_awaited_with("b1", "setAB", "true")
 
@@ -844,12 +812,12 @@ async def test_async_open_close_with_native_boolean_status(hass: HomeAssistant) 
 
     valve = SyrConnectValve(coordinator, "nb1", "NB1")
 
-    await valve.async_open()
+    await valve.async_open_valve()
     # Opening should send 'false' to open (False=open)
     coordinator.async_set_device_value.assert_awaited_with("nb1", "setAB", "false")
 
     coordinator.async_set_device_value.reset_mock()
-    await valve.async_close()
+    await valve.async_close_valve()
     # Closing should send 'true' to close (True=closed)
     coordinator.async_set_device_value.assert_awaited_with("nb1", "setAB", "true")
 
@@ -1116,13 +1084,13 @@ async def test_async_open_calls_open_valve(hass: HomeAssistant) -> None:
     coordinator.async_open_valve = AsyncMock()
     valve = SyrConnectValve(coordinator, "v_open", "VOpen")
 
-    await valve.async_open()
+    await valve.async_open_valve()
 
     coordinator.async_open_valve.assert_awaited_once_with("v_open", "setAB", 1)
 
 
 async def test_async_open_valve_error_propagates(hass: HomeAssistant) -> None:
-    """Errors from async_open_valve propagate through async_open as HomeAssistantError."""
+    """Errors from async_open_valve propagate as HomeAssistantError."""
     data = {
         "devices": [
             {
@@ -1134,11 +1102,13 @@ async def test_async_open_valve_error_propagates(hass: HomeAssistant) -> None:
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.api.set_device_status = AsyncMock(side_effect=ValueError("API failure"))
+    coordinator.api.set_device_status = AsyncMock(
+        side_effect=SyrConnectConnectionError("API failure")
+    )
     valve = SyrConnectValve(coordinator, "v_err", "VErr")
 
     with pytest.raises(HomeAssistantError):
-        await valve.async_open()
+        await valve.async_open_valve()
 
 
 # ---------------------------------------------------------------------------
@@ -1307,8 +1277,12 @@ async def test_open_valve_with_alarm_clear_failure_restores_previous_value(
 @pytest.mark.parametrize(
     ("method", "status", "translation_key"),
     [
-        pytest.param("async_open", {"getAB": "2"}, "valve_open_failed", id="open"),
-        pytest.param("async_close", {"getAB": "1"}, "valve_close_failed", id="close"),
+        pytest.param(
+            "async_open_valve", {"getAB": "2"}, "valve_open_failed", id="open"
+        ),
+        pytest.param(
+            "async_close_valve", {"getAB": "1"}, "valve_close_failed", id="close"
+        ),
     ],
 )
 async def test_open_close_command_failure_raises(
@@ -1316,7 +1290,9 @@ async def test_open_close_command_failure_raises(
 ) -> None:
     """A failed command is reported as a translated HomeAssistantError."""
     coordinator = _build_coordinator(hass, _valve_data(status))
-    coordinator.async_set_device_value = AsyncMock(side_effect=ValueError("boom"))
+    coordinator.async_set_device_value = AsyncMock(
+        side_effect=SyrConnectConnectionError("boom")
+    )
     valve = SyrConnectValve(coordinator, "dev1", "Dev1")
 
     with pytest.raises(HomeAssistantError) as err:
@@ -1327,7 +1303,7 @@ async def test_open_close_command_failure_raises(
     coordinator.async_set_device_value.assert_awaited_once()
 
 
-@pytest.mark.parametrize("method", ["async_open", "async_close"])
+@pytest.mark.parametrize("method", ["async_open_valve", "async_close_valve"])
 async def test_open_close_without_getab_raises(
     hass: HomeAssistant, method: str
 ) -> None:

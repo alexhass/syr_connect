@@ -64,10 +64,6 @@ async def async_setup_entry(
     """Set up SYR Connect update entities (getNOT-derived firmware update indicator)."""
     coordinator = entry.runtime_data
 
-    if not coordinator.data:
-        _LOGGER.warning("No coordinator data available for update platform")
-        return
-
     registry_cleanup(
         hass,
         coordinator.data,
@@ -234,7 +230,7 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
         self._install_started = monotonic()
         try:
             await self.coordinator.async_set_device_value(self._device_id, "setUPG", "")
-        except (SyrConnectError, ValueError, TypeError, KeyError) as err:
+        except SyrConnectError as err:
             self._install_started = None
             _LOGGER.error(
                 "Failed to trigger firmware update for %s: %s", self._device_id, err

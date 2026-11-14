@@ -85,10 +85,6 @@ async def async_setup_entry(
     """Set up boolean switch entities (e.g. getBUZ, getDFI)."""
     coordinator = entry.runtime_data
 
-    if not coordinator.data:
-        _LOGGER.warning("No coordinator data available for switch platform")
-        return
-
     registry_cleanup(
         hass,
         coordinator.data,
@@ -137,25 +133,9 @@ def _build_device_switches(
             sensor_key,
             device_id,
         )
-        try:
-            entity = SyrConnectBooleanSwitch(
-                coordinator,
-                device_id,
-                device_name,
-                sensor_key,
-            )
-            entities.append(entity)
-            _LOGGER.debug(
-                "Appended SyrConnectBooleanSwitch for device %s (entity_id=%s, unique_id=%s)",
-                device_id,
-                getattr(entity, "entity_id", None),
-                getattr(entity, "_attr_unique_id", None),
-            )
-        except Exception:
-            _LOGGER.exception(
-                "Failed to instantiate SyrConnectBooleanSwitch for device %s",
-                device_id,
-            )
+        entities.append(
+            SyrConnectBooleanSwitch(coordinator, device_id, device_name, sensor_key)
+        )
     return entities
 
 
@@ -242,7 +222,7 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
             await self.coordinator.async_set_device_value(
                 self._device_id, set_key, value
             )
-        except (SyrConnectError, ValueError, TypeError, KeyError) as err:
+        except SyrConnectError as err:
             # Report the failure to the caller (UI, automation) like valve/select/button do;
             # swallowing it would make the service call look successful. The coordinator has
             # already restored the previous value.

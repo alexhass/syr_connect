@@ -59,10 +59,6 @@ async def async_setup_entry(
     _LOGGER.debug("Setting up SYR Connect valve entities")
     coordinator = entry.runtime_data
 
-    if not coordinator.data:
-        _LOGGER.warning("No coordinator data available for valve platform")
-        return
-
     registry_cleanup(
         hass,
         coordinator.data,
@@ -222,7 +218,8 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
         except ValueError, TypeError, OverflowError:
             return None
 
-    async def async_open(self) -> None:
+    @override
+    async def async_open_valve(self) -> None:
         """Open the valve (send `setAB` -> open value)."""
         ab_cmd = build_set_ab_command(self._status, False)
         if ab_cmd is None:
@@ -236,7 +233,7 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
         try:
             # Send command to backend; prepend alarm-clear when an alarm is active.
             await self.coordinator.async_open_valve(self._device_id, set_key, set_val)
-        except (SyrConnectError, ValueError, TypeError, KeyError, RuntimeError) as err:
+        except SyrConnectError as err:
             _LOGGER.error("Failed to open valve %s: %s", self._device_id, err)
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
@@ -244,10 +241,11 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
                 translation_placeholders={"device": self._device_name},
             ) from err
 
-    async def async_close(self) -> None:
+    @override
+    async def async_close_valve(self) -> None:
         """Close the valve (send `setAB` -> close value).
 
-        See `async_open` for behavior and error handling.
+        See `async_open_valve` for behavior and error handling.
         """
         ab_cmd = build_set_ab_command(self._status, True)
         if ab_cmd is None:
@@ -262,20 +260,10 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
             await self.coordinator.async_set_device_value(
                 self._device_id, set_key, set_val
             )
-        except (SyrConnectError, ValueError, TypeError, KeyError, RuntimeError) as err:
+        except SyrConnectError as err:
             _LOGGER.error("Failed to close valve %s: %s", self._device_id, err)
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
                 translation_key="valve_close_failed",
                 translation_placeholders={"device": self._device_name},
             ) from err
-
-    @override
-    async def async_open_valve(self) -> None:
-        """Async service entrypoint to open the valve."""
-        await self.async_open()
-
-    @override
-    async def async_close_valve(self) -> None:
-        """Async service entrypoint to close the valve."""
-        await self.async_close()

@@ -151,10 +151,6 @@ async def async_setup_entry(
     _LOGGER.debug("Setting up SYR Connect binary sensors")
     coordinator = entry.runtime_data
 
-    if not coordinator.data:
-        _LOGGER.warning("No coordinator data available for binary sensors")
-        return
-
     registry_cleanup(
         hass,
         coordinator.data,

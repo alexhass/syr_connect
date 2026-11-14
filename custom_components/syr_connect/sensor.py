@@ -2423,10 +2423,6 @@ async def async_setup_entry(
     _LOGGER.debug("Setting up SYR Connect sensors")
     coordinator = entry.runtime_data
 
-    if not coordinator.data:
-        _LOGGER.warning("No coordinator data available for sensors")
-        return
-
     # Remove previously-registered entities that are no longer valid.
     # registry_cleanup also handles conditionally hidden sensors internally.
     registry_cleanup(

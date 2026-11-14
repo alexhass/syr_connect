@@ -791,10 +791,6 @@ async def async_setup_entry(
     _LOGGER.debug("Setting up SYR Connect select entities")
     coordinator = entry.runtime_data
 
-    if not coordinator.data:
-        _LOGGER.warning("No coordinator data available for select platform")
-        return
-
     registry_cleanup(
         hass,
         coordinator.data,
@@ -994,7 +990,7 @@ class SyrConnectRegenerationSelect(SyrConnectEntity, SelectEntity):
             _LOGGER.debug(
                 "Regeneration time select changed for %s to %s", self._device_id, option
             )
-        except (SyrConnectError, ValueError, TypeError, KeyError) as err:
+        except SyrConnectError as err:
             _LOGGER.error(
                 "Failed to set regeneration time for device %s: %s",
                 self._device_id,
@@ -1146,7 +1142,7 @@ class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
                 self._device_id,
                 option,
             )
-        except (SyrConnectError, ValueError, TypeError, KeyError) as err:
+        except SyrConnectError as err:
             _LOGGER.error(
                 "Failed to set %s for device %s: %s", set_key, self._device_id, err
             )
@@ -1349,7 +1345,7 @@ class SyrConnectRangedHardnessSelect(SyrConnectHardnessSelect):
                 await self.coordinator.async_set_device_value(
                     self._device_id, set_key, raw_water
                 )
-            except (SyrConnectError, ValueError, TypeError, KeyError) as err:
+            except SyrConnectError as err:
                 _LOGGER.error(
                     "Failed to set %s for device %s: %s", set_key, self._device_id, err
                 )
@@ -1447,7 +1443,7 @@ class SyrConnectRotationSelect(SyrConnectEntity, SelectEntity):
             _LOGGER.debug(
                 "Select getSRO changed for device %s to %s", self._device_id, option
             )
-        except (SyrConnectError, ValueError, TypeError, KeyError) as err:
+        except SyrConnectError as err:
             _LOGGER.error(
                 "Failed to set %s for device %s: %s", set_key, self._device_id, err
             )
@@ -1561,7 +1557,7 @@ class SyrConnectDiscreteSelect(SyrConnectEntity, SelectEntity):
                 self._device_id,
                 option,
             )
-        except (SyrConnectError, ValueError, TypeError, KeyError) as err:
+        except SyrConnectError as err:
             _LOGGER.error(
                 "Failed to set %s for device %s: %s", set_key, self._device_id, err
             )
@@ -1708,7 +1704,7 @@ class SyrConnectPrfSelect(SyrConnectEntity, SelectEntity):
                 self._device_id,
                 selected_idx,
             )
-        except (SyrConnectError, ValueError, TypeError, KeyError) as err:
+        except SyrConnectError as err:
             _LOGGER.error("Failed to set PRF for device %s: %s", self._device_id, err)
             raise HomeAssistantError(
                 translation_domain=DOMAIN,

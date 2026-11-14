@@ -17,7 +17,10 @@ from custom_components.syr_connect import select as select_module
 from custom_components.syr_connect.const import CONF_SERVICE, DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.devices import SyrConnectDeviceProfile
-from custom_components.syr_connect.exceptions import SyrConnectError
+from custom_components.syr_connect.exceptions import (
+    SyrConnectConnectionError,
+    SyrConnectError,
+)
 from custom_components.syr_connect.helpers import build_unique_id
 from custom_components.syr_connect.models import (
     MODEL_SIGNATURES,
@@ -1051,7 +1054,7 @@ async def test_regeneration_select_handles_coordinator_exception(
     coordinator = _build_coordinator(hass, data)
 
     async def raiser(*args: Any, **kwargs: Any) -> None:
-        raise ValueError("boom")
+        raise SyrConnectConnectionError("boom")
 
     coordinator.async_set_device_values = AsyncMock(side_effect=raiser)
     select = SyrConnectRegenerationSelect(coordinator, "device1", "Device 1")
@@ -1110,7 +1113,7 @@ async def test_numeric_select_handles_coordinator_exception(
     coordinator = _build_coordinator(hass, data)
 
     async def raiser(*args: Any, **kwargs: Any) -> None:
-        raise ValueError("boom")
+        raise SyrConnectConnectionError("boom")
 
     coordinator.async_set_device_value = AsyncMock(side_effect=raiser)
     select = SyrConnectNumericSelect(
@@ -1707,7 +1710,7 @@ async def test_prf_select_handles_coordinator_exception(hass: HomeAssistant) -> 
     coordinator = _build_coordinator(hass, data)
 
     async def raiser(*args: Any, **kwargs: Any) -> None:
-        raise ValueError("boom")
+        raise SyrConnectConnectionError("boom")
 
     coordinator.async_set_device_value = AsyncMock(side_effect=raiser)
     select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
@@ -2094,7 +2097,7 @@ async def test_rotation_select_invalid_and_exception(hass: HomeAssistant) -> Non
     coordinator.async_set_device_value.assert_not_called()
 
     async def raiser(*args: Any, **kwargs: Any) -> None:
-        raise ValueError("boom")
+        raise SyrConnectConnectionError("boom")
 
     coordinator = _build_coordinator(
         hass, {"devices": [{"id": "device1", "status": {"getSRO": "90"}}]}
@@ -2139,7 +2142,7 @@ async def test_discrete_select_invalid_and_exception(hass: HomeAssistant) -> Non
     coordinator.async_set_device_value.assert_not_called()
 
     async def raiser(*args: Any, **kwargs: Any) -> None:
-        raise ValueError("boom")
+        raise SyrConnectConnectionError("boom")
 
     coordinator.async_set_device_value = AsyncMock(side_effect=raiser)
     with pytest.raises(HomeAssistantError, match="set_value_failed"):

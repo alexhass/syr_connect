@@ -867,7 +867,7 @@ class SyrConnectStatisticsCoordinator(DataUpdateCoordinator[None]):
             for statistic in profile.statistics:
                 try:
                     measurements = await api.get_statistics(dclg, statistic)
-                except (SyrConnectError, ValueError) as err:
+                except SyrConnectError as err:
                     _LOGGER.warning(
                         "Device %s: failed to import the %s history, retrying with the next run: %s",
                         device["id"],

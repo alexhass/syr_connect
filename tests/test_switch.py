@@ -4,10 +4,8 @@
 
 # The unit tests in this module check private helpers and attributes directly.
 
-import logging
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any
 from unittest.mock import AsyncMock, MagicMock, call
 
 import pytest
@@ -16,7 +14,6 @@ from custom_components.syr_connect.const import DOMAIN
 from custom_components.syr_connect.exceptions import SyrConnectConnectionError
 from custom_components.syr_connect.models import MODEL_SIGNATURES
 from custom_components.syr_connect.response_parser import ResponseParser
-import custom_components.syr_connect.switch as switch_mod
 from custom_components.syr_connect.switch import (
     SyrConnectBooleanSwitch,
     async_setup_entry,
@@ -61,38 +58,6 @@ async def test_async_setup_entry_no_entities(hass: HomeAssistant) -> None:
     await async_setup_entry(hass, config_entry, mock_add_entities)
 
     mock_add_entities.assert_not_called()
-
-
-async def test_async_setup_entry_no_coordinator_data_logs_warning(
-    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
-) -> None:
-    """When `entry.runtime_data.data` is falsy, setup should warn and return."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="TestNoData",
-        data={CONF_USERNAME: "test", CONF_PASSWORD: "test"},
-        source="user",
-        entry_id="test_entry_nodata",
-        unique_id="test_unique_id_nodata",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    mock_coordinator = MagicMock()
-    mock_coordinator.data = None
-    config_entry.runtime_data = mock_coordinator
-
-    mock_add_entities = MagicMock()
-
-    caplog.set_level(logging.WARNING)
-    await async_setup_entry(hass, config_entry, mock_add_entities)
-
-    mock_add_entities.assert_not_called()
-    assert "No coordinator data available for switch platform" in caplog.text
 
 
 async def test_switch_entity_states_and_actions(hass: HomeAssistant) -> None:
@@ -261,49 +226,6 @@ def test_entity_category_is_config() -> None:
 
     sw = SyrConnectBooleanSwitch(mock_coordinator, "SN700", "Cfg", "getBUZ")
     assert sw.entity_category == EntityCategory.CONFIG
-
-
-async def test_async_setup_entry_handles_instantiation_error(
-    hass: HomeAssistant,
-) -> None:
-    """If creating SyrConnectBooleanSwitch raises, async_setup_entry should log and continue."""
-
-    config_entry = ConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="TestErr",
-        data={CONF_USERNAME: "test", CONF_PASSWORD: "test"},
-        source="user",
-        entry_id="test_entry_err",
-        unique_id="test_unique_id_err",
-        discovery_keys=MappingProxyType({}),
-        options={},
-        subentries_data={},
-    )
-
-    # Device contains getBUZ so code will attempt to instantiate
-    device = {
-        "id": "SN800",
-        "name": "ErrDevice",
-        "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
-        "status": {"getBUZ": 1},
-    }
-    mock_coordinator = MagicMock()
-    mock_coordinator.data = {"devices": [device]}
-    config_entry.runtime_data = mock_coordinator
-
-    def raise_on_init(*args: Any, **kwargs: Any) -> None:
-        raise RuntimeError("ctor boom")
-
-    mock_add_entities = MagicMock()
-
-    # Should not raise
-    with pytest.MonkeyPatch.context() as m:
-        m.setattr(switch_mod, "SyrConnectBooleanSwitch", raise_on_init)
-        await async_setup_entry(hass, config_entry, mock_add_entities)
-
-    mock_add_entities.assert_not_called()
 
 
 async def test_async_setup_entry_device_without_getbuz(hass: HomeAssistant) -> None:

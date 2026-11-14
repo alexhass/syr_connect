@@ -3,7 +3,6 @@
 # The unit tests in this module check private helpers and attributes directly.
 # ruff: noqa: SLF001
 
-import logging
 from time import monotonic
 from types import MappingProxyType
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -11,6 +10,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from custom_components.syr_connect.const import DOMAIN
+from custom_components.syr_connect.exceptions import SyrConnectConnectionError
 from custom_components.syr_connect.update import (
     _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS,
     _SYR_CONNECT_UPDATE_NEW_VERSION_PLACEHOLDER,
@@ -40,23 +40,6 @@ def _build_entry(entry_id: str, coordinator: MagicMock) -> ConfigEntry:
     )
     entry.runtime_data = coordinator
     return entry
-
-
-async def test_async_setup_entry_no_coordinator_data_logs_warning(
-    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
-) -> None:
-    """When `entry.runtime_data.data` is falsy, setup should warn and return."""
-    mock_coordinator = MagicMock()
-    mock_coordinator.data = None
-    config_entry = _build_entry("entry_nodata", mock_coordinator)
-
-    mock_add_entities = MagicMock()
-
-    caplog.set_level(logging.WARNING)
-    await async_setup_entry(hass, config_entry, mock_add_entities)
-
-    mock_add_entities.assert_not_called()
-    assert "No coordinator data available for update platform" in caplog.text
 
 
 async def test_async_setup_entry_no_entities_when_getnot_missing(
@@ -184,7 +167,9 @@ async def test_update_entity_async_install_wraps_errors() -> None:
     device = {"id": "SN6", "name": "Dev6", "status": {"getNOT": "01"}}
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [device]}
-    mock_coordinator.async_set_device_value = AsyncMock(side_effect=ValueError("boom"))
+    mock_coordinator.async_set_device_value = AsyncMock(
+        side_effect=SyrConnectConnectionError("boom")
+    )
 
     entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN6", "Dev6")
     with pytest.raises(HomeAssistantError):

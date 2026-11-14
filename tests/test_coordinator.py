@@ -2174,7 +2174,6 @@ async def test_statistics_coordinator_skipped(hass: HomeAssistant, case: str) ->
     [
         SyrConnectConnectionError("timeout"),
         SyrConnectInvalidResponseError("broken"),
-        ValueError("Invalid XML response"),
     ],
 )
 async def test_statistics_coordinator_failure_is_only_logged(

@@ -132,10 +132,6 @@ async def async_setup_entry(
     _LOGGER.debug("Setting up SYR Connect buttons")
     coordinator = entry.runtime_data
 
-    if not coordinator.data:
-        _LOGGER.warning("No coordinator data available for buttons")
-        return
-
     registry_cleanup(
         hass,
         coordinator.data,
@@ -182,8 +178,7 @@ def _build_device_buttons(
         # For setALA, the actual get-key depends on the model: devices with
         # alarm_style_alm use getALM; all others use getALA.
         if command == "setALA":
-            alarm_field = "alm" if model_info.alarm_style_alm else "ala"
-            get_key = f"get{alarm_field.upper()}"
+            get_key = _reset_get_key(command, model_info)
         elif command == "setDEX":
             # No getDEX read key exists; presence is indicated by getDSV
             # (microleakage test status), which exists on devices that support
@@ -366,10 +361,8 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
                     #   alarm_clear_via_set: True  → reset via setALA/setALM "FF"
                     #   alarm_clear_via_set: False → reset via dedicated clrALA/clrALM endpoint
                     model_info = self.device_model
-                    alarm_style_alm = model_info.alarm_style_alm
-                    alarm_clear_via_set = model_info.alarm_clear_via_set
-                    field = "alm" if alarm_style_alm else "ala"
-                    get_key = f"get{field.upper()}"
+                    get_key = _reset_get_key(self._command, model_info)
+                    field = get_key[3:].lower()
 
                     # Read the current alarm value. raw may be None, a string, or a number
                     # depending on the device firmware.
@@ -382,7 +375,7 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
                             translation_placeholders={"device": self._device_name},
                         )
 
-                    if alarm_clear_via_set:
+                    if model_info.alarm_clear_via_set:
                         # Device resets the alarm via a standard set command with value "FF".
                         set_cmd = f"set{field.upper()}"
                         await coordinator.async_set_device_value(
@@ -428,7 +421,7 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
                     self._device_id, self._command, reset_value
                 )
                 return
-        except (SyrConnectError, ValueError, TypeError, KeyError) as err:
+        except SyrConnectError as err:
             _LOGGER.error(
                 "Failed to press %s on %s: %s", self._command, self._device_id, err
             )

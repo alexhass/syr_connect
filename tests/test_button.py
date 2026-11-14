@@ -14,6 +14,7 @@ from custom_components.syr_connect.api_json import SyrConnectJsonAPI
 from custom_components.syr_connect.button import SyrConnectButton, async_setup_entry
 from custom_components.syr_connect.const import CONF_SERVICE, DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+from custom_components.syr_connect.exceptions import SyrConnectConnectionError
 from custom_components.syr_connect.models import MODEL_SIGNATURES
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
@@ -247,7 +248,7 @@ async def test_async_setup_entry_multiple_devices(
 
 
 async def test_button_press_unexpected_error(hass: HomeAssistant) -> None:
-    """Test button press handles unexpected errors."""
+    """A failed command is reported as a translated HomeAssistantError."""
     data = {
         "devices": [
             {
@@ -260,7 +261,7 @@ async def test_button_press_unexpected_error(hass: HomeAssistant) -> None:
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock(  # type: ignore[method-assign]
-        side_effect=ValueError("Unexpected error")
+        side_effect=SyrConnectConnectionError("Connection failed")
     )
 
     button = SyrConnectButton(coordinator, "device1", "Device 1", "setSIR")
