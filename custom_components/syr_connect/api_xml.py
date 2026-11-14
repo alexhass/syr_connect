@@ -52,6 +52,7 @@ from .encryption import SyrEncryption
 from .exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
+    SyrConnectInvalidResponseError,
     SyrConnectLoginFailedError,
     SyrConnectSessionExpiredError,
 )
@@ -325,30 +326,32 @@ class SyrConnectXmlAPI:
                 _LOGGER.debug("Project: %s (ID: %s)", project["name"], project["id"])
 
         # --- Error Handling ---
+        # Errors are logged at debug level only: the coordinator and the config flow
+        # decide what the user sees, e.g. a failed update once instead of at every poll
         except SyrConnectAuthError as err:
             # The server rejected the password (see raise_login_rejected): re-authentication needed
-            _LOGGER.error("Authentication failed: %s", err)
+            _LOGGER.debug("Authentication failed: %s", err)
             raise
         except SyrConnectLoginFailedError as err:
             # Unknown username or cloud failure (see raise_login_rejected): no re-authentication
-            _LOGGER.error("Login failed: %s", err)
+            _LOGGER.debug("Login failed: %s", err)
             raise
         except ValueError as err:
             # Malformed or unexpected answer (e.g. a maintenance page instead of XML). The
             # credentials are not known to be wrong, so this must not trigger a re-authentication.
-            _LOGGER.error("Invalid login response: %s", err)
+            _LOGGER.debug("Invalid login response: %s", err)
             raise SyrConnectConnectionError(f"Invalid login response: {err}") from err
         except (aiohttp.ClientError, TimeoutError) as err:
             # Network errors (DNS, connection timeout, etc.)
             error_representation = repr(err)
-            _LOGGER.error("Connection failed: %s", error_representation)
+            _LOGGER.debug("Connection failed: %s", error_representation)
             raise SyrConnectConnectionError(
                 f"Connection failed: {error_representation}"
             ) from err
         except Exception as err:
             # Catch-all for unexpected errors (encryption failures, etc.)
             error_representation = repr(err)
-            _LOGGER.error(
+            _LOGGER.debug(
                 "Login failed with unexpected error: %s", error_representation
             )
             raise SyrConnectConnectionError(
@@ -419,6 +422,11 @@ class SyrConnectXmlAPI:
 
         except (aiohttp.ClientError, TimeoutError) as err:
             raise SyrConnectConnectionError(f"Failed to get devices: {err}") from err
+        except ValueError as err:
+            # No XML or no project, e.g. a maintenance page
+            raise SyrConnectInvalidResponseError(
+                f"Invalid device list response: {err}"
+            ) from err
         else:
             return devices
 
@@ -479,13 +487,14 @@ class SyrConnectXmlAPI:
         except (aiohttp.ClientError, TimeoutError) as err:
             # Network errors: wrap them like login()/get_devices() so callers
             # only need to handle SyrConnectError
-            _LOGGER.error("Failed to get device status: %s", err)
             raise SyrConnectConnectionError(
                 f"Failed to get device status: {err}"
             ) from err
-        except Exception as err:
-            _LOGGER.error("Failed to get device status: %s", err)
-            raise
+        except ValueError as err:
+            # No XML, e.g. a maintenance page
+            raise SyrConnectInvalidResponseError(
+                f"Invalid device status response: {err}"
+            ) from err
         else:
             return status_data
 
@@ -540,13 +549,9 @@ class SyrConnectXmlAPI:
         except (aiohttp.ClientError, TimeoutError) as err:
             # Network errors: wrapped so the entity turns them into a
             # HomeAssistantError for the user instead of an unhandled exception
-            _LOGGER.error("Failed to set device status for %s: %s", device_id, err)
             raise SyrConnectConnectionError(
                 f"Failed to set device status: {err}"
             ) from err
-        except Exception as err:
-            _LOGGER.error("Failed to set device status for %s: %s", device_id, err)
-            raise
         else:
             return True
 
@@ -596,12 +601,13 @@ class SyrConnectXmlAPI:
             _LOGGER.debug("Statistics parsed: %d measurement(s)", len(stats_data))
 
         except (aiohttp.ClientError, TimeoutError) as err:
-            _LOGGER.error("Failed to get %s statistics: %s", statistic.key, err)
             raise SyrConnectConnectionError(
                 f"Failed to get {statistic.key} statistics: {err}"
             ) from err
-        except Exception as err:
-            _LOGGER.error("Failed to get %s statistics: %s", statistic.key, err)
-            raise
+        except ValueError as err:
+            # No XML, e.g. a maintenance page
+            raise SyrConnectInvalidResponseError(
+                f"Invalid {statistic.key} statistics response: {err}"
+            ) from err
         else:
             return stats_data

@@ -5,6 +5,7 @@
 
 import asyncio
 from datetime import UTC, datetime
+import logging
 from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -21,6 +22,7 @@ from custom_components.syr_connect.devices import safefloor
 from custom_components.syr_connect.exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
+    SyrConnectInvalidResponseError,
     SyrConnectLoginFailedError,
     SyrConnectSessionExpiredError,
 )
@@ -778,3 +780,76 @@ async def test_get_devices_with_device_already_has_id(
         assert len(devices) == 1
         # Should keep existing id, not overwrite with serial_number
         assert devices[0]["id"] == "EXISTING_ID"
+
+
+_SYR_CONNECT_TEST_MAINTENANCE_PAGE = "<html><body>Wartungsarbeiten</body>"
+_SYR_CONNECT_TEST_REQUESTS = [
+    pytest.param("get_devices", ("project1",), id="device-list"),
+    pytest.param("get_device_status", ("dclg1",), id="status"),
+    pytest.param("get_statistics", ("dclg1", safefloor.STATISTICS[0]), id="statistics"),
+]
+
+
+@pytest.mark.parametrize(("method", "args"), _SYR_CONNECT_TEST_REQUESTS)
+async def test_answer_without_xml_raises_invalid_response(
+    api_client: SyrConnectXmlAPI, method: str, args: tuple[Any, ...]
+) -> None:
+    """An answer that is no XML, such as a maintenance page, is an unusable answer."""
+    api_client.session_data = "token"
+
+    with (
+        patch.object(
+            api_client.http_client,
+            "post",
+            return_value=_SYR_CONNECT_TEST_MAINTENANCE_PAGE,
+        ),
+        pytest.raises(SyrConnectInvalidResponseError, match="response: "),
+    ):
+        await getattr(api_client, method)(*args)
+
+
+@pytest.mark.parametrize(("method", "args"), _SYR_CONNECT_TEST_REQUESTS)
+async def test_failed_request_logs_at_debug_level_only(
+    api_client: SyrConnectXmlAPI,
+    caplog: pytest.LogCaptureFixture,
+    method: str,
+    args: tuple[Any, ...],
+) -> None:
+    """A timeout or a maintenance page is not logged above debug level; the coordinator logs it once."""
+    api_client.session_data = "token"
+
+    with caplog.at_level(logging.DEBUG, logger="custom_components.syr_connect"):
+        with (
+            patch.object(
+                api_client.http_client.session, "post", side_effect=TimeoutError()
+            ),
+            pytest.raises(SyrConnectConnectionError),
+        ):
+            await getattr(api_client, method)(*args)
+        with (
+            patch.object(
+                api_client.http_client,
+                "post",
+                return_value=_SYR_CONNECT_TEST_MAINTENANCE_PAGE,
+            ),
+            pytest.raises(SyrConnectInvalidResponseError),
+        ):
+            await getattr(api_client, method)(*args)
+
+    assert [r.getMessage() for r in caplog.records if r.levelno > logging.DEBUG] == []
+
+
+async def test_failed_login_logs_at_debug_level_only(
+    api_client: SyrConnectXmlAPI, caplog: pytest.LogCaptureFixture
+) -> None:
+    """A failed login is not logged above debug level; the caller decides what the user sees."""
+    with (
+        caplog.at_level(logging.DEBUG, logger="custom_components.syr_connect"),
+        patch.object(
+            api_client.http_client.session, "post", side_effect=TimeoutError()
+        ),
+        pytest.raises(SyrConnectConnectionError, match="Connection failed"),
+    ):
+        await api_client.login()
+
+    assert [r.getMessage() for r in caplog.records if r.levelno > logging.DEBUG] == []

@@ -84,7 +84,7 @@ class ResponseParser:
             # Wrap in root tag like xmltodict does
             return {root.tag: ResponseParser._element_to_dict(root)}
         except etree.ParseError as err:
-            _LOGGER.error("Failed to parse XML: %s", err)
+            _LOGGER.debug("Failed to parse XML: %s", err)
             raise ValueError(f"Invalid XML response: {err}") from err
 
     @staticmethod
@@ -400,7 +400,7 @@ class ResponseParser:
         self._raise_if_session_expired(parsed)
 
         if "sc" not in parsed:
-            _LOGGER.warning("No 'sc' element in status response")
+            _LOGGER.debug("No 'sc' element in status response")
             return None
 
         # Prefer responses that include the detailed device entries under
@@ -426,7 +426,7 @@ class ResponseParser:
             device_list = [dvs]
 
         if not device_list:
-            _LOGGER.warning(
+            _LOGGER.debug(
                 "Status response 'dvs' element contains no device entries; skipping update: %s",
                 dvs,
             )
@@ -441,9 +441,7 @@ class ResponseParser:
 
         # Ensure at least one device entry contains detailed <c> children
         if not any(isinstance(d, dict) and "c" in d for d in device_list):
-            _LOGGER.warning(
-                "Device entries in 'dvs' lack <c> children; skipping update"
-            )
+            _LOGGER.debug("Device entries in 'dvs' lack <c> children; skipping update")
             return None
 
         return self._flatten_attributes(parsed["sc"])
@@ -550,12 +548,12 @@ class ResponseParser:
 
         # Guard: require top-level 'sc' element before any further access
         if "sc" not in parsed:
-            _LOGGER.warning("No 'sc' element in statistics response")
+            _LOGGER.debug("No 'sc' element in statistics response")
             return []
 
         # Check for API-level error message returned inside <sc>, e.g. for an unknown dclg
         if self.validate_structure(parsed, ["sc", "msg"]):
-            _LOGGER.warning("Statistics API returned message: %s", parsed["sc"]["msg"])
+            _LOGGER.debug("Statistics API returned message: %s", parsed["sc"]["msg"])
             return []
 
         measurements: list[tuple[datetime, float]] = []

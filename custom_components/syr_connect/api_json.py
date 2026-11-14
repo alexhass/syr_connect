@@ -384,10 +384,12 @@ class SyrConnectJsonAPI:
                 data = json.loads(text) if text.strip() else None
 
         # --- HTTP Error Handling ---
+        # Errors are logged at debug level only: the coordinator, the config flow and the
+        # entities decide what the user sees, e.g. a failed update once instead of at every poll
         except aiohttp.ClientResponseError as err:
             # 404: Endpoint doesn't exist (wrong base_path or device model?)
             if err.status == 404:
-                _LOGGER.error(
+                _LOGGER.debug(
                     "JSON API: %s - Endpoint not found: %s (HTTP %s)",
                     operation,
                     url,
@@ -400,7 +402,7 @@ class SyrConnectJsonAPI:
                 ) from err
             # 401/403: Authentication failed (login required or invalid credentials)
             if err.status in (401, 403):
-                _LOGGER.error(
+                _LOGGER.debug(
                     "JSON API: %s - Authentication failed: %s (HTTP %s)",
                     operation,
                     url,
@@ -410,7 +412,7 @@ class SyrConnectJsonAPI:
                     f"Authentication failed: {err.message}"
                 ) from err
             # Other HTTP errors (400, 500, etc.)
-            _LOGGER.error(
+            _LOGGER.debug(
                 "JSON API: %s - HTTP error: %s (HTTP %s - %s)",
                 operation,
                 url,
@@ -425,17 +427,17 @@ class SyrConnectJsonAPI:
         # --- Network/Connection Errors ---
         except (aiohttp.ClientError, TimeoutError) as err:
             # repr: a timeout has no message text
-            _LOGGER.error("JSON API: %s - Connection error: %r", operation, err)
+            _LOGGER.debug("JSON API: %s - Connection error: %r", operation, err)
             raise SyrConnectConnectionError(f"Connection failed: {err!r}") from err
 
         # --- Unexpected Errors ---
         # Catch-all for any other exceptions
         except Exception as err:
-            _LOGGER.error("JSON API: %s - Unexpected error: %s", operation, err)
+            _LOGGER.debug("JSON API: %s - Unexpected error: %s", operation, err)
             raise SyrConnectConnectionError(f"Unexpected error: {err}") from err
 
         if not isinstance(data, dict):
-            _LOGGER.error("JSON API: %s - Non-dict payload from %s", operation, url)
+            _LOGGER.debug("JSON API: %s - Non-dict payload from %s", operation, url)
             raise SyrConnectInvalidResponseError("API returned unexpected payload type")
 
         # --- Log Response Data ---

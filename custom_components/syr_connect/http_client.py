@@ -108,6 +108,7 @@ class HTTPClient:
                 _LOGGER.debug("Response received (length: %d)", len(text))
                 return text
         except (TimeoutError, aiohttp.ClientError) as err:
-            # repr: a timeout has no message text
-            _LOGGER.error("Request to %s failed: %r", url, err)
+            # Debug only: the caller decides what the user sees, e.g. the coordinator logs a
+            # failed update once instead of at every poll. repr: a timeout has no message text
+            _LOGGER.debug("Request to %s failed: %r", url, err)
             raise aiohttp.ClientError(f"Request to {url} failed: {err!r}") from err

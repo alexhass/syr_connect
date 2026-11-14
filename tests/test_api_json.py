@@ -1858,3 +1858,40 @@ async def test_get_devices_skips_login_when_login_not_required(
     client.login.assert_not_called()
     assert devices[0]["id"] == "ABC123"
     assert devices[0]["project_id"] == "local"
+
+
+@pytest.mark.parametrize(
+    ("error", "expected"),
+    [
+        pytest.param(TimeoutError(), SyrConnectConnectionError, id="timeout"),
+        pytest.param(
+            aiohttp.ClientResponseError(
+                request_info=MagicMock(), history=(), status=500, message="Error"
+            ),
+            SyrConnectHTTPError,
+            id="http-500",
+        ),
+    ],
+)
+async def test_failed_request_logs_at_debug_level_only(
+    caplog: pytest.LogCaptureFixture,
+    integration_version: str,
+    error: Exception,
+    expected: type[Exception],
+) -> None:
+    """A failed request is not logged above debug level; the coordinator logs it once."""
+    sess = MagicMock()
+    sess.get = MagicMock(side_effect=error)
+    client = SyrConnectJsonAPI(
+        sess,
+        base_url="http://test:5333/trio/",
+        integration_version=integration_version,
+    )
+
+    with (
+        caplog.at_level(logging.DEBUG, logger="custom_components.syr_connect"),
+        pytest.raises(expected),
+    ):
+        await client.request_json_data("get/all")
+
+    assert [r.getMessage() for r in caplog.records if r.levelno > logging.DEBUG] == []
