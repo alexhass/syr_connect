@@ -29,7 +29,6 @@ import ipaddress
 import json
 import logging
 from typing import Any
-from urllib.parse import quote
 
 import aiohttp
 from yarl import URL
@@ -238,30 +237,24 @@ class SyrConnectJsonAPI:
             )
             await self.login()
 
-    def _construct_encoded_url(self, *path_parts: str, encode: bool = False) -> URL:
-        """Build a URL from path components with optional encoding.
+    def _construct_url(self, *path_parts: str) -> URL:
+        """Build a URL from path components, without percent-encoding them.
 
-        This method handles URL construction with proper encoding for special characters.
-
-        Why manual encoding?
-        - The yarl.URL('/') operator doesn't encode colons in path segments
-        - Colons are valid in URLs (for ports), but our API needs them encoded
-        - We use quote() to encode, then yarl.URL(encoded=True) to prevent re-decoding
+        The device firmware does not decode percent-encoded characters (see
+        _build_set_url), so the parts are joined as they are.
 
         Examples:
-            _construct_encoded_url("set", "RTM", "02:30", encode=False)
-            -> URL("http://device:5333/neosoft/set/RTM/02:30", encoded=False)
+            _construct_url("set", "rtm", "02:30")
+            -> URL("http://device:5333/neosoft/set/rtm/02:30")
 
-            _construct_encoded_url("set", "ADM", "(2)f", encode=False)
+            _construct_url("set", "ADM", "(2)f")
             -> URL("http://device:5333/neosoft/set/ADM/(2)f")
 
         Args:
             *path_parts: Path components to append to base URL (e.g., "set", "RTM", "value")
-            encode: If True, use quote() to URL-encode special characters (default: True)
-                   If False, use path components as-is (needed for login with literal parentheses)
 
         Returns:
-            yarl.URL object with encoded=True to preserve our manual encoding
+            The URL
 
         Raises:
             ValueError: If base URL is not configured
@@ -270,18 +263,8 @@ class SyrConnectJsonAPI:
         if not base:
             raise ValueError("Base URL not configured for JSON API client")
 
-        # Encode each path component if requested (quote() encodes special chars like :, /, etc.)
-        # Otherwise use path parts as-is (needed for login URL with literal parentheses)
-        parts = (
-            [quote(str(part), safe="") for part in path_parts]
-            if encode
-            else [str(part) for part in path_parts]
-        )
-        url_string = f"{base.rstrip('/')}/{'/'.join(parts)}"
-
-        # Use encoded=True to tell yarl "this URL is already encoded, don't decode it"
-        # Without this, yarl would decode our %3A back to : which breaks the API
-        return URL(url_string, encoded=encode)
+        parts = [str(part) for part in path_parts]
+        return URL(f"{base.rstrip('/')}/{'/'.join(parts)}")
 
     def _strip_set_prefix(self, command: str) -> str:
         """Strip leading 'set' prefix from a command if present.
@@ -316,7 +299,7 @@ class SyrConnectJsonAPI:
         (e.g. "02:30") must therefore be sent literally.
         """
         url_cmd = self._normalize_cmd_for_url(cmd)
-        return self._construct_encoded_url("set", url_cmd, str(value), encode=False)
+        return self._construct_url("set", url_cmd, str(value))
 
     async def _execute_http_get(
         self,
@@ -340,8 +323,9 @@ class SyrConnectJsonAPI:
 
         Raises:
             SyrConnectAuthError: On 401/403 errors
-            SyrConnectConnectionError: On connection/HTTP errors
-            SyrConnectInvalidResponseError: On invalid JSON response or non-dict payload
+            SyrConnectConnectionError: On connection/HTTP errors and an answer that is
+                no JSON (the config flow shows both as "cannot connect")
+            SyrConnectInvalidResponseError: On an empty answer or JSON that is no object
         """
         _LOGGER.debug("JSON API: %s - URL: %s", operation, url)
         try:
@@ -468,8 +452,8 @@ class SyrConnectJsonAPI:
             SyrConnectConnectionError: On network/HTTP errors
             SyrConnectInvalidResponseError: On validation errors (NSC, MIMA)
         """
-        # Build login URL: /set/ADM/(2)f with literal parentheses (encode=False)
-        url = self._construct_encoded_url("set", "ADM", "(2)f", encode=False)
+        # Build login URL: /set/ADM/(2)f with literal parentheses
+        url = self._construct_url("set", "ADM", "(2)f")
 
         # If we've already determined login is not required, skip network call
         if self._login_required is False:
@@ -540,16 +524,12 @@ class SyrConnectJsonAPI:
         Convenience wrapper around _execute_http_get() for GET requests that
         return JSON data. Leading slash in `path` is optional and will be stripped.
         """
-        # Build URL without encoding (paths like "get/all" are already clean)
-        url = self._construct_encoded_url(path.lstrip("/"), encode=False)
+        # Paths like "get/all" need no encoding
+        url = self._construct_url(path.lstrip("/"))
 
-        # Make request with JSON parsing enabled
-        data = await self._execute_http_get(
+        return await self._execute_http_get(
             url, timeout=timeout, operation=f"fetch {path}"
         )
-        if data is None:
-            raise SyrConnectInvalidResponseError(f"No data returned from {path}")
-        return data
 
     async def get_devices(self, project_id: str) -> list[SyrConnectDevice]:
         """Return a single-device list for the local JSON API.
@@ -618,59 +598,44 @@ class SyrConnectJsonAPI:
     async def get_device_status(self, device_id: str) -> dict[str, Any] | None:
         """Return the device status dictionary parsed from JSON.
 
-        Returns None on unexpected payload to allow the coordinator to keep
-        previous state (same behavior as the XML client parser).
-
         This method reuses the cached response from get_devices() if available,
         otherwise fetches /get/all directly.
+
+        Raises:
+            SyrConnectError: If /get/all cannot be fetched
         """
         _LOGGER.debug("JSON API: Fetching device status for device_id=%s", device_id)
 
-        try:
-            # --- Optimization: Reuse cached response ---
-            # If get_devices() was called just before this, use the cached /get/all response
-            # to avoid a duplicate API call (coordinator calls both methods back-to-back)
-            if self._cached_get_all is not None:
-                _LOGGER.debug(
-                    "JSON API: Reusing cached /get/all response with %d keys for device_id=%s",
-                    len(self._cached_get_all),
-                    device_id,
-                )
-                status = self._cached_get_all
-            else:
-                # --- Fallback: Fetch directly ---
-                # This path is used when:
-                # 1. get_device_status() is called directly without get_devices() first
-                # 2. In direct testing scenarios
-                _LOGGER.debug(
-                    "JSON API: No cached response, fetching /get/all for device_id=%s",
-                    device_id,
-                )
-
-                # Ensure we have a valid session before fetching
-                await self._ensure_session()
-
-                # Fetch fresh data
-                status = await self.request_json_data(
-                    _SYR_CONNECT_JSON_ENDPOINT_GET_ALL
-                )
-
-            # --- Return Status Dictionary ---
-            # The JSON API returns a flat dict with getXYZ keys (getSRN, getAB, etc.)
-            # Return as-is so the rest of the integration can process it like XML parser output
+        # --- Optimization: Reuse cached response ---
+        # If get_devices() was called just before this, use the cached /get/all response
+        # to avoid a duplicate API call (coordinator calls both methods back-to-back)
+        if self._cached_get_all is not None:
             _LOGGER.debug(
-                "JSON API: Returning status with %d keys for device_id=%s",
-                len(status),
+                "JSON API: Reusing cached /get/all response with %d keys for device_id=%s",
+                len(self._cached_get_all),
                 device_id,
             )
-            return dict(status)
+            status = self._cached_get_all
+        else:
+            # --- Fallback: Fetch directly ---
+            # Used when get_device_status() is called without get_devices() first
+            # (diagnostics of cloud devices with local access)
+            _LOGGER.debug(
+                "JSON API: No cached response, fetching /get/all for device_id=%s",
+                device_id,
+            )
+            await self._ensure_session()
+            status = await self.request_json_data(_SYR_CONNECT_JSON_ENDPOINT_GET_ALL)
 
-        # --- Error Handling ---
-        # Return None on parsing errors to let coordinator keep previous state
-        # (same behavior as XML client for graceful degradation)
-        except ValueError, KeyError, TypeError, AttributeError:
-            _LOGGER.exception("Failed to parse JSON device status for %s", device_id)
-            return None
+        # --- Return Status Dictionary ---
+        # The JSON API returns a flat dict with getXYZ keys (getSRN, getAB, etc.)
+        # Return as-is so the rest of the integration can process it like XML parser output
+        _LOGGER.debug(
+            "JSON API: Returning status with %d keys for device_id=%s",
+            len(status),
+            device_id,
+        )
+        return dict(status)
 
     async def set_device_status(
         self, device_id: str, commands: list[tuple[str, Any]]

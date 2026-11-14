@@ -55,7 +55,7 @@ repository.
 - Description: Firmwares do not decode percent-encoded path components correctly. For example, `02:30` encoded as `02%3A30` may be rejected; the device expects the literal `:`.
 - Impact: `set` requests must be sent with literal characters (no percent-encoding) to be accepted.
 - Mitigation in this project:
-  - The client provides selective encoding (see `_construct_encoded_url` and `_build_set_url`).
+  - The client sends all URL parts without percent-encoding (see `_construct_url` and `_build_set_url`).
 - Quick reproduction (against a device):
 
 ```bash

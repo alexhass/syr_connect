@@ -134,7 +134,7 @@ def test_construct_url_with_ipv6_host_is_parseable(integration_version: str) -> 
         integration_version=integration_version,
     )
 
-    url = client._construct_encoded_url("get", "all")
+    url = client._construct_url("get", "all")
 
     assert url.host == "fe80::1"
     assert url.port == 5333
@@ -608,28 +608,6 @@ async def test_get_device_status_calls_login(integration_version: str) -> None:
     # Verify login was called (no cached data)
     client.login.assert_called_once()
     assert status == data
-
-
-async def test_get_device_status_exception_returns_none(
-    integration_version: str,
-) -> None:
-    """Test get_device_status returns None on exception."""
-    sess = MagicMock()
-    client = SyrConnectJsonAPI(
-        sess,
-        base_url="http://test:5333/trio/",
-        integration_version=integration_version,
-    )
-
-    # Mock request_json_data to raise exception
-    with patch.object(
-        client,
-        "request_json_data",
-        new=AsyncMock(side_effect=ValueError("Network error")),
-    ):
-        status = await client.get_device_status("device1")
-
-    assert status is None
 
 
 async def test_set_device_status_no_base_url_raises(integration_version: str) -> None:
@@ -1476,16 +1454,16 @@ async def test_execute_http_get_reraises_invalid_response_error(
         await client._execute_http_get("http://test:5333/trio/test")
 
 
-async def test_construct_encoded_url_no_base_url_raises(
+async def test_construct_url_no_base_url_raises(
     integration_version: str,
 ) -> None:
-    """Test _construct_encoded_url raises ValueError when base URL is not configured."""
+    """Test _construct_url raises ValueError when base URL is not configured."""
     sess = MagicMock()
     # Create client without base_url, host, or base_path
     client = SyrConnectJsonAPI(sess, integration_version=integration_version)
 
     with pytest.raises(ValueError, match="Base URL not configured"):
-        client._construct_encoded_url("test", "path")
+        client._construct_url("test", "path")
 
 
 async def test_get_device_status_with_cached_response(integration_version: str) -> None:
@@ -1512,24 +1490,6 @@ async def test_get_device_status_with_cached_response(integration_version: str) 
 
     # Should return the cached data
     assert status == cached_data
-
-
-async def test_request_json_data_returns_none_raises(integration_version: str) -> None:
-    """Test request_json_data raises error when _execute_http_get returns None unexpectedly."""
-
-    sess = MagicMock()
-    client = SyrConnectJsonAPI(
-        sess,
-        base_url="http://test:5333/trio/",
-        integration_version=integration_version,
-    )
-
-    # Mock _execute_http_get to return None even though expect_json=True
-    with (
-        patch.object(client, "_execute_http_get", return_value=None),
-        pytest.raises(SyrConnectInvalidResponseError, match="No data returned"),
-    ):
-        await client.request_json_data("/get/all")
 
 
 async def test_login_clears_cached_data(
@@ -1561,41 +1521,22 @@ async def test_login_clears_cached_data(
     assert client._cached_get_all is None
 
 
-async def test_construct_encoded_url_with_encode_false(
+async def test_construct_url_keeps_special_characters(
     integration_version: str,
 ) -> None:
-    """Test _construct_encoded_url with encode=False preserves special characters."""
-    sess = MagicMock()
+    """The parts of a URL are not percent-encoded, the firmware does not decode them."""
     client = SyrConnectJsonAPI(
-        sess,
+        MagicMock(),
         base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
-    # Test with encode=False (used for login URL with parentheses)
-    url = client._construct_encoded_url("set", "ADM", "(2)f", encode=False)
-
-    # Should contain literal parentheses, not URL-encoded %28 and %29
-    assert "(2)f" in str(url)
-    assert "%28" not in str(url)
-    assert "%29" not in str(url)
-
-
-async def test_construct_encoded_url_with_encode_true(integration_version: str) -> None:
-    """Test _construct_encoded_url with encode=True encodes special characters."""
-    sess = MagicMock()
-    client = SyrConnectJsonAPI(
-        sess,
-        base_url="http://test:5333/trio/",
-        integration_version=integration_version,
+    assert str(client._construct_url("set", "ADM", "(2)f")) == (
+        "http://test:5333/trio/set/ADM/(2)f"
     )
-
-    # Test with encode=True (used for set commands with special chars)
-    url = client._construct_encoded_url("set", "rtm", "02:30", encode=True)
-
-    # Colon should be URL-encoded as %3A
-    assert "02%3A30" in str(url)
-    assert "02:30" not in str(url)
+    assert str(client._construct_url("set", "rtm", "02:30")) == (
+        "http://test:5333/trio/set/rtm/02:30"
+    )
 
 
 async def test_request_json_data_strips_leading_slash(
@@ -1697,26 +1638,6 @@ async def test_validate_set_response_missing_key_on_login_raises(
         client._validate_set_response(
             {}, cmd="ADM", value="(2)f", device_id="login", is_login=True
         )
-
-
-async def test_get_device_status_returns_none_on_invalid_payload(
-    integration_version: str,
-) -> None:
-    """get_device_status should return None when the payload cannot be parsed into a dict."""
-    client = SyrConnectJsonAPI(
-        MagicMock(),
-        base_url="http://test:5333/trio/",
-        integration_version=integration_version,
-    )
-
-    # Ensure no cached response
-    client._cached_get_all = None
-
-    # Patch request_json_data to return None which will cause parsing to fail
-    with patch.object(client, "request_json_data", new=AsyncMock(return_value=None)):
-        result = await client.get_device_status("device123")
-
-    assert result is None
 
 
 async def test_execute_http_get_401_auth_error(
