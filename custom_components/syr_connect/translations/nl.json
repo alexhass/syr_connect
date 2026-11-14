@@ -1084,6 +1084,13 @@
       "getmit": {
         "name": "Temperatuur (minimaal)"
       },
+      "getmqt": {
+        "name": "Protocol",
+        "state": {
+          "0": "HTTPS",
+          "1": "MQTT"
+        }
+      },
       "getmtf": {
         "name": "Maximale spoelingen per dag"
       },

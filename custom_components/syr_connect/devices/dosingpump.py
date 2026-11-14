@@ -13,7 +13,6 @@ Deliberately NOT included:
 - getRMT, getRMR: reported, but without a known meaning. getRMT can also be set
   (setRMT); on the MuCo and the All-in-One+ it is the maximum filling duration, so its
   sensor and select description would show a wrong value here.
-- getMQT: reported, but without a known meaning (probably an MQTT flag).
 
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists of the platforms which have to
@@ -41,10 +40,10 @@ SENSOR_SUPPORTED_KEYS = {
     "getSRN",
     "getVER",
     # --- Wi-Fi ---
+    "getMQT",
     "getWFC",
     "getWGW",
     "getWIP",
-    # "getMQT",  # Unknown meaning, probably an MQTT flag
 }
 
 SELECT_SUPPORTED_KEYS = {

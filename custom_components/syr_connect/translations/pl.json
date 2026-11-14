@@ -1084,6 +1084,13 @@
       "getmit": {
         "name": "Temperatura (minimalna)"
       },
+      "getmqt": {
+        "name": "Protokół",
+        "state": {
+          "0": "HTTPS",
+          "1": "MQTT"
+        }
+      },
       "getmtf": {
         "name": "Maksymalna liczba płukań na dobę"
       },

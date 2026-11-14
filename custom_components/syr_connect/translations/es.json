@@ -1084,6 +1084,13 @@
       "getmit": {
         "name": "Temperatura (mínima)"
       },
+      "getmqt": {
+        "name": "Protocolo",
+        "state": {
+          "0": "HTTPS",
+          "1": "MQTT"
+        }
+      },
       "getmtf": {
         "name": "Purgas máximas por día"
       },

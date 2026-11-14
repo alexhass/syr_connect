@@ -1084,6 +1084,13 @@
       "getmit": {
         "name": "Temperature (minimum)"
       },
+      "getmqt": {
+        "name": "Protocol",
+        "state": {
+          "0": "HTTPS",
+          "1": "MQTT"
+        }
+      },
       "getmtf": {
         "name": "Maximum flushings per day"
       },

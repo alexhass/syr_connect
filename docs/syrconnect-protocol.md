@@ -1062,7 +1062,7 @@ The HygBox flushes the water pipe in three ways. Each one has its own disable fl
 | getFD3 / setFD3 | "False" (assumed) | | | | Periodic flushing disabled: false = active, true = disabled |
 | getFLO | "320" (assumed) | L/h | | | Current flow |
 | getMAC | "AA:BB:CC:DD:EE:FF" (assumed) | | | | MAC address |
-| getMQT | "False" (assumed) | | | | *unknown*, a boolean flag, probably whether MQTT is enabled |
+| getMQT | "1" | | | | Protocol: 0 = no MQTT (HTTPS), 1 = MQTT, see getMQT / setMQT in [Network](#network) |
 | getMTF / setMTF | "5" (assumed) | | | 5 | Maximum number of temperature flushings per day. Range: 1–50 |
 | getRCP / setRCP | "43200" (assumed) | s | | 43200 | Synchronization interval. Range: 21600–691200 (6 hours – 8 days) in steps of 6 hours |
 | getSTP / setSTP | "2880" (assumed) | min | | 2880 | Stagnation time after which the stagnation flushing starts. Range: 60–43200 (1 hour – 30 days) |
@@ -1102,7 +1102,7 @@ Properties of the dosing pump (dk 190, dkv 44), probably the SYR NeoDos Connect.
 | getDSL / setDSL | "1" (assumed) | | | | Dosing liquid: 0 = not set, 1 and 2 = the two dosing liquids of the pump; their names are not known |
 | getFLO | "320" (assumed) | L/h | | | Current flow |
 | getMAC | "AA:BB:CC:DD:EE:FF" (assumed) | | | | MAC address |
-| getMQT | "False" (assumed) | | | | *unknown*, a boolean flag, probably whether MQTT is enabled |
+| getMQT | "1" | | | | Protocol: 0 = no MQTT (HTTPS), 1 = MQTT, see getMQT / setMQT in [Network](#network) |
 | getRMR | "0" (assumed) | | | | *unknown*, an integer; possibly a remaining amount or time |
 | getRMT / setRMT | "0" (assumed) | | | | *unknown*, an integer that can be set; not the maximum filling duration of the MuCo (see [Filling the Heating System](#filling-the-heating-system)) |
 | getWFC | "MyWiFi" (assumed) | | | | Wi-Fi SSID |

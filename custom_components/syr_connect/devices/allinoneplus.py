@@ -45,6 +45,7 @@ SENSOR_SUPPORTED_KEYS = {
     "getVER",
     # --- Wi-Fi ---
     "getAPT",
+    "getMQT",
     "getWFC",
     "getWFR",
     "getWFS",

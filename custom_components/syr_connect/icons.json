@@ -480,6 +480,9 @@
       "getmit": {
         "default": "mdi:thermometer-low"
       },
+      "getmqt": {
+        "default": "mdi:protocol"
+      },
       "getmtf": {
         "default": "mdi:counter"
       },

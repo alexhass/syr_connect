@@ -2103,6 +2103,11 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         entity_registry_enabled_default=False,
     ),
     SyrConnectSensorEntityDescription(
+        key="getMQT",  # Protocol (0=HTTPS, 1=MQTT)
+        suggested_display_precision=0,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    SyrConnectSensorEntityDescription(
         key="getWFC",  # Wi-Fi SSID
         entity_category=EntityCategory.DIAGNOSTIC,
         keep_as_string=True,

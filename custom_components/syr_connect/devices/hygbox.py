@@ -18,9 +18,6 @@ getFD1-3 report the function as disabled, so their switches are inverted.
 The alarm (getALA) is reset with clrALA (alarm_clear_via_set is not set). The
 HygBox reports no warnings (getWRN) and no notifications (getNOT).
 
-Deliberately NOT included:
-- getMQT: reported, but without a known meaning (probably an MQTT flag).
-
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists of the platforms which have to
 cover every supported model at once.
@@ -58,10 +55,10 @@ SENSOR_SUPPORTED_KEYS = {
     "getSRN",
     "getVER",
     # --- Wi-Fi ---
+    "getMQT",
     "getWFC",
     "getWGW",
     "getWIP",
-    # "getMQT",  # Unknown meaning, probably an MQTT flag
 }
 
 SELECT_SUPPORTED_KEYS = {

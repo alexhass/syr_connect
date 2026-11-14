@@ -1084,6 +1084,13 @@
       "getmit": {
         "name": "Température (minimale)"
       },
+      "getmqt": {
+        "name": "Protocole",
+        "state": {
+          "0": "HTTPS",
+          "1": "MQTT"
+        }
+      },
       "getmtf": {
         "name": "Rinçages maximum par jour"
       },
