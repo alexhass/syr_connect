@@ -6,16 +6,22 @@ local JSON API at the URL pattern:
     BASE_URL = "{scheme}://{host}:5333{base_path}"
 
 The expected endpoints used here are:
-- GET {BASE_URL}/set/ADM/(2)f    -> login (side-effect required before /get/all)
+- GET {BASE_URL}/set/ADM/(2)f    -> ADM mode, which some devices need to report all fields
 - GET {BASE_URL}/get/all         -> returns a flat JSON object with getXYZ keys
 - GET {BASE_URL}/get/{key}       -> returns single value: {"get{key}": value}
+
+ADM is no login with credentials, the methods are only named like those of the XML
+client. The config flow sends it once: a device that answers 404 does not need it,
+which is stored in the config entry (CONF_LOGIN_REQUIRED), and ADM is never sent to
+it again. A device that needs it gets it again every
+_SYR_CONNECT_SESSION_TIMEOUT_MINUTES before /get/all.
 
 Known API error codes in responses:
 - "NSC": Command does not exist (No Such Command)
 - "MIMA": Value outside valid range (Min/Max exceeded)
 
 The client is intentionally small and mirrors the interface used by the
-XML API client so it can be integrated into the coordinator later.
+XML API client, so the coordinator can use both alike.
 """
 
 from datetime import UTC, datetime, timedelta
@@ -123,14 +129,13 @@ class SyrConnectJsonAPI:
         # URL construction parameters (option 2: explicit base_url, overrides host/base_path)
         self._base_url = base_url
 
-        # Session tracking (devices require login before /get/all returns data)
+        # Time of the last ADM request (some devices report all fields only after it)
         self._last_login: datetime | None = None
 
-        # Tracks whether ADM login is required for this device:
+        # Whether the device needs ADM, from the config entry (CONF_LOGIN_REQUIRED):
         # - None: unknown (not checked yet)
-        # - True: login required
-        # - False: login not required (skip attempts)
-        # Allow pre-seeding this value from persisted config entry
+        # - True: needed, sent every _SYR_CONNECT_SESSION_TIMEOUT_MINUTES
+        # - False: not needed (the device answered 404), never sent
         self._login_required: bool | None = login_required
 
         # Project list (single-item placeholder for coordinator compatibility)
@@ -192,16 +197,14 @@ class SyrConnectJsonAPI:
         return result
 
     def is_session_valid(self) -> bool:
-        """Check if the current session is still valid.
+        """Return True if the last ADM request is less than the timeout ago.
 
-        WARNING: There is no session, but this behavior reduces the load to the device.
-
-        Sessions expire after 30 minutes of inactivity. This method checks if:
-        1. A login has occurred (_last_login is set)
-        2. The session hasn't exceeded the timeout period
+        There is no session: the device is not known to leave ADM mode again. ADM is
+        repeated every _SYR_CONNECT_SESSION_TIMEOUT_MINUTES instead of before every
+        /get/all, which keeps the load on the device low.
 
         Returns:
-            True if session is valid and doesn't need re-login, False otherwise
+            True if ADM was sent within the timeout, False otherwise
         """
         return self._last_login is not None and datetime.now(
             UTC
@@ -446,16 +449,17 @@ class SyrConnectJsonAPI:
         return data
 
     async def login(self) -> bool:
-        """Call the login endpoint required by the device JSON API.
+        """Send the ADM request, which some devices need to report all fields.
 
-        Most SYR devices require calling this login endpoint before /get/all
-        returns actual data (otherwise it returns empty or placeholder values).
+        Some older firmwares (SafeTech V4, Pontos) report all fields in /get/all only
+        after it; newer devices answer 404, which marks ADM as not needed. No credentials
+        are sent. An unexpected answer raises SyrConnectAuthError, as for the XML client.
 
-        The login URL is: {base}/set/ADM/(2)f
+        The URL is: {base}/set/ADM/(2)f
         Note: Uses literal parentheses, not URL-encoded %28 and %29
 
         Returns:
-            True on successful login
+            True if the device accepted ADM or does not need it
 
         Raises:
             SyrConnectAuthError: On authentication failure or invalid status

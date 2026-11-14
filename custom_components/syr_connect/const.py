@@ -26,9 +26,9 @@ _SYR_CONNECT_API_SCAN_INTERVAL_MAXIMUM = 600  # seconds
 # the limit keeps a broken or hostile server from filling the memory.
 _SYR_CONNECT_API_RESPONSE_SIZE_MAXIMUM = 1024 * 1024  # bytes
 
-# Client-side re-login interval of the local JSON API (ADM login, minutes). Assumed; the device
-# itself is not known to time out the login. The XML (cloud) API has no client-side timeout; it
-# logs in again when the server rejects the token.
+# Interval in minutes after which the local JSON API sends ADM again before /get/all, for
+# devices that need it. Assumed; the device itself is not known to leave ADM mode. The XML
+# (cloud) API has no client-side timeout; it logs in again when the server rejects the token.
 _SYR_CONNECT_SESSION_TIMEOUT_MINUTES = 30
 
 # API URLs (internal)
