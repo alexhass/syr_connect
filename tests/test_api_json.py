@@ -8,7 +8,7 @@ from datetime import UTC, datetime, timedelta
 import json
 import logging
 from pathlib import Path
-from typing import Any, NoReturn, override
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import aiohttp
@@ -1015,84 +1015,40 @@ def test_build_set_url_keeps_value_and_lowercases_command(
     assert "/set/ADM/(2)f" in str(url2)
 
 
-async def test_validate_response_errors_case_sensitive(
-    integration_version: str,
-) -> None:
-    """Test _validate_response_errors requires exact uppercase error codes.
-
-    Uppercase codes should log warnings; any non-uppercase variant
-    should raise SyrConnectInvalidResponseError.
-    """
-
-    sess = MagicMock()
-    client = SyrConnectJsonAPI(
-        sess,
-        base_url="http://test:5333/trio/",
-        integration_version=integration_version,
-    )
-
-    # Uppercase is accepted (no exception)
-    client._validate_response_errors({"key_ok": "NSC"}, "http://test")
-    client._validate_response_errors({"key_ok2": "MIMA"}, "http://test")
-
-    # Non-uppercase variants are invalid and should raise
-    with pytest.raises(SyrConnectInvalidResponseError):
-        client._validate_response_errors({"key1": "nsc"}, "http://test")
-
-    with pytest.raises(SyrConnectInvalidResponseError):
-        client._validate_response_errors({"key3": "Nsc"}, "http://test")
-
-    with pytest.raises(SyrConnectInvalidResponseError):
-        client._validate_response_errors({"key4": "mima"}, "http://test")
-
-    with pytest.raises(SyrConnectInvalidResponseError):
-        client._validate_response_errors({"key6": "MiMa"}, "http://test")
-
-
-async def test_validate_response_errors_accepts_error_colon_variant(
+@pytest.mark.parametrize(
+    ("value", "warning"),
+    [
+        pytest.param("NSC", "Command does not exist (NSC error)", id="nsc"),
+        pytest.param("MIMA", "Value is outside valid range (MIMA error)", id="mima"),
+        pytest.param("ADM", "ADM mode not set (ADM error)", id="adm"),
+        pytest.param("ERROR: ADM", "ADM mode not set (ADM error)", id="error-adm"),
+        # The codes are always uppercase: another case is an ordinary value
+        pytest.param("nsc", None, id="lowercase"),
+        pytest.param("Mima", None, id="mixed-case"),
+        pytest.param("ERROR: adm", None, id="error-lowercase"),
+        pytest.param("12:30", None, id="colon-without-code"),
+    ],
+)
+async def test_validate_response_errors_only_uppercase_codes(
     caplog: pytest.LogCaptureFixture,
     integration_version: str,
+    value: str,
+    warning: str | None,
 ) -> None:
-    """Test _validate_response_errors accepts 'ERROR: CODE' variants and logs warnings."""
-    sess = MagicMock()
+    """Only the uppercase error codes are warned about; no value rejects the answer."""
     client = SyrConnectJsonAPI(
-        sess,
+        MagicMock(),
         base_url="http://test:5333/trio/",
         integration_version=integration_version,
     )
 
     with caplog.at_level(logging.WARNING):
-        client._validate_response_errors({"getXYZ": "ERROR: NSC"}, "http://test")
+        client._validate_response_errors({"getWFC": value}, "http://test")
 
-    assert "JSON API: 'getXYZ' Command does not exist (NSC error)" in caplog.text
-
-
-async def test_validate_response_errors_handles_split_value_error(
-    caplog: pytest.LogCaptureFixture,
-    integration_version: str,
-) -> None:
-    """Test _validate_response_errors handles ValueError from split() gracefully."""
-    sess = MagicMock()
-    client = SyrConnectJsonAPI(
-        sess,
-        base_url="http://test:5333/trio/",
-        integration_version=integration_version,
-    )
-
-    class BadSplit(str):
-        __slots__ = ()
-
-        @override
-        def split(self, sep: Any = None, maxsplit: Any = -1) -> NoReturn:
-            raise ValueError("split failed")
-
-    with caplog.at_level(logging.WARNING):
-        client._validate_response_errors(
-            {"getXYZ": BadSplit("ERROR: NSC")}, "http://test"
-        )
-
-    # Because split failed, code becomes '' and no NSC warning should be logged
-    assert "Command does not exist (NSC error)" not in caplog.text
+    if warning is None:
+        assert caplog.text == ""
+    else:
+        assert f"JSON API: 'getWFC' {warning} - URL: http://test" in caplog.text
 
 
 async def test_validate_response_errors_ignores_non_string_values(

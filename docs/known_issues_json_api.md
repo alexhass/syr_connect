@@ -19,7 +19,7 @@ repository.
 - **Percent-encoding issues:** Some firmwares reject percent-encoded path segments (e.g., `%3A`) and expect literal characters.
 - **Response key and URL path casing inconsistencies:** `set` response keys and `/set` path segment casing vary between devices and firmwares.
 - **Data-type inconsistencies:** Identical fields may appear as numbers, strings, or booleans depending on firmware/version.
-- **API error-code case-sensitivity:** Error codes `NSC` and `MIMA` are expected uppercase; lowercased variants are treated as invalid.
+- **API error-code case-sensitivity:** Error codes `NSC`, `MIMA` and `ADM` are always uppercase, as documented by SYR; a value in another case (such as a Wi-Fi name `adm`) is an ordinary value.
 - **Time values are local time:** `getLAR` counts the local wall time of the device, not UTC; see issue 5 in [known_issues_xml_api.md](known_issues_xml_api.md).
 - **Canonical response format (compact status-key):** Devices commonly return compact status-key responses (e.g. {"setABtrue":"OK"}) instead of the typed JSON shown in the official documentation; the integration operates on the compact device format at runtime and treats it as the canonical representation.
 - **SafeTech+ pressure key:** The official documentation lists `getBAR2` for the SafeTech+; the devices report the pressure in `getBAR`.

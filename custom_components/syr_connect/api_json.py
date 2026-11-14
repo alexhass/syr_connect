@@ -842,10 +842,8 @@ class SyrConnectJsonAPI:
             "ADM": "ADM mode not set (ADM error)",
         }
 
-        # Scan response values for error codes. Only exact uppercase codes
-        # are accepted as API error indicators (logged as warnings). Any
-        # value that matches a known code in a non-uppercase form is
-        # treated as an invalid response and raises an exception.
+        # Scan response values for error codes. The codes are always uppercase (as
+        # documented by SYR); another case is an ordinary value, such as a Wi-Fi name.
         for key, val in data.items():
             # Skip set-command keys (e.g., "setRPD4") - these are validated by _validate_set_response()
             # Only log warnings for get-command keys (e.g., "getRTM") with error codes
@@ -862,18 +860,7 @@ class SyrConnectJsonAPI:
                 continue
 
             # Accept 'ERROR: {CODE}' variants (older firmware may return this)
-            if isinstance(val, str) and ":" in val:
-                try:
-                    _, code = val.split(":", 1)
-                    code = code.strip()
-                except ValueError:
-                    code = ""
-                if msg := error_messages.get(code):
+            if ":" in val:
+                _, _, code = val.partition(":")
+                if msg := error_messages.get(code.strip()):
                     _LOGGER.warning("JSON API: '%s' %s - URL: %s", key, msg, url)
-                    continue
-
-            # Non-uppercase variant of a known code: treat as invalid
-            if val.upper() in error_messages:
-                raise SyrConnectInvalidResponseError(
-                    f"Invalid error code case for key '{key}': '{val}' - URL: {url}"
-                )
