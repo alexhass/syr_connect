@@ -268,11 +268,14 @@ async def test_rejected_token_relogs_in_and_retries_once(
         patch.object(api_client, "login", side_effect=_login) as login,
     ):
         if parser:
-            with patch.object(
-                api_client.response_parser,
-                parser,
-                return_value=[] if method == "get_devices" else {},
-            ):
+            result: Any = [] if method == "get_devices" else {}
+
+            def _parse(xml: str) -> Any:
+                # The real parsers detect a rejected token first
+                api_client.response_parser.raise_if_session_expired(xml)
+                return result
+
+            with patch.object(api_client.response_parser, parser, side_effect=_parse):
                 await getattr(api_client, method)(*args)
         else:
             await getattr(api_client, method)(*args)
@@ -853,3 +856,51 @@ async def test_failed_login_logs_at_debug_level_only(
         await api_client.login()
 
     assert [r.getMessage() for r in caplog.records if r.levelno > logging.DEBUG] == []
+
+
+@pytest.mark.parametrize(
+    ("method", "args", "fixture"),
+    [
+        pytest.param(
+            "get_devices",
+            ("project1",),
+            "SyrSafeFloor_GetProjectDeviceCollections.xml",
+            id="device-list",
+        ),
+        pytest.param(
+            "get_device_status",
+            ("dclg1",),
+            "SyrSafeFloor_GetDeviceCollectionStatus.xml",
+            id="status",
+        ),
+        pytest.param(
+            "get_statistics",
+            ("dclg1", safefloor.STATISTICS[0]),
+            "SyrSafeFloor_GetSafeFloorStatistics_Temperature.xml",
+            id="statistics",
+        ),
+        pytest.param(
+            "set_device_status",
+            ("dclg1", [("setAB", "2")]),
+            "SyrSafeFloor_GetDeviceCollectionStatus.xml",
+            id="set",
+        ),
+    ],
+)
+async def test_each_answer_is_parsed_once(
+    api_client: SyrConnectXmlAPI, method: str, args: tuple[Any, ...], fixture: str
+) -> None:
+    """An answer is parsed once, also for the check of a rejected token."""
+    api_client.session_data = "token"
+    xml = (Path(__file__).parent / "fixtures/xml" / fixture).read_text(encoding="utf-8")
+    parse_xml = api_client.response_parser.parse_xml
+
+    with (
+        patch.object(api_client.http_client, "post", return_value=xml),
+        patch.object(
+            api_client.response_parser, "parse_xml", wraps=parse_xml
+        ) as mock_parse,
+    ):
+        await getattr(api_client, method)(*args)
+
+    mock_parse.assert_called_once_with(xml)

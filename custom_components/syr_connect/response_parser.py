@@ -162,13 +162,14 @@ class ResponseParser:
         self._raise_if_session_expired(parsed)
 
     def parse_login_response(self, xml_response: str) -> tuple[str, dict[str, Any]]:
-        """Parse login response and extract session ID and projects.
+        """Parse the login response and return its encrypted part.
 
         Args:
             xml_response: XML response string
 
         Returns:
-            Tuple of (session_id, projects_list)
+            Tuple of (encrypted text of <api>, parsed response); the session ID and the
+            projects are in the encrypted text (see parse_decrypted_login)
 
         Raises:
             ValueError: If response structure is invalid
@@ -446,7 +447,7 @@ class ResponseParser:
 
         return self._flatten_attributes(parsed["sc"])
 
-    def _ignore_broken_response(self, device_list: Any) -> bool:
+    def _ignore_broken_response(self, device_list: list[Any]) -> bool:
         """Ignore broken responses.
 
         Whenever the cloud returns nonsense, the response is ignored and the previous
@@ -472,7 +473,7 @@ class ResponseParser:
           previous state (stays unavailable) until a full answer arrives.
 
         Args:
-            device_list: The <d> entries of the response (a list, or a single dict)
+            device_list: The <d> entries of the response
 
         Returns:
             True if the response is broken and must be ignored, otherwise False
@@ -496,8 +497,6 @@ class ResponseParser:
                 names.add(c["@n"])
             return names
 
-        devices = device_list if isinstance(device_list, list) else [device_list]
-
         # A device the cloud reports offline (dst="0" never online, dst="1" offline) has
         # no more data than this; its minimal answer is genuine, not the Trio glitch
         # (which comes from online devices, dst="2"). Parsing it lets the coordinator
@@ -505,7 +504,7 @@ class ResponseParser:
         # Exempt only the offline devices, so an online one in the same response is still checked.
         online_devices = [
             d
-            for d in devices
+            for d in device_list
             if not (isinstance(d, dict) and is_device_offline(d.get("@dst")))
         ]
         if not online_devices:
@@ -605,12 +604,11 @@ class ResponseParser:
         return found
 
     @staticmethod
-    def _flatten_attributes(data: dict | list, prefix: str = "") -> dict[str, Any]:
+    def _flatten_attributes(data: dict | list) -> dict[str, Any]:
         """Flatten XML attributes to simple dict.
 
         Args:
             data: Data structure to flatten
-            prefix: Prefix for nested keys
 
         Returns:
             Flattened dictionary
@@ -661,7 +659,7 @@ class ResponseParser:
 
                 # Handle nested structures
                 elif isinstance(value, dict | list):
-                    nested = ResponseParser._flatten_attributes(value, prefix)
+                    nested = ResponseParser._flatten_attributes(value)
                     result.update(nested)
 
                 # Handle simple values
@@ -670,7 +668,7 @@ class ResponseParser:
 
         elif isinstance(data, list):
             for item in data:
-                nested = ResponseParser._flatten_attributes(item, prefix)
+                nested = ResponseParser._flatten_attributes(item)
                 result.update(nested)
 
         return result

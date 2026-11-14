@@ -1009,11 +1009,10 @@ def test_ignore_broken_response_minimal_set(parser: ResponseParser) -> None:
 
 
 def test_ignore_broken_response_dict_minimal(parser: ResponseParser) -> None:
-    """Single-device dict with only broken names should be ignored."""
-    parser = ResponseParser()
+    """A device with a single <c> (parsed as dict) of a broken name is ignored."""
     device = {"c": {"@n": "getNOT", "@v": ""}}
 
-    assert parser._ignore_broken_response(device) is True
+    assert parser._ignore_broken_response([device]) is True
 
 
 def test_ignore_broken_response_not_broken(parser: ResponseParser) -> None:
