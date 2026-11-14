@@ -36,6 +36,7 @@ from custom_components.syr_connect.exceptions import (
     SyrConnectConnectionError,
     SyrConnectLoginFailedError,
 )
+from custom_components.syr_connect.helpers import build_entry_unique_id
 from custom_components.syr_connect.models import MODEL_SIGNATURES
 from homeassistant import config_entries
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
@@ -436,12 +437,15 @@ async def test_reauth_confirm_json_success(hass: HomeAssistant) -> None:
     ):
         mock_setup_entry.return_value = True
         result2 = await hass.config_entries.flow.async_configure(
-            result["flow_id"], {CONF_HOST: "192.0.2.5", CONF_MODEL: "neosoft5000"}
+            result["flow_id"], {CONF_HOST: "192.0.2.6", CONF_MODEL: "neosoft5000"}
         )
         await hass.async_block_till_done()
 
     assert result2["type"] == FlowResultType.ABORT
     assert result2["reason"] == "reauth_successful"
+    # The new host changes the data and the title, as at setup
+    assert entry.data[CONF_HOST] == "192.0.2.6"
+    assert entry.title == "SYR Connect Local (192.0.2.6)"
 
 
 async def test_validate_input_json_empty_status_raises(hass: HomeAssistant) -> None:
@@ -880,6 +884,8 @@ async def test_reconfigure_flow(hass: HomeAssistant) -> None:
     # The changed username (e.g. a new e-mail address of the account) also changes the unique_id
     assert entry.unique_id == "xml_de.consoft.syr.connect_new_user@example.com"
     assert entry.data[CONF_USERNAME] == "new_user@example.com"
+    # The title is built again, as at setup
+    assert entry.title == "SYR Connect (new_user@example.com)"
 
 
 @pytest.mark.usefixtures("mock_syr_api")
@@ -951,8 +957,7 @@ async def test_reauth_reconfigure_abort_if_username_used_by_other_entry(
 )
 def test_entry_unique_id(api_type: str, data: dict, expected: str) -> None:
     """Reauth/reconfigure build the same unique_id as the user steps."""
-
-    assert ConfigFlow._entry_unique_id(api_type, data) == expected
+    assert build_entry_unique_id(api_type, data) == expected
 
 
 async def test_reconfigure_flow_invalid_auth(hass: HomeAssistant) -> None:

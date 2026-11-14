@@ -115,6 +115,23 @@ STEP_LOCAL_JSON_DATA_SCHEMA = probatio.Schema(
 )
 
 
+def _entry_title(api_type: str, data: dict[str, Any]) -> str:
+    """Return the title a new config entry gets for the given connection data.
+
+    Args:
+        api_type: API type of the entry
+        data: Entry data with the service and username (cloud) or the host (local)
+
+    Returns:
+        "<service> (<username>)" for the cloud, "SYR Connect Local (<host>)" for a
+        local device
+    """
+    if api_type == API_TYPE_JSON:
+        return f"SYR Connect Local ({data[CONF_HOST]})"
+    service = _SYR_CONNECT_API_SERVICES[data[CONF_SERVICE]]
+    return f"{service.display_name} ({data[CONF_USERNAME]})"
+
+
 async def validate_input_xml(
     hass: HomeAssistant, data: dict[str, Any]
 ) -> dict[str, Any]:
@@ -163,7 +180,7 @@ async def validate_input_xml(
         "XML API: authentication successful for user: %s", data[CONF_USERNAME]
     )
 
-    return {"title": f"{svc.display_name} ({data[CONF_USERNAME]})"}
+    return {"title": _entry_title(API_TYPE_XML, data)}
 
 
 async def _async_validate_json_device(api: SyrConnectJsonAPI) -> None:
@@ -270,7 +287,7 @@ async def validate_input_json(
 
     # Return whether the device required login so the config flow can persist it
     return {
-        "title": f"SYR Connect Local ({host})",
+        "title": _entry_title(API_TYPE_JSON, data),
         "login_required": api.login_required,
     }
 
@@ -352,14 +369,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return SyrConnectOptionsFlow()
 
     @staticmethod
-    def _entry_unique_id(api_type: str, data: dict[str, Any]) -> str:
-        """Return the config entry unique_id for the given connection data.
-
-        See build_entry_unique_id; the migration to version 10 uses the same rule.
-        """
-        return build_entry_unique_id(api_type, data)
-
-    @staticmethod
     def _strip_host(user_input: dict[str, Any]) -> dict[str, Any]:
         """Return the user input with leading/trailing whitespace removed from the host.
 
@@ -396,7 +405,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         Shared by reauth and reconfigure. A changed username/host also changes the entry's
         unique_id (e.g. a new e-mail address of the same SYR account, or a new device IP);
-        the flow aborts with "already_configured" if another entry already uses it.
+        the flow aborts with "already_configured" if another entry already uses it. The
+        title is built again from the new data, as at setup.
 
         Args:
             entry: The config entry to update
@@ -406,18 +416,22 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         Returns:
             The abort result that ends the flow
         """
-        new_unique_id = self._entry_unique_id(api_type, new_data)
+        new_unique_id = build_entry_unique_id(api_type, new_data)
         if self._unique_id_used_by_other_entry(entry, new_unique_id):
             return self.async_abort(reason="already_configured")
         return self.async_update_reload_and_abort(
-            entry, data=new_data, unique_id=new_unique_id
+            entry,
+            data=new_data,
+            unique_id=new_unique_id,
+            title=_entry_title(api_type, new_data),
         )
 
     async def async_step_reauth(self, _entry_data: dict[str, Any]) -> ConfigFlowResult:
         """Handle reauth flow when credentials are invalid.
 
         Args:
-            entry_data: The existing config entry data
+            _entry_data: The existing config entry data (unused, the entry is read
+                in async_step_reauth_confirm)
 
         Returns:
             FlowResult to prompt user for new credentials
@@ -679,7 +693,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "unknown"
             else:
                 # Set unique ID based on username and API type
-                unique_id = self._entry_unique_id(API_TYPE_XML, user_input)
+                unique_id = build_entry_unique_id(API_TYPE_XML, user_input)
                 _LOGGER.debug("Setting unique ID: %s", unique_id)
                 await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()
@@ -737,7 +751,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "unknown"
             else:
                 # Set unique ID based on host and API type
-                unique_id = self._entry_unique_id(API_TYPE_JSON, user_input)
+                unique_id = build_entry_unique_id(API_TYPE_JSON, user_input)
                 _LOGGER.debug("Setting unique ID: %s", unique_id)
                 await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()
