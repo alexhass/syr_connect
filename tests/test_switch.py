@@ -8,7 +8,7 @@ import logging
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, call
 
 import pytest
 
@@ -113,34 +113,23 @@ async def test_switch_entity_states_and_actions(hass: HomeAssistant) -> None:
 
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [device_on, device_off]}
-
-    # Async refresh stub
+    mock_coordinator.async_set_device_value = AsyncMock()
     mock_coordinator.async_request_refresh = AsyncMock()
 
     sw_on = SyrConnectBooleanSwitch(mock_coordinator, "SN123", "DeviceOn", "getBUZ")
     sw_off = SyrConnectBooleanSwitch(mock_coordinator, "SN124", "DeviceOff", "getBUZ")
 
-    # Unique id should include platform suffix set in implementation
-    assert sw_on.unique_id is not None
-    assert sw_on.unique_id.endswith("_switch")
-
     assert sw_on.is_on is True
     assert sw_off.is_on is False
 
-    # Test turn_on/turn_off call coordinator and verify command name
-    async def fake_set_device_value(device_id: Any, cmd: Any, value: Any) -> None:
-        assert cmd == "setBUZ"
-
-    mock_coordinator.async_set_device_value = AsyncMock(
-        side_effect=fake_set_device_value
-    )
-
-    # call turn on/off
     await sw_off.async_turn_on()
-    mock_coordinator.async_set_device_value.assert_called()
-
     await sw_on.async_turn_off()
-    assert mock_coordinator.async_set_device_value.call_count >= 2
+
+    # The value is written in the format the device reports ("0"/"1")
+    assert mock_coordinator.async_set_device_value.await_args_list == [
+        call("SN124", "setBUZ", "1"),
+        call("SN123", "setBUZ", "0"),
+    ]
 
 
 async def test_switch_unique_id_preserves_entry_id_casing() -> None:
@@ -376,7 +365,6 @@ def test_is_on_with_int_and_float_values() -> None:
     assert sw_float.is_on is False
 
 
-@pytest.mark.asyncio
 async def test_turn_on_api_exception_is_reported(hass: HomeAssistant) -> None:
     """If the API call fails, the service call fails too (HomeAssistantError) instead of looking successful."""
 
@@ -403,7 +391,7 @@ async def test_turn_on_api_exception_is_reported(hass: HomeAssistant) -> None:
 
 
 async def test_set_buz_bool_current_uses_bool_value() -> None:
-    """Line 189: _set_buz with a bool current value passes state directly."""
+    """A device that reports a bool gets the new state as bool."""
 
     device = {"id": "SN1001", "name": "BoolDev", "status": {"getBUZ": False}}
     mock_coordinator = MagicMock()
@@ -421,7 +409,7 @@ async def test_set_buz_bool_current_uses_bool_value() -> None:
 
 
 async def test_set_buz_int_current_uses_int_value() -> None:
-    """Line 191: _set_buz with an int current value uses 1/0."""
+    """A device that reports an int gets the new state as 1/0."""
 
     device = {"id": "SN1002", "name": "IntDev", "status": {"getBUZ": 0}}
     mock_coordinator = MagicMock()
@@ -439,7 +427,7 @@ async def test_set_buz_int_current_uses_int_value() -> None:
 
 
 async def test_set_buz_else_fallback_uses_string_true_false() -> None:
-    """Line 195: _set_buz else branch when current is None (device not found)."""
+    """Without a reported value the new state is written as "True"/"False"."""
 
     # Device present but getBUZ not in status → current = None → else branch
     device = {"id": "SN1003", "name": "NoneDev", "status": {}}
@@ -458,7 +446,7 @@ async def test_set_buz_else_fallback_uses_string_true_false() -> None:
 
 
 def test_available_returns_false_when_last_update_failed() -> None:
-    """The available property returns False when last_update_success is False (line 167)."""
+    """The available property returns False when last_update_success is False."""
 
     device = {
         "id": "SN2001",
@@ -476,7 +464,7 @@ def test_available_returns_false_when_last_update_failed() -> None:
 
 
 def test_available_returns_device_available_flag() -> None:
-    """The available property returns device.available when device is found (lines 168-170)."""
+    """The available property returns the available flag of the device."""
 
     device_unavailable = {
         "id": "SN2002",

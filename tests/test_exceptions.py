@@ -1,7 +1,5 @@
 """Test the SYR Connect exceptions."""
 
-import pytest
-
 from custom_components.syr_connect.exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
@@ -17,41 +15,3 @@ def test_exception_hierarchy() -> None:
     assert issubclass(SyrConnectAuthError, SyrConnectError)
     assert issubclass(SyrConnectConnectionError, SyrConnectError)
     assert issubclass(SyrConnectInvalidResponseError, SyrConnectError)
-
-
-def test_auth_error() -> None:
-    """Test authentication error."""
-    error = SyrConnectAuthError("Invalid credentials")
-    assert str(error) == "Invalid credentials"
-    assert isinstance(error, SyrConnectError)
-
-
-def test_connection_error() -> None:
-    """Test connection error."""
-    error = SyrConnectConnectionError("Cannot connect to API")
-    assert str(error) == "Cannot connect to API"
-    assert isinstance(error, SyrConnectError)
-
-
-def test_invalid_response_error() -> None:
-    """Test invalid response error."""
-    error = SyrConnectInvalidResponseError("Malformed XML")
-    assert str(error) == "Malformed XML"
-    assert isinstance(error, SyrConnectError)
-
-
-def test_exception_can_be_caught_as_base() -> None:
-    """Test that specific exceptions can be caught as base exception."""
-    try:
-        raise SyrConnectAuthError("Test")
-    except SyrConnectError:
-        pass  # Should catch it
-
-
-def test_exception_with_cause() -> None:
-    """Test exceptions with cause."""
-    original = ValueError("Original error")
-
-    with pytest.raises(SyrConnectAuthError) as excinfo:
-        raise SyrConnectAuthError("Auth failed") from original
-    assert excinfo.value.__cause__ == original

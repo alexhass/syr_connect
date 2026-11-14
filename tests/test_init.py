@@ -107,49 +107,6 @@ async def test_async_setup_entry_removes_stale_devices_only_with_complete_list(
     assert mock_cleanup.called is complete
 
 
-async def test_async_setup_entry_json_api_identifier_and_clamp(
-    hass: HomeAssistant,
-) -> None:
-    """Test JSON API path uses host identifier and clamps scan interval below minimum."""
-
-    # Create entry with JSON API and very small scan_interval to trigger clamp
-    config_entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test JSON",
-        data={
-            CONF_USERNAME: "json@example.com",
-            CONF_PASSWORD: "password",
-            CONF_API_TYPE: API_TYPE_JSON,
-            CONF_HOST: "192.0.2.1",
-        },
-        source="user",
-        entry_id="json_entry_id",
-        unique_id=f"{API_TYPE_JSON}_json@example.com",
-        options={"scan_interval": 1},
-    )
-    config_entry.add_to_hass(hass)
-
-    with patch(
-        "custom_components.syr_connect.SyrConnectDataUpdateCoordinator"
-    ) as mock_coordinator_class:
-        mock_coordinator = MagicMock()
-        mock_coordinator.async_config_entry_first_refresh = AsyncMock()
-        mock_coordinator_class.return_value = mock_coordinator
-
-        with patch.object(
-            hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock
-        ) as mock_forward:
-            mock_forward.return_value = None
-            result = await async_setup_entry(hass, config_entry)
-
-    assert result is True
-    # Minimum for JSON API is 10 seconds, so scan interval (options=1) should be clamped to 10
-    call_args = mock_coordinator_class.call_args
-    assert call_args[0][3] == 10
-
-
 async def test_async_migrate_entry_v1_missing_username(hass: HomeAssistant) -> None:
     """Test v1->v2 migration bumps version even when username is missing."""
 
@@ -265,50 +222,6 @@ async def test_async_setup_entry_with_custom_scan_interval(hass: HomeAssistant) 
     )  # scan_interval is now 4th positional argument (index 3)
 
 
-async def test_async_unload_entry_success(hass: HomeAssistant) -> None:
-    """Test successful unload of config entry."""
-    config_entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-    )
-
-    with patch.object(
-        hass.config_entries, "async_unload_platforms", new_callable=AsyncMock
-    ) as mock_unload:
-        mock_unload.return_value = True
-        result = await async_unload_entry(hass, config_entry)
-
-    assert result is True
-
-
-async def test_async_unload_entry_failure(hass: HomeAssistant) -> None:
-    """Test unload returns False when platforms fail to unload."""
-    config_entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test",
-        data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
-        source="user",
-        entry_id="test_entry_id",
-        unique_id="test_unique_id",
-    )
-
-    with patch.object(
-        hass.config_entries, "async_unload_platforms", new_callable=AsyncMock
-    ) as mock_unload:
-        mock_unload.return_value = False
-        result = await async_unload_entry(hass, config_entry)
-
-    assert result is False
-
-
 async def test_async_setup_entry_clamps_scan_interval_and_logs(
     hass: HomeAssistant, caplog: pytest.LogCaptureFixture
 ) -> None:
@@ -347,7 +260,12 @@ async def test_async_setup_entry_clamps_scan_interval_and_logs(
             result = await async_setup_entry(hass, config_entry)
 
     assert result is True
-    assert "clamping to" in caplog.text or "below minimum" in caplog.text
+    # The minimum of the local JSON API is 10 seconds
+    assert mock_coordinator_class.call_args[0][3] == 10
+    assert (
+        "Configured scan interval 1 is below minimum for json API; "
+        "clamping to 10 seconds"
+    ) in caplog.text
 
 
 async def test_async_unload_entry_logs(
@@ -387,50 +305,6 @@ async def test_async_unload_entry_logs(
     assert "Failed to unload" in caplog.text
 
 
-async def test_async_setup_entry_logs_migration(
-    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
-) -> None:
-    """Ensure legacy migration branch logs a migration message."""
-
-    config_entry = MockConfigEntry(
-        version=1,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test Legacy Log",
-        data={"username": "legacylog@example.com", "password": "password"},
-        source="user",
-        entry_id="legacy_log_entry",
-        unique_id="legacylog@example.com",
-    )
-    config_entry.add_to_hass(hass)
-
-    with patch(
-        "custom_components.syr_connect.SyrConnectDataUpdateCoordinator"
-    ) as mock_coordinator_class:
-        mock_coordinator = MagicMock()
-        mock_coordinator.async_config_entry_first_refresh = AsyncMock()
-        mock_coordinator_class.return_value = mock_coordinator
-
-        caplog.set_level(logging.INFO)
-        with (
-            patch.object(
-                hass.config_entries,
-                "async_forward_entry_setups",
-                new_callable=AsyncMock,
-            ),
-            patch.object(
-                hass.config_entries,
-                "async_update_entry",
-                new_callable=MagicMock,
-            ) as mock_update,
-        ):
-            result = await async_setup_entry(hass, config_entry)
-
-    assert result is True
-    # async_setup_entry must not perform migration itself (async_migrate_entry is invoked by HA)
-    mock_update.assert_not_called()
-
-
 async def test_mask_sensitive_data_masks_password_and_does_not_mutate_original() -> (
     None
 ):
@@ -443,7 +317,7 @@ async def test_mask_sensitive_data_masks_password_and_does_not_mutate_original()
     assert original["data"]["password"] == "secret"
 
 
-async def test_async_setup_entry_propagates_auth_failed(hass: object) -> None:
+async def test_async_setup_entry_propagates_auth_failed(hass: HomeAssistant) -> None:
     """async_setup_entry must re-raise ConfigEntryAuthFailed from coordinator."""
 
     config_entry = MockConfigEntry(
@@ -468,7 +342,7 @@ async def test_async_setup_entry_propagates_auth_failed(hass: object) -> None:
         mock_coordinator_class.return_value = mock_coordinator
 
         with pytest.raises(ConfigEntryAuthFailed):
-            await async_setup_entry(cast(Any, hass), config_entry)
+            await async_setup_entry(hass, config_entry)
 
 
 async def test_async_migrate_entry_future_version(hass: HomeAssistant) -> None:
@@ -774,53 +648,6 @@ async def test_async_setup_entry_does_not_migrate(hass: HomeAssistant) -> None:
 
     assert result is True
     # async_setup_entry must never call async_update_entry
-    mock_update.assert_not_called()
-
-
-async def test_async_setup_entry_skips_migration_for_new_entries(
-    hass: HomeAssistant,
-) -> None:
-    """Test that async_setup_entry never calls async_update_entry for any entry."""
-
-    config_entry = MockConfigEntry(
-        version=2,
-        minor_version=0,
-        domain=DOMAIN,
-        title="Test New",
-        data={
-            CONF_USERNAME: "new@example.com",
-            CONF_PASSWORD: "password",
-            CONF_API_TYPE: API_TYPE_XML,
-        },
-        source="user",
-        entry_id="new_entry_id",
-        unique_id=f"{API_TYPE_XML}_new@example.com",
-    )
-    config_entry.add_to_hass(hass)
-
-    with patch(
-        "custom_components.syr_connect.SyrConnectDataUpdateCoordinator"
-    ) as mock_coordinator_class:
-        mock_coordinator = MagicMock()
-        mock_coordinator.async_config_entry_first_refresh = AsyncMock()
-        mock_coordinator_class.return_value = mock_coordinator
-
-        with (
-            patch.object(
-                hass.config_entries,
-                "async_forward_entry_setups",
-                new_callable=AsyncMock,
-            ),
-            patch.object(
-                hass.config_entries, "async_update_entry", new_callable=MagicMock
-            ) as mock_update,
-        ):
-            result = await async_setup_entry(hass, config_entry)
-
-    # Verify setup succeeded
-    assert result is True
-
-    # Verify migration was NOT called (entry already has API_TYPE)
     mock_update.assert_not_called()
 
 

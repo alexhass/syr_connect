@@ -3,9 +3,8 @@
 # The unit tests in this module check private helpers and attributes directly.
 # ruff: noqa: SLF001
 
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 from unittest.mock import MagicMock, patch
 from xml.etree.ElementTree import Element, canonicalize
 from zoneinfo import ZoneInfo
@@ -24,7 +23,7 @@ from custom_components.syr_connect.payload_builder import PayloadBuilder
 _TEMPERATURE, _HUMIDITY = safefloor.STATISTICS
 
 
-def test_compute_locale_lang_reg_from_getlocale() -> None:
+def test_compute_locale_lang_reg_from_language() -> None:
     """Locale parsing returns language and region from instance `language`."""
     pb = PayloadBuilder("1.0", MagicMock(), "SYR Connect")
     pb.language = "de_DE"
@@ -32,16 +31,6 @@ def test_compute_locale_lang_reg_from_getlocale() -> None:
 
     assert lang == "de"
     assert reg == "DE"
-
-
-def test_compute_locale_lang_reg_from_env() -> None:
-    """When instance language is set from an env-like value, return language and region."""
-    pb = PayloadBuilder("1.0", MagicMock(), "SYR Connect")
-    pb.language = "fr_FR"
-    lang, reg = pb._compute_locale_lang_reg()
-
-    assert lang == "fr"
-    assert reg == "FR"
 
 
 def test_compute_locale_lang_reg_default() -> None:
@@ -326,224 +315,25 @@ def test_compute_locale_lang_reg_dash_and_single() -> None:
     assert reg2 == "US"
 
 
-@pytest.fixture
-def payload_builder() -> Any:
-    """Create a payload builder instance."""
-    checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
-    return PayloadBuilder("App-3.9.7-de-DE-iOS-iPhone", checksum, "SYR Connect")
+@pytest.mark.parametrize("value", _ATTR_SPECIAL_VALUES)
+def test_app_version_roundtrips_special_characters(value: str) -> None:
+    """The app version is escaped like every other attribute value."""
+    fake_checksum = MagicMock()
+    fake_checksum.compute_element_checksum.return_value = "CHK"
+    pb = PayloadBuilder(value, fake_checksum, "SYR Connect")
+
+    root = DefusedET.fromstring(pb.build_device_get_list_payload("sess", "proj"))
+
+    assert root.find("si").attrib == {"v": value}
 
 
-def test_build_login_payload(payload_builder: PayloadBuilder) -> None:
-    """Test building login payload."""
-    payload = payload_builder.build_login_payload("test@example.com", "password123")
+def test_get_timestamp_is_utc() -> None:
+    """The request timestamp is the current UTC time as YYYY-MM-DD HH:MM:SS."""
+    now = datetime(2026, 10, 17, 8, 5, 9, tzinfo=UTC)
+    with patch(
+        "custom_components.syr_connect.payload_builder.datetime"
+    ) as mock_datetime:
+        mock_datetime.now.return_value = now
+        assert PayloadBuilder.get_timestamp() == "2026-10-17 08:05:09"
 
-    assert "<?xml version=" in payload
-    assert "test@example.com" in payload
-    assert "password123" in payload
-    assert "<usr n=" in payload
-
-
-def test_build_login_payload_xml_escaping(payload_builder: PayloadBuilder) -> None:
-    """Test XML escaping in login payload."""
-    # Test special characters that need escaping
-    payload = payload_builder.build_login_payload("test&user", "pass<word>")
-
-    # & should be escaped to &amp;
-    assert "&amp;" in payload
-    # < and > should be escaped
-    assert "&lt;" in payload
-    assert "&gt;" in payload
-    # Original dangerous characters should not appear unescaped
-    assert 'n="test&user"' not in payload
-    assert 'v="pass<word>"' not in payload
-
-
-def test_build_device_get_list_payload(payload_builder: PayloadBuilder) -> None:
-    """Test building device list payload."""
-    payload = payload_builder.build_device_get_list_payload("session123", "project456")
-
-    assert "session123" in payload
-    assert "project456" in payload
-    assert "<cs v=" in payload  # Checksum should be added
-
-
-def test_build_device_get_status_payload(payload_builder: PayloadBuilder) -> None:
-    """Test building device status payload."""
-    payload = payload_builder.build_device_get_status_payload("session123", "device789")
-
-    assert "session123" in payload
-    assert "device789" in payload
-    assert 'fref="1"' in payload
-
-
-def test_build_device_set_status_payload(payload_builder: PayloadBuilder) -> None:
-    """Test building set status payload."""
-    payload = payload_builder.build_device_set_status_payload(
-        "session123", "device789", [("setSIR", 0)]
-    )
-
-    assert "session123" in payload
-    assert "device789" in payload
-    assert "setSIR" in payload
-    assert 'v="0"' in payload
-
-
-def test_build_device_set_status_payload_with_string_value(
-    payload_builder: PayloadBuilder,
-) -> None:
-    """Test building set status payload with string value."""
-    payload = payload_builder.build_device_set_status_payload(
-        "session123", "device789", [("setCNA", "NewName")]
-    )
-
-    assert "NewName" in payload
-
-
-def test_get_timestamp(payload_builder: PayloadBuilder) -> None:
-    """Test timestamp generation."""
-    timestamp = payload_builder.get_timestamp()
-
-    # Should be in format YYYY-MM-DD HH:MM:SS
-    assert len(timestamp) == 19
-    assert timestamp[4] == "-"
-    assert timestamp[7] == "-"
-    assert timestamp[10] == " "
-    assert timestamp[13] == ":"
-    assert timestamp[16] == ":"
-
-
-def test_xml_injection_protection(payload_builder: PayloadBuilder) -> None:
-    """Test protection against XML injection attacks."""
-    malicious_input = '"><script>alert("xss")</script><x y="'
-
-    payload = payload_builder.build_login_payload(malicious_input, "password")
-
-    # The dangerous parts should be escaped
-    assert "<script>" not in payload
-    assert "alert(" not in payload or "&" in payload  # Should be escaped
-
-
-def test_special_characters_escaping(payload_builder: PayloadBuilder) -> None:
-    """Test escaping of all special XML characters."""
-    special_chars_user = 'user&name"with<special>chars'
-    special_chars_pass = "pass'word&test"
-
-    payload = payload_builder.build_login_payload(
-        special_chars_user, special_chars_pass
-    )
-
-    # All special characters should be escaped
-    assert "&amp;" in payload
-    assert "&lt;" in payload or "&gt;" in payload
-    # Quotes might be escaped depending on context
-    assert 'n="user&name"' not in payload  # & should be escaped
-
-
-def test_build_device_get_list_payload_escaping(
-    payload_builder: PayloadBuilder,
-) -> None:
-    """Test XML escaping in device list payload."""
-    session = "session&123"
-    project = "project<456>"
-
-    payload = payload_builder.build_device_get_list_payload(session, project)
-
-    # Special characters should be escaped
-    assert "&amp;" in payload
-    assert "&lt;" in payload
-    assert "&gt;" in payload
-
-
-def test_build_device_get_status_payload_escaping(
-    payload_builder: PayloadBuilder,
-) -> None:
-    """Test XML escaping in device status payload."""
-    session = "session'123"
-    device = 'device"456'
-
-    payload = payload_builder.build_device_get_status_payload(session, device)
-
-    # Should contain escaped versions
-    assert "session" in payload and "123" in payload
-
-
-def test_build_device_set_status_payload_escaping(
-    payload_builder: PayloadBuilder,
-) -> None:
-    """Test XML escaping in set status payload."""
-    payload = payload_builder.build_device_set_status_payload(
-        "session&123",
-        "device<456>",
-        [('command"test', "value'123")],
-    )
-
-    # Special characters should be escaped
-    assert "&amp;" in payload
-    assert "&lt;" in payload or "&gt;" in payload
-
-
-def test_build_device_get_statistics_payload_escaping(
-    payload_builder: PayloadBuilder,
-) -> None:
-    """Test XML escaping in statistics payload."""
-    session = "session&test"
-    device = "device<test>"
-
-    payload = payload_builder.build_device_get_statistics_payload(
-        session, device, _TEMPERATURE
-    )
-
-    # Special characters should be escaped
-    assert "&amp;" in payload
-    assert "&lt;" in payload or "&gt;" in payload
-
-
-def test_add_checksum_integration(payload_builder: PayloadBuilder) -> None:
-    """Test that checksum is properly added to payloads."""
-    payload = payload_builder.build_device_get_list_payload("sess", "proj")
-
-    # Checksum should be at the end before closing tag
-    assert '<cs v="' in payload
-    assert payload.index('<cs v="') < payload.index("</sc>")
-
-
-def test_build_device_set_status_payload_int_value(
-    payload_builder: PayloadBuilder,
-) -> None:
-    """Test set status payload with integer value."""
-    payload = payload_builder.build_device_set_status_payload(
-        "sess", "dev", [("cmd", 42)]
-    )
-
-    # Integer should be converted to string
-    assert 'v="42"' in payload
-
-
-def test_app_version_escaping_in_payloads(payload_builder: PayloadBuilder) -> None:
-    """Test that app version is escaped in payloads."""
-    # Create builder with special characters in app version
-    checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
-    builder = PayloadBuilder("App&Version<Test>", checksum, "SYR Connect")
-
-    payload = builder.build_device_get_list_payload("sess", "proj")
-
-    # App version should be escaped
-    assert "&amp;" in payload or "&lt;" in payload or "&gt;" in payload
-
-
-def test_get_timestamp_format(payload_builder: PayloadBuilder) -> None:
-    """Test timestamp has correct components."""
-    timestamp = payload_builder.get_timestamp()
-
-    # Parse the timestamp parts
-    date_part, time_part = timestamp.split(" ")
-    year, month, day = date_part.split("-")
-    hour, minute, second = time_part.split(":")
-
-    # Verify all parts are numeric
-    assert year.isdigit() and len(year) == 4
-    assert month.isdigit() and len(month) == 2
-    assert day.isdigit() and len(day) == 2
-    assert hour.isdigit() and len(hour) == 2
-    assert minute.isdigit() and len(minute) == 2
-    assert second.isdigit() and len(second) == 2
+    mock_datetime.now.assert_called_once_with(UTC)

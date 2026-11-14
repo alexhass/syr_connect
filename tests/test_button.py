@@ -165,27 +165,6 @@ async def test_button_press_setsir_when_getsir_false_string(
     )
 
 
-async def test_button_press_failure(hass: HomeAssistant) -> None:
-    """Test button press handles failure."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock(side_effect=ValueError("Test error"))  # type: ignore[method-assign]
-
-    button = SyrConnectButton(coordinator, "device1", "Device 1", "setSIR")
-
-    with pytest.raises(HomeAssistantError):
-        await button.async_press()
-
-
 async def test_button_available(hass: HomeAssistant) -> None:
     """Test button availability."""
     data = {
@@ -229,8 +208,7 @@ async def test_async_setup_entry(
 
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
-    # Should create regeneration button
-    assert len(entities) >= 1
+    assert [e._command for e in entities] == ["setSIR"]
 
 
 async def test_async_setup_entry_multiple_devices(
@@ -262,8 +240,10 @@ async def test_async_setup_entry_multiple_devices(
 
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
-    # Should create buttons for both devices
-    assert len(entities) >= 2
+    assert [(e._device_id, e._command) for e in entities] == [
+        ("device1", "setSIR"),
+        ("device2", "setSIR"),
+    ]
 
 
 async def test_button_press_unexpected_error(hass: HomeAssistant) -> None:
@@ -346,7 +326,7 @@ async def test_button_missing_device(hass: HomeAssistant) -> None:
 
     button = SyrConnectButton(coordinator, "device1", "Device 1", "setSIR")
 
-    # Should return True when device not found (default availability)
+    # Device not found: removed from the account
     assert button.available is False
 
 
@@ -479,14 +459,12 @@ async def test_async_setup_entry_no_getsir(
     assert len(entities) == 0
 
 
-@pytest.mark.parametrize("falsy_value", ["false"])
-async def test_async_setup_entry_skip_setsir_when_getsir_false(
+async def test_async_setup_entry_creates_setsir_when_getsir_false(
     hass: HomeAssistant,
     create_mock_entry_with_coordinator: Callable[
         ..., tuple[MockConfigEntry, MagicMock]
     ],
     mock_add_entities: Callable[[], tuple[list[Any], Mock]],
-    falsy_value: Any,
 ) -> None:
     """Test async_setup_entry creates a setSIR button when getSIR is 'false'.
 
@@ -499,15 +477,15 @@ async def test_async_setup_entry_skip_setsir_when_getsir_false(
                 "id": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
-                "status": {"getSIR": falsy_value, "getCNA": "LEXplus10S"},
+                "status": {"getSIR": "false", "getCNA": "LEXplus10S"},
             }
         ]
     }
     mock_config_entry, _mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
-    # getSIR='false' -> softener is idle -> setSIR button must be created
-    assert len(entities) == 1
+
+    assert [e._command for e in entities] == ["setSIR"]
 
 
 def _register_button(
@@ -677,7 +655,7 @@ async def test_async_setup_entry_registry_cleanup_exception_is_caught(
     }
     mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
     mock_coordinator.entry_id = "entry"
-    _entities, async_add_entities = mock_add_entities()
+    entities, async_add_entities = mock_add_entities()
 
     call_count = 0
 
@@ -696,8 +674,11 @@ async def test_async_setup_entry_registry_cleanup_exception_is_caught(
         "homeassistant.helpers.entity_registry.async_get",
         side_effect=er_async_get_side_effect,
     ):
-        # Must not raise — the except block swallows the error
         await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    # The failing registry access was reached, and the setup went on
+    assert call_count == 2
+    assert [e._command for e in entities] == ["setSIR"]
 
 
 async def test_button_reset_no_reset_required(hass: HomeAssistant) -> None:
@@ -886,30 +867,6 @@ async def test_button_reset_not_sends_ff_via_xml_api(hass: HomeAssistant) -> Non
     )
 
 
-async def test_button_reset_not_send_ff_for_other_models(hass: HomeAssistant) -> None:
-    """When model unknown/other, setNOT reset sends 'FF'."""
-    data = {
-        "devices": [
-            {
-                "id": "device_not2",
-                "name": "Device NOT2",
-                "project_id": "project1",
-                "status": {"getNOT": "01"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
-
-    button = SyrConnectButton(coordinator, "device_not2", "Device NOT2", "setNOT")
-
-    await button.async_press()
-
-    coordinator.async_set_device_value.assert_called_once_with(
-        "device_not2", "setNOT", "FF"
-    )
-
-
 async def test_button_reset_wrn_no_reset_required(hass: HomeAssistant) -> None:
     """The setWRN raises when no reset required (missing/empty getWRN)."""
     data = {
@@ -951,30 +908,6 @@ async def test_button_reset_wrn_sends_ff_via_xml_api(hass: HomeAssistant) -> Non
 
     coordinator.async_set_device_value.assert_called_once_with(
         "device_wrn1", "setWRN", "FF"
-    )
-
-
-async def test_button_reset_wrn_send_ff_for_other_models(hass: HomeAssistant) -> None:
-    """When model unknown/other, setWRN reset sends 'FF'."""
-    data = {
-        "devices": [
-            {
-                "id": "device_wrn2",
-                "name": "Device WRN2",
-                "project_id": "project1",
-                "status": {"getWRN": "02"},
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
-
-    button = SyrConnectButton(coordinator, "device_wrn2", "Device WRN2", "setWRN")
-
-    await button.async_press()
-
-    coordinator.async_set_device_value.assert_called_once_with(
-        "device_wrn2", "setWRN", "FF"
     )
 
 
@@ -1191,11 +1124,9 @@ async def test_async_setup_entry_skips_command_excluded_by_model_allowlist(
 ) -> None:
     """A command missing from the model's BUTTON_SUPPORTED_KEYS override is skipped.
 
-    It is skipped before any getXYZ presence check (covers the model-allowlist continue).
-
-    The muco_filling override (conelclearprofill, getDFM==3) deliberately excludes
-    setSIR and setDEX - both must be skipped even though this device has no
-    regeneration/microleakage-test hardware anyway.
+    The muco_filling override (conelclearprofill, getDFM==3) lists neither setSIR nor
+    setDEX. The device reports getSIR and getDSV over the local API, which would
+    create both buttons on a model that lists them.
     """
     data = {
         "devices": [
@@ -1203,11 +1134,17 @@ async def test_async_setup_entry_skips_command_excluded_by_model_allowlist(
                 "id": "device_clearprofill",
                 "name": "Clear Pro Fill",
                 "project_id": "project1",
-                "status": {"getSRN": "500AAA00001", "getDFM": 3},
+                "status": {
+                    "getSRN": "500AAA00001",
+                    "getDFM": 3,
+                    "getSIR": "0",
+                    "getDSV": "0",
+                },
             }
         ]
     }
-    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    mock_coordinator.api.__class__ = SyrConnectJsonAPI
     entities, async_add_entities = mock_add_entities()
 
     await async_setup_entry(hass, mock_config_entry, async_add_entities)

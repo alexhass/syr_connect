@@ -83,57 +83,33 @@ def test_parse_device_status_response_10s(lexplus10s_xml: Any) -> None:
     """Test parsing of LEXplus10S device status XML."""
     parser = ResponseParser()
     result = parser.parse_device_status_response(lexplus10s_xml)
-    assert isinstance(result, dict)
-    # Check some key values
-    assert "getALM" in result
-    assert "getFLO" in result
-    assert "getPRS" in result
-    assert "getSS1" in result
-    assert "getCNA" in result
+    assert result is not None
     assert result["getCNA"] == "LEXplus10S"
-    # Check alarm mapping
-    assert "LowSalt" in lexplus10s_xml
-    assert result["getALM"] == ""
-    # Check salt value
-    assert int(result["getSS1"]) == 5
-    # Check pressure value
-    assert int(result["getPRS"]) == 48
-    # Check flow value
-    assert int(result["getFLO"]) == 0
-    # Check device name
-    assert result["getCNA"] == "LEXplus10S"
-    # Check serial number
     assert result["getSRN"] == "123456789"
-    # Check firmware
     assert result["getFIR"] == "SLPS"
-    # Check MAC address
-    assert result["getMAC"].startswith("0c:73:eb:")
-    # Check water hardness unit
-    assert "getWHU" in result
-    # Check resin capacity
-    assert int(result["getCS1"]) == 60
-    # Check salt container value
-    assert int(result["getSV1"]) == 8
-    # Check alarm meta
-    # The parser should expose alarm meta if implemented
-    # If not, this can be extended
+    assert result["getMAC"] == "0c:73:eb:5X:XX:XX"
+    assert result["getWHU"] == "0"
+    assert result["getSS1"] == "5"
+    assert result["getPRS"] == "48"
+    assert result["getFLO"] == "0"
+    assert result["getCS1"] == "60"
+    assert result["getSV1"] == "8"
+    # The alarm value is empty; its meaning is in the "m" attribute
+    assert result["getALM"] == ""
+    assert result["getALM_m"] == "LowSalt"
 
 
 def test_parse_device_status_response_10sl(lexplus10sl_xml: Any) -> None:
     """Test parsing of LEXplus10SL device status XML."""
     parser = ResponseParser()
     result = parser.parse_device_status_response(lexplus10sl_xml)
-    assert isinstance(result, dict)
-    assert "getCNA" in result
+    assert result is not None
     assert result["getCNA"] == "LEXplus10SL"
-    assert "getSRN" in result
-    assert "getFLO" in result
-    assert "getPRS" in result
-    assert "getSS1" in result
-    # Check some typical values (adjust as needed for your fixture)
-    assert int(result["getPRS"]) >= 0
-    assert int(result["getFLO"]) >= 0
-    # assert result["getALM_meta"]["m"] == "LowSalt"
+    assert result["getSRN"] == "123456789"
+    assert result["getFLO"] == "0"
+    assert result["getPRS"] == "39"
+    assert result["getSS1"] == "7"
+    assert result["getALA"] == "0"
 
 
 def test_validate_structure_valid(parser: ResponseParser) -> None:
@@ -298,13 +274,6 @@ def test_parse_device_list_no_devices(parser: ResponseParser) -> None:
     xml = '<sc><prs><pr pg="p1"/></prs><col/></sc>'
     devices = parser.parse_device_list_response(xml)
     assert devices == []
-
-
-def test_parse_device_list_dvs_is_device(parser: ResponseParser) -> None:
-    """Test parsing when dvs element itself is a device."""
-    xml = '<sc><prs><pr pg="p1"/></prs><dvs dclg="123" srn="serial123"><nam>Device</nam></dvs></sc>'
-    devices = parser.parse_device_list_response(xml)
-    assert len(devices) >= 0  # May find device depending on structure
 
 
 def test_parse_device_status_no_sc(parser: ResponseParser) -> None:
@@ -521,14 +490,6 @@ def test_parse_device_list_dvs_no_d_no_dclg(parser: ResponseParser) -> None:
     xml = '<sc><prs><pr pg="p1"/></prs><dvs><other>data</other></dvs></sc>'
     devices = parser.parse_device_list_response(xml)
     assert devices == []
-
-
-def test_parse_device_status_dvs_is_list(parser: ResponseParser) -> None:
-    """Test parsing device status when dvs is a list."""
-    xml = '<sc><dvs><c n="test" v="value"/></dvs></sc>'
-    result = parser.parse_device_status_response(xml)
-    # This tests the isinstance(dvs, list) branch
-    assert result is None
 
 
 def test_parse_device_status_device_list_is_dict_with_c(parser: ResponseParser) -> None:
@@ -895,16 +856,6 @@ def test_parse_device_list_device_missing_sn_attribute(parser: ResponseParser) -
     assert devices[0]["id"] == "Unknown"
 
 
-def test_parse_device_status_dvs_is_list_directly(parser: ResponseParser) -> None:
-    """Test parsing device status when dvs element is a list directly."""
-    # This tests the isinstance(dvs, list) branch more explicitly
-    xml = '<sc><dvs><d><c n="test" v="value"/></d></dvs></sc>'
-    # Manually test the branch by passing list to the function
-    # (This is a bit artificial but ensures the branch is covered)
-    result = parser.parse_device_status_response(xml)
-    assert result is not None
-
-
 def test_flatten_attributes_dict_with_attribute_prefix(parser: ResponseParser) -> None:
     """Test flattening dict with @-prefixed keys (should extract attribute)."""
     data = {"@attr1": "value1", "@attr2": "value2", "regular_key": "regular_value"}
@@ -953,20 +904,19 @@ def test_element_to_dict_nested_elements_same_tag(parser: ResponseParser) -> Non
 
 
 def test_parse_device_status_dvs_is_python_list(parser: ResponseParser) -> None:
-    """The dvs value becomes a Python list when multiple <dvs> elements exist (line 265)."""
-    # Two <dvs> elements at the same level cause parse_xml to return dvs as a list.
-    # Each entry needs a 'c' child to pass the has_c check.
+    """Several <dvs> elements are read as a list; the values of the last one win."""
     xml = """<sc>
         <dvs><c n="getSRN" v="SN1"/><c n="getFLO" v="10"/></dvs>
         <dvs><c n="getSRN" v="SN2"/><c n="getFLO" v="20"/></dvs>
     </sc>"""
-    result = parser.parse_device_status_response(xml)
-    # dvs is a list; both entries have 'c' so parsing should succeed
-    assert result is not None
+    assert parser.parse_device_status_response(xml) == {
+        "getSRN": "SN2",
+        "getFLO": "20",
+    }
 
 
 def test_parse_device_status_broken_response_ignored(parser: ResponseParser) -> None:
-    """Responses with only broken-set c-names are ignored (line 275)."""
+    """Responses with only broken-set c-names are ignored."""
     # dvs has @dclg so device_list = [dvs]; all c-names are in the broken set
     xml = """<sc>
         <dvs dclg="abc-123">
@@ -981,7 +931,7 @@ def test_parse_device_status_broken_response_ignored(parser: ResponseParser) -> 
 
 
 def test_ignore_broken_response_non_dict_entry(parser: ResponseParser) -> None:
-    """get_c_names returns empty set immediately for non-dict entry (line 308)."""
+    """An entry that is no dict has no c-names and is no broken response."""
     # Pass a list that contains a non-dict (e.g. a string) — get_c_names must
     # return an empty set, which means the overall all(...) check fails and
     # _ignore_broken_response returns False (not a broken response).

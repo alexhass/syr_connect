@@ -4350,7 +4350,7 @@ def test_getcof_returns_correct_value() -> None:
     mock_coordinator.data = {
         "devices": [
             {
-                "id": "210836887",
+                "id": "123456789",
                 "name": "Test Device",
                 "status": {
                     "getCOF": 888518,  # Water consumption in liters
@@ -4362,7 +4362,7 @@ def test_getcof_returns_correct_value() -> None:
     # Create sensor instance
     sensor = SyrConnectSensor(
         coordinator=mock_coordinator,
-        device_id="210836887",
+        device_id="123456789",
         device_name="Test Device",
         sensor_key="getCOF",
     )
@@ -4377,7 +4377,7 @@ def test_getcof_handles_string_values() -> None:
     mock_coordinator.data = {
         "devices": [
             {
-                "id": "210836887",
+                "id": "123456789",
                 "name": "Test Device",
                 "status": {
                     "getCOF": "888518",  # String value
@@ -4388,7 +4388,7 @@ def test_getcof_handles_string_values() -> None:
 
     sensor = SyrConnectSensor(
         coordinator=mock_coordinator,
-        device_id="210836887",
+        device_id="123456789",
         device_name="Test Device",
         sensor_key="getCOF",
     )

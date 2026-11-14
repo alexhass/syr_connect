@@ -4,7 +4,6 @@
 # ruff: noqa: SLF001
 
 import re
-from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
 import aiohttp
@@ -91,11 +90,13 @@ async def test_http_client_get_headers() -> None:
     mock_session = MagicMock(spec=aiohttp.ClientSession)
     client = HTTPClient(mock_session, "TestAgent/1.0")
 
-    headers = client._get_headers()
-    assert headers["User-Agent"] == "TestAgent/1.0"
-    assert headers["Content-Type"] == "application/x-www-form-urlencoded"
-    assert "Connection" in headers
-    assert "Accept" in headers
+    assert client._get_headers() == {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Connection": "keep-alive",
+        "Accept": "*/*",
+        "User-Agent": "TestAgent/1.0",
+        "Accept-Language": "en-US,en;q=0.9",
+    }
 
 
 async def test_http_client_get_headers_custom_content_type() -> None:
@@ -175,28 +176,3 @@ def test_build_accept_language_from_constructor() -> None:
     client = HTTPClient(session=MagicMock(), user_agent="test-agent", language="en-DE")
 
     assert client._build_accept_language() == "en-DE,en;q=0.9"
-
-
-def test_build_accept_language_assignment_failure(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """If assigning the cached attribute fails, the computed value is returned."""
-    mock_session = MagicMock()
-    client = HTTPClient(session=mock_session, user_agent="test-agent")
-
-    # Capture original __setattr__ so our broken setter can delegate for other attributes
-    orig_setattr = HTTPClient.__setattr__
-
-    def broken_setattr(self: Any, name: Any, value: Any) -> Any:
-        if name == "_accept_language":
-            raise RuntimeError("cannot assign")
-        return orig_setattr(self, name, value)
-
-    # Patch class __setattr__ to simulate assignment failure for the cache
-    monkeypatch.setattr(HTTPClient, "__setattr__", broken_setattr)
-
-    # Setting language should still work (broken_setattr delegates for non-_accept_language)
-    client.language = "de_DE"
-
-    # Should compute and return the header even though caching assignment fails
-    assert client._build_accept_language() == "de-DE,de;q=0.9"

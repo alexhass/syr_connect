@@ -1,5 +1,8 @@
 """Tests for binary_sensor platform."""
 
+# The tests check private attributes of the entities.
+# ruff: noqa: SLF001
+
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, cast
@@ -16,7 +19,6 @@ from custom_components.syr_connect.const import CONF_SERVICE, DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.models import MODEL_SIGNATURES
 from custom_components.syr_connect.response_parser import ResponseParser
-from homeassistant.components.binary_sensor import BinarySensorEntityDescription
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
@@ -39,46 +41,6 @@ def _build_coordinator(
     coordinator.async_set_updated_data(cast(Any, data))
     coordinator.last_update_success = True
     return coordinator
-
-
-async def test_binary_sensor_is_on_numeric(hass: HomeAssistant) -> None:
-    """Test binary sensor is_on with numeric value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBUZ": "1",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectBinarySensor(coordinator, "device1", "Device 1", "getBUZ")
-
-    assert sensor.is_on is True
-
-
-async def test_binary_sensor_is_off_numeric(hass: HomeAssistant) -> None:
-    """Test binary sensor is_on with zero value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBUZ": "0",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectBinarySensor(coordinator, "device1", "Device 1", "getBUZ")
-
-    assert sensor.is_on is False
 
 
 async def test_binary_sensor_available(hass: HomeAssistant) -> None:
@@ -326,87 +288,6 @@ def test_device_files_pair_buzzer_switch_with_binary_sensor() -> None:
         )
 
 
-async def test_async_setup_entry_multiple_devices(
-    hass: HomeAssistant,
-    create_mock_entry_with_coordinator: Callable[
-        ..., tuple[MockConfigEntry, MagicMock]
-    ],
-) -> None:
-    """Test async_setup_entry with multiple devices."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "testSensor": "1",  # Custom non-excluded sensor
-                },
-            },
-            {
-                "id": "device2",
-                "name": "Device 2",
-                "project_id": "project1",
-                "status": {},
-            },
-        ]
-    }
-    mock_config_entry, _mock_coordinator = create_mock_entry_with_coordinator(data)
-
-    entities = []
-    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
-
-    # Patch the binary sensors list to include our test sensor
-    with patch(
-        "custom_components.syr_connect.binary_sensor._SYR_CONNECT_BINARY_SENSOR_TYPES",
-        (BinarySensorEntityDescription(key="testSensor"),),
-    ):
-        await async_setup_entry(hass, mock_config_entry, async_add_entities)
-
-    # Should create one sensor for device1
-    assert len(entities) >= 0  # May be 0 or more depending on exclusions
-
-
-async def test_binary_sensor_string_value(hass: HomeAssistant) -> None:
-    """Test binary sensor with string values."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBUZ": "false",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectBinarySensor(coordinator, "device1", "Device 1", "getBUZ")
-
-    assert sensor.is_on is False
-
-
-async def test_binary_sensor_numeric_float(hass: HomeAssistant) -> None:
-    """Test binary sensor with float value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBUZ": 1.5,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectBinarySensor(coordinator, "device1", "Device 1", "getBUZ")
-
-    assert sensor.is_on is True
-
-
 async def test_binary_sensor_unavailable_coordinator(hass: HomeAssistant) -> None:
     """Test binary sensor unavailable when coordinator update fails."""
     data = {
@@ -465,146 +346,6 @@ async def test_binary_sensor_missing_device(hass: HomeAssistant) -> None:
 
     assert sensor.is_on is None
     assert sensor.available is False  # Device removed from the account
-
-
-async def test_binary_sensor_string_true(hass: HomeAssistant) -> None:
-    """Test binary sensor with string 'true' value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBUZ": "true",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectBinarySensor(coordinator, "device1", "Device 1", "getBUZ")
-
-    assert sensor.is_on is True
-
-
-async def test_binary_sensor_string_false(hass: HomeAssistant) -> None:
-    """Test binary sensor with string 'False' value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBUZ": "False",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectBinarySensor(coordinator, "device1", "Device 1", "getBUZ")
-
-    assert sensor.is_on is False
-
-
-async def test_binary_sensor_string_empty(hass: HomeAssistant) -> None:
-    """Test binary sensor with empty string value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBUZ": "",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectBinarySensor(coordinator, "device1", "Device 1", "getBUZ")
-
-    assert sensor.is_on is False
-
-
-async def test_binary_sensor_int_zero(hass: HomeAssistant) -> None:
-    """Test binary sensor with integer 0 value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBUZ": 0,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectBinarySensor(coordinator, "device1", "Device 1", "getBUZ")
-
-    assert sensor.is_on is False
-
-
-async def test_binary_sensor_int_nonzero(hass: HomeAssistant) -> None:
-    """Test binary sensor with integer non-zero value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBUZ": 5,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectBinarySensor(coordinator, "device1", "Device 1", "getBUZ")
-
-    assert sensor.is_on is True
-
-
-async def test_binary_sensor_float_zero(hass: HomeAssistant) -> None:
-    """Test binary sensor with float 0.0 value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBUZ": 0.0,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectBinarySensor(coordinator, "device1", "Device 1", "getBUZ")
-
-    assert sensor.is_on is False
-
-
-async def test_binary_sensor_none_value(hass: HomeAssistant) -> None:
-    """Test binary sensor with None value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBUZ": None,
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectBinarySensor(coordinator, "device1", "Device 1", "getBUZ")
-
-    assert sensor.is_on is False
 
 
 async def test_async_setup_entry_no_data(
@@ -666,60 +407,6 @@ async def test_async_setup_entry_registry_cleanup(
     assert registry.async_get_entity_id("binary_sensor", DOMAIN, prefix + "getBUZ")
 
 
-async def test_async_setup_entry_registry_exception(
-    hass: HomeAssistant,
-    create_mock_entry_with_coordinator: Callable[
-        ..., tuple[MockConfigEntry, MagicMock]
-    ],
-) -> None:
-    """Test async_setup_entry handles registry exceptions gracefully."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Test Device",
-                "project_id": "project1",
-                "status": {},
-            }
-        ]
-    }
-    mock_config_entry, _mock_coordinator = create_mock_entry_with_coordinator(data)
-
-    entities = []
-    async_add_entities = Mock(side_effect=lambda ents: entities.extend(ents))
-
-    # Mock registry to raise exception
-    def raise_registry_error(*args: Any, **kwargs: Any) -> None:
-        raise RuntimeError("Registry error")
-
-    with patch(
-        "homeassistant.helpers.entity_registry.async_get",
-        side_effect=raise_registry_error,
-    ):
-        # Should not raise exception, continues setup
-        await async_setup_entry(hass, mock_config_entry, async_add_entities)
-
-
-async def test_binary_sensor_string_nonzero(hass: HomeAssistant) -> None:
-    """Test binary sensor with non-zero string value."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getBUZ": "1",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectBinarySensor(coordinator, "device1", "Device 1", "getBUZ")
-
-    assert sensor.is_on is True
-
-
 async def test_binary_sensor_icon_from_icons_json(hass: HomeAssistant) -> None:
     """Test binary sensor leaves the icon to icons.json."""
     data = {
@@ -741,3 +428,113 @@ async def test_binary_sensor_icon_from_icons_json(hass: HomeAssistant) -> None:
     # The icon is resolved from icons.json via the translation key
     assert sensor.icon is None
     assert sensor.translation_key == "getbuz"
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("1", True),
+        ("0", False),
+        ("true", True),
+        ("false", False),
+        ("False", False),
+        ("", False),
+        (5, True),
+        (0, False),
+        (1.5, True),
+        (0.0, False),
+        (None, False),
+    ],
+)
+async def test_binary_sensor_is_on(
+    hass: HomeAssistant, value: Any, expected: bool
+) -> None:
+    """The buzzer (getBUZ) is on for a true or non-zero value in text or number form."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getBUZ": value},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectBinarySensor(coordinator, "device1", "Device 1", "getBUZ")
+
+    assert sensor.is_on is expected
+
+
+async def test_async_setup_entry_multiple_devices(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+) -> None:
+    """Every device gets its own binary sensors; a device without status gets none."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getBUZ": "1"},
+            },
+            {
+                "id": "device2",
+                "name": "Device 2",
+                "project_id": "project1",
+                "status": {"getBUZ": "0", "getSFV": "1"},
+            },
+            {
+                "id": "device3",
+                "name": "Device 3",
+                "project_id": "project1",
+                "status": {},
+            },
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    assert sorted((e._device_id, e.entity_description.key) for e in entities) == [
+        ("device1", "getBUZ"),
+        ("device2", "getBUZ"),
+        ("device2", "getSFV"),
+    ]
+
+
+async def test_async_setup_entry_registry_exception(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+) -> None:
+    """A failing registry cleanup does not stop the setup: the entities are still added."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Test Device",
+                "project_id": "project1",
+                "status": {"getBUZ": "1"},
+            }
+        ]
+    }
+    mock_config_entry, mock_coordinator = create_mock_entry_with_coordinator(data)
+    mock_coordinator.entry_id = "entry"
+    entities, async_add_entities = mock_add_entities()
+
+    with patch(
+        "custom_components.syr_connect.helpers.er.async_get",
+        side_effect=RuntimeError("Registry error"),
+    ) as mock_registry:
+        await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    mock_registry.assert_called_once()
+    assert [e.entity_description.key for e in entities] == ["getBUZ"]

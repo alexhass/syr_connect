@@ -238,8 +238,8 @@ async def test_v2_to_v3_real_world_snapshot(hass: HomeAssistant) -> None:
     entry.add_to_hass(hass)
 
     mock_entity = MagicMock()
-    mock_entity.entity_id = "sensor.syr_connect_213240945_getflo"
-    mock_entity.unique_id = "213240945_getFLO"
+    mock_entity.entity_id = "sensor.syr_connect_123456789_getflo"
+    mock_entity.unique_id = "123456789_getFLO"
     mock_entity.domain = "sensor"
     mock_entity.unit_of_measurement = UnitOfVolumeFlowRate.LITERS_PER_MINUTE
     mock_entity.options = {
@@ -264,11 +264,11 @@ async def test_v2_to_v3_real_world_snapshot(hass: HomeAssistant) -> None:
 
     # Legacy top-level field must be cleared
     mock_reg.async_update_entity.assert_called_once_with(
-        "sensor.syr_connect_213240945_getflo", unit_of_measurement=None
+        "sensor.syr_connect_123456789_getflo", unit_of_measurement=None
     )
     # sensor.private namespace must be cleared (suggested_unit removed, namespace becomes None)
     mock_reg.async_update_entity_options.assert_called_once_with(
-        "sensor.syr_connect_213240945_getflo", "sensor.private", None
+        "sensor.syr_connect_123456789_getflo", "sensor.private", None
     )
 
 

@@ -416,20 +416,6 @@ async def test_get_device_status_with_valid_session(
         mock_login.assert_not_called()
 
 
-async def test_set_device_status_value_conversion(api_client: SyrConnectXmlAPI) -> None:
-    """Test set_device_status converts boolean to int."""
-    api_client.session_data = "valid_session"
-
-    with patch.object(
-        api_client.http_client, "post", return_value="<sc></sc>"
-    ) as mock_post:
-        await api_client.set_device_status("device1", [("setSIR", 0)])
-
-        # Verify the payload contains '1' not 'True'
-        call_args = mock_post.call_args
-        assert "1" in str(call_args)
-
-
 async def test_login_timeout_error(api_client: SyrConnectXmlAPI) -> None:
     """Test login with timeout error."""
     with (

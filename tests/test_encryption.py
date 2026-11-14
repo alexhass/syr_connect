@@ -137,8 +137,7 @@ def test_decrypt_invalid_utf8(encryption: SyrEncryption) -> None:
 
 
 def test_decrypt_wrong_key() -> None:
-    """Test decryption with wrong key produces garbled output or error."""
-    # Create encryption with one key
+    """A payload of another service (other key) does not decrypt to text."""
     enc1 = SyrEncryption(_SYR_SERVICE.crypt_key, _SYR_SERVICE.crypt_vector)
 
     # Encrypt with the different key of another service
@@ -151,9 +150,5 @@ def test_decrypt_wrong_key() -> None:
     encrypted_bytes = cipher.encrypt(padded.encode("utf-8"))
     encrypted_payload = base64.b64encode(encrypted_bytes).decode("utf-8")
 
-    # Decrypting with wrong key should either fail or produce different result
-    try:
-        result = enc1.decrypt(encrypted_payload)
-        assert result != plaintext  # Wrong key produces wrong output
-    except ValueError:
-        pass  # Or it might fail entirely
+    with pytest.raises(ValueError, match="Failed to decrypt payload"):
+        enc1.decrypt(encrypted_payload)

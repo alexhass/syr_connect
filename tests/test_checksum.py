@@ -51,31 +51,6 @@ def test_compute_checksum_value_empty() -> None:
     assert result == 0
 
 
-def test_compute_checksum_value_basic() -> None:
-    """Test checksum computation with basic strings."""
-    checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
-    result = checksum.compute_checksum_value("test")
-    assert isinstance(result, int)
-    assert result > 0
-
-
-def test_compute_checksum_value_with_unicode() -> None:
-    """Test checksum computation with Unicode characters."""
-    checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
-    result = checksum.compute_checksum_value("üöä")
-    assert isinstance(result, int)
-    assert result > 0
-
-
-def test_checksum_value_wrapping() -> None:
-    """Test checksum value wrapping when sum >= base_characters length."""
-    # Use actual production constants from const.py to ensure valid operation
-    checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
-    result = checksum.compute_checksum_value("test")
-    assert isinstance(result, int)
-    assert result > 0
-
-
 def test_compute_element_checksum_with_attributes() -> None:
     """Test that compute_element_checksum correctly processes XML attributes."""
     checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")

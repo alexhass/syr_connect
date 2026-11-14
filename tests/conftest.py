@@ -11,7 +11,6 @@ from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from homeassistant import config_entries
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 
 
 @pytest.fixture
@@ -65,16 +64,6 @@ def expected_lingering_timers() -> bool:
 
 
 @pytest.fixture
-def mock_setup_entry() -> Generator[AsyncMock]:
-    """Override async_setup_entry."""
-    with patch(
-        "custom_components.syr_connect.async_setup_entry", new_callable=AsyncMock
-    ) as mock_setup_entry:
-        mock_setup_entry.return_value = True
-        yield mock_setup_entry
-
-
-@pytest.fixture
 def mock_syr_api() -> Generator[Any]:
     """Mock SyrConnectXmlAPI."""
     with patch(
@@ -89,15 +78,6 @@ def mock_syr_api() -> Generator[Any]:
         api_instance.is_session_valid = MagicMock(return_value=True)
         mock_api.return_value = api_instance
         yield api_instance
-
-
-@pytest.fixture
-def mock_config_entry() -> Any:
-    """Mock ConfigEntry."""
-    return {
-        CONF_USERNAME: "test@example.com",
-        CONF_PASSWORD: "test_password",
-    }
 
 
 @pytest.fixture

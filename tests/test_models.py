@@ -221,17 +221,6 @@ def test_non_dict_input_returns_unknown() -> None:
         assert result.base_path is None
 
 
-def test_ver_contains_synthetic() -> None:
-    """Test signature matching with ver_contains attribute."""
-    # Create a synthetic signature scenario where ver_contains is used
-    # Since no real signature uses it, we test the version_match logic
-    flat = {"getVER": "some-Safe-version-text"}
-    # This won't match Safe-Tech (requires prefix), but tests the ver_contains code path
-    result = detect_model(flat)
-    # Should be unknown since no signature with ver_contains matches
-    assert result.name == "unknown"
-
-
 def test_signature_priority_first_match_wins() -> None:
     """When multiple signatures could match, first one wins."""
     # LEXplus10S has exact getCNA match, should win even if other conditions exist
