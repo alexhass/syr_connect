@@ -37,6 +37,7 @@ from .exceptions import (
     InvalidAuthError,
     SyrConnectAuthError,
     SyrConnectConnectionError,
+    SyrConnectInvalidResponseError,
     SyrConnectLoginFailedError,
 )
 from .helpers import (
@@ -145,20 +146,17 @@ async def validate_input_xml(
         language=get_api_locale(hass.config.language, hass.config.country),
     )
 
-    # Test authentication
+    # Test authentication. Failures are logged at debug level only: the form shows them.
     _LOGGER.debug("Testing XML API authentication...")
     try:
         await api.login()
     except (SyrConnectAuthError, SyrConnectLoginFailedError) as err:
         # The cloud answers an unknown username like an outage (SyrConnectLoginFailedError);
         # while setting up, wrong credentials are the likely cause
-        _LOGGER.error("XML API: authentication failed: %s", err)
+        _LOGGER.debug("XML API: authentication failed: %s", err)
         raise InvalidAuthError from err
     except SyrConnectConnectionError as err:
-        _LOGGER.error("XML API: connection failed: %s", err)
-        raise CannotConnectError from err
-    except Exception as err:
-        _LOGGER.error("XML API: unexpected error during validation: %s", err)
+        _LOGGER.debug("XML API: connection failed: %s", err)
         raise CannotConnectError from err
 
     _LOGGER.debug(
@@ -181,29 +179,20 @@ async def _async_validate_json_device(api: SyrConnectJsonAPI) -> None:
 
     # Use the public API methods to retrieve devices and status. This
     # avoids calling private methods and keeps encapsulation intact.
+    # get_devices() always returns the one device of the local API.
     devices = await api.get_devices("local")
-    if not devices:
-        _LOGGER.error("JSON API: no devices returned from get_devices()")
-        raise CannotConnectError
-
-    # get_devices() returns a list of device dicts; take the first device
-    device = devices[0]
-    device_id = device.get("id")
-    if not device_id:
-        _LOGGER.error("JSON API: device entry missing id")
-        raise CannotConnectError
 
     # Fetch full status for the device. get_device_status() will reuse the
     # cached /get/all response set by get_devices(), avoiding an extra API call.
-    data_result = await api.get_device_status(device_id)
+    data_result = await api.get_device_status(devices[0]["id"])
     if not data_result:
-        _LOGGER.error("JSON API: returned empty status from get_device_status()")
+        _LOGGER.debug("JSON API: returned empty status from get_device_status()")
         raise CannotConnectError
 
     # Verify this is a SYR device by checking for serial number fields and extract serial
     serial = data_result.get("getSRN") or data_result.get("getFRN")
     if not serial:
-        _LOGGER.error("JSON API: response missing getSRN/getFRN - not a SYR device?")
+        _LOGGER.debug("JSON API: response missing getSRN/getFRN - not a SYR device?")
         raise CannotConnectError
 
     _LOGGER.debug(
@@ -234,9 +223,9 @@ async def validate_input_json(
     if not is_valid_host(host):
         # A port gets its own error, so the user is told to leave it out (host_no_port)
         if host_has_port(host):
-            _LOGGER.error("Host field must not include a port. Received: %s", host)
+            _LOGGER.debug("Host field must not include a port. Received: %s", host)
             raise HostWithPortError("Host must not include a port.")
-        _LOGGER.error(
+        _LOGGER.debug(
             "Host field is not a valid IP address or hostname. Received: %s", host
         )
         raise HostInvalidError("Host must be a valid IP address or hostname.")
@@ -253,7 +242,7 @@ async def validate_input_json(
             break
 
     if base_path is None:
-        _LOGGER.error("Selected model %s does not support local JSON API", model)
+        _LOGGER.debug("Selected model %s does not support local JSON API", model)
         raise CannotConnectError
 
     session = async_get_clientsession(hass)
@@ -264,18 +253,17 @@ async def validate_input_json(
         integration_version=get_integration_version(hass),
     )
 
-    # Test connection by attempting login and fetching device data via public API
+    # Test connection by attempting login and fetching device data via public API.
+    # Failures are logged at debug level only: the form shows them.
     _LOGGER.debug("Testing JSON API connection...")
     try:
         await _async_validate_json_device(api)
     except SyrConnectAuthError as err:
-        _LOGGER.error("JSON API: authentication failed: %s", err)
+        _LOGGER.debug("JSON API: authentication failed: %s", err)
         raise InvalidAuthError from err
-    except SyrConnectConnectionError as err:
-        _LOGGER.error("JSON API: connection failed: %s", err)
-        raise CannotConnectError from err
-    except Exception as err:
-        _LOGGER.error("JSON API: unexpected error during validation: %s", err)
+    except (SyrConnectConnectionError, SyrConnectInvalidResponseError) as err:
+        # An empty answer or JSON that is no object: no SYR device at this address
+        _LOGGER.debug("JSON API: connection failed: %s", err)
         raise CannotConnectError from err
 
     _LOGGER.info("JSON API: connection successful to host: %s", host)

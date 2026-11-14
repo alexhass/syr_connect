@@ -3,6 +3,7 @@
 # The unit tests in this module check private helpers and attributes directly.
 # ruff: noqa: SLF001
 
+import logging
 from typing import Any
 from unittest.mock import AsyncMock, patch
 
@@ -376,30 +377,6 @@ def test_strip_host(user_input: Any, expected: Any) -> None:
     assert ConfigFlow._strip_host(user_input) == expected
 
 
-async def test_validate_input_json_device_missing_id_raises(
-    hass: HomeAssistant,
-) -> None:
-    """If get_devices returns a device without an 'id', validation must fail."""
-
-    class FakeApi:
-        async def login(self) -> None:
-            return None
-
-        async def get_devices(self, _scope: Any) -> Any:
-            return [{"name": "nodata"}]
-
-    with (
-        patch(
-            "custom_components.syr_connect.config_flow.SyrConnectJsonAPI",
-            return_value=FakeApi(),
-        ),
-        pytest.raises(CannotConnectError),
-    ):
-        await validate_input_json(
-            hass, {CONF_HOST: "192.168.1.100", CONF_MODEL: "neosoft5000"}
-        )
-
-
 async def test_reauth_confirm_json_initial_form(hass: HomeAssistant) -> None:
     """Initial reauth form for JSON API should be shown, naming the host."""
     entry = MockConfigEntry(
@@ -573,7 +550,7 @@ async def test_form_api_json_cannot_connect(hass: HomeAssistant) -> None:
 
     with patch(
         "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
-        side_effect=Exception("Connection error"),
+        side_effect=SyrConnectConnectionError("Connection error"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
@@ -856,7 +833,7 @@ async def test_reauth_flow_unknown_error(hass: HomeAssistant) -> None:
         )
 
     assert result2["type"] == FlowResultType.FORM
-    assert result2["errors"] == {"base": "cannot_connect"}
+    assert result2["errors"] == {"base": "unknown"}
 
 
 @pytest.mark.usefixtures("mock_syr_api")
@@ -1088,7 +1065,7 @@ async def test_reconfigure_flow_unknown_error(hass: HomeAssistant) -> None:
         )
 
     assert result2["type"] == FlowResultType.FORM
-    assert result2["errors"] == {"base": "cannot_connect"}
+    assert result2["errors"] == {"base": "unknown"}
 
 
 @pytest.mark.parametrize(
@@ -1140,26 +1117,6 @@ async def test_validate_input_xml_connection_error(hass: HomeAssistant) -> None:
         )
 
 
-async def test_validate_input_xml_unexpected_error(hass: HomeAssistant) -> None:
-    """Test validate_input_xml raises CannotConnectError on unexpected error."""
-
-    with (
-        patch(
-            "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
-            side_effect=RuntimeError("Unexpected"),
-        ),
-        pytest.raises(CannotConnectError),
-    ):
-        await validate_input_xml(
-            hass,
-            {
-                CONF_SERVICE: "de.consoft.syr.connect",
-                CONF_USERNAME: "test@example.com",
-                CONF_PASSWORD: "test",
-            },
-        )
-
-
 async def test_validate_input_xml_uses_the_selected_service(
     hass: HomeAssistant,
 ) -> None:
@@ -1189,7 +1146,7 @@ async def test_validate_input_json_connection_error(hass: HomeAssistant) -> None
     with (
         patch(
             "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
-            side_effect=Exception("Network error"),
+            side_effect=SyrConnectConnectionError("Network error"),
         ),
         pytest.raises(CannotConnectError),
     ):
@@ -1455,28 +1412,6 @@ async def test_form_api_json_homeassistant_error_unknown(hass: HomeAssistant) ->
 
     assert result3["type"] == FlowResultType.FORM
     assert result3["errors"] == {"base": "unknown"}
-
-
-async def test_validate_input_json_no_devices_raises(hass: HomeAssistant) -> None:
-    """If `get_devices` returns empty list, validation must fail."""
-
-    class FakeApi:
-        async def login(self) -> None:
-            return None
-
-        async def get_devices(self, _scope: Any) -> Any:
-            return []
-
-    with (
-        patch(
-            "custom_components.syr_connect.config_flow.SyrConnectJsonAPI",
-            return_value=FakeApi(),
-        ),
-        pytest.raises(CannotConnectError),
-    ):
-        await validate_input_json(
-            hass, {CONF_HOST: "192.168.1.100", CONF_MODEL: "neosoft5000"}
-        )
 
 
 async def test_reauth_confirm_homeassistant_error_json_direct(
@@ -2144,3 +2079,55 @@ def test_api_services_keyed_by_cf_bundle_identifier() -> None:
     """Every service is stored under its own cf_bundle_identifier."""
     for key, svc in _SYR_CONNECT_API_SERVICES.items():
         assert key == svc.cf_bundle_identifier
+
+
+@pytest.mark.parametrize(
+    ("validate", "data", "error"),
+    [
+        pytest.param(
+            validate_input_xml,
+            {
+                CONF_SERVICE: "de.consoft.syr.connect",
+                CONF_USERNAME: "test@example.com",
+                CONF_PASSWORD: "wrong",
+            },
+            InvalidAuthError,
+            id="wrong-password",
+        ),
+        pytest.param(
+            validate_input_json,
+            {CONF_HOST: "192.168.1.100", CONF_MODEL: "neosoft5000"},
+            CannotConnectError,
+            id="unreachable-device",
+        ),
+        pytest.param(
+            validate_input_json,
+            {CONF_HOST: "192.168.1.100:5333", CONF_MODEL: "neosoft5000"},
+            HostWithPortError,
+            id="host-with-port",
+        ),
+    ],
+)
+async def test_validation_errors_are_logged_at_debug_level_only(
+    hass: HomeAssistant,
+    caplog: pytest.LogCaptureFixture,
+    validate: Any,
+    data: dict[str, Any],
+    error: type[Exception],
+) -> None:
+    """An input error is shown in the form; it is not logged above debug level."""
+    with (
+        caplog.at_level(logging.DEBUG, logger="custom_components.syr_connect"),
+        patch(
+            "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
+            side_effect=SyrConnectAuthError("Invalid credentials."),
+        ),
+        patch(
+            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
+            side_effect=SyrConnectConnectionError("Connection failed"),
+        ),
+        pytest.raises(error),
+    ):
+        await validate(hass, data)
+
+    assert [r.getMessage() for r in caplog.records if r.levelno > logging.DEBUG] == []
