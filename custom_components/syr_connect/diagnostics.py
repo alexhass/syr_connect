@@ -1,7 +1,6 @@
 """Diagnostics support for SYR Connect."""
 
 import asyncio
-import contextlib
 from datetime import datetime
 import ipaddress
 import logging
@@ -80,8 +79,10 @@ def mask_mac_value(val: str, last_char_replace: str | None = None) -> str:
     """Mask a MAC address while preserving the vendor (first three octets).
 
     If the input does not parse as six octets, return the original string.
-    If `last_char_replace` is provided, replace the final hex character
-    in the resulting masked string with that value (used for `getMAC2`).
+    If `last_char_replace` is provided, it replaces the final character of the
+    masked string (used for `getMAC2`), so two masked addresses of one device differ:
+    - getMAC1: "AA:BB:CC:DD:EE:FF" -> "AA:BB:CC:XX:XX:XX"
+    - getMAC2: "AA:BB:CC:DD:EE:FF" -> "AA:BB:CC:XX:XX:XY"
     """
     if not isinstance(val, str) or val.strip() == "":
         return val
@@ -94,8 +95,7 @@ def mask_mac_value(val: str, last_char_replace: str | None = None) -> str:
     masked_tail = ["XX"] * (len(pairs) - 3)
     result = sep.join(preserved + masked_tail)
     if last_char_replace is not None:
-        with contextlib.suppress(re.error):
-            result = re.sub(r"([0-9A-F])$", last_char_replace, result)
+        result = result[:-1] + last_char_replace
     return result
 
 
@@ -119,16 +119,28 @@ def _redact_xml(xml: str) -> str:
 
     Works on the text, not on a parsed tree: the responses may be truncated or
     malformed, and the same function also cleans plain strings elsewhere in the
-    diagnostics (see `_redact_obj`). Each step catches its own errors so that one
-    failing pattern does not leave the rest of the string unredacted.
+    diagnostics (see `_redact_obj`).
     """
     if not isinstance(xml, str) or not xml:
         return ""
 
     cleaned = xml
     # Mask session token `ug` attributes early to avoid leaking tokens
-    with contextlib.suppress(Exception):
-        cleaned = mask_ug_value(cleaned)
+    cleaned = mask_ug_value(cleaned)
+
+    # getMAC2 ends with "Y" as in `_mask_sensitive`, so that it differs from getMAC1
+    cleaned = re.sub(
+        r'(<c\b[^>]*\bn\s*=\s*"getMAC2"[^>]*\bv\s*=\s*")([^\"]*)(")',
+        lambda m: m.group(1) + mask_mac_value(m.group(2), "Y") + m.group(3),
+        cleaned,
+        flags=re.IGNORECASE,
+    )
+    cleaned = re.sub(
+        r'(\bgetMAC2\s*=\s*")([^\"]*)(")',
+        lambda m: m.group(1) + mask_mac_value(m.group(2), "Y") + m.group(3),
+        cleaned,
+        flags=re.IGNORECASE,
+    )
 
     # Replace standalone MAC addresses in text using the shared helper
     cleaned = re.sub(
@@ -138,29 +150,26 @@ def _redact_xml(xml: str) -> str:
     )
 
     # Mask SRN values inside XML attribute forms and <c n="getSRN" v="..."/> entries
-    with contextlib.suppress(re.error, TypeError, ValueError):
-        cleaned = re.sub(
-            r'(<c\b[^>]*\bn\s*=\s*"getSRN"[^>]*\bv\s*=\s*")([^\"]*)(")',
-            lambda m: m.group(1) + mask_srn_value(m.group(2)) + m.group(3),
-            cleaned,
-            flags=re.IGNORECASE,
-        )
+    cleaned = re.sub(
+        r'(<c\b[^>]*\bn\s*=\s*"getSRN"[^>]*\bv\s*=\s*")([^\"]*)(")',
+        lambda m: m.group(1) + mask_srn_value(m.group(2)) + m.group(3),
+        cleaned,
+        flags=re.IGNORECASE,
+    )
 
-    with contextlib.suppress(re.error, TypeError, ValueError):
-        cleaned = re.sub(
-            r'(\bgetSRN\s*=\s*")([^\"]*)(")',
-            lambda m: m.group(1) + mask_srn_value(m.group(2)) + m.group(3),
-            cleaned,
-            flags=re.IGNORECASE,
-        )
+    cleaned = re.sub(
+        r'(\bgetSRN\s*=\s*")([^\"]*)(")',
+        lambda m: m.group(1) + mask_srn_value(m.group(2)) + m.group(3),
+        cleaned,
+        flags=re.IGNORECASE,
+    )
 
     # The same serial number as attribute of a device: <d sn="..." />
-    with contextlib.suppress(re.error, TypeError, ValueError):
-        cleaned = re.sub(
-            r'(\bsn\s*=\s*")([^\"]*)(")',
-            lambda m: m.group(1) + mask_srn_value(m.group(2)) + m.group(3),
-            cleaned,
-        )
+    cleaned = re.sub(
+        r'(\bsn\s*=\s*")([^\"]*)(")',
+        lambda m: m.group(1) + mask_srn_value(m.group(2)) + m.group(3),
+        cleaned,
+    )
 
     # For each redact key, replace attribute values like key="..."
     for key in _SYR_CONNECT_DIAGNOSTICS_TO_REDACT:
@@ -170,31 +179,28 @@ def _redact_xml(xml: str) -> str:
         placeholder = f"***REDACTED_{re.sub(r'[^A-Za-z0-9]', '_', key_str).upper()}***"
 
         # Attributes like mac="..."
-        with contextlib.suppress(re.error, TypeError, ValueError):
-            cleaned = re.sub(
-                rf'({re.escape(key_str)}\s*=\s*")([^"]*)(")',
-                rf"\1{placeholder}\3",
-                cleaned,
-                flags=re.IGNORECASE,
-            )
+        cleaned = re.sub(
+            rf'({re.escape(key_str)}\s*=\s*")([^"]*)(")',
+            rf"\1{placeholder}\3",
+            cleaned,
+            flags=re.IGNORECASE,
+        )
 
         # <c n="getMAC" v="..." /> or similar: redact v when n matches key
-        with contextlib.suppress(re.error, TypeError, ValueError):
-            cleaned = re.sub(
-                rf'(<c\b[^>]*\bn\s*=\s*"{re.escape(key_str)}"[^>]*\bv\s*=\s*")([^"]*)(")',
-                rf"\1{placeholder}\3",
-                cleaned,
-                flags=re.IGNORECASE,
-            )
+        cleaned = re.sub(
+            rf'(<c\b[^>]*\bn\s*=\s*"{re.escape(key_str)}"[^>]*\bv\s*=\s*")([^"]*)(")',
+            rf"\1{placeholder}\3",
+            cleaned,
+            flags=re.IGNORECASE,
+        )
 
         # Simple key:value or key=val patterns
-        with contextlib.suppress(re.error, TypeError, ValueError):
-            cleaned = re.sub(
-                rf'({re.escape(key_str)}\s*[:=]\s*)([^\s><"\']+)',
-                rf"\1{placeholder}",
-                cleaned,
-                flags=re.IGNORECASE,
-            )
+        cleaned = re.sub(
+            rf'({re.escape(key_str)}\s*[:=]\s*)([^\s><"\']+)',
+            rf"\1{placeholder}",
+            cleaned,
+            flags=re.IGNORECASE,
+        )
 
     # Generic redactions
     cleaned = re.sub(r"\b\d{1,3}(?:\.\d{1,3}){3}\b", "***REDACTED_IP***", cleaned)
@@ -226,18 +232,12 @@ def _redact_device_list_xml(xml: str) -> str:
     so the structure of the response stays recognizable.
     """
     cleaned = _redact_xml(xml)
-    # If a replacement fails, keep the redacted content as-is
-    with contextlib.suppress(re.error, TypeError, ValueError):
-        cleaned = re.sub(r'(\bpn\s*=\s*")([^"]*)(")', r"\1My+Project\3", cleaned)
-    with contextlib.suppress(re.error, TypeError, ValueError):
-        cleaned = re.sub(
-            r'(\bcom\s*=\s*")([^"]*)(")', r"\1Firstname+Lastname\3", cleaned
-        )
+    cleaned = re.sub(r'(\bpn\s*=\s*")([^"]*)(")', r"\1My+Project\3", cleaned)
+    cleaned = re.sub(r'(\bcom\s*=\s*")([^"]*)(")', r"\1Firstname+Lastname\3", cleaned)
     for name, placeholder in _SYR_CONNECT_DIAGNOSTICS_PROJECT_PLACEHOLDERS.items():
-        with contextlib.suppress(re.error, TypeError, ValueError):
-            cleaned = re.sub(
-                rf'(\b{name}\s*=\s*")([^"]+)(")', rf"\g<1>{placeholder}\3", cleaned
-            )
+        cleaned = re.sub(
+            rf'(\b{name}\s*=\s*")([^"]+)(")', rf"\g<1>{placeholder}\3", cleaned
+        )
     return cleaned
 
 

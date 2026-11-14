@@ -6504,39 +6504,6 @@ async def test_sensor_apply_numeric_conversion_zerodivision(
         _ = sensor.native_value
 
 
-async def test_sensor_apply_numeric_conversion_precision_valueerror(
-    hass: HomeAssistant,
-) -> None:
-    """Test _apply_numeric_conversion handles ValueError during precision rounding."""
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "status": {
-                    "getPRS": "50.5",
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPRS")
-
-    # Temporarily patch round() to raise ValueError
-    original_round = round
-
-    def mock_round(value: Any, precision: Any) -> Any:
-        if precision is not None:
-            raise ValueError("Test error")
-        return original_round(value)
-
-    with patch("builtins.round", side_effect=mock_round):
-        # Should handle ValueError and return original value
-        result = sensor.native_value
-        assert result is not None  # Should not crash
-
-
 async def test_getpa_is_true_bool_true(hass: HomeAssistant) -> None:
     """Test _is_true helper with boolean True."""
     # This is tested indirectly through getPA group logic

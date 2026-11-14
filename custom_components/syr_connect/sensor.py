@@ -2938,12 +2938,9 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         # Apply configured precision if available
         precision = self.entity_description.suggested_display_precision
         if precision is not None:
-            try:
-                value = round(value, precision)
-                if precision == 0:
-                    return int(value)
-            except TypeError, ValueError:
-                pass
+            value = round(value, precision)
+            if precision == 0:
+                return int(value)
 
         return value
 

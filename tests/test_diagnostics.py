@@ -145,6 +145,16 @@ def test_mask_mac_value(value: Any, expected: Any) -> None:
     assert mask_mac_value(value) == expected
 
 
+def test_mask_mac_value_last_char_replace() -> None:
+    """The replacement for the last character tells a second address apart."""
+    assert (
+        mask_mac_value("aa:bb:cc:dd:ee:ff", last_char_replace="Y")
+        == "AA:BB:CC:XX:XX:XY"
+    )
+    # An address that is not masked is not changed either
+    assert mask_mac_value("00:11:22:33:44", last_char_replace="Y") == "00:11:22:33:44"
+
+
 @pytest.mark.parametrize(
     ("value", "expected"),
     [
@@ -169,6 +179,7 @@ def test_redact_xml() -> None:
         '<sc><us ug="SECRET_TOKEN" />   '
         '<d sn="206AAA67890" getSRN="206AAA67890" getIPA="10.0.0.5">\n'
         '  <c n="getSRN" v="206AAA67890" /><c n="getMAC" v="aa:bb:cc:dd:ee:ff" />'
+        '<c n="getMAC1" v="aa:bb:cc:dd:ee:ff" /><c n="getMAC2" v="aa:bb:cc:dd:ee:ff" />'
         '<c n="getWIP" v="192.168.1.20" /><c n="getFLO" v="5" />'
         "note getWFC: MyWifi mail user@example.com ip 8.8.8.8</d></sc> "
     )
@@ -177,6 +188,7 @@ def test_redact_xml() -> None:
         '<sc><us ug="***" />'
         '<d sn="206AAA12345" getSRN="206AAA12345" getIPA="***REDACTED_GETIPA***">'
         '<c n="getSRN" v="206AAA12345" /><c n="getMAC" v="AA:BB:CC:XX:XX:XX" />'
+        '<c n="getMAC1" v="AA:BB:CC:XX:XX:XX" /><c n="getMAC2" v="AA:BB:CC:XX:XX:XY" />'
         '<c n="getWIP" v="***REDACTED_GETWIP***" /><c n="getFLO" v="5" />'
         "note getWFC: ***REDACTED_GETWFC*** mail ***REDACTED_USERNAME*** "
         "ip ***REDACTED_IP***</d></sc>"
@@ -187,6 +199,14 @@ def test_redact_xml() -> None:
 def test_redact_xml_without_text(value: Any) -> None:
     """An empty value or one that is no text gives an empty text."""
     assert diag._redact_xml(value) == ""
+
+
+def test_redact_xml_mac2_attribute() -> None:
+    """The second MAC address ends with Y as attribute too; an empty one stays empty."""
+    assert diag._redact_xml(
+        '<d getMAC1="aa-bb-cc-dd-ee-ff" getMAC2="aa-bb-cc-dd-ee-ff" />'
+    ) == ('<d getMAC1="AA-BB-CC-XX-XX-XX" getMAC2="AA-BB-CC-XX-XX-XY" />')
+    assert diag._redact_xml('<c n="getMAC2" v="" />') == '<c n="getMAC2" v="" />'
 
 
 def test_redact_xml_keeps_other_serial_format() -> None:
@@ -259,7 +279,7 @@ def test_mask_sensitive() -> None:
         "getSRN": "206AAA12345",
         "getMAC": "AA:BB:CC:XX:XX:XX",
         "getMAC1": "11-22-33-XX-XX-XX",
-        "getMAC2": "AA:BB:CC:XX:XX:XX",
+        "getMAC2": "AA:BB:CC:XX:XX:XY",
         "id": "501AAA12345",
         "name": "Keller",
         "devices": [{"getSRN": 5, "status": {"getMAC": "AA:BB:CC:XX:XX:XX"}}],
@@ -915,7 +935,7 @@ async def test_diagnostics_local_entry(hass: HomeAssistant) -> None:
             "getFIR": "FW_ST_01",
             "getWIP": "**REDACTED**",
             "getMAC1": "11:22:33:XX:XX:XX",
-            "getMAC2": "AA:BB:CC:XX:XX:XX",
+            "getMAC2": "AA:BB:CC:XX:XX:XY",
             "getCNO": "**REDACTED**",
             "getFLO": "5",
         }
