@@ -11,7 +11,7 @@ from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.util import slugify
 
 from ..const import API_TYPE_JSON, API_TYPE_XML, CONF_SERVICE, DOMAIN
-from ..data import SyrConnectCoordinatorData
+from ..data import SyrConnectCoordinatorData, SyrConnectDevice
 from ..models import MODEL_SIGNATURES, SyrConnectModel
 from .device import get_device_model
 from .profile import get_model_supported_keys
@@ -214,6 +214,127 @@ def cleanup_removed_devices(
         _LOGGER.exception("Failed to cleanup removed devices from registry")
 
 
+def _is_status_usable(device: SyrConnectDevice, domain: str) -> bool:
+    """Return True if the device status tells which entities the device has.
+
+    Args:
+        device: The device from the coordinator data.
+        domain: Entity domain of the cleanup, for the log message.
+    """
+    # An empty status means it could not be fetched yet (e.g. a temporary
+    # failure at startup), not that the device lost all its keys. Removing
+    # entities now would drop their registry customizations (name, area, ...).
+    if not device.get("status", {}):
+        _LOGGER.debug(
+            "No status for device %s yet; skipping %s registry cleanup",
+            device["id"],
+            domain,
+        )
+        return False
+
+    # While the cloud reports the device offline (dst 0/1, available=False) its status
+    # says nothing about which entities it has: the measurements are empty strings
+    # (docs/known_issues_xml_api.md, issue 2), and a never-online device reports little
+    # more than getSRN, so detect_model may pick the wrong model and key list.
+    if not device.get("available", True):
+        _LOGGER.debug(
+            "Device %s is offline; skipping %s registry cleanup",
+            device["id"],
+            domain,
+        )
+        return False
+    return True
+
+
+def _entity_key(unique_id: str, unique_id_prefix: str, domain: str) -> str | None:
+    """Return the lowercase key of an entity of a device, or None for another device.
+
+    The key is taken from the unique_id, not from the entity_id. Both are set by
+    the entities of this integration, but only the unique_id is stable:
+    - unique_id: "<entry_id>_<device_id>_<key>" (see build_unique_id), e.g.
+      "01J..._206AAA12345_getFLO". Home Assistant never changes it.
+    - entity_id: "<domain>.syr_connect_<device_id>_<key>" (see build_entity_id),
+      e.g. "sensor.syr_connect_206aaa12345_getflo". It is not reliable: if the
+      same device is set up via a second hub, HA appends "_2" because the
+      entity_id is already taken, and users may rename it. Reading the key from
+      it would turn "getflo_2" or a renamed "..._durchfluss" into an unknown key
+      and remove a valid entity (with its name, area, ... customizations) on
+      every setup.
+
+    Some platforms add their own suffix to keep unique_ids distinct from a sensor
+    with the same key: "getRTM_select", "getbuz_switch", "getnot_update". It is
+    stripped to get the plain key ("getrtm"). Comparisons are case-insensitive
+    because switch/update build their unique_id lowercased.
+
+    Args:
+        unique_id: unique_id of the registry entry.
+        unique_id_prefix: Lowercase "<entry_id>_<device_id>_" of the device.
+        domain: Entity domain, the platform suffix to strip.
+    """
+    unique_id = unique_id.lower()
+    if not unique_id.startswith(unique_id_prefix):
+        return None
+    return unique_id[len(unique_id_prefix) :].removesuffix(f"_{domain}")
+
+
+def _remove_unlisted_entities(
+    registry: er.EntityRegistry,
+    platform_entries: list[er.RegistryEntry],
+    unique_id_prefix: str,
+    domain: str,
+    allowed_keys: AbstractSet[str],
+) -> None:
+    """Remove the entities of a device whose key is not in its allowlist.
+
+    Args:
+        registry: The entity registry.
+        platform_entries: Registry entries of the config entry and the domain.
+        unique_id_prefix: Lowercase "<entry_id>_<device_id>_" of the device.
+        domain: Entity domain of the cleanup.
+        allowed_keys: Keys the device may have entities for.
+    """
+    allowed_lower = {k.lower() for k in allowed_keys}
+    for entry in platform_entries:
+        key_lower = _entity_key(str(entry.unique_id), unique_id_prefix, domain)
+        if key_lower is not None and key_lower not in allowed_lower:
+            _LOGGER.debug(
+                "Removing unlisted %s from registry: %s",
+                domain,
+                entry.entity_id,
+            )
+            registry.async_remove(entry.entity_id)
+
+
+def _remove_hidden_entities(
+    registry: er.EntityRegistry,
+    domain: str,
+    entry_id: str,
+    device_id: str,
+    keys: AbstractSet[str],
+) -> None:
+    """Remove the entities of a device that the platform hides for its status.
+
+    Found by unique_id, so a renamed or "_2"-suffixed entity is removed as well; the
+    unique_id contains the entry_id, so only entities of this config entry are found.
+
+    Args:
+        registry: The entity registry.
+        domain: Entity domain of the cleanup.
+        entry_id: Owning config entry ID.
+        device_id: Device ID (serial number).
+        keys: Keys of the hidden entities.
+    """
+    for key in keys:
+        entity_id = find_entity_id(registry, domain, entry_id, device_id, key)
+        if entity_id is not None:
+            _LOGGER.debug(
+                "Removing conditionally hidden %s from registry: %s",
+                domain,
+                entity_id,
+            )
+            registry.async_remove(entity_id)
+
+
 def registry_cleanup(
     hass: HomeAssistant,
     coordinator_data: SyrConnectCoordinatorData | None,
@@ -260,92 +381,27 @@ def registry_cleanup(
 
         for device in coordinator_data.get("devices", []) if coordinator_data else []:
             device_id = device.get("id")
-            if not device_id:
-                continue
-
-            # An empty status means it could not be fetched yet (e.g. a temporary
-            # failure at startup), not that the device lost all its keys. Removing
-            # entities now would drop their registry customizations (name, area, ...).
-            status = device.get("status", {})
-            if not status:
-                _LOGGER.debug(
-                    "No status for device %s yet; skipping %s registry cleanup",
-                    device_id,
-                    domain,
-                )
-                continue
-
-            # While the cloud reports the device offline (dst 0/1, available=False) its status
-            # says nothing about which entities it has: the measurements are empty strings
-            # (docs/known_issues_xml_api.md, issue 2), and a never-online device reports little
-            # more than getSRN, so detect_model may pick the wrong model and key list.
-            if not device.get("available", True):
-                _LOGGER.debug(
-                    "Device %s is offline; skipping %s registry cleanup",
-                    device_id,
-                    domain,
-                )
+            if not device_id or not _is_status_usable(device, domain):
                 continue
 
             # Scope the allowlist to the detected model (falls back to allowed_keys
             # unchanged for models that haven't opted into per-model key lists).
             model_info = get_device_model(device)
-            device_allowed_keys = get_model_supported_keys(
-                model_info, domain, allowed_keys
+            _remove_unlisted_entities(
+                registry,
+                platform_entries,
+                build_unique_id(entry_id, device_id, "").lower(),
+                domain,
+                get_model_supported_keys(model_info, domain, allowed_keys),
             )
-            allowed_lower = {k.lower() for k in device_allowed_keys}
-
-            # Remove entities whose key is no longer in the allowed set.
-            #
-            # The key is taken from the unique_id, not from the entity_id. Both are set by
-            # the entities of this integration, but only the unique_id is stable:
-            # - unique_id: "<entry_id>_<device_id>_<key>" (see build_unique_id), e.g.
-            #   "01J..._206AAA12345_getFLO". Home Assistant never changes it.
-            # - entity_id: "<domain>.syr_connect_<device_id>_<key>" (see build_entity_id),
-            #   e.g. "sensor.syr_connect_206aaa12345_getflo". It is not reliable: if the
-            #   same device is set up via a second hub, HA appends "_2" because the
-            #   entity_id is already taken, and users may rename it. Reading the key from
-            #   it would turn "getflo_2" or a renamed "..._durchfluss" into an unknown key
-            #   and remove a valid entity (with its name, area, ... customizations) on
-            #   every setup.
-            #
-            # All ids of this device and config entry start with the same prefix,
-            # "<entry_id>_<device_id>_". Comparisons are case-insensitive because
-            # switch/update build their unique_id lowercased.
-            unique_id_prefix = build_unique_id(entry_id, device_id, "").lower()
-            for entry in platform_entries:
-                # Only entities of this device.
-                unique_id = str(entry.unique_id).lower()
-                if not unique_id.startswith(unique_id_prefix):
-                    continue
-                # What remains is the key. Some platforms add their own suffix to keep
-                # unique_ids distinct from a sensor with the same key: "getRTM_select",
-                # "getbuz_switch", "getnot_update". Strip it to get the plain key ("getrtm").
-                key_lower = unique_id[len(unique_id_prefix) :].removesuffix(
-                    f"_{domain}"
+            if hidden_keys is not None:
+                _remove_hidden_entities(
+                    registry,
+                    domain,
+                    entry_id,
+                    device_id,
+                    hidden_keys(device.get("status", {}), model_info),
                 )
-                if key_lower not in allowed_lower:
-                    _LOGGER.debug(
-                        "Removing unlisted %s from registry: %s",
-                        domain,
-                        entry.entity_id,
-                    )
-                    registry.async_remove(entry.entity_id)
-
-            # Remove the entities the platform hides for the current device status. Found by
-            # unique_id, so a renamed or "_2"-suffixed entity is removed as well; the unique_id
-            # contains the entry_id, so only entities of this config entry are found.
-            for key in (
-                hidden_keys(status, model_info) if hidden_keys is not None else ()
-            ):
-                entity_id = find_entity_id(registry, domain, entry_id, device_id, key)
-                if entity_id is not None:
-                    _LOGGER.debug(
-                        "Removing conditionally hidden %s from registry: %s",
-                        domain,
-                        entity_id,
-                    )
-                    registry.async_remove(entity_id)
     except Exception:
         _LOGGER.exception(
             "Failed to cleanup excluded %s entities from registry", domain
