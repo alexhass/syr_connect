@@ -224,46 +224,52 @@ def get_sensor_net_value(value: Any) -> float | None:
 
     Returns the voltage as float rounded to 2 decimals, or None on failure.
     """
-    if value is None:
-        return None
-
     # If already numeric, assume it's in 1/100 V (int) and divide
-    if isinstance(value, (int | float)):
-        return round(float(value) / 100.0, 2)
-
+    if isinstance(value, int | float):
+        return round(value / 100, 2)
     if not isinstance(value, str):
         return None
-
-    s = value.strip()
-    if s == "":
-        return None
+    text = value.strip()
 
     # Safe-T+ format: "ADC:950 6,16V" — extract the token that ends with 'V'
-    if "ADC:" in s:
-        for token in s.split():
+    if "ADC:" in text:
+        for token in text.split():
             if token.upper().endswith("V"):
-                raw = token[:-1]  # strip trailing 'V'
-                try:
-                    return round(float(raw.replace(",", ".")), 2)
-                except ValueError, TypeError:
-                    return None
+                return _parse_comma_decimal(token[:-1])  # strip trailing 'V'
         return None
 
     # Safe-Tech+ format with comma decimal, e.g. "11,86"
-    if "," in s:
-        try:
-            return round(float(s.replace(",", ".")), 2)
-        except ValueError, TypeError:
-            return None
+    if "," in text:
+        return _parse_comma_decimal(text)
 
     # Digits-only Trio DFR/LS format "363" -> divide by 100
-    if s.isdigit():
-        try:
-            return round(int(s) / 100.0, 2)
-        except ValueError, TypeError:
-            return None
+    if text.isdigit():
+        return _parse_centivolts(text)
 
     return None
+
+
+def _parse_comma_decimal(text: str) -> float | None:
+    """Parse a number with a comma as decimal separator ("6,16" -> 6.16), rounded to 2 decimals.
+
+    Returns None if the text is no number.
+    """
+    try:
+        return round(float(text.replace(",", ".")), 2)
+    except ValueError:
+        return None
+
+
+def _parse_centivolts(digits: str) -> float | None:
+    """Parse a digits-only value in 1/100 V and divide by 100 ("363" -> 3.63).
+
+    Returns None if the digits are no number.
+    """
+    try:
+        return round(int(digits) / 100, 2)
+    except ValueError:
+        # isdigit() also accepts digits int() does not, such as "²"
+        return None
 
 
 def get_hygiene_module_value(value: Any) -> int | None:
@@ -298,41 +304,24 @@ def get_sensor_bat_value(value: Any) -> float | None:
 
     Returns the voltage as float rounded to 2 decimals, or None on failure.
     """
-    if value is None:
-        return None
-
     # If already numeric, assume it's in 1/100 V (int) and divide
-    if isinstance(value, (int | float)):
-        return round(float(value) / 100.0, 2)
-
+    if isinstance(value, int | float):
+        return round(value / 100, 2)
     if not isinstance(value, str):
         return None
-
-    s = value.strip()
-    if s == "":
-        return None
+    text = value.strip()
 
     # If space-separated Safe-T+ format, take the first token
-    if " " in s:
-        first = s.split()[0]
-        try:
-            return round(float(first.replace(",", ".")), 2)
-        except ValueError, TypeError:
-            return None
+    if " " in text:
+        return _parse_comma_decimal(text.split()[0])
 
     # Single-token Safe-Tech+ format with comma decimal, e.g. "9,36"
-    if "," in s:
-        try:
-            return round(float(s.replace(",", ".")), 2)
-        except ValueError, TypeError:
-            return None
+    if "," in text:
+        return _parse_comma_decimal(text)
 
     # Digits-only Trio DFR/LS format "363" -> divide by 100
-    if s.isdigit():
-        try:
-            return round(int(s) / 100.0, 2)
-        except ValueError, TypeError:
-            return None
+    if text.isdigit():
+        return _parse_centivolts(text)
 
     # No other variants supported. Return None.
     return None
@@ -356,30 +345,28 @@ def get_sensor_rtm_value(status: SyrConnectStatus) -> str | None:
     if rtm is None or rtm == "":
         return None
 
-    # Case A:Combined representation: getRTH missing/empty and getRTM contains HH:MM
+    # Case A: Combined representation: getRTH missing/empty and getRTM contains HH:MM
     if rth is None or rth == "":
-        if isinstance(rtm, str):
-            m_match = re.match(r"\s*(\d{2}):(\d{2})\s*$", rtm)
-            if not m_match:
-                return None
-            hh = int(m_match.group(1))
-            mm = int(m_match.group(2))
-            # Strict validation: hours 0-23, minutes 0-59
-            if 0 <= hh <= 23 and 0 <= mm <= 59:
-                return f"{hh:02d}:{mm:02d}"
-        return None
+        if not isinstance(rtm, str):
+            return None
+        m_match = re.match(r"\s*(\d{2}):(\d{2})\s*$", rtm)
+        if not m_match:
+            return None
+        return _format_hhmm(int(m_match.group(1)), int(m_match.group(2)))
 
     # Case B: Separate numeric values
     try:
-        h = int(to_float(rth))
-        m = int(to_float(rtm))
-        # Strict validation: hours 0-23, minutes 0-59
-        if 0 <= h <= 23 and 0 <= m <= 59:
-            return f"{h:02d}:{m:02d}"
+        return _format_hhmm(int(to_float(rth)), int(to_float(rtm)))
     except (ValueError, TypeError, OverflowError) as err:
         _LOGGER.debug("Failed to parse regeneration time from separate values: %s", err)
         return None
 
+
+def _format_hhmm(hours: int, minutes: int) -> str | None:
+    """Return "HH:MM" for hours 0-23 and minutes 0-59, otherwise None."""
+    # Strict validation: hours 0-23, minutes 0-59
+    if 0 <= hours <= 23 and 0 <= minutes <= 59:
+        return f"{hours:02d}:{minutes:02d}"
     return None
 
 
@@ -395,21 +382,40 @@ def get_sensor_iwh_value(status: SyrConnectStatus) -> int | float | None:
     """
     if not status:
         return None
+    iwh = _reported_iwh(status)
+    if iwh is not None:
+        return iwh
+    return _iwh_from_cnd(status)
 
+
+def _reported_iwh(status: SyrConnectStatus) -> int | float | None:
+    """Return getIWH (int if whole) if it is a number and its unit getWHU is known.
+
+    The normalized value is written back into the status.
+    """
     raw_iwh = status.get("getIWH")
     raw_whu = status.get("getWHU")
     # Only accept an explicit getIWH when WHU is also present (unit known)
-    if raw_iwh is not None and raw_iwh != "" and raw_whu is not None and raw_whu != "":
-        try:
-            val = to_float(raw_iwh)
-            # Persist normalized numeric getiwh back into status
-            status["getIWH"] = int(val) if val.is_integer() else val
-            # Return int when it's an exact whole number
-            return int(val) if val.is_integer() else val
-        except ValueError, TypeError:
-            # Fall through to fallback derivation
-            pass
+    if raw_iwh is None or raw_iwh == "" or raw_whu is None or raw_whu == "":
+        return None
+    try:
+        val = to_float(raw_iwh)
+    except ValueError, TypeError:
+        # Fall through to fallback derivation
+        return None
+    # Return int when it's an exact whole number
+    iwh = int(val) if val.is_integer() else val
+    # Persist normalized numeric getiwh back into status
+    status["getIWH"] = iwh
+    return iwh
 
+
+def _iwh_from_cnd(status: SyrConnectStatus) -> int | float | None:
+    """Compute getIWH in °dH from the conductivity (getCND), with the factor SYR uses.
+
+    getWHU defaults to 0 (°dH) when it is missing or invalid. getWHU and getIWH are
+    written back into the status.
+    """
     # Fallback: derive from getCND when available
     raw_cnd = status.get("getCND")
     if raw_cnd is None or raw_cnd == "":
@@ -510,6 +516,14 @@ def get_sensor_ab_value(status: SyrConnectStatus) -> bool | None:
     return _parse_ab_raw(val)
 
 
+# Numeric getAB values. Safe-T: Syr seems to use 1 for open and 2 for closed, but we want
+# True=closed, False=open
+_SYR_CONNECT_VALUES_AB_NUMERIC: dict[int, bool] = {
+    1: False,
+    2: True,
+}
+
+
 def _parse_ab_raw(val: Any) -> bool | None:
     """Parse a single raw getAB value (string/int/bool) to bool | None.
 
@@ -518,18 +532,12 @@ def _parse_ab_raw(val: Any) -> bool | None:
     # Boolean values (native JSON booleans)
     if isinstance(val, bool):
         # In JSON API boolean True means closed, False means open
-        return bool(val)
+        return val
 
     # Numeric values (int/float or digit strings)
     try:
         if isinstance(val, (int | float)):
-            # Safe-T: Syr seems to use 1 for open and 2 for closed, but we want True=closed, False=open
-            ival = int(float(val))
-            if ival == 2:
-                return True
-            if ival == 1:
-                return False
-            return None
+            return _SYR_CONNECT_VALUES_AB_NUMERIC.get(int(float(val)))
         if isinstance(val, str):
             # Trio DFR/LS and other new devices: Normalize string and check for boolean-like values
             s = val.strip().lower()
@@ -538,11 +546,7 @@ def _parse_ab_raw(val: Any) -> bool | None:
                 return s == "true"
             # Numeric string fallback
             if s.isdigit():
-                ival = int(s)
-                if ival == 2:
-                    return True
-                if ival == 1:
-                    return False
+                return _SYR_CONNECT_VALUES_AB_NUMERIC.get(int(s))
     except (ValueError, TypeError, AttributeError, OverflowError) as err:
         _LOGGER.debug("Failed to parse getAB value: %s", err)
         return None
@@ -569,21 +573,17 @@ def build_set_ab_command(
     if status:
         raw = status.get("getAB")
 
+    text = raw.strip().lower() if isinstance(raw, str) else None
+
     # Native bool (JSON API devices like SafeTech/Trio) → boolean string
     # Must be checked before int because bool is a subclass of int in Python.
-    if isinstance(raw, bool):
-        return ("setAB", "true" if closed else "false")
-
     # Boolean-like strings ("true"/"false") → boolean string
-    if isinstance(raw, str) and raw.strip().lower() in ("true", "false"):
+    if isinstance(raw, bool) or text in ("true", "false"):
         return ("setAB", "true" if closed else "false")
 
     # Native integer (JSON API devices that report getAB as int 1/2) → numeric
-    if isinstance(raw, int | float):
-        return ("setAB", 2 if closed else 1)
-
     # Numeric string ("1"/"2") → numeric (XML API and some JSON API devices)
-    if isinstance(raw, str) and raw.strip().isdigit():
+    if isinstance(raw, int | float) or (text is not None and text.isdigit()):
         return ("setAB", 2 if closed else 1)
 
     # Unknown format — this should not happen with known device firmware.

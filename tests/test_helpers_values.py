@@ -432,6 +432,11 @@ def test_get_sensor_rtm_invalid_values() -> None:
     assert get_sensor_rtm_value({"getRTH": "", "getRTM": "12:60"}) is None
 
 
+def test_get_sensor_rtm_value_number_without_hour_returns_none() -> None:
+    """Without getRTH only an "HH:MM" text is a time; a number in getRTM is none."""
+    assert get_sensor_rtm_value({"getRTM": 1230}) is None
+
+
 def test_get_sensor_bat_value_first_token_unparseable() -> None:
     """Test get sensor bat value first token unparsable."""
     # First token is non-numeric -> should return None
