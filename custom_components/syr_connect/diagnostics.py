@@ -15,7 +15,7 @@ from .api_json import SyrConnectJsonAPI
 from .api_xml import SyrConnectXmlAPI
 from .const import API_TYPE_JSON, API_TYPE_XML, CONF_API_TYPE, CONF_MODEL, CONF_SERVICE
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
-from .data import SyrConnectDevice
+from .data import SyrConnectDevice, SyrConnectStatus
 from .exceptions import SyrConnectConnectionError, SyrConnectHTTPError
 from .helpers.device import get_device_model
 from .helpers.integration import get_integration_version, mask_ug_value
@@ -253,6 +253,98 @@ def _redact_json_payload(data: Any) -> Any:
     return redacted
 
 
+async def _async_xml_api_with_session(
+    coordinator: SyrConnectDataUpdateCoordinator,
+) -> SyrConnectXmlAPI | None:
+    """Return the XML API client of the coordinator with a valid session, or None.
+
+    None without a client, if the login fails or if the account has no projects.
+    """
+    api = getattr(coordinator, "api", None)
+    if not api:
+        return None
+    # Ensure we have a valid session for read-only calls
+    try:
+        if not api.is_session_valid():
+            await api.login()
+    except Exception:
+        # Don't fail diagnostics if login fails
+        _LOGGER.debug("Diagnostics: XML API login failed", exc_info=True)
+        return None
+    if not api.projects:
+        return None
+    xml_api: SyrConnectXmlAPI = api
+    return xml_api
+
+
+async def _async_post_xml(
+    xml_api: SyrConnectXmlAPI,
+    semaphore: asyncio.Semaphore,
+    url: str,
+    payload: dict[str, Any],
+) -> str:
+    """Return the raw XML answer of a request; empty if the request fails."""
+    try:
+        async with semaphore:
+            return await xml_api.http_client.post(url, payload)
+    except Exception:
+        _LOGGER.debug("Diagnostics: XML request to %s failed", url, exc_info=True)
+        return ""
+
+
+async def _async_project_raw_xml(
+    xml_api: SyrConnectXmlAPI, semaphore: asyncio.Semaphore, pid: str
+) -> dict[str, Any]:
+    """Return the redacted raw XML of a project: its device list and device statuses.
+
+    A failed request only leaves an empty response for this project or device.
+
+    Returns:
+        `{"device_list": xml, "devices": {dclg: status_xml}}`
+    """
+    project_raw: dict[str, Any] = {"device_list": "", "devices": {}}
+    payload = xml_api.payload_builder.build_device_get_list_payload(
+        xml_api.session_data or "", pid
+    )
+    xml_resp = await _async_post_xml(
+        xml_api, semaphore, xml_api.device_list_url, {"xml": payload}
+    )
+    project_raw["device_list"] = _redact_device_list_xml(xml_resp)
+
+    # Parse devices (best-effort) from the original, unredacted response
+    try:
+        devices = xml_api.response_parser.parse_device_list_response(xml_resp)
+    except Exception:
+        _LOGGER.debug(
+            "Diagnostics: device list of project %s could not be parsed",
+            pid,
+            exc_info=True,
+        )
+        devices = []
+
+    async def _fetch_status(did: str) -> tuple[str, str]:
+        status_payload = xml_api.payload_builder.build_device_get_status_payload(
+            xml_api.session_data or "", did
+        )
+        xml_status = await _async_post_xml(
+            xml_api, semaphore, xml_api.device_get_status_url, {"xml": status_payload}
+        )
+        return did, _redact_xml(xml_status)
+
+    # Fetch status for each device (limited concurrency by semaphore)
+    status_tasks = [
+        _fetch_status(device_id)
+        for device in devices
+        if (device_id := device.get("dclg") or device.get("id"))
+    ]
+    results = await asyncio.gather(*status_tasks, return_exceptions=True)
+    for res in results:
+        if isinstance(res, tuple) and len(res) == 2:
+            did, xmls = res
+            project_raw["devices"][did] = xmls
+    return project_raw
+
+
 async def _collect_raw_xml(
     coordinator: SyrConnectDataUpdateCoordinator,
 ) -> dict[str, Any]:
@@ -267,82 +359,19 @@ async def _collect_raw_xml(
     excessive load on the cloud API.
     """
     try:
-        api = getattr(coordinator, "api", None)
-        if api:
-            # Ensure we have a valid session for read-only calls
-            try:
-                if not api.is_session_valid():
-                    await api.login()
-            except Exception:
-                # Don't fail diagnostics if login fails
-                _LOGGER.debug("Diagnostics: XML API login failed", exc_info=True)
-                api = None
-
-        if not (api and api.projects):
+        xml_api = await _async_xml_api_with_session(coordinator)
+        if xml_api is None:
             return {}
-
-        # Capture api in a typed local variable for the closures below;
-        # mypy does not narrow `api` to not-None inside them.
-        xml_api: SyrConnectXmlAPI = api
         semaphore = asyncio.Semaphore(_SYR_CONNECT_DIAGNOSTICS_CONCURRENT_API_CALLS)
-
-        # A failed request only leaves an empty response for this project/device
-        async def _fetch(url: str, payload: dict[str, Any]) -> str:
-            try:
-                async with semaphore:
-                    return await xml_api.http_client.post(url, payload)
-            except Exception:
-                _LOGGER.debug(
-                    "Diagnostics: XML request to %s failed", url, exc_info=True
-                )
-                return ""
-
-        async def _fetch_status(did: str) -> tuple[str, str]:
-            payload = xml_api.payload_builder.build_device_get_status_payload(
-                xml_api.session_data or "", did
-            )
-            xml_status = await _fetch(xml_api.device_get_status_url, {"xml": payload})
-            return did, _redact_xml(xml_status)
 
         # Iterate all projects of the account (from the login response)
         projects_raw: dict[str, Any] = {}
         for project in xml_api.projects:
             pid = project.get("id")
-            if not pid:
-                continue
-            projects_raw[pid] = {"device_list": "", "devices": {}}
-            payload = xml_api.payload_builder.build_device_get_list_payload(
-                xml_api.session_data or "", pid
-            )
-            xml_resp = await _fetch(xml_api.device_list_url, {"xml": payload})
-            projects_raw[pid]["device_list"] = _redact_device_list_xml(xml_resp)
-
-            # Parse devices (best-effort) from the original, unredacted response
-            try:
-                devices = xml_api.response_parser.parse_device_list_response(xml_resp)
-            except Exception:
-                _LOGGER.debug(
-                    "Diagnostics: device list of project %s could not be parsed",
-                    pid,
-                    exc_info=True,
+            if pid:
+                projects_raw[pid] = await _async_project_raw_xml(
+                    xml_api, semaphore, pid
                 )
-                devices = []
-
-            # Fetch status for each device (limited concurrency by semaphore)
-            status_tasks = [
-                _fetch_status(device_id)
-                for device in devices
-                if (device_id := device.get("dclg") or device.get("id"))
-            ]
-            if status_tasks:
-                results = await asyncio.gather(*status_tasks, return_exceptions=True)
-                for res in results:
-                    if isinstance(res, Exception):
-                        continue
-                    if isinstance(res, tuple) and len(res) == 2:
-                        did, xmls = res
-                        projects_raw[pid]["devices"][did] = xmls
-
     except Exception:
         # Never raise from diagnostics
         _LOGGER.debug("Diagnostics: failed to collect raw XML", exc_info=True)
@@ -398,6 +427,56 @@ async def _collect_raw_json_local_entry(
     return raw_json
 
 
+def _private_device_ip(status: SyrConnectStatus) -> str | None:
+    """Return the IP of a device from its status if it is in the local network, else None.
+
+    The IP is taken from Wi-Fi first, then Ethernet, then the generic IP address.
+    The IP comes from the cloud; only devices in the local network are contacted. A
+    wrong or manipulated cloud answer must not make Home Assistant send requests
+    (including the ADM login) to an arbitrary public address, to Home Assistant itself
+    (loopback) or to a link-local address, where no SYR device is reachable.
+    """
+    ip = status.get("getWIP") or status.get("getEIP") or status.get("getIPA")
+
+    # No usable IP (missing, blank or the unspecified placeholder 0.0.0.0)
+    if is_empty_ip(ip):
+        return None
+    try:
+        address = ipaddress.ip_address(str(ip).strip())
+    except ValueError:
+        return None
+    if not address.is_private or address.is_loopback or address.is_link_local:
+        return None
+    return str(ip)
+
+
+async def _async_local_login(json_api: SyrConnectJsonAPI, dev_id: str, ip: str) -> bool:
+    """Log in to a local device if it needs it; False if the device is not reachable.
+
+    A failed login of a reachable device is only logged: the data is fetched anyway.
+    """
+    try:
+        if not json_api.is_session_valid():
+            await json_api.login()
+    except SyrConnectHTTPError:
+        # The device answered, only without the login endpoint: fetch anyway
+        _LOGGER.debug(
+            "Diagnostics: local login to device %s failed", dev_id, exc_info=True
+        )
+    except SyrConnectConnectionError as err:
+        # Not reachable (e.g. timeout, another network): /get/all would wait again
+        _LOGGER.debug(
+            "Diagnostics: device %s is not reachable at %s: %s", dev_id, ip, err
+        )
+        return False
+    except Exception:
+        # If login fails, still attempt to fetch once
+        _LOGGER.debug(
+            "Diagnostics: local login to device %s failed", dev_id, exc_info=True
+        )
+    return True
+
+
 async def _fetch_local_device_json(
     session: Any, dev: SyrConnectDevice, base_path: str, integration_version: str
 ) -> tuple[str, Any]:
@@ -407,55 +486,19 @@ async def _fetch_local_device_json(
     private IP or the request fails.
     """
     dev_id = str(dev.get("id") or dev.get("dclg") or "unknown")
-
-    # Determine the IP from the status (Wi-Fi first, then Ethernet, then the generic
-    # IP address)
-    status = dev.get("status") or {}
-    ip = status.get("getWIP") or status.get("getEIP") or status.get("getIPA")
-
-    # No usable IP (missing, blank or the unspecified placeholder 0.0.0.0): skip the
-    # JSON fetch for this device
-    if is_empty_ip(ip):
-        return dev_id, None
-
-    # The IP comes from the cloud; only contact devices in the local network. A wrong
-    # or manipulated cloud answer must not make Home Assistant send requests (including
-    # the ADM login below) to an arbitrary public address, to Home Assistant itself
-    # (loopback) or to a link-local address, where no SYR device is reachable.
-    try:
-        address = ipaddress.ip_address(str(ip).strip())
-    except ValueError:
-        return dev_id, None
-    if not address.is_private or address.is_loopback or address.is_link_local:
+    ip = _private_device_ip(dev.get("status") or {})
+    if ip is None:
         return dev_id, None
 
     json_api = SyrConnectJsonAPI(
         session,
-        host=str(ip),
+        host=ip,
         base_path=base_path,
         integration_version=integration_version,
     )
     try:
-        # Login is required for some devices
-        try:
-            if not json_api.is_session_valid():
-                await json_api.login()
-        except SyrConnectHTTPError:
-            # The device answered, only without the login endpoint: fetch anyway
-            _LOGGER.debug(
-                "Diagnostics: local login to device %s failed", dev_id, exc_info=True
-            )
-        except SyrConnectConnectionError as err:
-            # Not reachable (e.g. timeout, another network): /get/all would wait again
-            _LOGGER.debug(
-                "Diagnostics: device %s is not reachable at %s: %s", dev_id, ip, err
-            )
+        if not await _async_local_login(json_api, dev_id, ip):
             return dev_id, None
-        except Exception:
-            # If login fails, still attempt to fetch once
-            _LOGGER.debug(
-                "Diagnostics: local login to device %s failed", dev_id, exc_info=True
-            )
 
         try:
             # get_device_status() fetches /get/all and returns the parsed dict
