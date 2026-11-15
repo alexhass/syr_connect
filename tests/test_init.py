@@ -9,6 +9,7 @@ import pytest
 from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.syr_connect import (
+    _SYR_CONNECT_MIGRATION_STEPS,
     _mask_sensitive_data,
     async_migrate_entry,
     async_remove_entry,
@@ -753,3 +754,13 @@ async def test_async_remove_entry_clears_statistics_of_own_devices(
         await async_remove_entry(hass, entry)
 
     mock_clear.assert_called_once_with(hass, entry.entry_id, {"OWN_DEV"})
+
+
+def test_migration_steps_cover_every_version() -> None:
+    """There is one migration step from each version below the current one, in order."""
+    assert [step.from_version for step in _SYR_CONNECT_MIGRATION_STEPS] == list(
+        range(1, ConfigFlow.VERSION)
+    )
+    for step in _SYR_CONNECT_MIGRATION_STEPS:
+        # A step either fixes the registry or updates the entry
+        assert (step.fix_registry is None) != (step.update_kwargs is None)
