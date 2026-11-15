@@ -24,6 +24,7 @@ repository.
 - **Canonical response format (compact status-key):** Devices commonly return compact status-key responses (e.g. {"setABtrue":"OK"}) instead of the typed JSON shown in the official documentation; the integration operates on the compact device format at runtime and treats it as the canonical representation.
 - **SafeTech+ pressure key:** The official documentation lists `getBAR2` for the SafeTech+; the devices report the pressure in `getBAR`.
 - **All-in-One+ filling volumes:** The official documentation gives the filling volumes `getCFV` and `getLFV` and the last tapped volume `getLTV` in liters; the All-in-One+ reports them in milliliters. The cumulative refilled volume `getTRV` is in liters.
+- **All-in-One+ reports `getCNF` twice:** The `/get/all` answer of the All-in-One+ contains the key `getCNF` twice; JSON objects should not repeat a key.
 
 ## Detailed deviations, impacts, and references
 
@@ -184,6 +185,18 @@ Actual (expected) device response:
 - Evidence / references:
   - Report: [issue #64](https://github.com/alexhass/syr_connect/issues/64)
   - Confirmation of `getLTV` by SYR: [issue #64](https://github.com/alexhass/syr_connect/issues/64#issuecomment-6817416797)
+
+### 11. All-in-One+ reports `getCNF` twice in `/get/all`
+
+- Tentatively be considered a bug in current device firmware.
+- Description: The `/get/all` answer of the All-in-One+ (firmware `All-in-One+ V4.05`) contains the key `getCNF` (conductivity factor) twice, once after `getLW2` and once after `getTMZ`, both times with the same value (for example "20" for the factor 2.0).
+- Rationale (RFC): RFC 8259 says that the names within a JSON object SHOULD be unique; with duplicate names, the behavior of a parser is unpredictable. Many parsers keep the last value, others the first one or reject the answer.
+- Impact: None while both values are equal. If the firmware ever reported two different values, the integration would silently use the last one.
+- Mitigation in this project: None needed. The client parses the answer with `json.loads()` (`_execute_http_get`), which keeps the last value of a repeated key.
+- Evidence / references:
+  - Report: [issue #64](https://github.com/alexhass/syr_connect/issues/64)
+  - Client: [custom_components/syr_connect/api_json.py](custom_components/syr_connect/api_json.py)
+  - The anonymized fixture [tests/fixtures/json/SyrAllInOnePlus_get_all.json](tests/fixtures/json/SyrAllInOnePlus_get_all.json) contains `getCNF` only once.
 
 ## Recommendations
 
