@@ -1,4 +1,4 @@
-"""Tests for the XML response parser."""
+"""Tests of the parser of the XML API answers."""
 
 # The unit tests in this module check private helpers and attributes directly.
 # ruff: noqa: SLF001
@@ -38,34 +38,34 @@ FIXTURE_PATH_10SL_DEVICE_STATUS = os.path.join(
 
 
 @pytest.fixture
-def parser() -> Any:
+def parser() -> ResponseParser:
     """Return a response parser."""
     return ResponseParser()
 
 
 @pytest.fixture
-def lexplus10s_project_collections_xml() -> Any:
+def lexplus10s_project_collections_xml() -> str:
     """Return the LEXplus10S project collections XML fixture."""
     with open(FIXTURE_PATH_10S_PROJECT_COLLECTIONS, encoding="utf-8") as f:
         return f.read()
 
 
 @pytest.fixture
-def lexplus10s_xml() -> Any:
+def lexplus10s_xml() -> str:
     """Return the LEXplus10S device status XML fixture."""
     with open(FIXTURE_PATH_10S_DEVICE_STATUS, encoding="utf-8") as f:
         return f.read()
 
 
 @pytest.fixture
-def lexplus10sl_xml() -> Any:
+def lexplus10sl_xml() -> str:
     """Return the LEXplus10SL device status XML fixture."""
     with open(FIXTURE_PATH_10SL_DEVICE_STATUS, encoding="utf-8") as f:
         return f.read()
 
 
 def test_parse_device_list_alias_reference(
-    lexplus10s_project_collections_xml: Any,
+    lexplus10s_project_collections_xml: str,
 ) -> None:
     """Test parsing device list and alias extraction via references."""
     parser = ResponseParser()
@@ -79,7 +79,7 @@ def test_parse_device_list_alias_reference(
     assert device["serial_number"] == "123456789"
 
 
-def test_parse_device_status_response_10s(lexplus10s_xml: Any) -> None:
+def test_parse_device_status_response_10s(lexplus10s_xml: str) -> None:
     """Test parsing of LEXplus10S device status XML."""
     parser = ResponseParser()
     result = parser.parse_device_status_response(lexplus10s_xml)
@@ -99,7 +99,7 @@ def test_parse_device_status_response_10s(lexplus10s_xml: Any) -> None:
     assert result["getALM_m"] == "LowSalt"
 
 
-def test_parse_device_status_response_10sl(lexplus10sl_xml: Any) -> None:
+def test_parse_device_status_response_10sl(lexplus10sl_xml: str) -> None:
     """Test parsing of LEXplus10SL device status XML."""
     parser = ResponseParser()
     result = parser.parse_device_status_response(lexplus10sl_xml)
@@ -411,29 +411,29 @@ def test_flatten_attributes_with_extras(parser: ResponseParser) -> None:
     """Test flattening attributes with extra metadata."""
     data = {
         "c": {
-            "@n": "sensor1",
+            "@n": "key1",
             "@v": "100",
             "@dt": "temperature",
             "@m": "celsius",
         }
     }
     result = parser._flatten_attributes(data)
-    assert result["sensor1"] == "100"
-    assert result["sensor1_dt"] == "temperature"
-    assert result["sensor1_m"] == "celsius"
+    assert result["key1"] == "100"
+    assert result["key1_dt"] == "temperature"
+    assert result["key1_m"] == "celsius"
 
 
 def test_flatten_attributes_list_c(parser: ResponseParser) -> None:
     """Test flattening attributes with list of c elements."""
     data = {
         "c": [
-            {"@n": "sensor1", "@v": "100"},
-            {"@n": "sensor2", "@v": "200"},
+            {"@n": "key1", "@v": "100"},
+            {"@n": "key2", "@v": "200"},
         ]
     }
     result = parser._flatten_attributes(data)
-    assert result["sensor1"] == "100"
-    assert result["sensor2"] == "200"
+    assert result["key1"] == "100"
+    assert result["key2"] == "200"
 
 
 def test_flatten_attributes_skip_checksum(parser: ResponseParser) -> None:
@@ -496,11 +496,11 @@ def test_parse_device_list_dvs_no_d_no_dclg(parser: ResponseParser) -> None:
 
 def test_parse_device_status_device_list_is_dict_with_c(parser: ResponseParser) -> None:
     """Test parsing device status when device_list is dict with 'c' element."""
-    xml = '<sc><dvs dclg="123"><c n="sensor" v="42"/></dvs></sc>'
+    xml = '<sc><dvs dclg="123"><c n="key" v="42"/></dvs></sc>'
     result = parser.parse_device_status_response(xml)
     assert result is not None
-    assert "sensor" in result
-    assert result["sensor"] == "42"
+    assert "key" in result
+    assert result["key"] == "42"
 
 
 def test_parse_device_status_device_list_dict_no_c(parser: ResponseParser) -> None:
@@ -514,16 +514,16 @@ def test_flatten_attributes_c_with_acd_and_ih(parser: ResponseParser) -> None:
     """Test flattening attributes with acd and ih extra fields."""
     data = {
         "c": {
-            "@n": "sensor",
+            "@n": "key",
             "@v": "value",
             "@acd": "acd_value",
             "@ih": "ih_value",
         }
     }
     result = parser._flatten_attributes(data)
-    assert result["sensor"] == "value"
-    assert result["sensor_acd"] == "acd_value"
-    assert result["sensor_ih"] == "ih_value"
+    assert result["key"] == "value"
+    assert result["key_acd"] == "acd_value"
+    assert result["key_ih"] == "ih_value"
 
 
 def test_flatten_attributes_text_content(parser: ResponseParser) -> None:
@@ -625,7 +625,7 @@ def test_parse_device_list_no_sc(parser: ResponseParser) -> None:
 def test_parse_device_list_project_without_devices_fixture(
     parser: ResponseParser,
 ) -> None:
-    """A valid answer for a project without devices yields an empty list (devices get removed)."""
+    """A valid answer for a project without devices yields an empty list."""
     path = os.path.join(
         os.path.dirname(os.path.dirname(__file__)),
         "fixtures/xml",
@@ -702,7 +702,7 @@ def test_cloud_error_response_raises_session_expired(parser: ResponseParser) -> 
 def test_parse_device_list_without_project_raises(
     parser: ResponseParser, xml: Any
 ) -> None:
-    """Answers without sc>prs>pr are errors, not an empty project, so no device gets removed."""
+    """Answers without sc>prs>pr are errors, not an empty project the caller would empty."""
     with pytest.raises(ValueError, match="no project"):
         parser.parse_device_list_response(xml)
 
@@ -724,26 +724,26 @@ def test_element_to_dict_multiple_same_tag(parser: ResponseParser) -> None:
 def test_flatten_attributes_list_input(parser: ResponseParser) -> None:
     """Test _flatten_attributes when input is a list at root level."""
     data = [
-        {"c": {"@n": "sensor1", "@v": "100"}},
-        {"c": {"@n": "sensor2", "@v": "200"}},
+        {"c": {"@n": "key1", "@v": "100"}},
+        {"c": {"@n": "key2", "@v": "200"}},
     ]
     result = parser._flatten_attributes(data)
     # Should flatten all items in list
-    assert "sensor1" in result
-    assert "sensor2" in result
-    assert result["sensor1"] == "100"
-    assert result["sensor2"] == "200"
+    assert "key1" in result
+    assert "key2" in result
+    assert result["key1"] == "100"
+    assert result["key2"] == "200"
 
 
 def test_parse_device_status_list_with_multiple_devices_one_has_c(
     parser: ResponseParser,
 ) -> None:
     """Test device status parsing with list where only one device has 'c'."""
-    xml = '<sc><dvs><d><name>NoC</name></d><d><c n="sensor" v="42"/></d></dvs></sc>'
+    xml = '<sc><dvs><d><name>NoC</name></d><d><c n="key" v="42"/></d></dvs></sc>'
     result = parser.parse_device_status_response(xml)
     # Should succeed if at least one device has 'c'
     assert result is not None
-    assert "sensor" in result
+    assert "key" in result
 
 
 def test_parse_login_response_api_with_empty_text(parser: ResponseParser) -> None:
@@ -889,14 +889,14 @@ def test_parse_device_status_device_list_as_list_all_have_c(
 ) -> None:
     """Test device status when device_list is list and all devices have 'c'."""
     xml = """<sc><dvs>
-        <d><c n="sensor1" v="100"/></d>
-        <d><c n="sensor2" v="200"/></d>
+        <d><c n="key1" v="100"/></d>
+        <d><c n="key2" v="200"/></d>
     </dvs></sc>"""
     result = parser.parse_device_status_response(xml)
     assert result is not None
-    # Both sensors should be flattened
-    assert "sensor1" in result
-    assert "sensor2" in result
+    # Both keys should be flattened
+    assert "key1" in result
+    assert "key2" in result
 
 
 def test_parse_statistics_response_no_measurements(parser: ResponseParser) -> None:
@@ -1001,7 +1001,6 @@ def test_element_to_dict_child_converted_to_list_multiple_appends(
 
 def test_ignore_broken_response_minimal_set(parser: ResponseParser) -> None:
     """Responses containing only minimal broken c-names should be ignored."""
-    parser = ResponseParser()
     device_list = [
         {"c": [{"@n": "getSRN", "@v": "123"}, {"@n": "getALA", "@v": ""}]},
         {"c": {"@n": "getWRN", "@v": ""}},
@@ -1019,7 +1018,6 @@ def test_ignore_broken_response_dict_minimal(parser: ResponseParser) -> None:
 
 def test_ignore_broken_response_not_broken(parser: ResponseParser) -> None:
     """Responses that include other c-names must not be ignored."""
-    parser = ResponseParser()
     device_list = [
         {"c": [{"@n": "getSRN", "@v": "123"}, {"@n": "getFLO", "@v": "10"}]},
     ]
@@ -1080,7 +1078,7 @@ def test_parse_device_status_shadow_values(parser: ResponseParser) -> None:
 def test_never_online_device_minimal_status_is_parsed(parser: ResponseParser) -> None:
     """A never-online device (dst="0") reports only getSRN; that is genuine, not the Trio glitch.
 
-    Parsed (instead of returning None) so the coordinator sees dst="0" and marks the device unavailable.
+    Parsed (instead of returning None) so the caller sees dst="0" and marks the device unavailable.
     """
     path = os.path.join(
         os.path.dirname(os.path.dirname(__file__)),

@@ -458,7 +458,7 @@ class ResponseParser:
         # Prefer responses that include the detailed device entries under
         # <dvs><d>...<c n="..." v="..."/>...</d></dvs>. If that detailed
         # structure is missing (e.g. response only contains <col><dcl .../>),
-        # treat the response as incomplete and skip updating sensors.
+        # treat the response as incomplete, so the caller keeps its previous values.
         sc = parsed["sc"]
         if "dvs" not in sc:
             _LOGGER.debug(
@@ -507,7 +507,7 @@ class ResponseParser:
         Dirty workaround:
         1. Syr Trio DFR/LS: For unknown reasons the device very often returns an XML
            response with getSRN, getALA, getNOT, getWRN only. This causes unwanted
-           sensor status flapping. This needs to be ignored.
+           status values flapping. This needs to be ignored.
 
         Exception: devices the cloud reports offline (dst="0" never online, dst="1"
         offline) also answer with getSRN etc. only. That answer is passed on, so the

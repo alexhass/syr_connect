@@ -1,4 +1,4 @@
-"""Checksum calculation for SYR Connect API."""
+"""Request checksum of the SYR Connect XML API."""
 
 import base64
 from xml.etree.ElementTree import Element
@@ -8,14 +8,14 @@ _BASE32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
 
 
 class SyrChecksum:
-    """Calculate checksums for SYR Connect API requests."""
+    """Calculate the checksum (``<cs v="...">``) of an XML API request."""
 
     def __init__(self, base_characters: str, key: str) -> None:
         """Initialize the checksum calculator.
 
         Args:
-            base_characters: A string representing the character set used for encoding
-            key: A keyword used in the encoding process
+            base_characters: Alphabet of the checksum (XML_CHECKSUM_KEY1)
+            key: Key that shifts the Base32 values (XML_CHECKSUM_KEY2)
         """
         self.base_characters = base_characters
         self.key = key

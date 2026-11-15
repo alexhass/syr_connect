@@ -20,9 +20,8 @@ from custom_components.syr_connect.aiosyrconnect.const import (
 from custom_components.syr_connect.aiosyrconnect.xml_checksum import SyrChecksum
 from custom_components.syr_connect.aiosyrconnect.xml_payload import PayloadBuilder
 
-# Measurement history series like those of the SafeFloor device file: temperature and
-# humidity
-_SYR_CONNECT_TEST_STATISTICS = (
+# Measurement history series of a SafeFloor: temperature and humidity
+_STATISTICS = (
     SyrConnectStatistic(
         key="getCEL",
         method="GetSafeFloorStatistics",
@@ -39,7 +38,7 @@ _SYR_CONNECT_TEST_STATISTICS = (
     ),
 )
 
-_TEMPERATURE, _HUMIDITY = _SYR_CONNECT_TEST_STATISTICS
+_TEMPERATURE, _HUMIDITY = _STATISTICS
 
 
 def test_compute_locale_lang_reg_from_language() -> None:
@@ -188,7 +187,7 @@ def test_add_checksum_is_idempotent() -> None:
 
 
 # Request fixtures: realistic payload structure with placeholder ids; checksums are computed by
-# the integration itself, not captured from the app.
+# the library itself, not captured from the app.
 REQUEST_FIXTURE_DIR = Path(__file__).parent.parent / "fixtures/xml/requests"
 _REQUEST_FIXTURES = {
     "login": "ExampleRequest_Login.xml",
@@ -355,9 +354,7 @@ def test_app_version_roundtrips_special_characters(value: str) -> None:
 def test_get_timestamp_is_utc() -> None:
     """The request timestamp is the current UTC time as YYYY-MM-DD HH:MM:SS."""
     now = datetime(2026, 10, 17, 8, 5, 9, tzinfo=UTC)
-    with patch(
-        "custom_components.syr_connect.aiosyrconnect.xml_payload.datetime"
-    ) as mock_datetime:
+    with patch(f"{PayloadBuilder.__module__}.datetime") as mock_datetime:
         mock_datetime.now.return_value = now
         assert PayloadBuilder.get_timestamp() == "2026-10-17 08:05:09"
 

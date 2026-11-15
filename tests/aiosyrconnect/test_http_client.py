@@ -1,4 +1,4 @@
-"""Tests for the HTTP client helper."""
+"""Tests of the HTTP client of the XML API and the reading of the answers."""
 
 # The unit tests in this module check private helpers and attributes directly.
 # ruff: noqa: SLF001
@@ -21,7 +21,7 @@ from custom_components.syr_connect.aiosyrconnect.http_client import (
 
 def test_get_headers_accept_language_default_and_custom() -> None:
     """Default Accept-Language is en-US, and respects `language` when set."""
-    client = HTTPClient(session=MagicMock(), user_agent="test-agent")
+    client = HTTPClient(session=MagicMock(), user_agent="aiosyrconnect/1.0.0")
 
     # Default when no language is passed
     headers_default = client._get_headers()
@@ -35,7 +35,7 @@ def test_get_headers_accept_language_default_and_custom() -> None:
 
 def test_build_accept_language_computes_value() -> None:
     """Accept-Language is computed from `language` or defaults."""
-    client = HTTPClient(session=MagicMock(), user_agent="test-agent")
+    client = HTTPClient(session=MagicMock(), user_agent="aiosyrconnect/1.0.0")
 
     # Default when no language is passed
     assert client._build_accept_language() == "en-US,en;q=0.9"
@@ -56,13 +56,13 @@ def test_build_accept_language_computes_value() -> None:
     ],
 )
 async def test_http_client_post_fails_after_one_attempt(error: Exception) -> None:
-    """A failed request is not repeated; the next poll tries again."""
+    """A failed request is not repeated; the caller decides about another attempt."""
     mock_context = AsyncMock()
     mock_context.__aenter__ = AsyncMock(side_effect=error)
     mock_session = MagicMock(spec=aiohttp.ClientSession)
     mock_session.post = MagicMock(return_value=mock_context)
 
-    client = HTTPClient(mock_session, "TestAgent/1.0")
+    client = HTTPClient(mock_session, "aiosyrconnect/1.0.0")
 
     with pytest.raises(
         aiohttp.ClientError,
@@ -77,17 +77,17 @@ async def test_http_client_post_fails_after_one_attempt(error: Exception) -> Non
 async def test_http_client_initialization() -> None:
     """Test HTTP client initialization."""
     mock_session = MagicMock(spec=aiohttp.ClientSession)
-    client = HTTPClient(mock_session, "TestAgent/1.0")
+    client = HTTPClient(mock_session, "aiosyrconnect/1.0.0")
 
     assert client.session == mock_session
-    assert client.user_agent == "TestAgent/1.0"
+    assert client.user_agent == "aiosyrconnect/1.0.0"
     assert client.timeout == 30
 
 
 async def test_http_client_custom_settings() -> None:
     """Test HTTP client with custom settings."""
     mock_session = MagicMock(spec=aiohttp.ClientSession)
-    client = HTTPClient(mock_session, "CustomAgent/2.0", timeout=60)
+    client = HTTPClient(mock_session, "aiosyrconnect/1.0.0", timeout=60)
 
     assert client.timeout == 60
 
@@ -95,13 +95,13 @@ async def test_http_client_custom_settings() -> None:
 async def test_http_client_get_headers() -> None:
     """Test HTTP client header generation."""
     mock_session = MagicMock(spec=aiohttp.ClientSession)
-    client = HTTPClient(mock_session, "TestAgent/1.0")
+    client = HTTPClient(mock_session, "aiosyrconnect/1.0.0")
 
     assert client._get_headers() == {
         "Content-Type": "application/x-www-form-urlencoded",
         "Connection": "keep-alive",
         "Accept": "*/*",
-        "User-Agent": "TestAgent/1.0",
+        "User-Agent": "aiosyrconnect/1.0.0",
         "Accept-Language": "en-US,en;q=0.9",
     }
 
@@ -109,7 +109,7 @@ async def test_http_client_get_headers() -> None:
 async def test_http_client_get_headers_custom_content_type() -> None:
     """Test HTTP client header generation with custom content type."""
     mock_session = MagicMock(spec=aiohttp.ClientSession)
-    client = HTTPClient(mock_session, "TestAgent/1.0")
+    client = HTTPClient(mock_session, "aiosyrconnect/1.0.0")
 
     headers = client._get_headers("application/json")
     assert headers["Content-Type"] == "application/json"
@@ -129,7 +129,7 @@ async def test_http_client_post_success(set_response_body: Callable[..., None]) 
     mock_context.__aexit__ = AsyncMock(return_value=None)
     mock_session.post = MagicMock(return_value=mock_context)
 
-    client = HTTPClient(mock_session, "TestAgent/1.0")
+    client = HTTPClient(mock_session, "aiosyrconnect/1.0.0")
 
     result = await client.post("https://example.com/api", {"key": "value"})
 
@@ -152,7 +152,7 @@ async def test_http_client_post_rejects_oversized_response(
     mock_context.__aexit__ = AsyncMock(return_value=None)
     mock_session.post = MagicMock(return_value=mock_context)
 
-    client = HTTPClient(mock_session, "TestAgent/1.0")
+    client = HTTPClient(mock_session, "aiosyrconnect/1.0.0")
 
     with pytest.raises(
         aiohttp.ClientError, match="Response exceeds the limit of 1048576 bytes"
@@ -172,7 +172,7 @@ async def test_http_client_post_does_not_follow_redirects() -> None:
     mock_context.__aexit__ = AsyncMock(return_value=None)
     mock_session.post = MagicMock(return_value=mock_context)
 
-    client = HTTPClient(mock_session, "TestAgent/1.0")
+    client = HTTPClient(mock_session, "aiosyrconnect/1.0.0")
 
     with pytest.raises(aiohttp.ClientError, match="Redirect not followed"):
         await client.post("https://example.com/api", {"key": "value"})
@@ -196,7 +196,7 @@ async def test_http_client_post_with_string_data(
     mock_context.__aexit__ = AsyncMock(return_value=None)
     mock_session.post = MagicMock(return_value=mock_context)
 
-    client = HTTPClient(mock_session, "TestAgent/1.0")
+    client = HTTPClient(mock_session, "aiosyrconnect/1.0.0")
 
     result = await client.post("https://example.com/api", "raw_data=value")
 
@@ -205,24 +205,11 @@ async def test_http_client_post_with_string_data(
 
 def test_build_accept_language_from_constructor() -> None:
     """The language passed to the constructor is used."""
-    client = HTTPClient(session=MagicMock(), user_agent="test-agent", language="en-DE")
+    client = HTTPClient(
+        session=MagicMock(), user_agent="aiosyrconnect/1.0.0", language="en-DE"
+    )
 
     assert client._build_accept_language() == "en-DE,en;q=0.9"
-
-
-# ---------------------------------------------------------------------------
-# Lines 297-298 — get_sensor_avo_value: mL-pattern except branch
-# ---------------------------------------------------------------------------
-
-
-# ---------------------------------------------------------------------------
-# Lines 306-307 — get_sensor_avo_value: fallback-pattern except branch
-# ---------------------------------------------------------------------------
-
-
-# ---------------------------------------------------------------------------
-# Lines 793-794 — is_sensor_visible is_value_true: int/float except branch
-# ---------------------------------------------------------------------------
 
 
 def test_mask_ug_value_basic() -> None:
@@ -299,7 +286,7 @@ async def test_read_response_text_in_chunks(
     ("charset", "expected"),
     [
         pytest.param("latin-1", "Wasserhärte", id="announced"),
-        # An unknown charset falls back to UTF-8, which cannot decode this body
+        # A wrong charset (UTF-8 for a Latin-1 body) cannot decode the body
         pytest.param("utf-8", None, id="wrong"),
     ],
 )
@@ -395,13 +382,14 @@ def test_empty_user_agent_is_rejected(user_agent: str | None) -> None:
 @pytest.mark.parametrize(
     "user_agent",
     [
-        "syr_connect/2.2.0 HomeAssistant/2026.11.1",
+        "aiosyrconnect/1.0.0",
         "aiosyrconnect",
-        "my-app/1.0 (+https://example.com)",
-        "Mozilla/5.0 (X11; Linux x86_64) curl/8.0",
-        "app/1 (nested (comment) \\) ok)",
-        "app/1\t(tab before comment)",
-        "app/1 (obs-text \xe4)",
+        "aiosyrconnect/1.0.0 aiohttp/3.13.2",
+        "aiosyrconnect/1.0.0 (+https://example.com/aiosyrconnect)",
+        "aiosyrconnect/1.0.0 (Linux; x86_64) aiohttp/3.13.2",
+        "aiosyrconnect/1.0.0 (nested (comment) \\) ok)",
+        "aiosyrconnect/1.0.0\t(tab before comment)",
+        "aiosyrconnect/1.0.0 (obs-text \xe4)",
     ],
 )
 def test_valid_user_agent(user_agent: str) -> None:
@@ -415,21 +403,21 @@ def test_valid_user_agent(user_agent: str) -> None:
 @pytest.mark.parametrize(
     "user_agent",
     [
-        " app/1",
-        "app/1 ",
-        "app/",
+        " aiosyrconnect/1.0.0",
+        "aiosyrconnect/1.0.0 ",
+        "aiosyrconnect/",
         "/1.0",
-        "app/1/2",
-        "app@1",
-        "app/1\r\nX-Injected: 1",
-        "app/1(no space)",
-        "app/1 (unclosed",
-        "app/1 (stray ) )",
-        "app/1 (bad \\\n escape)",
-        "app/1 (trailing backslash \\",
-        "app/1 (control \x7f)",
-        "app/1 (beyond latin-1 \u20ac)",
-        "app/1 ()x",
+        "aiosyrconnect/1.0.0/2",
+        "aiosyrconnect@1.0.0",
+        "aiosyrconnect/1.0.0\r\nX-Injected: 1",
+        "aiosyrconnect/1.0.0(no space)",
+        "aiosyrconnect/1.0.0 (unclosed",
+        "aiosyrconnect/1.0.0 (stray ) )",
+        "aiosyrconnect/1.0.0 (bad \\\n escape)",
+        "aiosyrconnect/1.0.0 (trailing backslash \\",
+        "aiosyrconnect/1.0.0 (control \x7f)",
+        "aiosyrconnect/1.0.0 (beyond latin-1 \u20ac)",
+        "aiosyrconnect/1.0.0 ()x",
     ],
 )
 def test_invalid_user_agent_is_rejected(user_agent: str) -> None:

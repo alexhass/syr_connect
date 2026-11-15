@@ -617,7 +617,7 @@ class SyrConnectJsonAPI:
         else:
             # --- Fallback: Fetch directly ---
             # Used when get_device_status() is called without get_devices() first
-            # (diagnostics of cloud devices with local access)
+            # (e.g. for a device the caller also reaches through the cloud)
             _LOGGER.debug(
                 "JSON API: No cached response, fetching /get/all for device_id=%s",
                 device_id,
@@ -770,7 +770,7 @@ class SyrConnectJsonAPI:
         if status == "MIMA":
             msg = f"Value {value} is outside valid range for command {cmd}"
             # Log at debug level since the exception will be caught and logged
-            # properly by the calling entity (select, button, etc.)
+            # by the caller
             _LOGGER.debug("JSON API: %s (device: %s)", msg, device_id)
             raise SyrConnectInvalidResponseError(msg)
         if status in ("NSC", "ERROR: NSC"):
@@ -778,7 +778,7 @@ class SyrConnectJsonAPI:
             # - Other devices: "NSC"
             msg = f"Command {cmd} does not exist for device {device_id}"
             # Log at debug level since the exception will be caught and logged
-            # properly by the calling entity (select, button, etc.)
+            # by the caller
             _LOGGER.debug("JSON API: %s", msg)
             raise SyrConnectInvalidResponseError(msg)
         # Unknown/unexpected status

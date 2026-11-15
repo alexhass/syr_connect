@@ -165,16 +165,6 @@ class SyrConnectXmlAPI:
         # HTTP client; the User-Agent identifies the caller
         self.http_client = HTTPClient(session, user_agent, language=language)
 
-    @property
-    def device_get_status_url(self) -> str:
-        """Return the URL of the device status request."""
-        return self._device_get_status_url
-
-    @property
-    def device_list_url(self) -> str:
-        """Return the URL of the device list request."""
-        return self._device_list_url
-
     def is_session_valid(self) -> bool:
         """Return True if a session token from a previous login is available.
 
@@ -214,7 +204,7 @@ class SyrConnectXmlAPI:
         another one logged in gets the error of that login: during a cloud outage the
         webservice rejects every login (docs/known_issues_xml_api.md, issues 3 and 4), and
         after a password change each attempt would send the wrong password again. The next
-        update tries again.
+        request tries again.
 
         Args:
             attempt: Value of `_logins_finished` when the request found it needs a login
@@ -621,8 +611,8 @@ class SyrConnectXmlAPI:
                 device_id,
             )
         except (aiohttp.ClientError, TimeoutError) as err:
-            # Network errors: wrapped so the entity turns them into a
-            # HomeAssistantError for the user instead of an unhandled exception
+            # Network errors: wrapped, so the caller gets an error of the library
+            # instead of an aiohttp exception
             raise SyrConnectConnectionError(
                 f"Failed to set device status: {err}"
             ) from err
@@ -635,8 +625,8 @@ class SyrConnectXmlAPI:
         """Fetch the measurement history of one series of a device.
 
         The cloud keeps measurements a device does not report in its status, for
-        example the measurements of a SafeFloor sensor between two uploads. The device
-        profile lists the series of a family (``SyrConnectDeviceProfile.statistics``).
+        example the measurements of a SafeFloor sensor between two uploads. The caller
+        passes the series of the device family.
 
         Args:
             device_id: Device collection group ID (DCLG)

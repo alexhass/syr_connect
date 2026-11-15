@@ -1,4 +1,4 @@
-"""Encryption and decryption utilities for SYR Connect API."""
+"""Decryption of the login response of the SYR Connect XML API."""
 
 import base64
 import logging
@@ -31,10 +31,10 @@ def _decrypt_crypt_value(value: str) -> bytes:
 
 
 class SyrEncryption:
-    """Handle encryption and decryption for SYR Connect API."""
+    """Decrypt the encrypted part (``<api>``) of the login response."""
 
     def __init__(self, crypt_key: str, crypt_vector: str) -> None:
-        """Initialize encryption handler.
+        """Initialize the decryption with the key and IV of the service.
 
         Args:
             crypt_key: Encrypted key of the service (SyrConnectService.crypt_key)

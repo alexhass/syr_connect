@@ -1,7 +1,6 @@
-"""Test the SYR Connect encryption module."""
+"""Tests of the decryption of the login response."""
 
 import base64
-from typing import Any
 
 from Cryptodome.Cipher import AES
 import pytest
@@ -18,7 +17,7 @@ _SYR_SERVICE = API_SERVICES[DEFAULT_CF_BUNDLE_IDENTIFIER]
 
 
 @pytest.fixture
-def encryption() -> Any:
+def encryption() -> SyrEncryption:
     """Create an encryption instance with the SYR Connect key."""
     return SyrEncryption(_SYR_SERVICE.crypt_key, _SYR_SERVICE.crypt_vector)
 

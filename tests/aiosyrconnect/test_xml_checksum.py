@@ -1,4 +1,4 @@
-"""Tests for checksum module."""
+"""Tests of the request checksum of the XML API."""
 
 from pathlib import Path
 from typing import Any, cast
@@ -33,14 +33,14 @@ def test_checksum_init() -> None:
     ],
 )
 def test_compute_checksum_value_exact(value: str, expected: int) -> None:
-    """Exact values of the SYR algorithm, recorded from the original bitwise implementation."""
-    checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
+    """Exact values of the SYR algorithm, recorded from an earlier bitwise implementation."""
+    checksum = SyrChecksum(XML_CHECKSUM_KEY1, XML_CHECKSUM_KEY2)
     assert checksum.compute_checksum_value(value) == expected
 
 
 def test_compute_checksum_value_empty() -> None:
     """Test checksum computation with empty string."""
-    checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
+    checksum = SyrChecksum(XML_CHECKSUM_KEY1, XML_CHECKSUM_KEY2)
     result = checksum.compute_checksum_value("")
     assert result == 0
 
@@ -53,7 +53,7 @@ def test_compute_checksum_value_empty() -> None:
 
 def test_compute_element_checksum_with_attributes() -> None:
     """Test that compute_element_checksum correctly processes XML attributes."""
-    checksum = SyrChecksum("L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP", "KHGK5X29LVNZU56T")
+    checksum = SyrChecksum(XML_CHECKSUM_KEY1, XML_CHECKSUM_KEY2)
     root = DefusedET.fromstring(
         '<root><element a="value1" b="value2" n="ignored"/></root>'
     )
@@ -68,7 +68,7 @@ def test_compute_element_checksum_with_attributes() -> None:
     assert result == result_without_n
 
 
-def test_compute_checksum_next_byte_and_offset_negative() -> None:
+def test_key_character_missing_from_base_characters_uses_offset_0() -> None:
     """A key character missing from base_characters uses offset 0."""
     # base characters long enough for wrapping logic and indexing
     base = "".join(chr(65 + i) for i in range(64))

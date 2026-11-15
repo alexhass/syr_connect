@@ -139,8 +139,8 @@ def is_valid_user_agent(value: str) -> bool:
     """Return True if value is a User-Agent as defined by RFC 9110, section 10.1.5.
 
     User-Agent = product *( RWS ( product / comment ) ), with product = token
-    ["/" product-version], for example ``syr_connect/2.2.0 HomeAssistant/2026.11.1``
-    or ``my-app/1.0 (+https://example.com)``. Leading or trailing whitespace and
+    ["/" product-version], for example ``aiosyrconnect/1.0.0`` or
+    ``aiosyrconnect/1.0.0 (Linux)``. Leading or trailing whitespace and
     control characters such as CR and LF are not allowed.
     """
     end = _product_end(value, 0)
@@ -175,7 +175,7 @@ def check_user_agent(user_agent: str | None) -> str:
 
 
 class HTTPClient:
-    """HTTP client with error handling."""
+    """POST requests of the XML API with the headers the webservice expects."""
 
     def __init__(
         self,
@@ -187,13 +187,13 @@ class HTTPClient:
         """Initialize HTTP client.
 
         Args:
-            session: aiohttp client session
+            session: aiohttp ClientSession of the caller
             user_agent: HTTP User-Agent of the requests; names the caller
+            timeout: Request timeout in seconds
+            language: Locale like ``de-DE`` for the Accept-Language header
 
         Raises:
             ValueError: If user_agent is missing, empty or no valid User-Agent (RFC 9110)
-            timeout: Request timeout in seconds
-            language: Locale like ``de-DE`` for the Accept-Language header
         """
         self.session = session
         self.user_agent = check_user_agent(user_agent)
@@ -245,8 +245,8 @@ class HTTPClient:
         headers = self._get_headers(content_type)
         timeout = aiohttp.ClientTimeout(total=self.timeout)
 
-        # One attempt only: a failed poll keeps the previous values and the next poll
-        # tries again, and a repeated set command could be executed twice
+        # One attempt only: the caller decides whether to try again, and a repeated set
+        # command could be executed twice
         try:
             _LOGGER.debug("Making POST request to %s", url)
             # Redirects are not followed: the request carries the password or the
@@ -271,7 +271,7 @@ class HTTPClient:
                 _LOGGER.debug("Response received (length: %d)", len(text))
                 return text
         except (TimeoutError, aiohttp.ClientError) as err:
-            # Debug only: the caller decides what the user sees, e.g. it logs a failed
-            # update once instead of at every poll. repr: a timeout has no message text
+            # Debug only: the caller decides what the user sees. repr: a timeout has no
+            # message text
             _LOGGER.debug("Request to %s failed: %r", url, err)
             raise aiohttp.ClientError(f"Request to {url} failed: {err!r}") from err

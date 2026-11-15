@@ -1,8 +1,8 @@
 """Asynchronous client library for SYR Connect water treatment and leak protection devices.
 
 It talks to the SYR Connect cloud (XML API) and to the local API of the devices (JSON
-API). The library does not depend on Home Assistant: the caller passes an
-aiohttp.ClientSession, the User-Agent and, for the cloud, the locale and the time zone.
+API). The caller passes an aiohttp.ClientSession, the User-Agent and, for the cloud, the
+locale and the time zone.
 
 Modules:
 - xml_api: client of the cloud (SyrConnectXmlAPI)
@@ -14,8 +14,8 @@ Modules:
 - exceptions: errors raised by the clients
 - const: URLs, keys, client identity and the cloud services
 
-It lives inside the integration (see README.md) and must not import Home Assistant or any
-module of the integration (tests/aiosyrconnect/test_package.py checks this).
+It imports only its own modules, the standard library and the requirements listed in
+README.md (tests/aiosyrconnect/test_package.py checks this).
 """
 
 from .const import API_SERVICES, DEFAULT_CF_BUNDLE_IDENTIFIER

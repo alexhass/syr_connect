@@ -8,12 +8,12 @@ import pytest
 
 from custom_components.syr_connect import aiosyrconnect
 
-_SYR_CONNECT_TEST_LIBRARY_DIR = Path(aiosyrconnect.__file__).parent
-_SYR_CONNECT_TEST_LIBRARY_TESTS_DIR = Path(__file__).parent
-_SYR_CONNECT_TEST_LIBRARY_MODULE = "custom_components.syr_connect.aiosyrconnect"
+_LIBRARY_DIR = Path(aiosyrconnect.__file__).parent
+_LIBRARY_TESTS_DIR = Path(__file__).parent
+_LIBRARY_MODULE = "custom_components.syr_connect.aiosyrconnect"
 
 # Distribution that provides each third-party module the library imports
-_SYR_CONNECT_TEST_LIBRARY_DISTRIBUTIONS = {
+_LIBRARY_DISTRIBUTIONS = {
     "aiohttp": "aiohttp",
     "Cryptodome": "pycryptodomex",
     "defusedxml": "defusedxml",
@@ -47,7 +47,7 @@ def _imported_modules(node: ast.Import | ast.ImportFrom) -> list[str]:
 
 @pytest.mark.parametrize(
     "module",
-    sorted(_SYR_CONNECT_TEST_LIBRARY_DIR.glob("*.py")),
+    sorted(_LIBRARY_DIR.glob("*.py")),
     ids=lambda path: path.name,
 )
 def test_library_imports_only_itself(module: Path) -> None:
@@ -69,7 +69,7 @@ def test_library_imports_only_itself(module: Path) -> None:
 
 @pytest.mark.parametrize(
     "test_module",
-    sorted(_SYR_CONNECT_TEST_LIBRARY_TESTS_DIR.glob("*.py")),
+    sorted(_LIBRARY_TESTS_DIR.glob("*.py")),
     ids=lambda path: path.name,
 )
 def test_library_tests_need_only_the_library(test_module: Path) -> None:
@@ -83,8 +83,8 @@ def test_library_tests_need_only_the_library(test_module: Path) -> None:
                 f"{test_module.name}:{node.lineno}"
             )
             if name.startswith("custom_components"):
-                assert name == _SYR_CONNECT_TEST_LIBRARY_MODULE or name.startswith(
-                    f"{_SYR_CONNECT_TEST_LIBRARY_MODULE}."
+                assert name == _LIBRARY_MODULE or name.startswith(
+                    f"{_LIBRARY_MODULE}."
                 ), f"{test_module.name}:{node.lineno}"
 
 
@@ -96,7 +96,7 @@ def test_public_names_exist() -> None:
 
 def test_library_is_typed() -> None:
     """The package ships the py.typed marker (PEP 561) for the type checkers of its users."""
-    assert (_SYR_CONNECT_TEST_LIBRARY_DIR / "py.typed").is_file()
+    assert (_LIBRARY_DIR / "py.typed").is_file()
 
 
 def test_third_party_imports_are_requirements() -> None:
@@ -104,15 +104,15 @@ def test_third_party_imports_are_requirements() -> None:
 
     So the requirements of the future pyproject.toml are known.
     """
-    readme = (_SYR_CONNECT_TEST_LIBRARY_DIR / "README.md").read_text(encoding="utf-8")
+    readme = (_LIBRARY_DIR / "README.md").read_text(encoding="utf-8")
     requirements = readme.split("## Requirements", 1)[1].split("\n## ", 1)[0]
     imported = {
         name.split(".")[0]
-        for module in _SYR_CONNECT_TEST_LIBRARY_DIR.glob("*.py")
+        for module in _LIBRARY_DIR.glob("*.py")
         for node in _imports(module)
         for name in _imported_modules(node)
         if name and name.split(".")[0] not in sys.stdlib_module_names
     }
-    assert imported == set(_SYR_CONNECT_TEST_LIBRARY_DISTRIBUTIONS)
-    for distribution in _SYR_CONNECT_TEST_LIBRARY_DISTRIBUTIONS.values():
+    assert imported == set(_LIBRARY_DISTRIBUTIONS)
+    for distribution in _LIBRARY_DISTRIBUTIONS.values():
         assert f"`{distribution}`" in requirements, distribution
