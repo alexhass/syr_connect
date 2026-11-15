@@ -12,6 +12,7 @@ from pytest_homeassistant.common import MockConfigEntry
 from custom_components.syr_connect import sensor
 from custom_components.syr_connect.const import DOMAIN
 from custom_components.syr_connect.helpers.registry import (
+    _entity_key,
     build_entity_id,
     build_statistic_id,
     build_unique_id,
@@ -798,3 +799,23 @@ def test_registry_cleanup_conditional_only_applies_to_sensor_domain() -> None:
         )
 
     registry.async_remove.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    ("unique_id", "domain", "expected"),
+    [
+        # The key of an entity of the device, lowercased
+        ("01JENTRY_206AAA12345_getFLO", "sensor", "getflo"),
+        # The platform suffix is stripped
+        ("01JENTRY_206AAA12345_getRTM_select", "select", "getrtm"),
+        ("01jentry_206aaa12345_getbuz_switch", "switch", "getbuz"),
+        # A suffix of another platform is part of the key
+        ("01JENTRY_206AAA12345_getRTM_select", "sensor", "getrtm_select"),
+        # Another device or another config entry
+        ("01JENTRY_206AAA99999_getFLO", "sensor", None),
+        ("01JOTHER_206AAA12345_getFLO", "sensor", None),
+    ],
+)
+def test_entity_key(unique_id: str, domain: str, expected: str | None) -> None:
+    """The key comes from the unique_id of an entity of the device, else None."""
+    assert _entity_key(unique_id, "01jentry_206aaa12345_", domain) == expected
