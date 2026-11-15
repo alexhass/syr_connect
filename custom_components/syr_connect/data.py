@@ -2,7 +2,7 @@
 
 from typing import Any, NotRequired, TypedDict
 
-from .aiosyrconnect import SyrConnectApiDevice
+from .aiosyrconnect import SyrConnectApiDevice, SyrConnectStatus
 from .models import SyrConnectModel
 
 
@@ -13,6 +13,8 @@ class SyrConnectDevice(SyrConnectApiDevice):
     the device has been fetched.
     """
 
+    # Status of the device, once it has been fetched
+    status: NotRequired[SyrConnectStatus]
     # Detected from `status` whenever the coordinator changes it
     model: NotRequired[SyrConnectModel]
     available: NotRequired[bool]

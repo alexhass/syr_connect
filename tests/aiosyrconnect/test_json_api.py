@@ -1,4 +1,4 @@
-"""Tests for the local JSON API client using fixtures."""
+"""Tests of the client of the local JSON API."""
 
 from collections.abc import Callable
 
@@ -21,6 +21,9 @@ from custom_components.syr_connect.aiosyrconnect import (
     SyrConnectInvalidResponseError,
     SyrConnectJsonAPI,
 )
+
+# Logger of the library package
+_LIBRARY_LOGGER = SyrConnectJsonAPI.__module__.rpartition(".")[0]
 
 FIXTURES_DIR = Path(__file__).parent.parent / "fixtures" / "json"
 
@@ -402,7 +405,7 @@ async def test_login_404_treated_as_not_required(user_agent: str) -> None:
         user_agent=user_agent,
     )
 
-    # Simulate _execute_http_get raising a connection error for 404 endpoint
+    # Simulate _execute_http_get raising the HTTP error of a missing endpoint
 
     exc = SyrConnectHTTPError("Endpoint not found (HTTP 404)", status=404)
     with patch.object(client, "_execute_http_get", side_effect=exc):
@@ -1116,7 +1119,7 @@ async def test_get_devices_fetches_and_caches(user_agent: str) -> None:
         assert status == original_data
         # Should still be 1 because cache was used
         assert fetch_call_count == 1
-        # Device dict must include project_id for compatibility with platforms
+        # Device dict must include project_id, as in the device list of the XML client
         assert devices[0]["project_id"] == "local"
 
 
@@ -1205,7 +1208,7 @@ async def test_get_devices_calls_login_when_session_invalid(
 async def test_execute_http_get_404_error(
     user_agent: str, set_response_body: Callable[..., None]
 ) -> None:
-    """Test _execute_http_get raises SyrConnectConnectionError on 404."""
+    """Test _execute_http_get raises SyrConnectHTTPError (a connection error) on 404."""
 
     sess = MagicMock()
     mock_response = MagicMock()
@@ -1264,7 +1267,7 @@ async def test_execute_http_get_does_not_follow_redirects(
 async def test_execute_http_get_sends_the_user_agent(
     user_agent: str, set_response_body: Callable[..., None]
 ) -> None:
-    """The User-Agent names the integration and Home Assistant, as for the cloud API."""
+    """The client sends the User-Agent of the caller, as for the cloud API."""
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
@@ -1831,7 +1834,7 @@ async def test_failed_request_logs_at_debug_level_only(
     error: Exception,
     expected: type[Exception],
 ) -> None:
-    """A failed request is not logged above debug level; the coordinator logs it once."""
+    """A failed request is not logged above debug level; the caller decides what to log."""
     sess = MagicMock()
     sess.get = MagicMock(side_effect=error)
     client = SyrConnectJsonAPI(
@@ -1841,7 +1844,7 @@ async def test_failed_request_logs_at_debug_level_only(
     )
 
     with (
-        caplog.at_level(logging.DEBUG, logger="custom_components.syr_connect"),
+        caplog.at_level(logging.DEBUG, logger=_LIBRARY_LOGGER),
         pytest.raises(expected),
     ):
         await client.request_json_data("get/all")

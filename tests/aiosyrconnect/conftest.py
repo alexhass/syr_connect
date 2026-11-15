@@ -9,7 +9,7 @@ import pytest
 @pytest.fixture(name="user_agent")
 def user_agent_fixture() -> str:
     """Return the User-Agent the tests pass to the API clients."""
-    return "aiosyrconnect-tests/1.0"
+    return "aiosyrconnect/1.0.0"
 
 
 @pytest.fixture

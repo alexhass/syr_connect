@@ -1,4 +1,4 @@
-"""Test the SYR Connect API client."""
+"""Tests of the XML API client."""
 
 # The unit tests in this module check private helpers and attributes directly.
 # ruff: noqa: SLF001
@@ -25,9 +25,11 @@ from custom_components.syr_connect.aiosyrconnect import (
     SyrConnectXmlAPI,
 )
 
-# Measurement history series like those of the SafeFloor device file: temperature and
-# humidity
-_SYR_CONNECT_TEST_STATISTICS = (
+# Logger of the library package
+_LIBRARY_LOGGER = SyrConnectXmlAPI.__module__.rpartition(".")[0]
+
+# Measurement history series of a SafeFloor: temperature and humidity
+_STATISTICS = (
     SyrConnectStatistic(
         key="getCEL",
         method="GetSafeFloorStatistics",
@@ -48,13 +50,13 @@ _SYR_SERVICE = API_SERVICES[DEFAULT_CF_BUNDLE_IDENTIFIER]
 
 
 @pytest.fixture
-def mock_session() -> Any:
+def mock_session() -> MagicMock:
     """Create a mock aiohttp session."""
     return MagicMock(spec=aiohttp.ClientSession)
 
 
 @pytest.fixture
-def api_client(mock_session: MagicMock, user_agent: str) -> Any:
+def api_client(mock_session: MagicMock, user_agent: str) -> SyrConnectXmlAPI:
     """Create an API client instance."""
     return SyrConnectXmlAPI(
         mock_session,
@@ -80,10 +82,10 @@ def test_request_urls_and_app_identity_come_from_the_service(
     )
 
     assert (
-        api.device_list_url
+        api._device_list_url
         == "https://api.conelclearpro.de/WebServices/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"
     )
-    assert api.device_get_status_url.startswith(
+    assert api._device_get_status_url.startswith(
         "https://api.conelclearpro.de/WebServices/"
     )
     assert api.payload_builder.app_name == "CLEAR PRO"
@@ -122,7 +124,7 @@ async def test_login_does_not_log_payload(
         user_agent=user_agent,
         language="en-DE",
     )
-    caplog.set_level("DEBUG", logger="custom_components.syr_connect.api_xml")
+    caplog.set_level("DEBUG", logger=SyrConnectXmlAPI.__module__)
 
     with (
         patch.object(
@@ -156,11 +158,11 @@ def test_language_is_passed_to_payload_builder_and_http_client(
     assert api.http_client._build_accept_language() == "en-DE,en;q=0.9"
 
 
-def test_user_agent_names_integration_and_home_assistant(
+def test_user_agent_of_the_caller_is_sent(
     api_client: SyrConnectXmlAPI,
     user_agent: str,
 ) -> None:
-    """The User-Agent names the integration and Home Assistant with their versions."""
+    """The client sends the User-Agent of the caller."""
     assert api_client.http_client.user_agent == user_agent
 
 
@@ -225,7 +227,7 @@ async def test_parallel_rejections_relogin_only_once(
 async def test_parallel_requests_share_a_failed_login(
     api_client: SyrConnectXmlAPI, rejected: bool
 ) -> None:
-    """A failed login is not repeated by the requests that waited for it; the next update tries again."""
+    """A failed login is not repeated by the requests that waited for it; the next request tries again."""
     api_client.session_data = "old" if rejected else ""
     error = SyrConnectLoginFailedError("Login rejected.")
 
@@ -243,7 +245,7 @@ async def test_parallel_requests_share_a_failed_login(
         assert login.await_count == 1
         assert results == [error] * 5
 
-        # The next update logs in again
+        # The next request logs in again
         with pytest.raises(SyrConnectLoginFailedError):
             await _request()
         assert login.await_count == 2
@@ -257,7 +259,7 @@ async def test_parallel_requests_share_a_failed_login(
         ("set_device_status", ("dclg1", [("setAB", "2")]), None),
         (
             "get_statistics",
-            ("dclg1", _SYR_CONNECT_TEST_STATISTICS[0]),
+            ("dclg1", _STATISTICS[0]),
             "parse_statistics_response",
         ),
     ],
@@ -632,9 +634,7 @@ async def test_get_statistics_posts_series_to_its_method(
             return_value=mock_stats,
         ),
     ):
-        result = await api_client.get_statistics(
-            "device1", _SYR_CONNECT_TEST_STATISTICS[1]
-        )
+        result = await api_client.get_statistics("device1", _STATISTICS[1])
 
     assert result == mock_stats
     url = mock_post.call_args.args[0]
@@ -657,7 +657,7 @@ async def test_get_statistics_exception_handling(api_client: SyrConnectXmlAPI) -
         ),
         pytest.raises(RuntimeError, match="Stats error"),
     ):
-        await api_client.get_statistics("device1", _SYR_CONNECT_TEST_STATISTICS[0])
+        await api_client.get_statistics("device1", _STATISTICS[0])
 
 
 async def test_login_with_parser_value_error(api_client: SyrConnectXmlAPI) -> None:
@@ -703,7 +703,7 @@ async def test_login_with_decryption_parser_error(api_client: SyrConnectXmlAPI) 
     [
         ("get_device_status", ("dclg1",)),
         ("set_device_status", ("dclg1", [("setAB", "2")])),
-        ("get_statistics", ("dclg1", _SYR_CONNECT_TEST_STATISTICS[0])),
+        ("get_statistics", ("dclg1", _STATISTICS[0])),
         ("get_raw_device_list", ("project1",)),
         ("get_raw_device_status", ("dclg1",)),
     ],
@@ -711,18 +711,16 @@ async def test_login_with_decryption_parser_error(api_client: SyrConnectXmlAPI) 
 async def test_network_errors_are_wrapped_in_connection_error(
     api_client: SyrConnectXmlAPI, method: Any, args: Any
 ) -> None:
-    """Network errors after all retries become SyrConnectConnectionError, which the entities handle."""
+    """Network errors become SyrConnectConnectionError, which the caller handles."""
     api_client.session_data = "valid_session"
 
     with (
         patch.object(
             api_client.http_client,
             "post",
-            side_effect=aiohttp.ClientError("Request failed after 3 attempts"),
+            side_effect=aiohttp.ClientError("Request failed"),
         ),
-        pytest.raises(
-            SyrConnectConnectionError, match="Request failed after 3 attempts"
-        ) as excinfo,
+        pytest.raises(SyrConnectConnectionError, match="Request failed") as excinfo,
     ):
         await getattr(api_client, method)(*args)
 
@@ -803,17 +801,15 @@ async def test_get_devices_with_device_already_has_id(
         assert devices[0]["id"] == "EXISTING_ID"
 
 
-_SYR_CONNECT_TEST_MAINTENANCE_PAGE = "<html><body>Wartungsarbeiten</body>"
-_SYR_CONNECT_TEST_REQUESTS = [
+_MAINTENANCE_PAGE = "<html><body>Wartungsarbeiten</body>"
+_REQUESTS = [
     pytest.param("get_devices", ("project1",), id="device-list"),
     pytest.param("get_device_status", ("dclg1",), id="status"),
-    pytest.param(
-        "get_statistics", ("dclg1", _SYR_CONNECT_TEST_STATISTICS[0]), id="statistics"
-    ),
+    pytest.param("get_statistics", ("dclg1", _STATISTICS[0]), id="statistics"),
 ]
 
 
-@pytest.mark.parametrize(("method", "args"), _SYR_CONNECT_TEST_REQUESTS)
+@pytest.mark.parametrize(("method", "args"), _REQUESTS)
 async def test_answer_without_xml_raises_invalid_response(
     api_client: SyrConnectXmlAPI, method: str, args: tuple[Any, ...]
 ) -> None:
@@ -824,24 +820,24 @@ async def test_answer_without_xml_raises_invalid_response(
         patch.object(
             api_client.http_client,
             "post",
-            return_value=_SYR_CONNECT_TEST_MAINTENANCE_PAGE,
+            return_value=_MAINTENANCE_PAGE,
         ),
         pytest.raises(SyrConnectInvalidResponseError, match="response: "),
     ):
         await getattr(api_client, method)(*args)
 
 
-@pytest.mark.parametrize(("method", "args"), _SYR_CONNECT_TEST_REQUESTS)
+@pytest.mark.parametrize(("method", "args"), _REQUESTS)
 async def test_failed_request_logs_at_debug_level_only(
     api_client: SyrConnectXmlAPI,
     caplog: pytest.LogCaptureFixture,
     method: str,
     args: tuple[Any, ...],
 ) -> None:
-    """A timeout or a maintenance page is not logged above debug level; the coordinator logs it once."""
+    """A timeout or a maintenance page is not logged above debug level; the caller decides what to log."""
     api_client.session_data = "token"
 
-    with caplog.at_level(logging.DEBUG, logger="custom_components.syr_connect"):
+    with caplog.at_level(logging.DEBUG, logger=_LIBRARY_LOGGER):
         with (
             patch.object(
                 api_client.http_client.session, "post", side_effect=TimeoutError()
@@ -853,7 +849,7 @@ async def test_failed_request_logs_at_debug_level_only(
             patch.object(
                 api_client.http_client,
                 "post",
-                return_value=_SYR_CONNECT_TEST_MAINTENANCE_PAGE,
+                return_value=_MAINTENANCE_PAGE,
             ),
             pytest.raises(SyrConnectInvalidResponseError),
         ):
@@ -867,7 +863,7 @@ async def test_failed_login_logs_at_debug_level_only(
 ) -> None:
     """A failed login is not logged above debug level; the caller decides what the user sees."""
     with (
-        caplog.at_level(logging.DEBUG, logger="custom_components.syr_connect"),
+        caplog.at_level(logging.DEBUG, logger=_LIBRARY_LOGGER),
         patch.object(
             api_client.http_client.session, "post", side_effect=TimeoutError()
         ),
@@ -895,7 +891,7 @@ async def test_failed_login_logs_at_debug_level_only(
         ),
         pytest.param(
             "get_statistics",
-            ("dclg1", _SYR_CONNECT_TEST_STATISTICS[0]),
+            ("dclg1", _STATISTICS[0]),
             "SyrSafeFloor_GetSafeFloorStatistics_Temperature.xml",
             id="statistics",
         ),
@@ -939,7 +935,7 @@ async def test_get_raw_device_list_returns_the_answer_unparsed(
         assert await api_client.get_raw_device_list("project1") == answer
 
     url, data = post.call_args.args
-    assert url == api_client.device_list_url
+    assert url == api_client._device_list_url
     assert data["xml"] == api_client.payload_builder.build_device_get_list_payload(
         "valid_session", "project1"
     )
@@ -955,7 +951,7 @@ async def test_get_raw_device_status_returns_the_answer_unparsed(
         assert await api_client.get_raw_device_status("dclg1") == "<sc />"
 
     url, data = post.call_args.args
-    assert url == api_client.device_get_status_url
+    assert url == api_client._device_get_status_url
     assert data["xml"] == api_client.payload_builder.build_device_get_status_payload(
         "valid_session", "dclg1"
     )

@@ -29,8 +29,6 @@ class SyrConnectApiDevice(TypedDict):
     # Current UTC offset of the project's time zone in seconds, from `tzo` of the device
     # list ("02:00:00" in summer time). Only reported by the XML API
     utc_offset: NotRequired[int]
-    # Status of the device, once it has been fetched
-    status: NotRequired[SyrConnectStatus]
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -45,8 +43,8 @@ class SyrConnectService:
     # Bundle identifier of the official app. The server does not check it, it is
     # sent to emulate the app. Also the key of the service in the registry.
     cf_bundle_identifier: str
-    # User-facing URL of the service, may differ from api_base_url
-    configuration_url: str
+    # Website of the service for its users, may differ from api_base_url
+    website_url: str
     # AES-256 key and IV of the login response, each AES-CBC encrypted with
     # XML_SECURE_KEY and XML_SECURE_VECTOR (PKCS7) around the base64 text of
     # the raw bytes, and base64 encoded. They differ per service.
@@ -64,7 +62,7 @@ class SyrConnectStatistic:
     of the request, see "SafeFloor measurement history" in docs/syrconnect-protocol.md.
     """
 
-    # Sensor key whose measurement history this series holds
+    # Status key whose measurement history this series holds, e.g. "getCEL"
     key: str
     # Web service method below the device service path, e.g. "GetSafeFloorStatistics"
     method: str

@@ -11,9 +11,6 @@ It talks to two APIs:
 - **JSON API** of the devices in the local network (`SyrConnectJsonAPI`, port 5333):
   status from `/get/all` and set commands, without the cloud.
 
-The library does not depend on Home Assistant. It lives inside the `syr_connect`
-integration.
-
 ## Requirements
 
 - Python 3.14
@@ -43,7 +40,7 @@ async def main() -> None:
             "user@example.com",
             "secret",
             service=API_SERVICES[DEFAULT_CF_BUNDLE_IDENTIFIER],
-            user_agent="my-app/1.0",
+            user_agent="aiosyrconnect/1.0.0",
             language="de-DE",
         )
         try:
@@ -58,7 +55,10 @@ async def main() -> None:
             ...  # cloud not reachable or answer not usable: retry later
 
         local = SyrConnectJsonAPI(
-            session, host="192.168.1.20", base_path="/neosoft", user_agent="my-app/1.0"
+            session,
+            host="192.168.1.20",
+            base_path="/neosoft",
+            user_agent="aiosyrconnect/1.0.0",
         )
         devices = await local.get_devices("local")
         print(await local.get_device_status(devices[0]["dclg"]))
@@ -97,8 +97,8 @@ user sees. Logger names start with the package name.
   capture of the SYR app. Do not "correct" it.
 - Known quirks of the cloud and the devices are documented in
   `docs/known_issues_xml_api.md`, `docs/known_issues_json_api.md` and
-  `docs/syrconnect-protocol.md` of the integration.
+  `docs/syrconnect-protocol.md` of the repository.
 
 ## License
 
-Apache License 2.0, like the `syr_connect` integration.
+Apache License 2.0.
