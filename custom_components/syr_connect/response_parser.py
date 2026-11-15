@@ -25,6 +25,19 @@ _SYR_CONNECT_RESPONSE_PARSER_WRONG_PASSWORD_TEXT = (
     "Benutzername und das Passwort stimmen nicht überein"
 )
 
+# Attributes of a <c> element that are kept next to its value, as "<name>_<attribute>"
+_SYR_CONNECT_RESPONSE_PARSER_C_EXTRAS = (
+    "dt",
+    "m",
+    "acd",
+    "ih",
+)
+
+
+def _as_list(value: Any) -> list[Any]:
+    """Return a parsed XML element list; a single element is parsed as a dict."""
+    return value if isinstance(value, list) else [value]
+
 
 def _parse_utc_offset(value: Any) -> int | None:
     """Return a UTC offset (tzo) in seconds, or None if it is missing or invalid.
@@ -311,82 +324,116 @@ class ResponseParser:
             project = project[0]
         utc_offset = _parse_utc_offset(project.get("@tzo"))
 
-        devices: list[SyrConnectDevice] = []
-        device_aliases: dict[str, str] = {}
-        device_kind_versions: dict[str, int] = {}
-
-        # Extract device aliases and device kind versions. The cloud reports dkv on the
-        # device collection (dcl), not on the device (d) itself.
-        if self.validate_structure(parsed, ["sc", "col"]):
-            col = parsed["sc"]["col"]
-            if "dcl" in col:
-                dcl_list = col["dcl"] if isinstance(col["dcl"], list) else [col["dcl"]]
-                for dcl in dcl_list:
-                    if "@dclg" in dcl and "@ali" in dcl:
-                        # URL-decode the alias (replace + with space and decode %XX sequences)
-                        alias = unquote_plus(dcl["@ali"])
-                        # A device without a name keeps its serial number as name
-                        if alias.strip():
-                            device_aliases[dcl["@dclg"]] = alias
-                    if "@dclg" in dcl:
-                        device_kind_versions[dcl["@dclg"]] = int(dcl.get("@dkv") or 0)
+        device_aliases, device_kind_versions = self._parse_device_collections(parsed)
 
         # Extract devices
         if not self.validate_structure(parsed, ["sc", "dvs"]):
             _LOGGER.debug("No 'dvs' element found in device list response")
-            return devices
+            return []
 
         dvs = parsed["sc"]["dvs"]
 
         # Check if dvs contains 'd' element(s)
         if "d" in dvs:
-            device_list = dvs["d"]
-            if not isinstance(device_list, list):
-                device_list = [device_list]
+            device_list = _as_list(dvs["d"])
         elif isinstance(dvs, dict) and "@dclg" in dvs:
             # dvs itself is a device
             device_list = [dvs]
         else:
             _LOGGER.debug("No devices found in 'dvs' element: %s", dvs)
-            return devices
+            return []
 
         _LOGGER.debug("Found %d device(s) in response", len(device_list))
 
+        devices: list[SyrConnectDevice] = []
         for device in device_list:
             if "@dclg" in device:
-                dclg_id = device["@dclg"]
-                serial_number = device.get("@sn", "Unknown")
-                device_name = device_aliases.get(dclg_id, serial_number)
-                dk = int(device.get("@dk") or 0)
-                dkv = device_kind_versions.get(dclg_id, 0)
-                sbt = int(device.get("@sbt") or 0)
-
-                _LOGGER.debug(
-                    "Adding device: %s (DCLG: %s, SN: %s, DK=%s, DKV=%s, SBT=%s)",
-                    device_name,
-                    dclg_id,
-                    serial_number,
-                    dk,
-                    dkv,
-                    sbt,
+                devices.append(
+                    self._build_device(
+                        device, device_aliases, device_kind_versions, utc_offset
+                    )
                 )
-
-                entry: SyrConnectDevice = {
-                    "id": serial_number,  # Use serial number as device ID
-                    "dclg": dclg_id,
-                    "serial_number": serial_number,
-                    "name": device_name,
-                    "dk": dk,
-                    "dkv": dkv,
-                    "sbt": sbt,
-                }
-                if utc_offset is not None:
-                    entry["utc_offset"] = utc_offset
-                devices.append(entry)
             else:
                 _LOGGER.debug("Skipping device without @dclg: %s", device)
 
         return devices
+
+    def _parse_device_collections(
+        self, parsed: dict[str, Any]
+    ) -> tuple[dict[str, str], dict[str, int]]:
+        """Return the aliases and the device kind versions of the device collections.
+
+        The cloud reports both on the device collection (dcl), not on the device (d)
+        itself.
+
+        Args:
+            parsed: Parsed device list response
+
+        Returns:
+            (alias by dclg, dkv by dclg); a device without a name has no alias
+        """
+        device_aliases: dict[str, str] = {}
+        device_kind_versions: dict[str, int] = {}
+        if not self.validate_structure(parsed, ["sc", "col"]):
+            return device_aliases, device_kind_versions
+        col = parsed["sc"]["col"]
+        if "dcl" not in col:
+            return device_aliases, device_kind_versions
+        for dcl in _as_list(col["dcl"]):
+            if "@dclg" in dcl and "@ali" in dcl:
+                # URL-decode the alias (replace + with space and decode %XX sequences)
+                alias = unquote_plus(dcl["@ali"])
+                # A device without a name keeps its serial number as name
+                if alias.strip():
+                    device_aliases[dcl["@dclg"]] = alias
+            if "@dclg" in dcl:
+                device_kind_versions[dcl["@dclg"]] = int(dcl.get("@dkv") or 0)
+        return device_aliases, device_kind_versions
+
+    @staticmethod
+    def _build_device(
+        device: dict[str, Any],
+        device_aliases: dict[str, str],
+        device_kind_versions: dict[str, int],
+        utc_offset: int | None,
+    ) -> SyrConnectDevice:
+        """Return a device of the device list from its <d> element.
+
+        Args:
+            device: The <d> element, with @dclg
+            device_aliases: Alias by dclg, see _parse_device_collections
+            device_kind_versions: dkv by dclg, see _parse_device_collections
+            utc_offset: UTC offset of the project in seconds, if known
+        """
+        dclg_id = device["@dclg"]
+        serial_number = device.get("@sn", "Unknown")
+        device_name = device_aliases.get(dclg_id, serial_number)
+        dk = int(device.get("@dk") or 0)
+        dkv = device_kind_versions.get(dclg_id, 0)
+        sbt = int(device.get("@sbt") or 0)
+
+        _LOGGER.debug(
+            "Adding device: %s (DCLG: %s, SN: %s, DK=%s, DKV=%s, SBT=%s)",
+            device_name,
+            dclg_id,
+            serial_number,
+            dk,
+            dkv,
+            sbt,
+        )
+
+        entry: SyrConnectDevice = {
+            "id": serial_number,  # Use serial number as device ID
+            "dclg": dclg_id,
+            "serial_number": serial_number,
+            "name": device_name,
+            "dk": dk,
+            "dkv": dkv,
+            "sbt": sbt,
+        }
+        if utc_offset is not None:
+            entry["utc_offset"] = utc_offset
+        return entry
 
     def parse_device_status_response(
         self, xml_response: str
@@ -606,6 +653,29 @@ class ResponseParser:
         return found
 
     @staticmethod
+    def _add_c_values(result: dict[str, Any], value: Any) -> None:
+        """Add the values of the <c n="..." v="..."> elements to a flattened status.
+
+        By design: '@v' is required by the API spec on every <c> element. Elements
+        that lack '@v' are malformed fragments and are silently skipped. If a
+        shadow/pending value '@s' is present, the device has received a new setting
+        but not yet applied it: '@s' is shown until it disappears (at which point '@v'
+        holds the new value).
+
+        Args:
+            result: Flattened status to add the values to
+            value: The parsed <c> element, or a list of them
+        """
+        for item in _as_list(value):
+            if not (isinstance(item, dict) and "@n" in item and "@v" in item):
+                continue
+            name = item["@n"]
+            result[name] = item["@s"] if "@s" in item else item["@v"]
+            for extra in _SYR_CONNECT_RESPONSE_PARSER_C_EXTRAS:
+                if f"@{extra}" in item:
+                    result[f"{name}_{extra}"] = item[f"@{extra}"]
+
+    @staticmethod
     def _flatten_attributes(data: dict | list) -> dict[str, Any]:
         """Flatten XML attributes to simple dict.
 
@@ -633,31 +703,7 @@ class ResponseParser:
 
                 # Handle 'c' tags which contain actual data
                 elif key == "c":
-                    if isinstance(value, list):
-                        for item in value:
-                            # By design: '@v' is required by the API spec on every <c>
-                            # element. Elements that lack '@v' are malformed fragments
-                            # and are silently skipped. When '@s' (shadow/pending value)
-                            # is also present, it takes priority over '@v' in the result.
-                            if isinstance(item, dict) and "@n" in item and "@v" in item:
-                                name = item["@n"]
-                                # If a shadow/pending value 's' is present, the device has
-                                # received a new setting but not yet applied it. Display 's'
-                                # until it disappears (at which point 'v' holds the new value).
-                                result[name] = (
-                                    item["@s"] if "@s" in item else item["@v"]
-                                )
-                                for extra in ("dt", "m", "acd", "ih"):
-                                    if f"@{extra}" in item:
-                                        result[f"{name}_{extra}"] = item[f"@{extra}"]
-                    # Single (non-list) <c> element: same design contract — '@v' required,
-                    # malformed elements silently skipped, '@s' takes priority when present.
-                    elif isinstance(value, dict) and "@n" in value and "@v" in value:
-                        name = value["@n"]
-                        result[name] = value["@s"] if "@s" in value else value["@v"]
-                        for extra in ("dt", "m", "acd", "ih"):
-                            if f"@{extra}" in value:
-                                result[f"{name}_{extra}"] = value[f"@{extra}"]
+                    ResponseParser._add_c_values(result, value)
 
                 # Handle nested structures
                 elif isinstance(value, dict | list):
