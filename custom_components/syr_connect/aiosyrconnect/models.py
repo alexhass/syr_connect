@@ -43,8 +43,8 @@ class SyrConnectService:
     # Bundle identifier of the official app. The server does not check it, it is
     # sent to emulate the app. Also the key of the service in the registry.
     cf_bundle_identifier: str
-    # Website of the service for its users, may differ from api_base_url
-    website_url: str
+    # User-facing URL of the service, may differ from api_base_url
+    configuration_url: str
     # AES-256 key and IV of the login response, each AES-CBC encrypted with
     # XML_SECURE_KEY and XML_SECURE_VECTOR (PKCS7) around the base64 text of
     # the raw bytes, and base64 encoded. They differ per service.
