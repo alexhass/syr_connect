@@ -16,7 +16,6 @@ Or activate the virtualenv first (`.venv\Scripts\activate.bat` in cmd, `.venv\Sc
 | --- | --- | --- |
 | `--username EMAIL` | *(required)* | SYR Connect account e-mail |
 | `--password PASSWORD` | *(required)* | Account password |
-| `--show-password` | - | Show password in log output (default: masked as `***`) |
 | `--base-url URL` | `https://syrconnect.de` | API base URL |
 | `--api-app-name STRING` | `SYR Connect` | API app name for login payload. Login fails if value is wrong. |
 | `--api-package-name STRING` | `de.consoft.syr.connect` | Package name appended to the app-version string. |
