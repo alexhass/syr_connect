@@ -496,6 +496,80 @@ class SyrConnectXmlAPI:
         else:
             return status_data
 
+    async def get_raw_device_list(self, project_id: str) -> str:
+        """Return the device list of a project as the cloud sends it, for diagnostics.
+
+        The answer is neither parsed nor checked, and a rejected session token is not
+        renewed, so it shows exactly what the cloud sends. `parse_device_list` reads the
+        devices from it.
+
+        Args:
+            project_id: Project ID (obtained from login response)
+
+        Returns:
+            The raw XML answer
+
+        Raises:
+            SyrConnectAuthError: If the login fails
+            SyrConnectConnectionError: If network/HTTP errors occur
+        """
+        await self._ensure_session()
+        payload = self.payload_builder.build_device_get_list_payload(
+            self.session_data, project_id
+        )
+        return await self._post_raw(self._device_list_url, payload, "Raw device list")
+
+    async def get_raw_device_status(self, device_id: str) -> str:
+        """Return the status of a device as the cloud sends it, for diagnostics.
+
+        The answer is neither parsed nor checked, and a rejected session token is not
+        renewed, so it shows exactly what the cloud sends.
+
+        Args:
+            device_id: Device collection group ID (DCLG) from get_devices()
+
+        Returns:
+            The raw XML answer
+
+        Raises:
+            SyrConnectAuthError: If the login fails
+            SyrConnectConnectionError: If network/HTTP errors occur
+        """
+        await self._ensure_session()
+        payload = self.payload_builder.build_device_get_status_payload(
+            self.session_data, device_id
+        )
+        return await self._post_raw(
+            self._device_get_status_url, payload, "Raw status request"
+        )
+
+    def parse_device_list(self, xml_response: str) -> list[SyrConnectApiDevice]:
+        """Return the devices of a raw device list answer (see get_raw_device_list).
+
+        Args:
+            xml_response: Raw XML answer of the device list
+
+        Returns:
+            The devices, without project_id
+
+        Raises:
+            SyrConnectSessionExpiredError: If the answer rejects the session token
+            ValueError: If the answer is no XML or contains no project
+        """
+        return self.response_parser.parse_device_list_response(xml_response)
+
+    async def _post_raw(self, url: str, payload: str, name: str) -> str:
+        """Post an XML payload and return the raw answer.
+
+        Raises:
+            SyrConnectConnectionError: If network/HTTP errors occur
+        """
+        _LOGGER.debug("%s payload: %s", name, mask_ug_value(payload))
+        try:
+            return await self.http_client.post(url, {"xml": payload})
+        except (aiohttp.ClientError, TimeoutError) as err:
+            raise SyrConnectConnectionError(f"{name} failed: {err}") from err
+
     async def set_device_status(
         self,
         device_id: str,
