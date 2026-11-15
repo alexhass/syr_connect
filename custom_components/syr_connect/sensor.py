@@ -37,6 +37,7 @@ from homeassistant.util import dt as dt_util
 
 from .binary_sensor import _SYR_CONNECT_BINARY_SENSOR_SUPPORTED_KEYS
 from .const import (
+    _SYR_CONNECT_LEAK_PROTECTION_PROFILES,
     _SYR_CONNECT_SENSOR_ALM_VALUE_MAP,
     _SYR_CONNECT_SENSOR_CAS_VALUE_MAP,
     _SYR_CONNECT_SENSOR_CND_PER_DH,
@@ -606,7 +607,8 @@ def _profile_descriptions(
         template: Description of the setting; its key is the key without the number
     """
     return tuple(
-        replace(template, key=f"{template.key}{number}") for number in range(1, 9)
+        replace(template, key=f"{template.key}{number}")
+        for number in _SYR_CONNECT_LEAK_PROTECTION_PROFILES
     )
 
 
@@ -2220,7 +2222,7 @@ def _build_pa_group_sensors(
     entities: list[SensorEntity] = []
     handled_keys: set[str] = set()
 
-    for idx in range(1, 9):
+    for idx in _SYR_CONNECT_LEAK_PROTECTION_PROFILES:
         pa_key = f"getPA{idx}"
         pa_val = status.get(pa_key)
         group_keys = _pa_group_keys(idx)
@@ -2326,7 +2328,7 @@ def sensor_keys_for_status(status: dict[str, Any], model: SyrConnectModel) -> li
     )
     keys = ["dst"] if status.get("dst") is not None else []
     handled_keys = get_cartridge_keys(model)
-    for idx in range(1, 9):
+    for idx in _SYR_CONNECT_LEAK_PROTECTION_PROFILES:
         group_keys = _pa_group_keys(idx)
         handled_keys.update(group_keys)
         if is_value_true(status.get(f"getPA{idx}")):
