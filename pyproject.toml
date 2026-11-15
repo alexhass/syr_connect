@@ -243,7 +243,8 @@ split-on-trailing-comma = false
 "custom_components/syr_connect/*/*" = ["TID252"]
 "tests/*/*" = ["TID252"]
 
-# Temporary in core
+# Temporary in core (core: "homeassistant/**" and "tests/**")
+"custom_components/**" = ["PTH"]
 "tests/**" = ["PTH"]
 
 [tool.ruff.lint.mccabe]
