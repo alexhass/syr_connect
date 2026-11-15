@@ -704,6 +704,8 @@ async def test_login_with_decryption_parser_error(api_client: SyrConnectXmlAPI) 
         ("get_device_status", ("dclg1",)),
         ("set_device_status", ("dclg1", [("setAB", "2")])),
         ("get_statistics", ("dclg1", _SYR_CONNECT_TEST_STATISTICS[0])),
+        ("get_raw_device_list", ("project1",)),
+        ("get_raw_device_status", ("dclg1",)),
     ],
 )
 async def test_network_errors_are_wrapped_in_connection_error(
@@ -924,3 +926,66 @@ async def test_each_answer_is_parsed_once(
         await getattr(api_client, method)(*args)
 
     mock_parse.assert_called_once_with(xml)
+
+
+async def test_get_raw_device_list_returns_the_answer_unparsed(
+    api_client: SyrConnectXmlAPI,
+) -> None:
+    """The device list is returned as the cloud sends it, also a rejected token."""
+    api_client.session_data = "valid_session"
+    answer = '<sc><msg mtid="1" /></sc>'
+
+    with patch.object(api_client.http_client, "post", return_value=answer) as post:
+        assert await api_client.get_raw_device_list("project1") == answer
+
+    url, data = post.call_args.args
+    assert url == api_client.device_list_url
+    assert data["xml"] == api_client.payload_builder.build_device_get_list_payload(
+        "valid_session", "project1"
+    )
+
+
+async def test_get_raw_device_status_returns_the_answer_unparsed(
+    api_client: SyrConnectXmlAPI,
+) -> None:
+    """The status of a device is returned as the cloud sends it."""
+    api_client.session_data = "valid_session"
+
+    with patch.object(api_client.http_client, "post", return_value="<sc />") as post:
+        assert await api_client.get_raw_device_status("dclg1") == "<sc />"
+
+    url, data = post.call_args.args
+    assert url == api_client.device_get_status_url
+    assert data["xml"] == api_client.payload_builder.build_device_get_status_payload(
+        "valid_session", "dclg1"
+    )
+
+
+async def test_get_raw_device_list_logs_in_first(api_client: SyrConnectXmlAPI) -> None:
+    """Without a session token the client logs in before the request."""
+    api_client.session_data = ""
+
+    async def _login() -> bool:
+        api_client.session_data = "new_session"
+        return True
+
+    with (
+        patch.object(api_client, "login", side_effect=_login) as login,
+        patch.object(api_client.http_client, "post", return_value="<sc />"),
+    ):
+        await api_client.get_raw_device_list("project1")
+
+    login.assert_awaited_once()
+
+
+def test_parse_device_list(api_client: SyrConnectXmlAPI) -> None:
+    """The devices are read from a raw device list answer."""
+    xml = (
+        Path(__file__).parent.parent
+        / "fixtures/xml/SyrSafeTechPlus_GetProjectDeviceCollections.xml"
+    ).read_text(encoding="utf-8")
+
+    devices = api_client.parse_device_list(xml)
+
+    assert devices == api_client.response_parser.parse_device_list_response(xml)
+    assert devices
