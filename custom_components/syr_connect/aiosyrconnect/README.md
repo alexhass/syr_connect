@@ -14,7 +14,7 @@ It talks to two APIs:
 ## Requirements
 
 - Python 3.14
-- `aiohttp`, `yarl`, `defusedxml`, `pycryptodomex`
+- `aiohttp`, `defusedxml`, `pycryptodomex`
 
 ## Usage
 
