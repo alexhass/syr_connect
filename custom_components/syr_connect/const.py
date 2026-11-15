@@ -170,6 +170,10 @@ _SYR_CONNECT_API_SERVICES: dict[str, SyrConnectService] = {
 # Keep as a separate named constant to avoid hard-coded strings scattered across the codebase.
 _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER = "de.consoft.syr.connect"
 
+# Numbers of the leak protection profiles. Every profile has the same settings, keyed
+# by the setting with the number appended: getPA1-getPA8, getPN1-getPN8, ...
+_SYR_CONNECT_LEAK_PROTECTION_PROFILES = range(1, 9)
+
 # Values that mean "no alarm present" (compared after strip().upper()).
 _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM = {
     "",

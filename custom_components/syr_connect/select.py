@@ -14,6 +14,7 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import (
+    _SYR_CONNECT_LEAK_PROTECTION_PROFILES,
     _SYR_CONNECT_SELECT_ALD_OPTIONS,
     _SYR_CONNECT_SELECT_CRT_MAP,
     _SYR_CONNECT_SELECT_DMO_MAP,
@@ -559,7 +560,8 @@ def _add_softener_selects(b: _SyrConnectSelectBuilder) -> None:
 
     # Active leak-protection profile (getPRF), if any profile getPAx is active (e.g. "true" or "1")
     if "getPRF" in supported_select_keys and any(
-        is_value_true(status.get(f"getPA{i}")) for i in range(1, 9)
+        is_value_true(status.get(f"getPA{i}"))
+        for i in _SYR_CONNECT_LEAK_PROTECTION_PROFILES
     ):
         b.entities.append(
             SyrConnectPrfSelect(b.coordinator, b.device_id, b.device_name)
@@ -1646,7 +1648,7 @@ class SyrConnectPrfSelect(SyrConnectEntity, SelectEntity):
         """Return the selectable options."""
         status = self._status
         opts: list[str] = []
-        for i in range(1, 9):
+        for i in _SYR_CONNECT_LEAK_PROTECTION_PROFILES:
             pa = status.get(f"getPA{i}")
             if not is_value_true(pa):
                 continue
@@ -1677,7 +1679,7 @@ class SyrConnectPrfSelect(SyrConnectEntity, SelectEntity):
         coordinator = self.coordinator
         status = self._status
         selected_idx: int | None = None
-        for i in range(1, 9):
+        for i in _SYR_CONNECT_LEAK_PROTECTION_PROFILES:
             pa = status.get(f"getPA{i}")
             if not is_value_true(pa):
                 continue
