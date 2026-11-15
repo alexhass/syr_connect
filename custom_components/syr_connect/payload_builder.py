@@ -74,7 +74,7 @@ class PayloadBuilder:
         """Return (lang, reg) from the instance language, e.g. ``de-DE`` -> ``("de", "DE")``.
 
         The coordinator and config flow pass the Home Assistant locale (see
-        `helpers.get_api_locale`). A language without region gets ``US``.
+        `helpers.integration.get_api_locale`). A language without region gets ``US``.
         """
         parts = self.language.replace("_", "-").split("-")
         lang = parts[0].lower()

@@ -18,7 +18,7 @@ Conventions for all Python code in `custom_components/syr_connect/` and `tests/`
 - `const.py` is grouped by topic; within a group the constants are sorted alphabetically. Insert new constants at their alphabetical position, without splitting an existing alphabetical run.
 - Constants that stay in their module, at module or class level, also start with `_SYR_CONNECT_` plus the module name (`_SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS`, `_SYR_CONNECT_SENSOR_VALUE_HANDLERS`). Exceptions are names Home Assistant requires, such as `PARALLEL_UPDATES` and `_LOGGER`.
 - Device keys keep the protocol spelling: `getFLO`, `setAB`, `clrALA`. Translation keys use the lowercase form (`getflo`).
-- Private helpers start with an underscore. Module-level helpers that several modules use go into `helpers.py`.
+- Private helpers start with an underscore. Module-level helpers that several modules use go into the module of their topic in the `helpers/` package: `device.py` (device data of the coordinator), `integration.py` (version, scan interval, locale, hosts, HTTP responses), `profile.py` (device profile lookups), `registry.py` (entity and device registry) or `values.py` (status values). Modules of the package import the other modules of the integration with absolute imports (`from custom_components.syr_connect.const import ...`), because Ruff bans relative imports from parent packages (TID252).
 
 ## Formatting for Small Diffs
 

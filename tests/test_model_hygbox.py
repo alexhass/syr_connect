@@ -11,7 +11,7 @@ import pytest
 
 from custom_components.syr_connect.button import SyrConnectButton, _build_device_buttons
 from custom_components.syr_connect.data import SyrConnectDevice
-from custom_components.syr_connect.helpers import get_sensor_ala_map
+from custom_components.syr_connect.helpers.profile import get_sensor_ala_map
 from custom_components.syr_connect.models import MODEL_SIGNATURES, SyrConnectModel
 from custom_components.syr_connect.select import (
     SyrConnectDiscreteSelect,

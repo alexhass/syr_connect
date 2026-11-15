@@ -40,14 +40,14 @@ from .exceptions import (
     SyrConnectInvalidResponseError,
     SyrConnectLoginFailedError,
 )
-from .helpers import (
-    build_entry_unique_id,
+from .helpers.integration import (
     get_api_locale,
     get_default_scan_interval_for_entry,
     get_integration_version,
     host_has_port,
     is_valid_host,
 )
+from .helpers.registry import build_entry_unique_id
 from .models import MODEL_SIGNATURES
 
 _LOGGER = logging.getLogger(__name__)

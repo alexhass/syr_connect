@@ -38,7 +38,7 @@ from custom_components.syr_connect.exceptions import (
     SyrConnectConnectionError,
     SyrConnectInvalidResponseError,
 )
-from custom_components.syr_connect.helpers import clear_device_statistics
+from custom_components.syr_connect.helpers.registry import clear_device_statistics
 from custom_components.syr_connect.models import UNKNOWN_MODEL
 from homeassistant.components.recorder import Recorder
 from homeassistant.components.recorder.statistics import (

@@ -8,7 +8,7 @@ signatures of the family reference as `device_profile` in `models.MODEL_SIGNATUR
 A profile also lists the measurement history series the cloud keeps for the family
 (`statistics`), see "Statistics web services" in docs/syrconnect-protocol.md.
 
-`helpers.get_model_supported_keys()` uses these allowlists instead of the global
+`helpers.profile.get_model_supported_keys()` uses these allowlists instead of the global
 ones, so the entities created for a device are limited to keys explicitly
 confirmed for that model rather than the union of every model's keys. Models
 without a profile keep using the global allowlists unchanged.

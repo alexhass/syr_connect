@@ -18,13 +18,10 @@ from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .entity import SyrConnectEntity, async_add_device_entities
 from .exceptions import SyrConnectError
-from .helpers import (
-    build_set_ab_command,
-    get_device_model,
-    get_model_supported_keys,
-    get_sensor_ab_value,
-    registry_cleanup,
-)
+from .helpers.device import get_device_model
+from .helpers.profile import get_model_supported_keys
+from .helpers.registry import registry_cleanup
+from .helpers.values import build_set_ab_command, get_sensor_ab_value
 
 _LOGGER = logging.getLogger(__name__)
 

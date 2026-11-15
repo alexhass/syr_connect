@@ -21,7 +21,7 @@ rules:
       - coordinator.py for the data update coordinators
       - entity.py for the base entity (SyrConnectEntity)
       - api_xml.py and api_json.py for the cloud and the local API
-      - helpers.py for shared helpers (DeviceInfo, unique_id, registry cleanup)
+      - helpers/ for shared helpers, one module per topic (DeviceInfo, unique_id, registry cleanup, status values)
   
   config-flow-test-coverage:
     status: done

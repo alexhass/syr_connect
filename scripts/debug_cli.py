@@ -149,7 +149,7 @@ try:
     from custom_components.syr_connect.data import SyrConnectDevice
     from custom_components.syr_connect.devices import SyrConnectStatistic
     from custom_components.syr_connect.encryption import SyrEncryption
-    from custom_components.syr_connect.helpers import (
+    from custom_components.syr_connect.helpers.integration import (
         build_user_agent,
         get_month_version,
     )

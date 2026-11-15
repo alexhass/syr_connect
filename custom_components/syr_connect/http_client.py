@@ -6,7 +6,7 @@ from typing import Any
 import aiohttp
 
 from .const import _SYR_CONNECT_CLIENT_OS_LANGUAGE
-from .helpers import read_response_text
+from .helpers.integration import read_response_text
 
 _LOGGER = logging.getLogger(__name__)
 

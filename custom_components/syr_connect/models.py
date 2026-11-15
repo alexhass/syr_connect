@@ -59,7 +59,7 @@ class SyrConnectModel:
     # Exact match against the `getCNA` value
     cna_equals: str | None = None
     # Profile from a `devices/<name>.py` file with the per-platform entity allowlists
-    # and alarm codes of the model (see `helpers.get_model_supported_keys()`). Several
+    # and alarm codes of the model (see `helpers.profile.get_model_supported_keys()`). Several
     # signatures share one profile when they are rebranded variants of the same
     # hardware (e.g. the dk=1500-1506 MultiController family). None means the global
     # allowlists and the generic alarm codes.

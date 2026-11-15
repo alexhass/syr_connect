@@ -15,7 +15,7 @@ from .exceptions import (
     SyrConnectLoginFailedError,
     SyrConnectSessionExpiredError,
 )
-from .helpers import is_device_offline
+from .helpers.device import is_device_offline
 
 _LOGGER = logging.getLogger(__name__)
 

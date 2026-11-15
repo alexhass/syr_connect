@@ -21,7 +21,7 @@ from custom_components.syr_connect.exceptions import (
     SyrConnectConnectionError,
     SyrConnectError,
 )
-from custom_components.syr_connect.helpers import build_unique_id
+from custom_components.syr_connect.helpers.registry import build_unique_id
 from custom_components.syr_connect.models import (
     MODEL_SIGNATURES,
     UNKNOWN_MODEL,

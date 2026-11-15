@@ -56,7 +56,7 @@ from .exceptions import (
     SyrConnectLoginFailedError,
     SyrConnectSessionExpiredError,
 )
-from .helpers import build_user_agent, mask_ug_value
+from .helpers.integration import build_user_agent, mask_ug_value
 from .http_client import HTTPClient
 from .payload_builder import PayloadBuilder
 from .response_parser import ResponseParser

@@ -47,21 +47,22 @@ from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .entity import SyrConnectEntity, async_add_device_entities
 from .exceptions import SyrConnectError
-from .helpers import (
-    find_entity_id,
+from .helpers.device import get_device_model
+from .helpers.profile import (
     get_cartridge_entity_keys,
     get_cartridge_keys,
-    get_device_model,
     get_hardness_factor,
     get_hardness_range,
-    get_hygiene_module_value,
     get_model_supported_keys,
     get_reported_cartridge_keys,
-    get_sensor_rtm_value,
     get_whu_unit,
-    is_value_true,
-    registry_cleanup,
     round_hardness,
+)
+from .helpers.registry import find_entity_id, registry_cleanup
+from .helpers.values import (
+    get_hygiene_module_value,
+    get_sensor_rtm_value,
+    is_value_true,
     set_sensor_rtm_value,
 )
 from .models import SyrConnectModel

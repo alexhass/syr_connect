@@ -11,7 +11,7 @@ import pytest
 from custom_components.syr_connect import sensor as sensor_module
 from custom_components.syr_connect.const import CONF_SERVICE
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
-from custom_components.syr_connect.helpers import get_sensor_ala_map
+from custom_components.syr_connect.helpers.profile import get_sensor_ala_map
 from custom_components.syr_connect.models import (
     MODEL_SIGNATURES,
     UNKNOWN_MODEL,

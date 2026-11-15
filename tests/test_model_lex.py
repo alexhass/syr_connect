@@ -15,7 +15,7 @@ from custom_components.syr_connect import (
     select as select_module,
     sensor as sensor_module,
 )
-from custom_components.syr_connect.helpers import get_sensor_ala_map
+from custom_components.syr_connect.helpers.profile import get_sensor_ala_map
 from custom_components.syr_connect.models import (
     MODEL_SIGNATURES,
     SyrConnectModel,

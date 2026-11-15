@@ -17,12 +17,9 @@ from .const import API_TYPE_JSON, API_TYPE_XML, CONF_API_TYPE, CONF_MODEL, CONF_
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .exceptions import SyrConnectConnectionError, SyrConnectHTTPError
-from .helpers import (
-    get_device_model,
-    get_integration_version,
-    is_empty_ip,
-    mask_ug_value,
-)
+from .helpers.device import get_device_model
+from .helpers.integration import get_integration_version, mask_ug_value
+from .helpers.values import is_empty_ip
 from .sensor import sensor_keys_for_status
 
 _LOGGER = logging.getLogger(__name__)
