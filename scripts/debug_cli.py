@@ -140,14 +140,14 @@ try:
         SyrConnectStatistic,
     )
     from custom_components.syr_connect.aiosyrconnect.const import (
-        _SYR_CONNECT_API_XML_DEVICE_SERVICE_PATH,
-        _SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION,
-        _SYR_CONNECT_CLIENT_CHECKSUM_KEY1,
-        _SYR_CONNECT_CLIENT_CHECKSUM_KEY2,
-        _SYR_CONNECT_CLIENT_OS_LANGUAGE,
-        _SYR_CONNECT_CLIENT_OS_MODEL,
-        _SYR_CONNECT_CLIENT_OS_NAME,
-        _SYR_CONNECT_CLIENT_OS_VERSION,
+        CLIENT_CF_BUNDLE_VERSION,
+        CLIENT_OS_LANGUAGE,
+        CLIENT_OS_MODEL,
+        CLIENT_OS_NAME,
+        CLIENT_OS_VERSION,
+        XML_CHECKSUM_KEY1,
+        XML_CHECKSUM_KEY2,
+        XML_DEVICE_SERVICE_PATH,
     )
     from custom_components.syr_connect.aiosyrconnect.http_client import HTTPClient
     from custom_components.syr_connect.aiosyrconnect.xml_checksum import SyrChecksum
@@ -286,9 +286,7 @@ class DebugXmlClient:
         self.device_status_url = f"{base_url}/WebServices/SyrControlWebServiceTest2.asmx/GetDeviceCollectionStatus"
         self.device_set_url = f"{base_url}/WebServices/SyrControlWebServiceTest2.asmx/SetDeviceCollectionStatus"
         # The statistics method of the device family is appended (get_statistics)
-        self.device_service_url = (
-            f"{base_url}/{_SYR_CONNECT_API_XML_DEVICE_SERVICE_PATH}"
-        )
+        self.device_service_url = f"{base_url}/{XML_DEVICE_SERVICE_PATH}"
 
         self.session_data: str = ""
         self.projects: list[dict[str, Any]] = []
@@ -300,8 +298,8 @@ class DebugXmlClient:
         )
         self.encryption = SyrEncryption(svc.crypt_key, svc.crypt_vector)
         checksum = SyrChecksum(
-            _SYR_CONNECT_CLIENT_CHECKSUM_KEY1,
-            _SYR_CONNECT_CLIENT_CHECKSUM_KEY2,
+            XML_CHECKSUM_KEY1,
+            XML_CHECKSUM_KEY2,
         )
         self.payload_builder = PayloadBuilder(app_version, checksum, app_name)
         self.response_parser = ResponseParser()
@@ -771,11 +769,11 @@ async def _run(args: argparse.Namespace) -> None:
 
     async with aiohttp.ClientSession() as session:
         effective_app_version = (
-            f"App-{_SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION}"
-            f"-{_SYR_CONNECT_CLIENT_OS_LANGUAGE}"
-            f"-{_SYR_CONNECT_CLIENT_OS_NAME}"
-            f"-{_SYR_CONNECT_CLIENT_OS_MODEL}"
-            f"-{_SYR_CONNECT_CLIENT_OS_VERSION}"
+            f"App-{CLIENT_CF_BUNDLE_VERSION}"
+            f"-{CLIENT_OS_LANGUAGE}"
+            f"-{CLIENT_OS_NAME}"
+            f"-{CLIENT_OS_MODEL}"
+            f"-{CLIENT_OS_VERSION}"
             f"-{args.api_package_name}"
         )
 

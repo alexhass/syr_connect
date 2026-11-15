@@ -14,8 +14,8 @@ import pytest
 
 from custom_components.syr_connect.aiosyrconnect import SyrConnectStatistic
 from custom_components.syr_connect.aiosyrconnect.const import (
-    _SYR_CONNECT_CLIENT_CHECKSUM_KEY1,
-    _SYR_CONNECT_CLIENT_CHECKSUM_KEY2,
+    XML_CHECKSUM_KEY1,
+    XML_CHECKSUM_KEY2,
 )
 from custom_components.syr_connect.aiosyrconnect.xml_checksum import SyrChecksum
 from custom_components.syr_connect.aiosyrconnect.xml_payload import PayloadBuilder
@@ -175,9 +175,7 @@ def test_add_checksum_is_idempotent() -> None:
     """Adding the checksum twice to the same root gives one <cs> and the same payload."""
     pb = PayloadBuilder(
         "1.2.3",
-        SyrChecksum(
-            _SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2
-        ),
+        SyrChecksum(XML_CHECKSUM_KEY1, XML_CHECKSUM_KEY2),
         "SYR Connect",
     )
     root = pb._new_request("sess")
@@ -210,9 +208,7 @@ def _build_reference_payloads() -> dict[str, str]:
     )
     pb = PayloadBuilder(
         "App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect",
-        SyrChecksum(
-            _SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2
-        ),
+        SyrChecksum(XML_CHECKSUM_KEY1, XML_CHECKSUM_KEY2),
         "SYR Connect",
     )
     with (

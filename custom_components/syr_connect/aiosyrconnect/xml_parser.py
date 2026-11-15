@@ -20,12 +20,10 @@ _LOGGER = logging.getLogger(__name__)
 
 # Text of a rejected login for a wrong password; always German
 # (docs/known_issues_xml_api.md, issue 3)
-_SYR_CONNECT_RESPONSE_PARSER_WRONG_PASSWORD_TEXT = (
-    "Benutzername und das Passwort stimmen nicht überein"
-)
+_WRONG_PASSWORD_TEXT = "Benutzername und das Passwort stimmen nicht überein"
 
 # Attributes of a <c> element that are kept next to its value, as "<name>_<attribute>"
-_SYR_CONNECT_RESPONSE_PARSER_C_EXTRAS = (
+_C_EXTRAS = (
     "dt",
     "m",
     "acd",
@@ -253,10 +251,7 @@ class ResponseParser:
         msg = root.get("msg") if isinstance(root, dict) else None
         server_message = msg.get("@v") if isinstance(msg, dict) else None
         detail = f" Message: {server_message}" if server_message else ""
-        if (
-            isinstance(server_message, str)
-            and _SYR_CONNECT_RESPONSE_PARSER_WRONG_PASSWORD_TEXT in server_message
-        ):
+        if isinstance(server_message, str) and _WRONG_PASSWORD_TEXT in server_message:
             raise SyrConnectAuthError(f"Invalid credentials.{detail}")
         raise SyrConnectLoginFailedError(f"Login rejected.{detail}")
 
@@ -327,7 +322,7 @@ class ResponseParser:
         # A valid answer always contains the project, even if it has no devices left
         # (see SyrTestDevice_GetProjectDeviceCollections_NoDevices.xml). Anything else
         # (error answer, maintenance page) must not be mistaken for an empty project,
-        # because devices missing from the list are removed from Home Assistant.
+        # because callers remove the devices missing from the list.
         if not self.validate_structure(parsed, ["sc", "prs", "pr"]):
             raise ValueError("Device list response contains no project.")
 
@@ -526,7 +521,7 @@ class ResponseParser:
 
         Exception: devices the cloud reports offline (dst="0" never online, dst="1"
         offline) also answer with getSRN etc. only. That answer is passed on, so the
-        coordinator marks the device unavailable. These devices are skipped by the
+        caller can mark the device unavailable. These devices are skipped by the
         check; an online device in the same response is still checked.
 
         Resulting device states:
@@ -563,7 +558,7 @@ class ResponseParser:
 
         # A device the cloud reports offline (dst="0" never online, dst="1" offline) has
         # no more data than this; its minimal answer is genuine, not the Trio glitch
-        # (which comes from online devices, dst="2"). Parsing it lets the coordinator
+        # (which comes from online devices, dst="2"). Parsing it lets the caller
         # mark the device unavailable instead of keeping it "available" with no status.
         # Exempt only the offline devices, so an online one in the same response is still checked.
         online_devices = [
@@ -686,7 +681,7 @@ class ResponseParser:
                 continue
             name = item["@n"]
             result[name] = item["@s"] if "@s" in item else item["@v"]
-            for extra in _SYR_CONNECT_RESPONSE_PARSER_C_EXTRAS:
+            for extra in _C_EXTRAS:
                 if f"@{extra}" in item:
                     result[f"{name}_{extra}"] = item[f"@{extra}"]
 

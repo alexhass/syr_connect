@@ -1,4 +1,4 @@
-"""Custom exceptions for SYR Connect integration."""
+"""Errors raised by the SYR Connect API clients."""
 
 
 class SyrConnectError(Exception):
@@ -17,8 +17,8 @@ class SyrConnectLoginFailedError(SyrConnectConnectionError):
     """The XML webservice rejected the login (<suc v="false"/>) for another cause than a wrong password.
 
     The cloud gives the same generic message for an unknown username and during
-    outages (see docs/known_issues_xml_api.md, issue 3). The config flow reports it
-    as invalid credentials; during operation it is handled like any other connection
+    outages (see docs/known_issues_xml_api.md, issue 3). A setup can report it as
+    invalid credentials; during operation it can be handled like any other connection
     error: the next update logs in again, without a re-authentication.
     """
 

@@ -14,7 +14,7 @@ Conventions for all Python code in `custom_components/syr_connect/` and `tests/`
 ## Naming
 
 - Classes of this integration start with `SyrConnect` (`SyrConnectXmlAPI`, `SyrConnectDataUpdateCoordinator`).
-- Internal constants live in `const.py` and start with `_SYR_CONNECT_` (`_SYR_CONNECT_API_XML_LOGIN_URL`). Constants that Home Assistant or other modules use as public names have no prefix (`DOMAIN`, `API_TYPE_JSON`, `CONF_*`).
+- Internal constants of the integration live in `const.py` and start with `_SYR_CONNECT_` (the library has rules of its own, see Library aiosyrconnect) (`_SYR_CONNECT_API_XML_LOGIN_URL`). Constants that Home Assistant or other modules use as public names have no prefix (`DOMAIN`, `API_TYPE_JSON`, `CONF_*`).
 - `const.py` is grouped by topic; within a group the constants are sorted alphabetically. Insert new constants at their alphabetical position, without splitting an existing alphabetical run.
 - Constants that stay in their module, at module or class level, also start with `_SYR_CONNECT_` plus the module name (`_SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS`, `_SYR_CONNECT_SENSOR_VALUE_HANDLERS`). Exceptions are names Home Assistant requires, such as `PARALLEL_UPDATES` and `_LOGGER`.
 - Device keys keep the protocol spelling: `getFLO`, `setAB`, `clrALA`. Translation keys use the lowercase form (`getflo`).
@@ -55,6 +55,8 @@ The code that talks to the cloud and to the devices is the library `aiosyrconnec
 - What the integration uses is public: exported in `aiosyrconnect/__init__.py` (`__all__`), without leading underscore. The integration imports it from the package (`from .aiosyrconnect import SyrConnectXmlAPI`); only the tests and `scripts/debug_cli.py` import the modules of the library directly.
 - Everything Home Assistant knows is passed in by the caller: the `aiohttp.ClientSession`, the `user_agent`, the locale (`language`) and the time zone (`local_now`). The library never creates or closes a session.
 - The library holds the protocol knowledge: URLs, keys, checksums, encryption, the client identity of the app and the cloud services (`aiosyrconnect/const.py`), the requests and the parsing of the answers. Entities, allowlists of the device files, model detection, translations and the registry stay in the integration.
+- Constants of the library have no `_SYR_CONNECT_` prefix, the package name says it already. Constants shared by its modules are in `aiosyrconnect/const.py` without leading underscore and named after their API (`XML_LOGIN_URL`, `XML_CHECKSUM_KEY1`, `JSON_SESSION_TIMEOUT_MINUTES`, `RESPONSE_SIZE_MAXIMUM`); constants of one module have a leading underscore only (`_PORT`, `_WRONG_PASSWORD_TEXT`).
+- Comments and docstrings of the library speak of the caller, not of the coordinator, the config flow or the entities: the library does not know who uses it.
 - The modules of the cloud start with `xml_` (`xml_api.py`, `xml_parser.py`, `xml_payload.py`, `xml_checksum.py`, `xml_encryption.py`), the local API is `json_api.py`. Data types are in `models.py`, errors in `exceptions.py`.
 - The tests of the library live in `tests/aiosyrconnect/`, one test module per library module (`test_xml_api.py` for `xml_api.py`). They use only the library and the fixtures in `tests/fixtures/`.
 

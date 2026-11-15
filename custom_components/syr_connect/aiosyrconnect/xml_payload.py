@@ -7,11 +7,11 @@ from typing import Any
 from xml.etree import ElementTree as ET
 
 from .const import (
-    _SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION,
-    _SYR_CONNECT_CLIENT_OS_LANGUAGE,
-    _SYR_CONNECT_CLIENT_OS_MODEL,
-    _SYR_CONNECT_CLIENT_OS_NAME,
-    _SYR_CONNECT_CLIENT_OS_VERSION,
+    CLIENT_CF_BUNDLE_VERSION,
+    CLIENT_OS_LANGUAGE,
+    CLIENT_OS_MODEL,
+    CLIENT_OS_NAME,
+    CLIENT_OS_VERSION,
 )
 from .models import SyrConnectStatistic
 from .xml_checksum import SyrChecksum
@@ -34,7 +34,7 @@ class PayloadBuilder:
         app_version: str,
         checksum_calculator: SyrChecksum,
         app_name: str,
-        language: str = _SYR_CONNECT_CLIENT_OS_LANGUAGE,
+        language: str = CLIENT_OS_LANGUAGE,
         local_now: Callable[[], datetime] | None = None,
     ) -> None:
         """Initialize payload builder.
@@ -146,10 +146,10 @@ class PayloadBuilder:
             api,
             "nfo",
             v=self.app_name,
-            version=_SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION,
-            osv=_SYR_CONNECT_CLIENT_OS_VERSION,
-            os=_SYR_CONNECT_CLIENT_OS_NAME,
-            dn=_SYR_CONNECT_CLIENT_OS_MODEL,
+            version=CLIENT_CF_BUNDLE_VERSION,
+            osv=CLIENT_OS_VERSION,
+            os=CLIENT_OS_NAME,
+            dn=CLIENT_OS_MODEL,
             ts=self.get_timestamp(),
             tzo=tzo,
             lng=lang,

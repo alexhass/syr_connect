@@ -11,9 +11,7 @@ import aiohttp
 import pytest
 
 from custom_components.syr_connect.aiosyrconnect import mask_ug_value
-from custom_components.syr_connect.aiosyrconnect.const import (
-    _SYR_CONNECT_API_RESPONSE_SIZE_MAXIMUM,
-)
+from custom_components.syr_connect.aiosyrconnect.const import RESPONSE_SIZE_MAXIMUM
 from custom_components.syr_connect.aiosyrconnect.http_client import (
     HTTPClient,
     read_response_text,
@@ -334,7 +332,7 @@ async def test_read_response_text_at_the_limit(
     set_response_body: Callable[..., None],
 ) -> None:
     """A body of exactly the maximum size is still accepted."""
-    limit = _SYR_CONNECT_API_RESPONSE_SIZE_MAXIMUM
+    limit = RESPONSE_SIZE_MAXIMUM
     response = MagicMock()
     set_response_body(response, "x" * limit, chunk_size=64 * 1024)
     response.content_length = limit
@@ -346,7 +344,7 @@ async def test_read_response_text_announced_size_too_large(
     set_response_body: Callable[..., None],
 ) -> None:
     """A response that announces more than the maximum size is not read at all."""
-    limit = _SYR_CONNECT_API_RESPONSE_SIZE_MAXIMUM
+    limit = RESPONSE_SIZE_MAXIMUM
     response = MagicMock()
     set_response_body(response, "ignored")
     response.content_length = limit + 1
@@ -363,7 +361,7 @@ async def test_read_response_text_announced_size_too_large(
 
 async def test_read_response_text_stops_reading_above_the_limit() -> None:
     """A body without an announced size is dropped as soon as it passes the maximum size."""
-    limit = _SYR_CONNECT_API_RESPONSE_SIZE_MAXIMUM
+    limit = RESPONSE_SIZE_MAXIMUM
     chunk = b"x" * (64 * 1024)
     sent = 0
 

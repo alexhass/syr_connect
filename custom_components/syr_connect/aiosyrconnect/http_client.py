@@ -6,18 +6,15 @@ from typing import Any
 
 import aiohttp
 
-from .const import (
-    _SYR_CONNECT_API_RESPONSE_SIZE_MAXIMUM,
-    _SYR_CONNECT_CLIENT_OS_LANGUAGE,
-)
+from .const import CLIENT_OS_LANGUAGE, RESPONSE_SIZE_MAXIMUM
 
 _LOGGER = logging.getLogger(__name__)
 
 # Default timeout for HTTP requests (seconds)
-_SYR_CONNECT_DEFAULT_HTTP_TIMEOUT = 30
+_DEFAULT_TIMEOUT = 30
 
 # Number of bytes read at once from a response body
-_SYR_CONNECT_HTTP_CLIENT_RESPONSE_CHUNK_SIZE = 64 * 1024
+_RESPONSE_CHUNK_SIZE = 64 * 1024
 
 
 async def read_response_text(response: aiohttp.ClientResponse) -> str:
@@ -35,7 +32,7 @@ async def read_response_text(response: aiohttp.ClientResponse) -> str:
     Raises:
         aiohttp.ClientPayloadError: If the body is larger than the maximum response size
     """
-    limit = _SYR_CONNECT_API_RESPONSE_SIZE_MAXIMUM
+    limit = RESPONSE_SIZE_MAXIMUM
     # The announced size saves reading an oversized body; it is the compressed size and
     # may be missing, so the bytes that arrive are counted as well
     announced = response.content_length
@@ -44,9 +41,7 @@ async def read_response_text(response: aiohttp.ClientResponse) -> str:
             f"Response of {announced} bytes exceeds the limit of {limit} bytes"
         )
     body = bytearray()
-    async for chunk in response.content.iter_chunked(
-        _SYR_CONNECT_HTTP_CLIENT_RESPONSE_CHUNK_SIZE
-    ):
+    async for chunk in response.content.iter_chunked(_RESPONSE_CHUNK_SIZE):
         body.extend(chunk)
         if len(body) > limit:
             raise aiohttp.ClientPayloadError(
@@ -82,8 +77,8 @@ class HTTPClient:
         self,
         session: aiohttp.ClientSession,
         user_agent: str,
-        timeout: int = _SYR_CONNECT_DEFAULT_HTTP_TIMEOUT,
-        language: str = _SYR_CONNECT_CLIENT_OS_LANGUAGE,
+        timeout: int = _DEFAULT_TIMEOUT,
+        language: str = CLIENT_OS_LANGUAGE,
     ) -> None:
         """Initialize HTTP client.
 
@@ -169,7 +164,7 @@ class HTTPClient:
                 _LOGGER.debug("Response received (length: %d)", len(text))
                 return text
         except (TimeoutError, aiohttp.ClientError) as err:
-            # Debug only: the caller decides what the user sees, e.g. the coordinator logs a
-            # failed update once instead of at every poll. repr: a timeout has no message text
+            # Debug only: the caller decides what the user sees, e.g. it logs a failed
+            # update once instead of at every poll. repr: a timeout has no message text
             _LOGGER.debug("Request to %s failed: %r", url, err)
             raise aiohttp.ClientError(f"Request to {url} failed: {err!r}") from err

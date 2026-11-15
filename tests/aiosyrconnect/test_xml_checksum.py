@@ -7,8 +7,8 @@ from defusedxml import ElementTree as DefusedET
 import pytest
 
 from custom_components.syr_connect.aiosyrconnect.const import (
-    _SYR_CONNECT_CLIENT_CHECKSUM_KEY1,
-    _SYR_CONNECT_CLIENT_CHECKSUM_KEY2,
+    XML_CHECKSUM_KEY1,
+    XML_CHECKSUM_KEY2,
 )
 from custom_components.syr_connect.aiosyrconnect.xml_checksum import SyrChecksum
 
@@ -116,7 +116,5 @@ def test_fixture_checksum_is_valid(fixture: Path) -> None:
     for cs in cs_elements:
         root.remove(cs)
 
-    checksum = SyrChecksum(
-        _SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2
-    )
+    checksum = SyrChecksum(XML_CHECKSUM_KEY1, XML_CHECKSUM_KEY2)
     assert checksum.compute_element_checksum(root) == expected

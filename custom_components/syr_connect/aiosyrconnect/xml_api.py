@@ -31,18 +31,18 @@ from typing import Any
 import aiohttp
 
 from .const import (
-    _SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL,
-    _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL,
-    _SYR_CONNECT_API_XML_DEVICE_SERVICE_PATH,
-    _SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL,
-    _SYR_CONNECT_API_XML_LOGIN_URL,
-    _SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION,
-    _SYR_CONNECT_CLIENT_CHECKSUM_KEY1,
-    _SYR_CONNECT_CLIENT_CHECKSUM_KEY2,
-    _SYR_CONNECT_CLIENT_OS_LANGUAGE,
-    _SYR_CONNECT_CLIENT_OS_MODEL,
-    _SYR_CONNECT_CLIENT_OS_NAME,
-    _SYR_CONNECT_CLIENT_OS_VERSION,
+    CLIENT_CF_BUNDLE_VERSION,
+    CLIENT_OS_LANGUAGE,
+    CLIENT_OS_MODEL,
+    CLIENT_OS_NAME,
+    CLIENT_OS_VERSION,
+    XML_CHECKSUM_KEY1,
+    XML_CHECKSUM_KEY2,
+    XML_DEVICE_GET_LIST_URL,
+    XML_DEVICE_GET_STATUS_URL,
+    XML_DEVICE_SERVICE_PATH,
+    XML_DEVICE_SET_STATUS_URL,
+    XML_LOGIN_URL,
 )
 from .exceptions import (
     SyrConnectAuthError,
@@ -83,7 +83,7 @@ class SyrConnectXmlAPI:
         *,
         service: SyrConnectService,
         user_agent: str,
-        language: str = _SYR_CONNECT_CLIENT_OS_LANGUAGE,
+        language: str = CLIENT_OS_LANGUAGE,
         local_now: Callable[[], datetime] | None = None,
     ) -> None:
         """Initialize the cloud API client.
@@ -97,7 +97,7 @@ class SyrConnectXmlAPI:
             user_agent: HTTP User-Agent of the requests; names the caller
             language: Locale like "de-DE" sent in the app version string
                 "<si v=...>", as lng/reg at login, lg/rg in statistics requests and in the
-                Accept-Language header. Defaults to _SYR_CONNECT_CLIENT_OS_LANGUAGE ("en-US").
+                Accept-Language header. Defaults to CLIENT_OS_LANGUAGE ("en-US").
             local_now: Returns the current time in the time zone of the caller, for the
                 UTC offset (tzo) of the login; default the local time of the process
         """
@@ -120,25 +120,25 @@ class SyrConnectXmlAPI:
         # Each login returns a list of projects the user has access to
         self.projects: list[dict[str, Any]] = []
 
-        # --- Service endpoints (config entry-specific) ---
+        # --- Service endpoints (of the service of the account) ---
         _app_name = service.api_app_name
         _base = service.api_base_url
         _bundle_id = service.cf_bundle_identifier
-        self._login_url = _base + _SYR_CONNECT_API_XML_LOGIN_URL
-        self._device_list_url = _base + _SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL
-        self._device_get_status_url = _base + _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL
-        self._device_set_status_url = _base + _SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL
+        self._login_url = _base + XML_LOGIN_URL
+        self._device_list_url = _base + XML_DEVICE_GET_LIST_URL
+        self._device_get_status_url = _base + XML_DEVICE_GET_STATUS_URL
+        self._device_set_status_url = _base + XML_DEVICE_SET_STATUS_URL
         # The statistics method of the device family is appended (get_statistics)
-        self._device_service_url = _base + _SYR_CONNECT_API_XML_DEVICE_SERVICE_PATH
+        self._device_service_url = _base + XML_DEVICE_SERVICE_PATH
 
         # Example: "App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect"
         # The app sends the phone's language here; use the locale of the caller.
         _app_version = (
-            f"App-{_SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION}"
+            f"App-{CLIENT_CF_BUNDLE_VERSION}"
             f"-{language}"
-            f"-{_SYR_CONNECT_CLIENT_OS_NAME}"
-            f"-{_SYR_CONNECT_CLIENT_OS_MODEL}"
-            f"-{_SYR_CONNECT_CLIENT_OS_VERSION}"
+            f"-{CLIENT_OS_NAME}"
+            f"-{CLIENT_OS_MODEL}"
+            f"-{CLIENT_OS_VERSION}"
             f"-{_bundle_id}"
         )
 
@@ -149,9 +149,7 @@ class SyrConnectXmlAPI:
         self.encryption = SyrEncryption(service.crypt_key, service.crypt_vector)
 
         # Request checksum required by the webservice (proprietary, two keys; not an HMAC)
-        self.checksum = SyrChecksum(
-            _SYR_CONNECT_CLIENT_CHECKSUM_KEY1, _SYR_CONNECT_CLIENT_CHECKSUM_KEY2
-        )
+        self.checksum = SyrChecksum(XML_CHECKSUM_KEY1, XML_CHECKSUM_KEY2)
 
         # XML payload construction with embedded checksums
         self.payload_builder = PayloadBuilder(
@@ -333,8 +331,8 @@ class SyrConnectXmlAPI:
                 _LOGGER.debug("Project: %s (ID: %s)", project["name"], project["id"])
 
         # --- Error Handling ---
-        # Errors are logged at debug level only: the coordinator and the config flow
-        # decide what the user sees, e.g. a failed update once instead of at every poll
+        # Errors are logged at debug level only: the caller decides what the user sees,
+        # e.g. a failed update once instead of at every poll
         except SyrConnectAuthError as err:
             # The server rejected the password (see raise_login_rejected): re-authentication needed
             _LOGGER.debug("Authentication failed: %s", err)
@@ -451,8 +449,8 @@ class SyrConnectXmlAPI:
 
         Returns:
             Dictionary mapping parameter names (e.g., 'getFLO', 'getPRS') to values,
-            or None if the response format is unexpected (allows coordinator to
-            preserve previous state instead of failing)
+            or None if the response format is unexpected (allows the caller to
+            keep the previous state instead of failing)
 
         Raises:
             SyrConnectAuthError: If session expired and re-login fails
@@ -466,7 +464,7 @@ class SyrConnectXmlAPI:
         try:
             # --- Make HTTP Request ---
             # Parser returns None if response doesn't have expected structure
-            # This is intentional: allows coordinator to keep previous state
+            # This is intentional: allows the caller to keep the previous state
             # rather than failing completely on malformed responses
             status_data = await self._post_with_session(
                 self._device_get_status_url,
