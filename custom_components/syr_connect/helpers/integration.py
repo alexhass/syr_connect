@@ -6,7 +6,13 @@ import re
 
 import aiohttp
 
-from custom_components.syr_connect.const import (
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import __version__ as HA_VERSION
+from homeassistant.core import HomeAssistant
+from homeassistant.loader import async_get_loaded_integration
+from homeassistant.util import dt as dt_util
+
+from ..const import (
     _SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT,
     _SYR_CONNECT_API_RESPONSE_SIZE_MAXIMUM,
     _SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT,
@@ -16,11 +22,6 @@ from custom_components.syr_connect.const import (
     CONF_API_TYPE,
     DOMAIN,
 )
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import __version__ as HA_VERSION
-from homeassistant.core import HomeAssistant
-from homeassistant.loader import async_get_loaded_integration
-from homeassistant.util import dt as dt_util
 
 _LOGGER = logging.getLogger(__name__)
 

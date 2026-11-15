@@ -238,6 +238,11 @@ split-on-trailing-comma = false
 # Allow scripts to write to stdout (core: "script/*")
 "scripts/*" = ["T20"]
 
+# Allow relative imports within the integration
+# (core: "homeassistant/components/*/*/*" and "tests/components/*/*/*")
+"custom_components/syr_connect/*/*" = ["TID252"]
+"tests/*/*" = ["TID252"]
+
 # Temporary in core
 "tests/**" = ["PTH"]
 

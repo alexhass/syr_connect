@@ -3,18 +3,11 @@
 import logging
 from typing import Any
 
-from custom_components.syr_connect.const import DOMAIN
-from custom_components.syr_connect.data import (
-    SyrConnectCoordinatorData,
-    SyrConnectDevice,
-)
-from custom_components.syr_connect.models import (
-    UNKNOWN_MODEL,
-    SyrConnectModel,
-    detect_model,
-)
 from homeassistant.helpers.device_registry import DeviceInfo
 
+from ..const import DOMAIN
+from ..data import SyrConnectCoordinatorData, SyrConnectDevice
+from ..models import UNKNOWN_MODEL, SyrConnectModel, detect_model
 from .values import is_empty_ip
 
 _LOGGER = logging.getLogger(__name__)

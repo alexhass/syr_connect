@@ -5,13 +5,13 @@ import logging
 import math
 from typing import Any
 
-from custom_components.syr_connect.const import (
+from ..const import (
     _SYR_CONNECT_SENSOR_ALA_CODES_GENERIC,
     _SYR_CONNECT_SENSOR_NOT_CODES_GENERIC,
     _SYR_CONNECT_SENSOR_WRN_CODES_GENERIC,
 )
-from custom_components.syr_connect.devices import WHU_FACTORS_FROM_DH
-from custom_components.syr_connect.models import SyrConnectModel
+from ..devices import WHU_FACTORS_FROM_DH
+from ..models import SyrConnectModel
 
 _LOGGER = logging.getLogger(__name__)
 

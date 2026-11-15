@@ -5,7 +5,7 @@ import logging
 import re
 from typing import Any
 
-from custom_components.syr_connect.const import _SYR_CONNECT_SENSOR_CND_PER_DH
+from ..const import _SYR_CONNECT_SENSOR_CND_PER_DH
 
 _LOGGER = logging.getLogger(__name__)
 

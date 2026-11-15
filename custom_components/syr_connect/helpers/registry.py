@@ -4,20 +4,15 @@ from collections.abc import Callable, Mapping, Set as AbstractSet
 import logging
 from typing import Any
 
-from custom_components.syr_connect.const import (
-    API_TYPE_JSON,
-    API_TYPE_XML,
-    CONF_SERVICE,
-    DOMAIN,
-)
-from custom_components.syr_connect.data import SyrConnectCoordinatorData
-from custom_components.syr_connect.models import MODEL_SIGNATURES, SyrConnectModel
 from homeassistant.components.recorder import get_instance
 from homeassistant.const import CONF_HOST, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.util import slugify
 
+from ..const import API_TYPE_JSON, API_TYPE_XML, CONF_SERVICE, DOMAIN
+from ..data import SyrConnectCoordinatorData
+from ..models import MODEL_SIGNATURES, SyrConnectModel
 from .device import get_device_model
 from .profile import get_model_supported_keys
 
