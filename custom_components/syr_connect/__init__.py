@@ -1,6 +1,9 @@
 """The SYR Connect integration."""
 
+from collections.abc import Awaitable, Callable
 import copy
+from dataclasses import dataclass
+import inspect
 import logging
 
 from homeassistant.config_entries import ConfigEntry
@@ -66,30 +69,125 @@ def _mask_sensitive_data(update_kwargs: dict) -> dict:
     return safe_update
 
 
+async def _async_v8_to_v9_detect_local_model(
+    hass: HomeAssistant, entry: ConfigEntry
+) -> dict | None:
+    """Detect the model of a local device whose generic model was removed (v8 -> v9).
+
+    Raises:
+        ConfigEntryNotReady: If the device cannot be reached to detect its model;
+            Home Assistant retries the migration later.
+        ConfigEntryError: If the model of the device cannot be detected.
+    """
+    try:
+        return await v8_to_v9_detect_local_model(hass, entry)
+    except SyrConnectConnectionError as err:
+        # Leaves the entry at version 8; Home Assistant retries the migration
+        _LOGGER.error(
+            "Cannot migrate %s: the device is not reachable to detect its model, "
+            "the migration is retried: %s",
+            entry.title,
+            err,
+        )
+        raise ConfigEntryNotReady(
+            translation_domain=DOMAIN,
+            translation_key="migration_cannot_connect",
+            translation_placeholders={"device": entry.title},
+        ) from err
+    except SyrConnectError as err:
+        _LOGGER.error(
+            "Cannot migrate %s: the model of the device cannot be detected, remove "
+            "the entry and set up the device again: %s",
+            entry.title,
+            err,
+        )
+        raise ConfigEntryError(
+            translation_domain=DOMAIN,
+            translation_key="migration_model_not_detected",
+            translation_placeholders={"device": entry.title},
+        ) from err
+
+
+@dataclass(frozen=True, kw_only=True)
+class _SyrConnectMigrationStep:
+    """A migration step of a config entry, from `from_version` to the next version.
+
+    A step either fixes the registry (`fix_registry`), and the entry only gets the
+    next version, or returns the update kwargs of the entry (`update_kwargs`: data,
+    unique_id, version), or None to only raise the version.
+    """
+
+    from_version: int
+    # What the step does, for the log
+    description: str
+    fix_registry: Callable[[HomeAssistant, ConfigEntry], None] | None = None
+    update_kwargs: (
+        Callable[[HomeAssistant, ConfigEntry], dict | Awaitable[dict | None] | None]
+        | None
+    ) = None
+
+
+# Migration steps of the config entry, in the order of their versions. The lambdas
+# look the step functions up at call time, so tests can patch them on this module.
+_SYR_CONNECT_MIGRATION_STEPS: tuple[_SyrConnectMigrationStep, ...] = (
+    _SyrConnectMigrationStep(
+        from_version=1,
+        description="set the API type (legacy entries always used the XML API) and "
+        "prefix the unique_id with it",
+        update_kwargs=lambda hass, entry: v1_to_v2_update_kwargs(entry),
+    ),
+    _SyrConnectMigrationStep(
+        from_version=2,
+        description="reset the getFLO unit override from L/min to L/h",
+        fix_registry=lambda hass, entry: v2_to_v3_fix_flo_unit(hass, entry),
+    ),
+    _SyrConnectMigrationStep(
+        from_version=3,
+        description="add the SYR Connect service to cloud entries created before "
+        "multi-service support",
+        update_kwargs=lambda hass, entry: v3_to_v4_add_service(entry),
+    ),
+    _SyrConnectMigrationStep(
+        from_version=4,
+        description="remove the stale binary_sensor sta (moved to the sensor platform)",
+        fix_registry=lambda hass, entry: v4_to_v5_remove_sta_binary_sensor(hass, entry),
+    ),
+    _SyrConnectMigrationStep(
+        from_version=5,
+        description='reset the getNPS unit override from "" to "s"',
+        fix_registry=lambda hass, entry: v5_to_v6_fix_nps_unit(hass, entry),
+    ),
+    _SyrConnectMigrationStep(
+        from_version=6,
+        description="prefix the entity unique_ids with the config entry, so the same "
+        "device of two hubs no longer collides",
+        fix_registry=lambda hass, entry: v6_to_v7_scope_unique_id_by_entry(hass, entry),
+    ),
+    _SyrConnectMigrationStep(
+        from_version=7,
+        description="rename the Optima T2.3 and the generic NeoSoft local models",
+        update_kwargs=lambda hass, entry: v7_to_v8_rename_local_model(entry),
+    ),
+    _SyrConnectMigrationStep(
+        from_version=8,
+        description="replace the removed generic MultiController local models with "
+        "the model detected from the device",
+        update_kwargs=_async_v8_to_v9_detect_local_model,
+    ),
+    _SyrConnectMigrationStep(
+        from_version=9,
+        description="add the cloud service to the unique_id of cloud entries, so the "
+        "same e-mail address can be set up for two services",
+        update_kwargs=lambda hass, entry: v9_to_v10_entry_unique_id_by_service(entry),
+    ),
+)
+
+
 async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Migrate config entry to the current version.
 
-    Version history:
-      1 → 2: Added CONF_API_TYPE field and updated unique_id to include
-             API type prefix (legacy entries always used the XML API).
-      2 → 3: Reset entity registry unit override for getFLO sensors from
-             L/min to L/h (native_unit_of_measurement changed in code).
-      3 → 4: Add CONF_SERVICE to XML API entries that were created before
-             multi-service support was introduced (defaults to SYR Connect).
-      4 → 5: Remove stale binary_sensor 'sta' entities from the entity
-             registry (the entity was migrated to the sensor platform).
-      5 → 6: Reset entity registry unit override for getNPS sensors from
-             "" to "s" (native_unit_of_measurement changed to UnitOfTime.SECONDS).
-      6 → 7: Prefix entity unique_ids with the owning config entry ID so the
-             same physical device reachable from multiple hubs (config
-             entries) no longer collides on a shared unique_id.
-      7 → 8: Rename the Optima T2.3 and the generic NeoSoft local JSON API models
-             (CONF_MODEL).
-      8 → 9: Replace removed generic MultiController local JSON API models
-             (CONF_MODEL) with the model detected from the device.
-      9 → 10: Add the cloud service (cf_bundle_identifier) to the unique_id of
-             cloud entries, so the same e-mail address can be set up for two
-             services, which have accounts of their own.
+    Runs the steps of `_SYR_CONNECT_MIGRATION_STEPS` from the version of the entry on,
+    one version at a time.
 
     Raises:
         ConfigEntryNotReady: If the local device cannot be reached to detect its
@@ -112,143 +210,31 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "Migrating config entry '%s' from version %d", entry.title, entry.version
     )
 
-    # Delegate migration steps to helpers in migrations.py
-    # Migrate v1 -> v2
-    # Integration version 1.19.0 -> 1.20.0
-    if entry.version == 1:
-        update_kwargs = v1_to_v2_update_kwargs(entry)
-        if update_kwargs:
-            # Mask sensitive fields for logging only;
-            safe_update = _mask_sensitive_data(update_kwargs)
-            _LOGGER.debug(
-                "Applying v1->v2 migration for entry %s: %s",
-                entry.entry_id,
-                safe_update,
-            )
-            hass.config_entries.async_update_entry(entry, **update_kwargs)
-
-    # Migrate v2 -> v3
-    # Integration version 1.21.0 -> 1.22.0
-    if entry.version == 2:
+    for step in _SYR_CONNECT_MIGRATION_STEPS:
+        if entry.version != step.from_version:
+            continue
         _LOGGER.debug(
-            "Applying v2->v3 migration for entry %s: resetting getFLO unit override",
+            "Applying v%d->v%d migration for entry %s: %s",
+            step.from_version,
+            step.from_version + 1,
             entry.entry_id,
+            step.description,
         )
-        v2_to_v3_fix_flo_unit(hass, entry)
-        hass.config_entries.async_update_entry(entry, version=3)
-
-    # Migrate v3 -> v4
-    # Integration version 1.21.0 -> 1.22.0
-    if entry.version == 3:
-        update_kwargs = v3_to_v4_add_service(entry)
-        if update_kwargs:
-            safe_update = _mask_sensitive_data(update_kwargs)
-            _LOGGER.debug(
-                "Applying v3->v4 migration for entry %s: %s",
-                entry.entry_id,
-                safe_update,
-            )
-            hass.config_entries.async_update_entry(entry, **update_kwargs)
-        else:
-            hass.config_entries.async_update_entry(entry, version=4)
-
-    # Migrate v4 -> v5
-    # Integration version: sta entity moved from binary_sensor to sensor
-    if entry.version == 4:
-        _LOGGER.debug(
-            "Applying v4->v5 migration for entry %s: removing stale sta binary_sensor",
-            entry.entry_id,
-        )
-        v4_to_v5_remove_sta_binary_sensor(hass, entry)
-        hass.config_entries.async_update_entry(entry, version=5)
-
-    # Migrate v5 -> v6
-    # Integration version: getNPS native_unit_of_measurement changed from "" to "s"
-    if entry.version == 5:
-        _LOGGER.debug(
-            "Applying v5->v6 migration for entry %s: resetting getNPS unit override",
-            entry.entry_id,
-        )
-        v5_to_v6_fix_nps_unit(hass, entry)
-        hass.config_entries.async_update_entry(entry, version=6)
-
-    # Migrate v6 -> v7
-    # Integration version: unique_id scoped per config entry to avoid cross-hub collisions
-    if entry.version == 6:
-        _LOGGER.debug(
-            "Applying v6->v7 migration for entry %s: scoping unique_ids by entry",
-            entry.entry_id,
-        )
-        v6_to_v7_scope_unique_id_by_entry(hass, entry)
-        hass.config_entries.async_update_entry(entry, version=7)
-
-    # Migrate v7 -> v8
-    # Integration version: Optima T2.3 local model renamed, generic NeoSoft is the NeoSoft 5000
-    if entry.version == 7:
-        update_kwargs = v7_to_v8_rename_local_model(entry)
+        update_kwargs = None
+        if step.fix_registry is not None:
+            step.fix_registry(hass, entry)
+        if step.update_kwargs is not None:
+            result = step.update_kwargs(hass, entry)
+            update_kwargs = await result if inspect.isawaitable(result) else result
         if update_kwargs:
             _LOGGER.debug(
-                "Applying v7->v8 migration for entry %s: %s",
+                "Updating entry %s: %s",
                 entry.entry_id,
                 _mask_sensitive_data(update_kwargs),
             )
             hass.config_entries.async_update_entry(entry, **update_kwargs)
         else:
-            hass.config_entries.async_update_entry(entry, version=8)
-
-    # Migrate v8 -> v9
-    # Integration version: generic MultiController local models removed
-    if entry.version == 8:
-        try:
-            update_kwargs = await v8_to_v9_detect_local_model(hass, entry)
-        except SyrConnectConnectionError as err:
-            # Leaves the entry at version 8; Home Assistant retries the migration
-            _LOGGER.error(
-                "Cannot migrate %s: the device is not reachable to detect its model, "
-                "the migration is retried: %s",
-                entry.title,
-                err,
-            )
-            raise ConfigEntryNotReady(
-                translation_domain=DOMAIN,
-                translation_key="migration_cannot_connect",
-                translation_placeholders={"device": entry.title},
-            ) from err
-        except SyrConnectError as err:
-            _LOGGER.error(
-                "Cannot migrate %s: the model of the device cannot be detected, remove "
-                "the entry and set up the device again: %s",
-                entry.title,
-                err,
-            )
-            raise ConfigEntryError(
-                translation_domain=DOMAIN,
-                translation_key="migration_model_not_detected",
-                translation_placeholders={"device": entry.title},
-            ) from err
-        if update_kwargs:
-            _LOGGER.debug(
-                "Applying v8->v9 migration for entry %s: %s",
-                entry.entry_id,
-                _mask_sensitive_data(update_kwargs),
-            )
-            hass.config_entries.async_update_entry(entry, **update_kwargs)
-        else:
-            hass.config_entries.async_update_entry(entry, version=9)
-
-    # Migrate v9 -> v10
-    # Integration version: the unique_id of cloud entries contains the service
-    if entry.version == 9:
-        update_kwargs = v9_to_v10_entry_unique_id_by_service(entry)
-        if update_kwargs:
-            _LOGGER.debug(
-                "Applying v9->v10 migration for entry %s: %s",
-                entry.entry_id,
-                update_kwargs,
-            )
-            hass.config_entries.async_update_entry(entry, **update_kwargs)
-        else:
-            hass.config_entries.async_update_entry(entry, version=10)
+            hass.config_entries.async_update_entry(entry, version=step.from_version + 1)
 
     return True
 
