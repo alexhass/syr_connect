@@ -594,6 +594,22 @@ class SyrConnectSensorEntityDescription(SensorEntityDescription):
     ) = None
 
 
+def _profile_descriptions(
+    template: SyrConnectSensorEntityDescription,
+) -> tuple[SyrConnectSensorEntityDescription, ...]:
+    """Return the descriptions of one setting of the leak protection profiles 1-8.
+
+    The eight profiles have the same settings, with the profile number appended to
+    the key: getPA1-getPA8, getPV1-getPV8, ...
+
+    Args:
+        template: Description of the setting; its key is the key without the number
+    """
+    return tuple(
+        replace(template, key=f"{template.key}{number}") for number in range(1, 9)
+    )
+
+
 # Descriptions of all known sensor keys.
 #
 # Only API keys listed here will become sensor entities. Any key returned by
@@ -1210,437 +1226,77 @@ _SYR_CONNECT_SENSOR_TYPES: tuple[SyrConnectSensorEntityDescription, ...] = (
         value_fn=_value_ul,
     ),
     # --- Leak Protection Profiles 1-8 (LEXplus10SL) ---
-    SyrConnectSensorEntityDescription(
-        key="getPA1",  # Profile 1 active flag (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPA2",  # Profile 2 active flag (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPA3",  # Profile 3 active flag (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPA4",  # Profile 4 active flag (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPA5",  # Profile 5 active flag (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPA6",  # Profile 6 active flag (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPA7",  # Profile 7 active flag (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPA8",  # Profile 8 active flag (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPB1",  # Profile 1 buzzer alert (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPB2",  # Profile 2 buzzer alert (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPB3",  # Profile 3 buzzer alert (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPB4",  # Profile 4 buzzer alert (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPB5",  # Profile 5 buzzer alert (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPB6",  # Profile 6 buzzer alert (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPB7",  # Profile 7 buzzer alert (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPB8",  # Profile 8 buzzer alert (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPF1",  # Profile 1 flow leak threshold (l/h)
-        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_HOUR,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPF2",  # Profile 2 flow leak threshold (l/h)
-        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_HOUR,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPF3",  # Profile 3 flow leak threshold (l/h)
-        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_HOUR,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPF4",  # Profile 4 flow leak threshold (l/h)
-        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_HOUR,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPF5",  # Profile 5 flow leak threshold (l/h)
-        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_HOUR,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPF6",  # Profile 6 flow leak threshold (l/h)
-        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_HOUR,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPF7",  # Profile 7 flow leak threshold (l/h)
-        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_HOUR,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPF8",  # Profile 8 flow leak threshold (l/h)
-        native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_HOUR,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPM1",  # Profile 1 microleakage test enabled (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPM2",  # Profile 2 microleakage test enabled (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPM3",  # Profile 3 microleakage test enabled (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPM4",  # Profile 4 microleakage test enabled (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPM5",  # Profile 5 microleakage test enabled (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPM6",  # Profile 6 microleakage test enabled (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPM7",  # Profile 7 microleakage test enabled (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPM8",  # Profile 8 microleakage test enabled (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPN1",  # Profile 1 name
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPN2",  # Profile 2 name
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPN3",  # Profile 3 name
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPN4",  # Profile 4 name
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPN5",  # Profile 5 name
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPN6",  # Profile 6 name
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPN7",  # Profile 7 name
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPN8",  # Profile 8 name
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPR1",  # Profile 1 return time to present profile (h)
-        native_unit_of_measurement=UnitOfTime.HOURS,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPR2",  # Profile 2 return time to present profile (h)
-        native_unit_of_measurement=UnitOfTime.HOURS,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPR3",  # Profile 3 return time to present profile (h)
-        native_unit_of_measurement=UnitOfTime.HOURS,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPR4",  # Profile 4 return time to present profile (h)
-        native_unit_of_measurement=UnitOfTime.HOURS,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPR5",  # Profile 5 return time to present profile (h)
-        native_unit_of_measurement=UnitOfTime.HOURS,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPR6",  # Profile 6 return time to present profile (h)
-        native_unit_of_measurement=UnitOfTime.HOURS,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPR7",  # Profile 7 return time to present profile (h)
-        native_unit_of_measurement=UnitOfTime.HOURS,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPR8",  # Profile 8 return time to present profile (h)
-        native_unit_of_measurement=UnitOfTime.HOURS,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPT1",  # Profile 1 max. leak duration (min)
-        native_unit_of_measurement=UnitOfTime.MINUTES,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPT2",  # Profile 2 max. leak duration (min)
-        native_unit_of_measurement=UnitOfTime.MINUTES,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPT3",  # Profile 3 max. leak duration (min)
-        native_unit_of_measurement=UnitOfTime.MINUTES,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPT4",  # Profile 4 max. leak duration (min)
-        native_unit_of_measurement=UnitOfTime.MINUTES,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPT5",  # Profile 5 max. leak duration (min)
-        native_unit_of_measurement=UnitOfTime.MINUTES,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPT6",  # Profile 6 max. leak duration (min)
-        native_unit_of_measurement=UnitOfTime.MINUTES,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPT7",  # Profile 7 max. leak duration (min)
-        native_unit_of_measurement=UnitOfTime.MINUTES,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPT8",  # Profile 8 max. leak duration (min)
-        native_unit_of_measurement=UnitOfTime.MINUTES,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPV1",  # Profile 1 max. leak volume (l)
-        native_unit_of_measurement=UnitOfVolume.LITERS,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPV2",  # Profile 2 max. leak volume (l)
-        native_unit_of_measurement=UnitOfVolume.LITERS,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPV3",  # Profile 3 max. leak volume (l)
-        native_unit_of_measurement=UnitOfVolume.LITERS,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPV4",  # Profile 4 max. leak volume (l)
-        native_unit_of_measurement=UnitOfVolume.LITERS,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPV5",  # Profile 5 max. leak volume (l)
-        native_unit_of_measurement=UnitOfVolume.LITERS,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPV6",  # Profile 6 max. leak volume (l)
-        native_unit_of_measurement=UnitOfVolume.LITERS,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPV7",  # Profile 7 max. leak volume (l)
-        native_unit_of_measurement=UnitOfVolume.LITERS,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPV8",  # Profile 8 max. leak volume (l)
-        native_unit_of_measurement=UnitOfVolume.LITERS,
-        suggested_display_precision=0,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPW1",  # Profile 1 leak warning enabled (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPW2",  # Profile 2 leak warning enabled (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPW3",  # Profile 3 leak warning enabled (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPW4",  # Profile 4 leak warning enabled (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPW5",  # Profile 5 leak warning enabled (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPW6",  # Profile 6 leak warning enabled (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPW7",  # Profile 7 leak warning enabled (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-        value_fn=_value_leak_protection_flag,
-    ),
-    SyrConnectSensorEntityDescription(
-        key="getPW8",  # Profile 8 leak warning enabled (true/false)
-        entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
-        value_fn=_value_leak_protection_flag,
+    *_profile_descriptions(
+        SyrConnectSensorEntityDescription(
+            key="getPA",  # Active flag (true/false)
+            entity_category=EntityCategory.DIAGNOSTIC,
+            entity_registry_enabled_default=False,
+            value_fn=_value_leak_protection_flag,
+        )
+    ),
+    *_profile_descriptions(
+        SyrConnectSensorEntityDescription(
+            key="getPB",  # Buzzer alert (true/false)
+            entity_category=EntityCategory.DIAGNOSTIC,
+            value_fn=_value_leak_protection_flag,
+        )
+    ),
+    *_profile_descriptions(
+        SyrConnectSensorEntityDescription(
+            key="getPF",  # Flow leak threshold (l/h)
+            native_unit_of_measurement=UnitOfVolumeFlowRate.LITERS_PER_HOUR,
+            suggested_display_precision=0,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            entity_registry_enabled_default=False,
+        )
+    ),
+    *_profile_descriptions(
+        SyrConnectSensorEntityDescription(
+            key="getPM",  # Microleakage test enabled (true/false)
+            entity_category=EntityCategory.DIAGNOSTIC,
+            value_fn=_value_leak_protection_flag,
+        )
+    ),
+    *_profile_descriptions(
+        SyrConnectSensorEntityDescription(
+            key="getPN",  # Name
+            entity_category=EntityCategory.DIAGNOSTIC,
+            entity_registry_enabled_default=False,
+        )
+    ),
+    *_profile_descriptions(
+        SyrConnectSensorEntityDescription(
+            key="getPR",  # Return time to present profile (h)
+            native_unit_of_measurement=UnitOfTime.HOURS,
+            suggested_display_precision=0,
+            entity_category=EntityCategory.DIAGNOSTIC,
+        )
+    ),
+    *_profile_descriptions(
+        SyrConnectSensorEntityDescription(
+            key="getPT",  # Max. leak duration (min)
+            native_unit_of_measurement=UnitOfTime.MINUTES,
+            suggested_display_precision=0,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            entity_registry_enabled_default=False,
+        )
+    ),
+    *_profile_descriptions(
+        SyrConnectSensorEntityDescription(
+            key="getPV",  # Max. leak volume (l)
+            native_unit_of_measurement=UnitOfVolume.LITERS,
+            suggested_display_precision=0,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            entity_registry_enabled_default=False,
+        )
+    ),
+    *_profile_descriptions(
+        SyrConnectSensorEntityDescription(
+            key="getPW",  # Leak warning enabled (true/false)
+            entity_category=EntityCategory.DIAGNOSTIC,
+            entity_registry_enabled_default=False,
+            value_fn=_value_leak_protection_flag,
+        )
     ),
     SyrConnectSensorEntityDescription(
         key="getPRF",  # Currently active leak protection profile index
