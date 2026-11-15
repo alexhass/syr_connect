@@ -24,7 +24,6 @@ Options:
     --stat-unit STRING          Unit attribute of <sh>, e.g. "°C" (with --get-statistics METHOD)
     --stat-rtyp INT             Report type attribute rtyp of <sh> (with --get-statistics METHOD)
     --log-file PATH             Write output additionally to this file (no file written by default)
-    --show-password             Show password in log output (default: masked as "***")
     --no-decrypt                Skip decryption step; also prevents set commands from running
 
 Examples:
@@ -85,7 +84,6 @@ import logging
 from pathlib import Path
 import sys
 from typing import Any, NoReturn
-from xml.etree import ElementTree as ET
 
 # ---------------------------------------------------------------------------
 # Make the custom_components package importable when running from repo root
@@ -131,7 +129,6 @@ def _exit_missing_dependency(err: ModuleNotFoundError) -> NoReturn:
 
 try:
     import aiohttp
-    import defusedxml.ElementTree as DefusedET
 
     from custom_components.syr_connect.aiosyrconnect import (
         API_SERVICES,
@@ -218,19 +215,6 @@ _LOGGER = logging.getLogger("debug_cli")
 # ---------------------------------------------------------------------------
 
 
-def _mask_login_password(xml_data: str) -> str:
-    """Return a login payload with the password replaced by "***".
-
-    The payload is parsed instead of searched: the XML escapes & < > and ", so the
-    plain password is not always found in it.
-    """
-    declaration = xml_data[: xml_data.index("?>") + 2]
-    root = DefusedET.fromstring(xml_data)
-    for usr in root.iter("usr"):
-        usr.set("v", "***")
-    return declaration + ET.tostring(root, encoding="unicode")
-
-
 def _parse_set_value(raw: str) -> Any:
     """Parse a CLI --set-value string into the most appropriate Python type.
 
@@ -270,13 +254,11 @@ class DebugXmlClient:
         api_package_name: str,  # embedded in app_version by caller; selects the service key
         user_agent: str,
         skip_decrypt: bool = False,
-        show_password: bool = False,
     ) -> None:
         """Initialize the client with the endpoints and client constants to use."""
         self.username = username
         self.password = password
         self.skip_decrypt = skip_decrypt
-        self.show_password = show_password
 
         # Derived URLs -- same path segments as production, keyed by operation
         self.login_url = (
@@ -332,8 +314,11 @@ class DebugXmlClient:
         xml_data = self.payload_builder.build_login_payload(
             self.username, self.password
         )
-        log_payload = xml_data if self.show_password else _mask_login_password(xml_data)
-        _LOGGER.debug("--- Login request payload ---\n%s", log_payload)
+        # The payload carries the credentials, so only its size is logged
+        _LOGGER.debug(
+            "--- Login request payload omitted (contains credentials); size=%d chars ---",
+            len(xml_data),
+        )
 
         _LOGGER.info("POST %s", self.login_url)
         try:
@@ -563,11 +548,6 @@ def _parse_args() -> argparse.Namespace:
         "--password", required=True, help="SYR Connect account password"
     )
     parser.add_argument(
-        "--show-password",
-        action="store_true",
-        help="Show password in log output (default: masked as ***)",
-    )
-    parser.add_argument(
         "--base-url",
         default="https://syrconnect.de",
         help="API base URL (default: %(default)s)",
@@ -787,7 +767,6 @@ async def _run(args: argparse.Namespace) -> None:
             api_package_name=args.api_package_name,
             user_agent=args.user_agent,
             skip_decrypt=args.no_decrypt,
-            show_password=args.show_password,
         )
 
         try:
