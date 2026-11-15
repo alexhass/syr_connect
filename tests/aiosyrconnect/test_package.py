@@ -17,7 +17,6 @@ _LIBRARY_DISTRIBUTIONS = {
     "aiohttp": "aiohttp",
     "Cryptodome": "pycryptodomex",
     "defusedxml": "defusedxml",
-    "yarl": "yarl",
 }
 
 

@@ -10,6 +10,7 @@ import logging
 from pathlib import Path
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
+from urllib.parse import urlsplit
 
 import aiohttp
 import pytest
@@ -134,9 +135,9 @@ def test_construct_url_with_ipv6_host_is_parseable(user_agent: str) -> None:
         user_agent=user_agent,
     )
 
-    url = client._construct_url("get", "all")
+    url = urlsplit(client._construct_url("get", "all"))
 
-    assert url.host == "fe80::1"
+    assert url.hostname == "fe80::1"
     assert url.port == 5333
     assert url.path == "/trio/get/all"
 
@@ -1020,7 +1021,7 @@ def test_build_set_url_keeps_value_and_lowercases_command(
         user_agent=user_agent,
     )
 
-    # All values are now sent WITHOUT percent-encoding
+    # The colon of a time stays as it is
     url = api._build_set_url("RTM", "02:15")
     assert "/set/rtm/02:15" in str(url)
 

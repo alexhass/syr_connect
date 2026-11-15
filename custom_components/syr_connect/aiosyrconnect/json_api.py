@@ -30,7 +30,6 @@ import logging
 from typing import Any
 
 import aiohttp
-from yarl import URL
 
 from .const import JSON_SESSION_TIMEOUT_MINUTES
 from .exceptions import (
@@ -239,18 +238,20 @@ class SyrConnectJsonAPI:
             )
             await self.login()
 
-    def _construct_url(self, *path_parts: str) -> URL:
-        """Build a URL from path components, without percent-encoding them.
+    def _construct_url(self, *path_parts: str) -> str:
+        """Build a URL from path components, joined as they are.
 
         The device firmware does not decode percent-encoded characters (see
-        _build_set_url), so the parts are joined as they are.
+        _build_set_url). aiohttp sends the characters that a URL path allows as they
+        are, such as ":", "(", ")" and "/"; it only percent-encodes the others, such as
+        a space, "%" or non-ASCII characters, which no value of the known commands has.
 
         Examples:
             _construct_url("set", "rtm", "02:30")
-            -> URL("http://device:5333/neosoft/set/rtm/02:30")
+            -> "http://device:5333/neosoft/set/rtm/02:30"
 
             _construct_url("set", "ADM", "(2)f")
-            -> URL("http://device:5333/neosoft/set/ADM/(2)f")
+            -> "http://device:5333/neosoft/set/ADM/(2)f"
 
         Args:
             *path_parts: Path components to append to base URL (e.g., "set", "RTM", "value")
@@ -266,7 +267,7 @@ class SyrConnectJsonAPI:
             raise ValueError("Base URL not configured for JSON API client")
 
         parts = [str(part) for part in path_parts]
-        return URL(f"{base.rstrip('/')}/{'/'.join(parts)}")
+        return f"{base.rstrip('/')}/{'/'.join(parts)}"
 
     @staticmethod
     def _strip_set_prefix(command: str) -> str:
@@ -295,20 +296,20 @@ class SyrConnectJsonAPI:
         """
         return f"set{str(cmd).upper()}{value}"
 
-    def _build_set_url(self, cmd: str, value: Any) -> URL:
+    def _build_set_url(self, cmd: str, value: Any) -> str:
         """Build the URL for a set command using normalized cmd.
 
-        Values are sent without percent-encoding because the device firmware
-        does not decode percent-encoded characters (e.g. %3A → :) and rejects
-        encoded values. Special characters such as colons in RTM time strings
-        (e.g. "02:30") must therefore be sent literally.
+        The device firmware does not decode percent-encoded characters (e.g. %3A
+        for ":") and rejects encoded values. The colon of an RTM time ("02:30") must
+        therefore arrive as it is, which it does: a URL path allows it (see
+        _construct_url).
         """
         url_cmd = self._normalize_cmd_for_url(cmd)
         return self._construct_url("set", url_cmd, str(value))
 
     async def _execute_http_get(
         self,
-        url: URL | str,
+        url: str,
         *,
         timeout: int = _DEFAULT_TIMEOUT,
         operation: str = "request",
@@ -316,7 +317,7 @@ class SyrConnectJsonAPI:
         """Central method for all HTTP requests with unified error handling.
 
         Args:
-            url: Target URL (yarl.URL or string)
+            url: Target URL
             timeout: Request timeout in seconds
             operation: Description of operation for error messages
 
@@ -434,7 +435,7 @@ class SyrConnectJsonAPI:
 
         # --- Check for API-Level Error Codes ---
         # Even with HTTP 200, the API may return error codes like "NSC" or "MIMA"
-        self._validate_response_errors(data, str(url))
+        self._validate_response_errors(data, url)
 
         _LOGGER.debug("JSON API: %s - Success", operation)
         return data
@@ -674,7 +675,7 @@ class SyrConnectJsonAPI:
         elif isinstance(value, str) and value.lower() in ("true", "false"):
             value = value.lower()
 
-        # Build URL with Path Encoding using helper (handles ADM exception)
+        # Build the URL with the helper (the command is lowercase, except ADM)
         url = self._build_set_url(base_cmd, value)
 
         _LOGGER.debug(
