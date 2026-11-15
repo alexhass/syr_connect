@@ -49,7 +49,7 @@ Conventions for all Python code in `custom_components/syr_connect/` and `tests/`
 
 ## Library aiosyrconnect
 
-The code that talks to the cloud and to the devices is the library `aiosyrconnect` in `custom_components/syr_connect/aiosyrconnect/`. Home Assistant core only accepts integrations whose communication is in a library on PyPI; the library is to move to a repository of its own and to PyPI later, with only its import changed.
+The code that talks to the cloud and to the devices is the library `aiosyrconnect` in `custom_components/syr_connect/aiosyrconnect/`. It keeps the protocol separate from Home Assistant.
 
 - The library imports neither Home Assistant nor a module of the integration, and only relative imports from its own package (`from .models import ...`, never `from ..const import ...`). `tests/aiosyrconnect/test_package.py` checks this, also for the tests of the library.
 - What the integration uses is public: exported in `aiosyrconnect/__init__.py` (`__all__`), without leading underscore. The integration imports it from the package (`from .aiosyrconnect import SyrConnectXmlAPI`); only the tests and `scripts/debug_cli.py` import the modules of the library directly.
@@ -59,6 +59,7 @@ The code that talks to the cloud and to the devices is the library `aiosyrconnec
 - Comments and docstrings of the library speak of the caller, not of the coordinator, the config flow or the entities: the library does not know who uses it.
 - The modules of the cloud start with `xml_` (`xml_api.py`, `xml_parser.py`, `xml_payload.py`, `xml_checksum.py`, `xml_encryption.py`), the local API is `json_api.py`. Data types are in `models.py`, errors in `exceptions.py`.
 - The tests of the library live in `tests/aiosyrconnect/`, one test module per library module (`test_xml_api.py` for `xml_api.py`). They use only the library and the fixtures in `tests/fixtures/`.
+- A new third-party import of the library is added to the Requirements of `aiosyrconnect/README.md`; `tests/aiosyrconnect/test_package.py` checks this.
 
 ## Logging
 

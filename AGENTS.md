@@ -1,6 +1,6 @@
 # SYR Connect – Instructions for AI Agents
 
-Home Assistant custom integration for SYR water treatment and leak protection devices. It talks to the SYR Connect cloud (XML API) and to the local device API (JSON API) through the library `aiosyrconnect` (`custom_components/syr_connect/aiosyrconnect/`: `xml_api.py`, `json_api.py`), which is to be published on PyPI later and must not depend on Home Assistant. The code lives in `custom_components/syr_connect/`, the tests in `tests/` (the tests of the library in `tests/aiosyrconnect/`), the protocol documentation in `docs/`.
+Home Assistant custom integration for SYR water treatment and leak protection devices. It talks to the SYR Connect cloud (XML API) and to the local device API (JSON API) through the library `aiosyrconnect` (`custom_components/syr_connect/aiosyrconnect/`: `xml_api.py`, `json_api.py`), which must not depend on Home Assistant. The code lives in `custom_components/syr_connect/`, the tests in `tests/` (the tests of the library in `tests/aiosyrconnect/`), the protocol documentation in `docs/`.
 
 ## Rules to Read First
 

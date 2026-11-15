@@ -14,9 +14,8 @@ Modules:
 - exceptions: errors raised by the clients
 - const: URLs, keys, client identity and the cloud services
 
-It lives inside the integration for now and is to be published on PyPI as
-aiosyrconnect. Until then it must not import Home Assistant or any module of the
-integration (tests/aiosyrconnect/test_package.py checks this).
+It lives inside the integration (see README.md) and must not import Home Assistant or any
+module of the integration (tests/aiosyrconnect/test_package.py checks this).
 """
 
 from .const import API_SERVICES, DEFAULT_CF_BUNDLE_IDENTIFIER
@@ -40,6 +39,8 @@ from .models import (
 )
 from .xml_api import SyrConnectXmlAPI
 from .xml_parser import is_device_offline
+
+__version__ = "1.0.0"
 
 __all__ = [
     "API_SERVICES",

@@ -70,13 +70,117 @@ def mask_ug_value(payload: str) -> str:
     return re.sub(r'(?i)(?<![\w:.-])(ug\s*=\s*")[^"]*', r"\1***", payload)
 
 
+# Characters of a token (RFC 9110, section 5.6.2)
+_TCHAR = frozenset(
+    "!#$%&'*+-.^_`|~0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+)
+
+# Whitespace between the products and comments of a User-Agent (RWS)
+_RWS = frozenset(" \t")
+
+
+def _is_ctext(char: str) -> bool:
+    """Return True for a character allowed as is in a comment (ctext, RFC 9110 5.6.5)."""
+    code = ord(char)
+    return (
+        char in _RWS
+        or 0x21 <= code <= 0x27
+        or 0x2A <= code <= 0x5B
+        or 0x5D <= code <= 0x7E
+        or 0x80 <= code <= 0xFF
+    )
+
+
+def _is_quoted_pair_char(char: str) -> bool:
+    """Return True for a character allowed after a backslash (quoted-pair)."""
+    code = ord(char)
+    return char in _RWS or 0x21 <= code <= 0x7E or 0x80 <= code <= 0xFF
+
+
+def _token_end(value: str, pos: int) -> int | None:
+    """Return the end of the token at pos, or None if there is none."""
+    end = pos
+    while end < len(value) and value[end] in _TCHAR:
+        end += 1
+    return end if end > pos else None
+
+
+def _product_end(value: str, pos: int) -> int | None:
+    """Return the end of the product (token ["/" token]) at pos, or None."""
+    end = _token_end(value, pos)
+    if end is not None and end < len(value) and value[end] == "/":
+        return _token_end(value, end + 1)
+    return end
+
+
+def _comment_end(value: str, pos: int) -> int | None:
+    """Return the end of the comment at pos, which may contain comments, or None."""
+    depth = 0
+    while pos < len(value):
+        char = value[pos]
+        if char == "\\":
+            if pos + 1 >= len(value) or not _is_quoted_pair_char(value[pos + 1]):
+                return None
+            pos += 2
+            continue
+        if char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+            if depth == 0:
+                return pos + 1
+        elif not _is_ctext(char):
+            return None
+        pos += 1
+    return None
+
+
+def is_valid_user_agent(value: str) -> bool:
+    """Return True if value is a User-Agent as defined by RFC 9110, section 10.1.5.
+
+    User-Agent = product *( RWS ( product / comment ) ), with product = token
+    ["/" product-version], for example ``syr_connect/2.2.0 HomeAssistant/2026.11.1``
+    or ``my-app/1.0 (+https://example.com)``. Leading or trailing whitespace and
+    control characters such as CR and LF are not allowed.
+    """
+    end = _product_end(value, 0)
+    while end is not None and end < len(value):
+        start = end
+        while start < len(value) and value[start] in _RWS:
+            start += 1
+        if start == end or start == len(value):
+            return False
+        if value[start] == "(":
+            end = _comment_end(value, start)
+        else:
+            end = _product_end(value, start)
+    return end is not None
+
+
+def check_user_agent(user_agent: str | None) -> str:
+    """Return the User-Agent of the caller, which must name the caller.
+
+    Raises:
+        ValueError: If it is missing, empty or whitespace only, so no request is sent
+            without a User-Agent of the caller, or if it is no valid User-Agent per
+            RFC 9110 (see is_valid_user_agent)
+    """
+    if user_agent is None or not user_agent.strip():
+        raise ValueError("user_agent is required and must not be empty")
+    if not is_valid_user_agent(user_agent):
+        raise ValueError(
+            f"user_agent is not a valid User-Agent (RFC 9110): {user_agent!r}"
+        )
+    return user_agent
+
+
 class HTTPClient:
     """HTTP client with error handling."""
 
     def __init__(
         self,
         session: aiohttp.ClientSession,
-        user_agent: str,
+        user_agent: str | None = None,
         timeout: int = _DEFAULT_TIMEOUT,
         language: str = CLIENT_OS_LANGUAGE,
     ) -> None:
@@ -84,12 +188,15 @@ class HTTPClient:
 
         Args:
             session: aiohttp client session
-            user_agent: User agent string for requests
+            user_agent: HTTP User-Agent of the requests; names the caller
+
+        Raises:
+            ValueError: If user_agent is missing, empty or no valid User-Agent (RFC 9110)
             timeout: Request timeout in seconds
             language: Locale like ``de-DE`` for the Accept-Language header
         """
         self.session = session
-        self.user_agent = user_agent
+        self.user_agent = check_user_agent(user_agent)
         self.timeout = timeout
         self.language = language
 
