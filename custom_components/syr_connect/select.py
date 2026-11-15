@@ -45,7 +45,7 @@ from .const import (
     DOMAIN,
 )
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
-from .data import SyrConnectDevice
+from .data import SyrConnectDevice, SyrConnectStatus
 from .entity import SyrConnectEntity, async_add_device_entities
 from .exceptions import SyrConnectError
 from .helpers.device import get_device_model
@@ -65,6 +65,7 @@ from .helpers.values import (
     get_sensor_rtm_value,
     is_value_true,
     set_sensor_rtm_value,
+    to_float,
 )
 from .models import SyrConnectModel
 from .sensor import _SYR_CONNECT_SENSOR_DESCRIPTIONS
@@ -455,7 +456,7 @@ class _SyrConnectSelectBuilder:
         self.coordinator = coordinator
         self.device_id = device["id"]
         self.device_name = device["name"]
-        self.status: dict[str, Any] = device.get("status", {})
+        self.status: SyrConnectStatus = device.get("status", {})
         # Only the selects of the device file of the detected model; a model without
         # one has no selects.
         self.model_info = get_device_model(device)
@@ -583,7 +584,7 @@ def _add_softener_selects(b: _SyrConnectSelectBuilder) -> None:
     # Regeneration interval in days (getRPD): the maximum depends on the model; models without
     # regeneration have none. 0 means no interval regeneration, so no select is created.
     max_rpd = b.model_info.maximum_regeneration_interval
-    if max_rpd is not None and b.allowed("getRPD") and float(status["getRPD"]) != 0:
+    if max_rpd is not None and b.allowed("getRPD") and to_float(status["getRPD"]) != 0:
         b.add_numeric("getRPD", 1, max_rpd)
 
     # Raw water hardness (getIWH, 1-100) and outlet/soft water hardness (getOWH, 0-100), plain LEX
@@ -617,7 +618,7 @@ def _add_softener_selects(b: _SyrConnectSelectBuilder) -> None:
             )
 
     # Regeneration mode (getRMO), only for a value >= 1
-    if b.allowed("getRMO", _is_integer) and int(float(status["getRMO"])) >= 1:
+    if b.allowed("getRMO", _is_integer) and int(to_float(status["getRMO"])) >= 1:
         b.add_discrete("getRMO", _SYR_CONNECT_SELECT_RMO_MAP)
 
 
@@ -837,7 +838,7 @@ def _async_setup_muco_conditional_selects(
     # Per-device set of currently added keys ("getLOT" / "getOHW")
     live_keys: dict[str, set[str]] = {}
 
-    def _wanted_keys(status: dict[str, Any], model: SyrConnectModel) -> set[str]:
+    def _wanted_keys(status: SyrConnectStatus, model: SyrConnectModel) -> set[str]:
         # Only for models whose profile maps the cartridge types or sizes to keys (MuCo
         # filling, All in One +). Leak-protection and TrioLock devices also report
         # getCRT/getLOT/getOHW but deliberately do not expose them; a select there would
@@ -1097,7 +1098,7 @@ class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
         if val is None or val == "":
             return None
         try:
-            num = int(float(val))
+            num = int(to_float(val))
             # Return the option whose number (first token; options may carry a unit suffix,
             # e.g. "20 s") equals the scaled display value. Same parsing as async_select_option.
             # A prefix match would wrongly pick "20 s" for the value 2.
@@ -1287,7 +1288,7 @@ class SyrConnectRangedHardnessSelect(SyrConnectHardnessSelect):
             return []
         lowest, highest, step = hardness_range
         if self._sensor_key != "getIWH" and _is_integer(self._status.get("getIWH")):
-            raw_water = int(float(self._status["getIWH"]))
+            raw_water = int(to_float(self._status["getIWH"]))
             highest = min(highest, round_hardness(raw_water * self._factor()))
         unit = self._unit_label()
         return [
@@ -1307,7 +1308,7 @@ class SyrConnectRangedHardnessSelect(SyrConnectHardnessSelect):
         if factor == 1 or hardness_range is None or raw is None or not _is_number(raw):
             return super().current_option
         lowest, _, step = hardness_range
-        value = round_hardness(float(raw) * factor)
+        value = round_hardness(to_float(raw) * factor)
         # A converted value can lie between two steps of the unit (ppm): the step below
         value = lowest + max(value - lowest, 0) // step * step
         return f"{value} {self._unit_label()}"
@@ -1340,7 +1341,7 @@ class SyrConnectRangedHardnessSelect(SyrConnectHardnessSelect):
                 is None
                 or soft is None
                 or not _is_integer(soft)
-                or int(float(soft)) <= raw_water
+                or int(to_float(soft)) <= raw_water
             ):
                 continue
             set_key = f"set{soft_key[3:]}"
@@ -1412,7 +1413,7 @@ class SyrConnectRotationSelect(SyrConnectEntity, SelectEntity):
         if val is None or val == "":
             return None
         try:
-            num = int(float(val))
+            num = int(to_float(val))
             # Return matching raw option (string)
             for opt in self._options:
                 if opt.startswith(f"{num}"):
@@ -1517,7 +1518,7 @@ class SyrConnectDiscreteSelect(SyrConnectEntity, SelectEntity):
                     return opt
             return None
         try:
-            num = int(float(val))
+            num = int(to_float(val))
         except ValueError, TypeError, OverflowError:
             return None
         for opt, mapped in self._options_map.items():
@@ -1667,10 +1668,12 @@ class SyrConnectPrfSelect(SyrConnectEntity, SelectEntity):
         if val is None or val == "":
             return None
         try:
-            idx = int(float(val))
+            idx = int(to_float(val))
         except ValueError, TypeError, OverflowError:
             return None
-        return status.get(f"getPN{idx}")
+        name = status.get(f"getPN{idx}")
+        # A name the JSON API reports as a number is compared as text, like in options
+        return str(name) if name is not None else None
 
     @override
     async def async_select_option(self, option: str) -> None:

@@ -11,7 +11,7 @@ from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.util import slugify
 
 from ..const import API_TYPE_JSON, API_TYPE_XML, CONF_SERVICE, DOMAIN
-from ..data import SyrConnectCoordinatorData, SyrConnectDevice
+from ..data import SyrConnectCoordinatorData, SyrConnectDevice, SyrConnectStatus
 from ..models import MODEL_SIGNATURES, SyrConnectModel
 from .device import get_device_model
 from .profile import get_model_supported_keys
@@ -341,7 +341,7 @@ def registry_cleanup(
     domain: str,
     allowed_keys: set[str] | None = None,
     entry_id: str | None = None,
-    hidden_keys: Callable[[dict[str, Any], SyrConnectModel], set[str]] | None = None,
+    hidden_keys: Callable[[SyrConnectStatus, SyrConnectModel], set[str]] | None = None,
 ) -> None:
     """Remove previously-registered entities from the entity registry.
 

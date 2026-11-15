@@ -5,6 +5,7 @@ from typing import Any, cast
 
 import pytest
 
+from custom_components.syr_connect.data import SyrConnectStatus, SyrConnectStatusValue
 from custom_components.syr_connect.helpers.values import (
     build_set_ab_command,
     get_sensor_ab_value,
@@ -17,13 +18,15 @@ from custom_components.syr_connect.helpers.values import (
     get_sensor_vol_value,
     is_empty_ip,
     set_sensor_rtm_value,
+    to_float,
+    to_int,
 )
 
 
 def test_get_sensor_rtm_and_set_additional() -> None:
     """Test get sensor rtm and set additional."""
     # Combined string representation
-    status = {"getRTH": "", "getRTM": "07:30"}
+    status: SyrConnectStatus = {"getRTH": "", "getRTM": "07:30"}
     assert get_sensor_rtm_value(status) == "07:30"
     assert set_sensor_rtm_value(status, "08:15") == [("setRTM", "08:15")]
 
@@ -172,33 +175,33 @@ def test_get_sensor_net_value_numeric_int() -> None:
 
 def test_get_sensor_iwh_returns_int_when_getiwh_int() -> None:
     """Test get sensor iwh returns int when getIWH int."""
-    status = {"getIWH": 10, "getWHU": 0}
+    status: SyrConnectStatus = {"getIWH": 10, "getWHU": 0}
     assert get_sensor_iwh_value(status) == 10
 
 
 def test_get_sensor_iwh_returns_float_when_getiwh_string_float() -> None:
     """Test get sensor iwh returns float when getIWH string float."""
-    status = {"getIWH": "12.5", "getWHU": 0}
+    status: SyrConnectStatus = {"getIWH": "12.5", "getWHU": 0}
     assert get_sensor_iwh_value(status) == 12.5
 
 
 def test_get_sensor_iwh_derived_from_getcnd_integer_result() -> None:
     """Test get sensor iwh derived from getCND integer result."""
-    status = {"getCND": 540}
+    status: SyrConnectStatus = {"getCND": 540}
     # 540 / 35 == 15.428571... -> float
     assert get_sensor_iwh_value(status) == 540 / 35
 
 
 def test_get_sensor_iwh_derived_from_getcnd_float_result() -> None:
     """Test get sensor iwh derived from getCND float result."""
-    status = {"getCND": "378"}
+    status: SyrConnectStatus = {"getCND": "378"}
     # 378 / 35 == 10.8 -> float
     assert get_sensor_iwh_value(status) == 378 / 35
 
 
 def test_get_sensor_iwh_returns_none_on_invalid_getcnd() -> None:
     """Test get sensor iwh returns none on invalid getCND."""
-    status = {"getCND": "not-a-number"}
+    status: SyrConnectStatus = {"getCND": "not-a-number"}
     assert get_sensor_iwh_value(status) is None
 
 
@@ -210,35 +213,35 @@ def test_get_sensor_iwh_missing_both_returns_none() -> None:
 
 def test_get_sensor_iwh_whu_missing_defaults_to_zero_and_derive() -> None:
     """Test get sensor iwh whu missing defaults to zero and derive."""
-    status = {"getCND": 300, "getWHU": ""}
+    status: SyrConnectStatus = {"getCND": 300, "getWHU": ""}
     # 300 / 35 == 8.571428... -> float
     assert get_sensor_iwh_value(status) == 300 / 35
 
 
 def test_get_sensor_iwh_derived_from_getcnd_zero() -> None:
     """Test get sensor iwh derived from getCND zero."""
-    status = {"getCND": 0}
+    status: SyrConnectStatus = {"getCND": 0}
     # 0 / 35 == 0 -> int
     assert get_sensor_iwh_value(status) == 0
 
 
 def test_get_sensor_iwh_derived_from_getcnd_empty_string() -> None:
     """Test get sensor iwh derived from getCND empty string."""
-    status = {"getCND": ""}
+    status: SyrConnectStatus = {"getCND": ""}
     # empty string treated as missing -> None
     assert get_sensor_iwh_value(status) is None
 
 
 def test_get_sensor_iwh_whu_key_missing_defaults_to_zero_and_derive() -> None:
     """Test get sensor iwh whu key missing defaults to zero and derive."""
-    status = {"getCND": 30}
+    status: SyrConnectStatus = {"getCND": 30}
     # getWHU missing -> default 0; 30 / 35 == 0.857142... -> float
     assert get_sensor_iwh_value(status) == 30 / 35
 
 
 def test_get_sensor_iwh_whu_invalid_string_defaults_to_zero_and_persists() -> None:
     """Invalid getWHU string should default to 0 and be persisted."""
-    status = {"getCND": 300, "getWHU": "invalid"}
+    status: SyrConnectStatus = {"getCND": 300, "getWHU": "invalid"}
     result = get_sensor_iwh_value(status)
     assert result == 300 / 35
     # getWHU should have been normalized to 0
@@ -255,7 +258,7 @@ def test_get_sensor_iwh_whole_float_string_returns_int() -> None:
 
 def test_get_sensor_iwh_invalid_getiwh_falls_back_to_derive() -> None:
     """If explicit getIWH is invalid but getCND exists, derive from getCND."""
-    status = {"getIWH": "bad", "getWHU": 0, "getCND": 350}
+    status: SyrConnectStatus = {"getIWH": "bad", "getWHU": 0, "getCND": 350}
     # Should fall back and compute 350 / 35 == 10
     assert get_sensor_iwh_value(status) == 10
 
@@ -328,24 +331,24 @@ def test_get_sensor_rtm_and_setters() -> None:
     """Test parsing and building of regeneration time values."""
 
     # Combined representation: getRTM contains HH:MM
-    status_combined = {"getRTM": "02:05", "getRTH": None}
+    status_combined: SyrConnectStatus = {"getRTM": "02:05", "getRTH": None}
     assert get_sensor_rtm_value(status_combined) == "02:05"
 
     # Separate numeric values
-    status_sep = {"getRTH": "2", "getRTM": "30"}
+    status_sep: SyrConnectStatus = {"getRTH": "2", "getRTM": "30"}
     assert get_sensor_rtm_value(status_sep) == "02:30"
 
     # Invalid combined string
-    status_bad = {"getRTM": "bad", "getRTH": None}
+    status_bad: SyrConnectStatus = {"getRTM": "bad", "getRTH": None}
     assert get_sensor_rtm_value(status_bad) is None
 
     # set_sensor_rtm_value: combined mode should return single setRTM
-    status_for_set = {"getRTH": None, "getRTM": "02:30"}
+    status_for_set: SyrConnectStatus = {"getRTH": None, "getRTM": "02:30"}
     cmds = set_sensor_rtm_value(status_for_set, "03:45")
     assert cmds == [("setRTM", "03:45")]
 
     # set_sensor_rtm_value: separate mode returns two commands
-    status_for_set2 = {"getRTH": "1", "getRTM": "15"}
+    status_for_set2: SyrConnectStatus = {"getRTH": "1", "getRTM": "15"}
     cmds2 = set_sensor_rtm_value(status_for_set2, "04:20")
     assert cmds2 == [("setRTH", 4), ("setRTM", 20)]
 
@@ -453,7 +456,7 @@ def test_get_sensor_bat_value_non_str_non_numeric_returns_none() -> None:
 
 def test_get_sensor_ab_value_unexpected_type_returns_none() -> None:
     """An unexpected type for getAB should be handled and return None."""
-    assert get_sensor_ab_value({"getAB": object()}) is None
+    assert get_sensor_ab_value({"getAB": cast(Any, object())}) is None
 
 
 def test_get_sensor_avo_value_non_string_non_numeric_returns_none() -> None:
@@ -495,3 +498,39 @@ def test_helpers_infinite_values_count_as_invalid() -> None:
 def test_is_empty_ip(value: Any, expected: Any) -> None:
     """Missing, blank and unspecified IP addresses count as empty."""
     assert is_empty_ip(value) is expected
+
+
+@pytest.mark.parametrize(
+    ("value", "expected_float", "expected_int"),
+    [
+        ("5", 5.0, 5),
+        (7, 7.0, 7),
+        (2.5, 2.5, 2),
+        (True, 1.0, 1),
+    ],
+)
+def test_to_float_and_to_int_convert_like_the_builtins(
+    value: SyrConnectStatusValue, expected_float: float, expected_int: int
+) -> None:
+    """Text and numbers are converted like float() and int()."""
+    assert to_float(value) == expected_float
+    assert to_int(value) == expected_int
+
+
+@pytest.mark.parametrize("value", [None, [1, 2], {"a": 1}])
+def test_to_float_and_to_int_reject_values_that_are_no_number(
+    value: SyrConnectStatusValue,
+) -> None:
+    """None, a list or an object raises TypeError, like float() and int()."""
+    with pytest.raises(TypeError):
+        to_float(value)
+    with pytest.raises(TypeError):
+        to_int(value)
+
+
+def test_to_float_and_to_int_reject_text_that_is_no_number() -> None:
+    """Text that is no number raises ValueError, like float() and int()."""
+    with pytest.raises(ValueError):
+        to_float("abc")
+    with pytest.raises(ValueError):
+        to_int("2.5")

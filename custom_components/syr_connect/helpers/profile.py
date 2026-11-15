@@ -10,6 +10,7 @@ from ..const import (
     _SYR_CONNECT_SENSOR_NOT_CODES_GENERIC,
     _SYR_CONNECT_SENSOR_WRN_CODES_GENERIC,
 )
+from ..data import SyrConnectStatus
 from ..devices import WHU_FACTORS_FROM_DH
 from ..models import SyrConnectModel
 
@@ -204,7 +205,7 @@ def get_cartridge_keys(model: SyrConnectModel) -> set[str]:
 
 
 def get_reported_cartridge_keys(
-    model: SyrConnectModel, status: dict[str, Any]
+    model: SyrConnectModel, status: SyrConnectStatus
 ) -> set[str]:
     """Return the keys of the reported cartridge type (getCRT) and size (getCRS).
 
@@ -231,7 +232,7 @@ def get_reported_cartridge_keys(
 
 
 def get_cartridge_entity_keys(
-    model: SyrConnectModel, status: dict[str, Any], supported_keys: AbstractSet[str]
+    model: SyrConnectModel, status: SyrConnectStatus, supported_keys: AbstractSet[str]
 ) -> set[str]:
     """Return the cartridge keys that become entities for the device.
 

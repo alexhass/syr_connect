@@ -39,7 +39,7 @@ from .const import (
     CONF_SERVICE,
     DOMAIN,
 )
-from .data import SyrConnectCoordinatorData, SyrConnectDevice
+from .data import SyrConnectCoordinatorData, SyrConnectDevice, SyrConnectStatus
 from .devices import SyrConnectStatistic
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError, SyrConnectError
 from .helpers.device import (
@@ -738,7 +738,7 @@ class SyrConnectDataUpdateCoordinator(
             )
 
         device = get_device(self.data, device_id)
-        status: dict[str, Any] = (
+        status: SyrConnectStatus = (
             (device.get("status") or {}) if device is not None else {}
         )
 

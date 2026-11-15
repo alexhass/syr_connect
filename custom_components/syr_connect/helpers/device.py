@@ -6,9 +6,9 @@ from typing import Any
 from homeassistant.helpers.device_registry import DeviceInfo
 
 from ..const import DOMAIN
-from ..data import SyrConnectCoordinatorData, SyrConnectDevice
+from ..data import SyrConnectCoordinatorData, SyrConnectDevice, SyrConnectStatus
 from ..models import UNKNOWN_MODEL, SyrConnectModel, detect_model
-from .values import is_empty_ip
+from .values import is_empty_ip, to_int
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -167,7 +167,7 @@ def build_device_info(
     )
 
 
-def get_current_mac(status: dict[str, Any]) -> str | None:
+def get_current_mac(status: SyrConnectStatus) -> str | None:
     """Return the MAC address of the active network connection.
 
     The connections are checked in this order; the first one with an address and a
@@ -204,7 +204,7 @@ def get_current_mac(status: dict[str, Any]) -> str | None:
         #   0 = Wi-Fi not connected
         if wfs_val is not None:
             try:
-                wfs_int = int(wfs_val)
+                wfs_int = to_int(wfs_val)
             except ValueError, TypeError:
                 wfs_int = None
         else:

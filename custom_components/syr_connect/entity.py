@@ -1,7 +1,7 @@
 """Base entity for SYR Connect."""
 
 from collections.abc import Callable, Iterable
-from typing import Any, override
+from typing import override
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import callback
@@ -10,7 +10,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .coordinator import SyrConnectDataUpdateCoordinator
-from .data import SyrConnectDevice
+from .data import SyrConnectDevice, SyrConnectStatus
 from .helpers.device import (
     build_device_info,
     get_device,
@@ -88,7 +88,7 @@ class SyrConnectEntity(CoordinatorEntity[SyrConnectDataUpdateCoordinator]):
         return get_device(self.coordinator.data, self._device_id)
 
     @property
-    def _status(self) -> dict[str, Any]:
+    def _status(self) -> SyrConnectStatus:
         """Return the status of this entity's device; empty if the device is missing."""
         device = self._device
         return device.get("status", {}) if device is not None else {}

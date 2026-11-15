@@ -48,7 +48,7 @@ from .const import (
     _SYR_CONNECT_SENSOR_UL_VALUE_MAP,
 )
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
-from .data import SyrConnectDevice
+from .data import SyrConnectDevice, SyrConnectStatus, SyrConnectStatusValue
 from .entity import SyrConnectEntity, async_add_device_entities
 from .helpers.device import get_device_model
 from .helpers.profile import (
@@ -76,6 +76,8 @@ from .helpers.values import (
     get_sensor_vol_value,
     is_empty_ip,
     is_value_true,
+    to_float,
+    to_int,
 )
 from .models import SyrConnectModel
 
@@ -102,7 +104,9 @@ def _map_code(model: SyrConnectModel, raw: Any, mapper: Any) -> str | None:
     return sval if sval.strip() != "" else None
 
 
-def _value_ab(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_ab(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Valve shut-off (getAB): lowercase "true"/"false" for translations."""
     ab = get_sensor_ab_value(status)
     if ab is None:
@@ -110,22 +114,30 @@ def _value_ab(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> A
     return "true" if ab else "false"
 
 
-def _value_ala(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_ala(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Alarm code (getALA): translation key based on the device model."""
     return _map_code(sensor.device_model, value, get_sensor_ala_map)
 
 
-def _value_not(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_not(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Notification code (getNOT): translation key."""
     return _map_code(sensor.device_model, value, get_sensor_not_map)
 
 
-def _value_wrn(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_wrn(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Warning code (getWRN): translation key."""
     return _map_code(sensor.device_model, value, get_sensor_wrn_map)
 
 
-def _value_alm(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_alm(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Alarm (getALM): model-aware mapping like getALA, then the static getALM value map.
 
     Without a mapping the raw value is shown. The alarm memory loses its "Alarms:"
@@ -145,14 +157,18 @@ def _value_alm(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     return value
 
 
-def _value_avo(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_avo(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Current flow rate (getAVO): "1655mL" -> numeric value."""
     if value is None or value == "":
         return None
     return get_sensor_avo_value(value)
 
 
-def _value_bap(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_bap(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Battery level (getBAP): the reported percentage, else computed from the voltages.
 
     Without getBAP the level follows the battery voltage (getBAT) between the voltages
@@ -177,7 +193,9 @@ def _value_bap(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     return 0
 
 
-def _value_bar(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_bar(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Pressure (getBAR / getBAR2 / getIBA): "4077 mbar" -> bar."""
     if value is None or value == "":
         return None
@@ -189,7 +207,9 @@ def _value_bar(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     return round(pressure_bar, 3 if precision is None else precision)
 
 
-def _value_bat(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_bat(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Battery (getBAT).
 
     Formats:
@@ -211,7 +231,7 @@ def _value_bat(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
 
 
 def _value_cnd_class(
-    sensor: SyrConnectSensor, status: dict[str, Any], value: Any
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
     """Water hardness range (getCND_class): conductivity (getCND) / 35 -> range in °dH.
 
@@ -231,7 +251,9 @@ def _value_cnd_class(
     return "hard"
 
 
-def _value_cyt(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_cyt(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Remaining regeneration cycle time (getCYT): raw value -> minutes.
 
     Formats:
@@ -244,12 +266,14 @@ def _value_cyt(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
         if isinstance(value, str) and ":" in value:
             minutes, seconds = value.strip().split(":")
             return int(minutes) + int(seconds) / 60
-        return int(float(value))
+        return int(to_float(value))
     except ValueError, TypeError, OverflowError:
         return None
 
 
-def _value_dbd(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_dbd(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Microleakage pressure drop (getDBD): tenths of a bar ("10" -> 1.0 bar)."""
     if value is None or value == "":
         return None
@@ -261,7 +285,9 @@ def _value_dbd(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     return round(pressure_bar, 1 if precision is None else precision)
 
 
-def _value_dom(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_dom(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Microleakage test valve open time (getDOM): raw value -> seconds.
 
     Formats:
@@ -274,7 +300,9 @@ def _value_dom(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     return sensor.numeric_value(value)
 
 
-def _value_dtt(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_dtt(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Microleakage test time (getDTT): UTC "HH:MM" -> local "HH:MM".
 
     The device always stores the time in UTC. It is converted with the time zone of
@@ -294,12 +322,16 @@ def _value_dtt(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     return dt_util.as_local(utc_time).strftime("%H:%M")
 
 
-def _value_iwh(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_iwh(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Incoming water hardness (getIWH): explicit getIWH, otherwise derived from getCND."""
     return sensor.numeric_value(get_sensor_iwh_value(status or {}))
 
 
-def _value_net(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_net(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Mains voltage (getNET).
 
     Formats:
@@ -314,7 +346,9 @@ def _value_net(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     return get_sensor_net_value(value)
 
 
-def _value_lar(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_lar(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Last regeneration (getLAR): local time in seconds since 1970 -> aware datetime.
 
     The device counts its local wall time, not UTC (see docs/known_issues_xml_api.md,
@@ -325,7 +359,7 @@ def _value_lar(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     if value is None or value == "":
         return None
     try:
-        timestamp = int(float(value))
+        timestamp = int(to_float(value))
         # 0 means that no regeneration has happened yet.
         if timestamp == 0:
             return None
@@ -352,12 +386,16 @@ def _map_int(value_map: dict[int, Any], value: Any, default: int) -> Any:
         return None
 
 
-def _value_le(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_le(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Leak protection volume limit, present profile (getLE): raw value -> liters."""
     return _map_int(_SYR_CONNECT_SENSOR_LE_VALUE_MAP, value, 2)
 
 
-def _value_lng(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_lng(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Language (getLNG): strip a trailing annotation, "0 (0=Deutsch 1=English)" -> "0"."""
     if value is None or (isinstance(value, str) and value.strip() == ""):
         return None
@@ -365,7 +403,7 @@ def _value_lng(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
 
 
 def _value_leak_protection_flag(
-    sensor: SyrConnectSensor, status: dict[str, Any], value: Any
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
     """Leak-protection flags (getPAx, getPBx, getPMx, getPWx): "true"/"false" like getAB.
 
@@ -376,12 +414,16 @@ def _value_leak_protection_flag(
     return "true" if is_value_true(value) else "false"
 
 
-def _value_rtm(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_rtm(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Regeneration time (getRTM): "HH:MM" from getRTM, or combined from getRTH + getRTM."""
     return get_sensor_rtm_value(status)
 
 
-def _value_rpw(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_rpw(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Regeneration permitted weekdays (getRPW): bitmask, bit 1 = Monday ... bit 7 = Sunday.
 
     0 -> "0" ("Not specified" translation key), otherwise comma-separated localized
@@ -390,7 +432,7 @@ def _value_rpw(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     if value is None or value == "":
         return None
     try:
-        mask = int(float(value))
+        mask = int(to_float(value))
     except ValueError, TypeError, OverflowError:
         try:
             mask = int(str(value).strip())
@@ -422,7 +464,9 @@ def _value_rpw(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     return ",".join(parts)
 
 
-def _value_sta(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_sta(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Status (getSTA): map the Polish status strings to translation keys.
 
     Translation placeholders are not supported for entity states in the frontend (only
@@ -468,12 +512,16 @@ def _value_sta(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     return mapped
 
 
-def _value_t(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_t(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Maximum flow duration, present / absent profile (getT1): raw value -> hours."""
     return _map_int(_SYR_CONNECT_SENSOR_T1_VALUE_MAP, value, 1)
 
 
-def _value_tmz(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_tmz(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Time zone (getTMZ): offset in quarter hours -> "UTC+hh:mm".
 
     The device accepts -44..48 (UTC-11:00 to UTC+12:00 in steps of 15 minutes).
@@ -494,12 +542,16 @@ def _value_tmz(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     return f"UTC{sign}{hours:02d}:{minutes:02d}"
 
 
-def _value_ul(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_ul(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Leak protection volume limit, absent profile (getUL): raw value -> liters."""
     return _map_int(_SYR_CONNECT_SENSOR_UL_VALUE_MAP, value, 1)
 
 
-def _value_cas(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_cas(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Canister size (getCAS, dosing pump): raw value -> liters.
 
     Formats:
@@ -509,14 +561,14 @@ def _value_cas(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     if value is None or value == "":
         return None
     try:
-        raw = int(float(value))
+        raw = int(to_float(value))
     except ValueError, TypeError, OverflowError:
         return None
     return _SYR_CONNECT_SENSOR_CAS_VALUE_MAP.get(raw)
 
 
 def _value_hygiene_module(
-    sensor: SyrConnectSensor, status: dict[str, Any], value: Any
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
     """Setting of a hygiene module line (getSCF, getCCF, ...): raw value -> number.
 
@@ -528,7 +580,9 @@ def _value_hygiene_module(
     return sensor.numeric_value(number) if number is not None else None
 
 
-def _value_crs(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_crs(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Cartridge size (getCRS): raw value -> liters.
 
     Formats:
@@ -538,7 +592,7 @@ def _value_crs(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     if value is None or value == "":
         return None
     try:
-        raw = int(float(value))
+        raw = int(to_float(value))
     except ValueError, TypeError, OverflowError:
         return None
     if raw == 0:
@@ -546,26 +600,34 @@ def _value_crs(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> 
     return _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.get(raw)
 
 
-def _value_crt(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_crt(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Cartridge type (getCRT): empty means "no cartridge"; translation keys cannot be "", so "none"."""
     if value is None or value == "":
         return "none"
     return str(value)
 
 
-def _value_rcd(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_rcd(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Filling period (getRCD): empty means "undefined"; translation keys cannot be ""."""
     if value is None or value == "":
         return "undefined"
     return str(value)
 
 
-def _value_whu(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_whu(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Water hardness unit (getWHU): raw value -> unit of the model's code family."""
     return get_whu_unit(sensor.device_model, value)
 
 
-def _value_vol(sensor: SyrConnectSensor, status: dict[str, Any], value: Any) -> Any:
+def _value_vol(
+    sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> Any:
     """Total volume (getVOL): strip a prefix like 'Vol[L]6530', then convert it as a number."""
     if value is not None:
         value = get_sensor_vol_value(value)
@@ -589,7 +651,8 @@ class SyrConnectSensorEntityDescription(SensorEntityDescription):
     # Compute the native value for keys with a special format or a value map
     value_fn: (
         Callable[
-            [SyrConnectSensor, dict[str, Any], Any], str | int | float | datetime | None
+            [SyrConnectSensor, SyrConnectStatus, SyrConnectStatusValue],
+            str | int | float | datetime | None,
         ]
         | None
     ) = None
@@ -1970,7 +2033,7 @@ _SYR_CONNECT_SENSOR_SUPPORTED_KEYS = (
 )
 
 
-def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
+def is_sensor_visible(status: SyrConnectStatus, key: str, value: Any) -> bool:
     """Decide whether a reported status key/value should produce a sensor.
 
     This function centralizes all visibility/exclusion rules so both the
@@ -2011,7 +2074,7 @@ def is_sensor_visible(status: dict[str, Any], key: str, value: Any) -> bool:
     return not _is_excluded_when_empty(key, value)
 
 
-def _is_spurious_bap(status: dict[str, Any], value: Any) -> bool:
+def _is_spurious_bap(status: SyrConnectStatus, value: Any) -> bool:
     """Return True if getBAP is a spurious field next to a real battery voltage.
 
     Firmware-bug workaround: getBAP is suppressed only when it is exactly 0/empty
@@ -2028,7 +2091,7 @@ def _is_spurious_bap(status: dict[str, Any], value: Any) -> bool:
     if bat_val is None:
         return False
     try:
-        return float(bat_val) > 0
+        return to_float(bat_val) > 0
     except ValueError, TypeError:
         return False
 
@@ -2058,7 +2121,7 @@ _SYR_CONNECT_SENSOR_CONDITIONAL_KEYS = {
 }
 
 
-def _hidden_sensor_keys(status: dict[str, Any], model: SyrConnectModel) -> set[str]:
+def _hidden_sensor_keys(status: SyrConnectStatus, model: SyrConnectModel) -> set[str]:
     """Return the conditional sensor keys that are hidden for the given device status."""
     return {
         key
@@ -2207,7 +2270,7 @@ def _build_pa_group_sensors(
     registry: er.EntityRegistry,
     device_id: str,
     device_name: str,
-    status: dict[str, Any],
+    status: SyrConnectStatus,
     supported_sensor_keys: set[str],
 ) -> tuple[list[SensorEntity], set[str]]:
     """Create or remove the leak-protection profile sensors controlled by getPA1..getPA8.
@@ -2296,7 +2359,9 @@ def _pa_group_keys(idx: int) -> list[str]:
     ]
 
 
-def _muco_conditional_keys(status: dict[str, Any], model: SyrConnectModel) -> set[str]:
+def _muco_conditional_keys(
+    status: SyrConnectStatus, model: SyrConnectModel
+) -> set[str]:
     """Return the cartridge keys that apply to the cartridge type and size.
 
     Only for models whose profile maps the cartridge types (getCRT) or sizes (getCRS) to
@@ -2309,7 +2374,9 @@ def _muco_conditional_keys(status: dict[str, Any], model: SyrConnectModel) -> se
     return get_cartridge_entity_keys(model, status, supported_sensor_keys)
 
 
-def sensor_keys_for_status(status: dict[str, Any], model: SyrConnectModel) -> list[str]:
+def sensor_keys_for_status(
+    status: SyrConnectStatus, model: SyrConnectModel
+) -> list[str]:
     """Return the keys of the sensors the platform creates for a device status.
 
     Uses the same rules as the setup: the model's allowlist, the connection state (dst),
@@ -2349,7 +2416,7 @@ def sensor_keys_for_status(status: dict[str, Any], model: SyrConnectModel) -> li
 
 
 def _is_cnd_class_wanted(
-    status: dict[str, Any], supported_sensor_keys: set[str]
+    status: SyrConnectStatus, supported_sensor_keys: set[str]
 ) -> bool:
     """Return True if the device gets the water hardness range computed from getCND."""
     return (
@@ -2369,7 +2436,7 @@ def _to_float(value: Any) -> float | None:
 
 
 def _is_sensor_wanted(
-    status: dict[str, Any],
+    status: SyrConnectStatus,
     key: str,
     value: Any,
     supported_sensor_keys: set[str],
@@ -2748,7 +2815,7 @@ class SyrConnectConnectionStateSensor(SyrConnectEntity, SensorEntity):
         if dst is None:
             return None
         try:
-            return str(int(dst))
+            return str(to_int(dst))
         except TypeError, ValueError:
             return str(dst)
 

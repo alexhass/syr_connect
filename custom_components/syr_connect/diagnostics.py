@@ -431,7 +431,7 @@ async def _fetch_local_device_json(
 
     json_api = SyrConnectJsonAPI(
         session,
-        host=ip,
+        host=str(ip),
         base_path=base_path,
         integration_version=integration_version,
     )

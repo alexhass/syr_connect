@@ -35,7 +35,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .api_json import SyrConnectJsonAPI
 from .const import _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM, DOMAIN
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
-from .data import SyrConnectDevice
+from .data import SyrConnectDevice, SyrConnectStatus
 from .entity import SyrConnectEntity, async_add_device_entities
 from .exceptions import SyrConnectError
 from .helpers.device import get_device_model
@@ -58,7 +58,7 @@ class _SyrConnectButtonPress:
     device_id: str
     device_name: str
     model: SyrConnectModel
-    status: dict[str, Any]
+    status: SyrConnectStatus
 
 
 @dataclass(frozen=True, kw_only=True)

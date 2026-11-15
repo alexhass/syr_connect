@@ -7,7 +7,7 @@ from typing import Any, cast
 import pytest
 
 from custom_components.syr_connect import sensor
-from custom_components.syr_connect.data import SyrConnectDevice
+from custom_components.syr_connect.data import SyrConnectDevice, SyrConnectStatus
 from custom_components.syr_connect.helpers.device import (
     build_device_info,
     detect_device_model,
@@ -50,7 +50,7 @@ def test_build_device_info_fallback_and_entity_id_additional() -> None:
 def test_get_current_mac_priorities_additional() -> None:
     """Test get current mac priorities additional."""
     # Primary IP -> getMAC
-    s = {"getIPA": "192.168.1.2", "getMAC": "AA:BB:CC"}
+    s: SyrConnectStatus = {"getIPA": "192.168.1.2", "getMAC": "AA:BB:CC"}
     assert get_current_mac(s) == "AA:BB:CC"
 
     # WiFi IP with WFS==2 -> getMAC1
@@ -149,7 +149,7 @@ def test_build_device_info_minimal() -> None:
 
 def test_get_current_mac_priority_getipa() -> None:
     """If getIPA present, prefer getMAC."""
-    status = {
+    status: SyrConnectStatus = {
         "getIPA": "1.2.3.4",
         "getMAC": "AA:BB:CC:DD:EE:FF",
         "getMAC1": "11:22:33:44:55:66",
@@ -160,7 +160,7 @@ def test_get_current_mac_priority_getipa() -> None:
 
 def test_get_current_mac_getipa_mac_empty_fallback() -> None:
     """If preferred MAC is empty, fall back to first available MAC."""
-    status = {
+    status: SyrConnectStatus = {
         "getIPA": "1.2.3.4",
         "getMAC": "   ",  # whitespace should be treated as empty
         "getWIP": "192.168.178.21",
@@ -172,7 +172,7 @@ def test_get_current_mac_getipa_mac_empty_fallback() -> None:
 
 def test_get_current_mac_zero_ip_treated_as_empty() -> None:
     """An IP value of '0.0.0.0' should be treated as empty and fall back."""
-    status = {
+    status: SyrConnectStatus = {
         "getIPA": "0.0.0.0",
         "getMAC": "   ",  # preferred MAC empty
         "getWIP": "192.168.178.22",
@@ -184,10 +184,17 @@ def test_get_current_mac_zero_ip_treated_as_empty() -> None:
 
 def test_get_current_mac_priority_getwip_and_geteip() -> None:
     """Test selection when getWIP/getEIP are present."""
-    status_wip = {"getWIP": "10.0.0.1", "getMAC1": "11:11:11:11:11:11", "getWFS": 2}
+    status_wip: SyrConnectStatus = {
+        "getWIP": "10.0.0.1",
+        "getMAC1": "11:11:11:11:11:11",
+        "getWFS": 2,
+    }
     assert get_current_mac(status_wip) == "11:11:11:11:11:11"
 
-    status_eip = {"getEIP": "10.0.0.2", "getMAC2": "22:22:22:22:22:22"}
+    status_eip: SyrConnectStatus = {
+        "getEIP": "10.0.0.2",
+        "getMAC2": "22:22:22:22:22:22",
+    }
     assert get_current_mac(status_eip) == "22:22:22:22:22:22"
 
 
@@ -197,32 +204,44 @@ def test_get_current_mac_non_string_ip_value() -> None:
     This covers the case where is_not_empty_ip returns True for non-string values.
     """
     # IP value as int should be treated as present
-    status_int = {"getIPA": 123456, "getMAC": "AA:BB:CC:DD:EE:FF"}
+    status_int: SyrConnectStatus = {"getIPA": 123456, "getMAC": "AA:BB:CC:DD:EE:FF"}
     assert get_current_mac(status_int) == "AA:BB:CC:DD:EE:FF"
 
     # IP value as float should be treated as present
-    status_float = {"getWIP": 192.168, "getMAC1": "11:22:33:44:55:66", "getWFS": 2}
+    status_float: SyrConnectStatus = {
+        "getWIP": 192.168,
+        "getMAC1": "11:22:33:44:55:66",
+        "getWFS": 2,
+    }
     assert get_current_mac(status_float) == "11:22:33:44:55:66"
 
     # IP value as bool should be treated as present
-    status_bool = {"getEIP": True, "getMAC2": "77:88:99:AA:BB:CC"}
+    status_bool: SyrConnectStatus = {"getEIP": True, "getMAC2": "77:88:99:AA:BB:CC"}
     assert get_current_mac(status_bool) == "77:88:99:AA:BB:CC"
 
 
 def test_get_current_mac_wifi_not_connected() -> None:
     """The Wi-Fi MAC is only used while the Wi-Fi is connected (getWFS 2)."""
     # Wi-Fi present but WFS indicates not connected
-    status = {"getWIP": "10.0.0.5", "getWFS": "1", "getMAC1": "11:11:11:11:11:11"}
+    status: SyrConnectStatus = {
+        "getWIP": "10.0.0.5",
+        "getWFS": "1",
+        "getMAC1": "11:11:11:11:11:11",
+    }
     assert get_current_mac(status) is None
 
     # Wi-Fi present but WFS unparsable -> skip Wi-Fi MAC
-    status2 = {"getWIP": "10.0.0.6", "getWFS": "bad", "getMAC1": "22:22:22:22:22:22"}
+    status2: SyrConnectStatus = {
+        "getWIP": "10.0.0.6",
+        "getWFS": "bad",
+        "getMAC1": "22:22:22:22:22:22",
+    }
     assert get_current_mac(status2) is None
 
 
 def test_get_current_mac_eip_fallback_when_wfs_unparsable() -> None:
     """When getWFS unparsable, ensure getEIP/getMAC2 fallback is used."""
-    status = {
+    status: SyrConnectStatus = {
         "getWIP": "192.168.1.10",
         "getWFS": "bad",
         "getMAC1": "",
@@ -240,7 +259,7 @@ def test_get_current_mac_eip_fallback_when_wfs_unparsable() -> None:
 def test_get_current_mac_wip_present_wfs_none() -> None:
     """When getWIP is set but getWFS key is absent, wfs_int stays None (line 246)."""
     # getWFS missing entirely -> else branch sets wfs_int = None -> MAC1 not returned
-    status = {"getWIP": "192.168.1.5", "getMAC1": "AA:BB:CC:DD:EE:FF"}
+    status: SyrConnectStatus = {"getWIP": "192.168.1.5", "getMAC1": "AA:BB:CC:DD:EE:FF"}
     # wfs_int is None, so wfs_int == 2 is False -> falls through to getEIP (absent)
     assert get_current_mac(status) is None
 
@@ -312,7 +331,7 @@ def test_empty_ip_hides_sensor_and_skips_mac() -> None:
     key_ip = next(iter(_keys_hidden_when("empty_ip")))
     assert is_sensor_visible({}, key_ip, "::") is False
 
-    status = {
+    status: SyrConnectStatus = {
         "getIPA": "::",
         "getMAC": "AA:BB",
         "getEIP": "192.168.1.10",

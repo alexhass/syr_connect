@@ -9,7 +9,7 @@ from urllib.parse import unquote_plus
 
 import defusedxml.ElementTree as etree
 
-from .data import SyrConnectDevice
+from .data import SyrConnectDevice, SyrConnectStatus
 from .exceptions import (
     SyrConnectAuthError,
     SyrConnectLoginFailedError,
@@ -388,7 +388,9 @@ class ResponseParser:
 
         return devices
 
-    def parse_device_status_response(self, xml_response: str) -> dict[str, Any] | None:
+    def parse_device_status_response(
+        self, xml_response: str
+    ) -> SyrConnectStatus | None:
         """Parse device status response.
 
         Args:
