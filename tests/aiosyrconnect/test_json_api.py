@@ -1847,3 +1847,16 @@ async def test_failed_request_logs_at_debug_level_only(
         await client.request_json_data("get/all")
 
     assert [r.getMessage() for r in caplog.records if r.levelno > logging.DEBUG] == []
+
+
+@pytest.mark.parametrize("user_agent", [None, "", "   "])
+def test_empty_user_agent_is_rejected(user_agent: str | None) -> None:
+    """The JSON API client does not send an empty User-Agent."""
+    with pytest.raises(ValueError, match="user_agent is required"):
+        SyrConnectJsonAPI(MagicMock(), host="192.0.2.1", user_agent=user_agent)
+
+
+def test_missing_user_agent_is_rejected() -> None:
+    """A caller that passes no User-Agent gets a ValueError."""
+    with pytest.raises(ValueError, match="user_agent is required"):
+        SyrConnectJsonAPI(MagicMock(), host="192.0.2.1")

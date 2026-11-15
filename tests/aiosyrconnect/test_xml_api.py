@@ -989,3 +989,18 @@ def test_parse_device_list(api_client: SyrConnectXmlAPI) -> None:
 
     assert devices == api_client.response_parser.parse_device_list_response(xml)
     assert devices
+
+
+@pytest.mark.parametrize("user_agent", [None, "", "   "])
+def test_empty_user_agent_is_rejected(user_agent: str | None) -> None:
+    """The XML API client does not send an empty User-Agent."""
+    with pytest.raises(ValueError, match="user_agent is required"):
+        SyrConnectXmlAPI(
+            MagicMock(), "user", "secret", service=_SYR_SERVICE, user_agent=user_agent
+        )
+
+
+def test_missing_user_agent_is_rejected() -> None:
+    """A caller that passes no User-Agent gets a ValueError."""
+    with pytest.raises(ValueError, match="user_agent is required"):
+        SyrConnectXmlAPI(MagicMock(), "user", "secret", service=_SYR_SERVICE)

@@ -14,6 +14,7 @@ from custom_components.syr_connect.aiosyrconnect import mask_ug_value
 from custom_components.syr_connect.aiosyrconnect.const import RESPONSE_SIZE_MAXIMUM
 from custom_components.syr_connect.aiosyrconnect.http_client import (
     HTTPClient,
+    is_valid_user_agent,
     read_response_text,
 )
 
@@ -382,3 +383,57 @@ async def test_read_response_text_stops_reading_above_the_limit() -> None:
 
     # Reading stopped with the first chunk above the limit
     assert sent == limit + len(chunk)
+
+
+@pytest.mark.parametrize("user_agent", [None, "", "   "])
+def test_empty_user_agent_is_rejected(user_agent: str | None) -> None:
+    """An empty User-Agent raises before any request is sent."""
+    with pytest.raises(ValueError, match="user_agent is required"):
+        HTTPClient(session=MagicMock(), user_agent=user_agent)
+
+
+@pytest.mark.parametrize(
+    "user_agent",
+    [
+        "syr_connect/2.2.0 HomeAssistant/2026.11.1",
+        "aiosyrconnect",
+        "my-app/1.0 (+https://example.com)",
+        "Mozilla/5.0 (X11; Linux x86_64) curl/8.0",
+        "app/1 (nested (comment) \\) ok)",
+        "app/1\t(tab before comment)",
+        "app/1 (obs-text \xe4)",
+    ],
+)
+def test_valid_user_agent(user_agent: str) -> None:
+    """Products and comments per RFC 9110 are accepted."""
+    assert is_valid_user_agent(user_agent)
+    assert (
+        HTTPClient(session=MagicMock(), user_agent=user_agent).user_agent == user_agent
+    )
+
+
+@pytest.mark.parametrize(
+    "user_agent",
+    [
+        " app/1",
+        "app/1 ",
+        "app/",
+        "/1.0",
+        "app/1/2",
+        "app@1",
+        "app/1\r\nX-Injected: 1",
+        "app/1(no space)",
+        "app/1 (unclosed",
+        "app/1 (stray ) )",
+        "app/1 (bad \\\n escape)",
+        "app/1 (trailing backslash \\",
+        "app/1 (control \x7f)",
+        "app/1 (beyond latin-1 \u20ac)",
+        "app/1 ()x",
+    ],
+)
+def test_invalid_user_agent_is_rejected(user_agent: str) -> None:
+    """A User-Agent that breaks the grammar of RFC 9110 raises before any request."""
+    assert not is_valid_user_agent(user_agent)
+    with pytest.raises(ValueError, match="not a valid User-Agent"):
+        HTTPClient(session=MagicMock(), user_agent=user_agent)

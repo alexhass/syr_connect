@@ -39,7 +39,7 @@ from .exceptions import (
     SyrConnectHTTPError,
     SyrConnectInvalidResponseError,
 )
-from .http_client import read_response_text
+from .http_client import check_user_agent, read_response_text
 from .models import SyrConnectApiDevice, SyrConnectStatus
 
 _LOGGER = logging.getLogger(__name__)
@@ -96,7 +96,7 @@ class SyrConnectJsonAPI:
         base_url: str | None = None,
         login_required: bool | None = None,
         *,
-        user_agent: str,
+        user_agent: str | None = None,
     ) -> None:
         """Initialize the JSON API client.
 
@@ -111,12 +111,15 @@ class SyrConnectJsonAPI:
             login_required: Whether the device needs ADM, as the caller stored it from
                 an earlier `login_required`; None if unknown
             user_agent: HTTP User-Agent of the requests; names the caller
+
+        Raises:
+            ValueError: If user_agent is missing, empty or no valid User-Agent (RFC 9110)
         """
         # HTTP session management
         self._session = session
 
         # The User-Agent identifies the caller, as for the cloud API
-        self._headers = {"User-Agent": user_agent}
+        self._headers = {"User-Agent": check_user_agent(user_agent)}
 
         # URL construction parameters (option 1: host + base_path)
         self._host = host

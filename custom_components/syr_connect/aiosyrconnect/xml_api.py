@@ -82,7 +82,7 @@ class SyrConnectXmlAPI:
         password: str,
         *,
         service: SyrConnectService,
-        user_agent: str,
+        user_agent: str | None = None,
         language: str = CLIENT_OS_LANGUAGE,
         local_now: Callable[[], datetime] | None = None,
     ) -> None:
@@ -100,6 +100,9 @@ class SyrConnectXmlAPI:
                 Accept-Language header. Defaults to CLIENT_OS_LANGUAGE ("en-US").
             local_now: Returns the current time in the time zone of the caller, for the
                 UTC offset (tzo) of the login; default the local time of the process
+
+        Raises:
+            ValueError: If user_agent is missing, empty or no valid User-Agent (RFC 9110)
         """
         # --- Authentication credentials ---
         self.username = username
