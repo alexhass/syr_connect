@@ -8,7 +8,7 @@ from typing import Any
 import pytest
 
 from custom_components.syr_connect import devices
-from custom_components.syr_connect.data import SyrConnectStatus
+from custom_components.syr_connect.aiosyrconnect import SyrConnectStatus
 from custom_components.syr_connect.devices import (
     hva,
     lex,

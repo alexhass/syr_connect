@@ -9,8 +9,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from custom_components.syr_connect.aiosyrconnect import SyrConnectConnectionError
 from custom_components.syr_connect.const import DOMAIN
-from custom_components.syr_connect.exceptions import SyrConnectConnectionError
 from custom_components.syr_connect.update import (
     _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS,
     _SYR_CONNECT_UPDATE_NEW_VERSION_PLACEHOLDER,

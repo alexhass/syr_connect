@@ -101,7 +101,7 @@ class HTTPClient:
     def _build_accept_language(self) -> str:
         """Compute the Accept-Language header value from the instance language.
 
-        Uses ``self.language`` (the Home Assistant locale passed in by the XML API
+        Uses ``self.language`` (the locale passed in by the XML API
         client), normalizing underscore locale codes (``de_DE``) to BCP-47 hyphen
         form (``de-DE``), e.g. ``de-DE,de;q=0.9``.
         """

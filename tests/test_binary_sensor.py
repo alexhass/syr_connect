@@ -11,6 +11,7 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 from pytest_homeassistant.common import MockConfigEntry
 
+from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
 from custom_components.syr_connect.binary_sensor import (
     SyrConnectBinarySensor,
     async_setup_entry,
@@ -18,7 +19,6 @@ from custom_components.syr_connect.binary_sensor import (
 from custom_components.syr_connect.const import CONF_SERVICE, DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.models import MODEL_SIGNATURES
-from custom_components.syr_connect.response_parser import ResponseParser
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er

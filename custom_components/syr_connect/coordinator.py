@@ -4,7 +4,7 @@ import asyncio
 import copy
 from datetime import datetime, timedelta
 import logging
-from typing import Any, override
+from typing import Any, cast, override
 
 import aiohttp
 
@@ -25,10 +25,19 @@ from homeassistant.helpers.translation import async_get_translations
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
-from .api_json import SyrConnectJsonAPI
-from .api_xml import SyrConnectXmlAPI
+from .aiosyrconnect import (
+    API_SERVICES,
+    SyrConnectApiDevice,
+    SyrConnectAuthError,
+    SyrConnectConnectionError,
+    SyrConnectError,
+    SyrConnectJsonAPI,
+    SyrConnectStatistic,
+    SyrConnectStatus,
+    SyrConnectXmlAPI,
+    is_device_offline,
+)
 from .const import (
-    _SYR_CONNECT_API_SERVICES,
     _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM,
     API_TYPE_JSON,
     API_TYPE_XML,
@@ -39,9 +48,7 @@ from .const import (
     CONF_SERVICE,
     DOMAIN,
 )
-from .data import SyrConnectCoordinatorData, SyrConnectDevice, SyrConnectStatus
-from .devices import SyrConnectStatistic
-from .exceptions import SyrConnectAuthError, SyrConnectConnectionError, SyrConnectError
+from .data import SyrConnectCoordinatorData, SyrConnectDevice
 from .helpers.device import detect_device_model, get_device, get_device_model
 from .helpers.integration import (
     build_user_agent,
@@ -53,7 +60,6 @@ from .helpers.registry import build_statistic_id
 from .helpers.values import get_sensor_iwh_value
 from .models import MODEL_SIGNATURES
 from .repairs import delete_issue
-from .response_parser import is_device_offline
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -63,6 +69,15 @@ type SyrConnectConfigEntry = ConfigEntry[SyrConnectDataUpdateCoordinator]
 # fetched with the first update after a start or reload and then every 30 minutes, the
 # updates in between only fetch the status of the devices.
 _SYR_CONNECT_COORDINATOR_DEVICE_LIST_INTERVAL_SECONDS = 1800
+
+
+def _coordinator_devices(devices: list[SyrConnectApiDevice]) -> list[SyrConnectDevice]:
+    """Return the devices of an API client as devices of the coordinator data.
+
+    The coordinator adds `model` and `available` to them, which the API clients do not
+    know; the dictionaries are not copied.
+    """
+    return cast(list[SyrConnectDevice], devices)
 
 
 class SyrConnectDataUpdateCoordinator(
@@ -156,7 +171,7 @@ class SyrConnectDataUpdateCoordinator(
 
             # Look up the service from CONF_SERVICE (cf_bundle_identifier)
             conf_service = config_data[CONF_SERVICE]
-            svc = _SYR_CONNECT_API_SERVICES[conf_service]
+            svc = API_SERVICES[conf_service]
 
             self.api = SyrConnectXmlAPI(
                 session,
@@ -366,7 +381,7 @@ class SyrConnectDataUpdateCoordinator(
         project_id: str = project["id"]
         if self._api_type == API_TYPE_JSON:
             # The device list of the local API is its status request
-            return await self.api.get_devices(project_id)
+            return _coordinator_devices(await self.api.get_devices(project_id))
 
         if self.api.projects is not self._device_lists_projects:
             self._device_lists.clear()
@@ -379,7 +394,7 @@ class SyrConnectDataUpdateCoordinator(
             devices = cached[1]
         else:
             try:
-                devices = await self.api.get_devices(project_id)
+                devices = _coordinator_devices(await self.api.get_devices(project_id))
             except SyrConnectAuthError:
                 raise
             except SyrConnectError as err:

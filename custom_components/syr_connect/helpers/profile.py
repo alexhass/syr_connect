@@ -5,12 +5,12 @@ import logging
 import math
 from typing import Any
 
+from ..aiosyrconnect import SyrConnectStatus
 from ..const import (
     _SYR_CONNECT_SENSOR_ALA_CODES_GENERIC,
     _SYR_CONNECT_SENSOR_NOT_CODES_GENERIC,
     _SYR_CONNECT_SENSOR_WRN_CODES_GENERIC,
 )
-from ..data import SyrConnectStatus
 from ..devices import WHU_FACTORS_FROM_DH
 from ..models import SyrConnectModel
 

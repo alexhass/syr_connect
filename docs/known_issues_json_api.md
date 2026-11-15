@@ -37,7 +37,7 @@ repository.
 - Mitigation in this project:
   - The client reads the body as text (`read_response_text`, limited to 1 MB) and parses it with `json.loads()`, whatever the `Content-Type` says.
 - Evidence / references:
-  - Client: [custom_components/syr_connect/api_json.py](custom_components/syr_connect/api_json.py)
+  - Client: [custom_components/syr_connect/aiosyrconnect/json_api.py](custom_components/syr_connect/aiosyrconnect/json_api.py)
 
 ### 2. ADM login endpoint is optional (HTTP 404)
 
@@ -47,8 +47,8 @@ repository.
 - Mitigation in this project:
   - `SyrConnectJsonAPI.login()` treats 404 as "login not required" and continues.
 - Evidence / references:
-  - Client: [custom_components/syr_connect/api_json.py](custom_components/syr_connect/api_json.py) (login handles 404)
-  - Tests: [tests/test_api_json.py](tests/test_api_json.py) (test_login_404_treated_as_not_required)
+  - Client: [custom_components/syr_connect/aiosyrconnect/json_api.py](custom_components/syr_connect/aiosyrconnect/json_api.py) (login handles 404)
+  - Tests: [tests/aiosyrconnect/test_json_api.py](tests/aiosyrconnect/test_json_api.py) (test_login_404_treated_as_not_required)
 
 ### 3. Percent-encoding and literal special characters
 
@@ -91,8 +91,8 @@ curl -i "http://localhost:5333/trio/set/ab/false"  # -> {"setABtrue":"OK"}
 ```
 
 - Evidence / references:
-  - Client: [custom_components/syr_connect/api_json.py](custom_components/syr_connect/api_json.py)
-  - Tests: [tests/test_api_json.py](tests/test_api_json.py)
+  - Client: [custom_components/syr_connect/aiosyrconnect/json_api.py](custom_components/syr_connect/aiosyrconnect/json_api.py)
+  - Tests: [tests/aiosyrconnect/test_json_api.py](tests/aiosyrconnect/test_json_api.py)
 
 ### 5. Data-type inconsistencies
 
@@ -113,8 +113,8 @@ curl -i "http://localhost:5333/trio/set/ab/false"  # -> {"setABtrue":"OK"}
 - Mitigation in this project:
   - Catch and normalize to "no such command" if 404 is returned
 - Evidence / references:
-  - Client: [custom_components/syr_connect/api_json.py](custom_components/syr_connect/api_json.py) (`_execute_http_get()` HTTP 404 handling)
-  - Tests: [tests/test_api_json.py](tests/test_api_json.py) (test_execute_http_get_404_error)
+  - Client: [custom_components/syr_connect/aiosyrconnect/json_api.py](custom_components/syr_connect/aiosyrconnect/json_api.py) (`_execute_http_get()` HTTP 404 handling)
+  - Tests: [tests/aiosyrconnect/test_json_api.py](tests/aiosyrconnect/test_json_api.py) (test_execute_http_get_404_error)
 
 ### 7. Documentation accuracy and misleading examples
 
@@ -195,7 +195,7 @@ Actual (expected) device response:
 - Mitigation in this project: None needed. The client parses the answer with `json.loads()` (`_execute_http_get`), which keeps the last value of a repeated key.
 - Evidence / references:
   - Report: [issue #64](https://github.com/alexhass/syr_connect/issues/64)
-  - Client: [custom_components/syr_connect/api_json.py](custom_components/syr_connect/api_json.py)
+  - Client: [custom_components/syr_connect/aiosyrconnect/json_api.py](custom_components/syr_connect/aiosyrconnect/json_api.py)
   - The anonymized fixture [tests/fixtures/json/SyrAllInOnePlus_get_all.json](tests/fixtures/json/SyrAllInOnePlus_get_all.json) contains `getCNF` only once.
 
 ## Recommendations
@@ -229,6 +229,6 @@ curl -i "http://localhost:5333/trio/get/XYZ"
 ## References
 
 - Official API documentation: <https://iotsyrpublicapi.z1.web.core.windows.net/>
-- Client code: [custom_components/syr_connect/api_json.py](custom_components/syr_connect/api_json.py)
-- Tests: [tests/test_api_json.py](tests/test_api_json.py)
+- Client code: [custom_components/syr_connect/aiosyrconnect/json_api.py](custom_components/syr_connect/aiosyrconnect/json_api.py)
+- Tests: [tests/aiosyrconnect/test_json_api.py](tests/aiosyrconnect/test_json_api.py)
 - Fixtures: [tests/fixtures/json/SyrSafeTech_get_all.json](tests/fixtures/json/SyrSafeTech_get_all.json), [tests/fixtures/json/SyrNeoSoft2500_get_all.json](tests/fixtures/json/SyrNeoSoft2500_get_all.json)

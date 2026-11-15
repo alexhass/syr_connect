@@ -13,6 +13,7 @@ from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
+from .aiosyrconnect import SyrConnectConnectionError, SyrConnectError
 from .config_flow import ConfigFlow
 from .const import (
     _SYR_CONNECT_API_JSON_SCAN_INTERVAL_MINIMUM,
@@ -28,7 +29,6 @@ from .coordinator import (
     SyrConnectDataUpdateCoordinator,
     SyrConnectStatisticsCoordinator,
 )
-from .exceptions import SyrConnectConnectionError, SyrConnectError
 from .helpers.integration import get_default_scan_interval_for_entry
 from .helpers.registry import cleanup_removed_devices, clear_device_statistics
 from .migrations import (

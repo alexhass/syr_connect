@@ -10,28 +10,28 @@ from typing import Any
 from defusedxml import ElementTree
 import pytest
 
-from custom_components.syr_connect.exceptions import (
+from custom_components.syr_connect.aiosyrconnect import (
     SyrConnectAuthError,
     SyrConnectLoginFailedError,
     SyrConnectSessionExpiredError,
 )
-from custom_components.syr_connect.response_parser import (
+from custom_components.syr_connect.aiosyrconnect.xml_parser import (
     ResponseParser,
     _parse_utc_offset,
 )
 
 FIXTURE_PATH_10S_PROJECT_COLLECTIONS = os.path.join(
-    os.path.dirname(__file__),
+    os.path.dirname(os.path.dirname(__file__)),
     "fixtures/xml",
     "SyrLEXplus10S_GetProjectDeviceCollections.xml",
 )
 FIXTURE_PATH_10S_DEVICE_STATUS = os.path.join(
-    os.path.dirname(__file__),
+    os.path.dirname(os.path.dirname(__file__)),
     "fixtures/xml",
     "SyrLEXplus10S_GetDeviceCollectionStatus.xml",
 )
 FIXTURE_PATH_10SL_DEVICE_STATUS = os.path.join(
-    os.path.dirname(__file__),
+    os.path.dirname(os.path.dirname(__file__)),
     "fixtures/xml",
     "SyrLEXplus10SL_GetDeviceCollectionStatus.xml",
 )
@@ -332,7 +332,9 @@ def test_parse_statistics_response_fixtures(
     The sensor measures every hour, so the 6 days hold 140 distinct hours.
     """
     with open(
-        os.path.join(os.path.dirname(__file__), "fixtures/xml", fixture),
+        os.path.join(
+            os.path.dirname(os.path.dirname(__file__)), "fixtures/xml", fixture
+        ),
         encoding="utf-8",
     ) as f:
         result = parser.parse_statistics_response(f.read())
@@ -625,7 +627,7 @@ def test_parse_device_list_project_without_devices_fixture(
 ) -> None:
     """A valid answer for a project without devices yields an empty list (devices get removed)."""
     path = os.path.join(
-        os.path.dirname(__file__),
+        os.path.dirname(os.path.dirname(__file__)),
         "fixtures/xml",
         "SyrTestDevice_GetProjectDeviceCollections_NoDevices.xml",
     )
@@ -634,7 +636,7 @@ def test_parse_device_list_project_without_devices_fixture(
 
 
 INVALID_TOKEN_XML_PATH = os.path.join(
-    os.path.dirname(__file__),
+    os.path.dirname(os.path.dirname(__file__)),
     "fixtures/xml",
     "SyrTestDevice_InvalidSessionResponse.xml",
 )
@@ -679,7 +681,7 @@ def test_raise_if_session_expired_ignores_other_responses(
 def test_cloud_error_response_raises_session_expired(parser: ResponseParser) -> None:
     """The generic mtid="1" answer of a cloud outage also leads to a new login."""
     path = os.path.join(
-        os.path.dirname(__file__),
+        os.path.dirname(os.path.dirname(__file__)),
         "fixtures/xml",
         "SyrSafeFloor_GetSafeFloorStatistics_InvalidUnit.xml",
     )
@@ -1081,7 +1083,7 @@ def test_never_online_device_minimal_status_is_parsed(parser: ResponseParser) ->
     Parsed (instead of returning None) so the coordinator sees dst="0" and marks the device unavailable.
     """
     path = os.path.join(
-        os.path.dirname(__file__),
+        os.path.dirname(os.path.dirname(__file__)),
         "fixtures/xml",
         "SyrTestDevice_GetDeviceCollectionStatus_NewDevice.xml",
     )
@@ -1115,7 +1117,7 @@ def test_trio_minimal_status_of_online_device_is_still_ignored(
 ) -> None:
     """The Trio DFR/LS glitch (online device, dst="2", only getSRN/getALA/getNOT/getWRN) is still discarded."""
     path = os.path.join(
-        os.path.dirname(__file__),
+        os.path.dirname(os.path.dirname(__file__)),
         "fixtures/xml",
         "SyrTrioDFRLS_GetDeviceCollectionStatus_Bug1.xml",
     )

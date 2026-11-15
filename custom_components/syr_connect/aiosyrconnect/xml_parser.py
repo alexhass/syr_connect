@@ -9,12 +9,12 @@ from urllib.parse import unquote_plus
 
 import defusedxml.ElementTree as etree
 
-from .data import SyrConnectDevice, SyrConnectStatus
 from .exceptions import (
     SyrConnectAuthError,
     SyrConnectLoginFailedError,
     SyrConnectSessionExpiredError,
 )
+from .models import SyrConnectApiDevice, SyrConnectStatus
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -307,7 +307,9 @@ class ResponseParser:
 
         return session_id, projects
 
-    def parse_device_list_response(self, xml_response: str) -> list[SyrConnectDevice]:
+    def parse_device_list_response(
+        self, xml_response: str
+    ) -> list[SyrConnectApiDevice]:
         """Parse device list response.
 
         Args:
@@ -358,7 +360,7 @@ class ResponseParser:
 
         _LOGGER.debug("Found %d device(s) in response", len(device_list))
 
-        devices: list[SyrConnectDevice] = []
+        devices: list[SyrConnectApiDevice] = []
         for device in device_list:
             if "@dclg" in device:
                 devices.append(
@@ -409,7 +411,7 @@ class ResponseParser:
         device_aliases: dict[str, str],
         device_kind_versions: dict[str, int],
         utc_offset: int | None,
-    ) -> SyrConnectDevice:
+    ) -> SyrConnectApiDevice:
         """Return a device of the device list from its <d> element.
 
         Args:
@@ -435,7 +437,7 @@ class ResponseParser:
             sbt,
         )
 
-        entry: SyrConnectDevice = {
+        entry: SyrConnectApiDevice = {
             "id": serial_number,  # Use serial number as device ID
             "dclg": dclg_id,
             "serial_number": serial_number,

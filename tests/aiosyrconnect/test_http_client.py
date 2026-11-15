@@ -10,10 +10,12 @@ from unittest.mock import AsyncMock, MagicMock
 import aiohttp
 import pytest
 
-from custom_components.syr_connect.const import _SYR_CONNECT_API_RESPONSE_SIZE_MAXIMUM
-from custom_components.syr_connect.http_client import (
+from custom_components.syr_connect.aiosyrconnect import mask_ug_value
+from custom_components.syr_connect.aiosyrconnect.const import (
+    _SYR_CONNECT_API_RESPONSE_SIZE_MAXIMUM,
+)
+from custom_components.syr_connect.aiosyrconnect.http_client import (
     HTTPClient,
-    mask_ug_value,
     read_response_text,
 )
 

@@ -13,23 +13,38 @@ from unittest.mock import MagicMock, patch
 import aiohttp
 import pytest
 
-from custom_components.syr_connect.api_xml import SyrConnectXmlAPI
-from custom_components.syr_connect.const import (
-    _SYR_CONNECT_API_SERVICES,
-    _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
-)
-from custom_components.syr_connect.devices import safefloor
-from custom_components.syr_connect.exceptions import (
+from custom_components.syr_connect.aiosyrconnect import (
+    API_SERVICES,
+    DEFAULT_CF_BUNDLE_IDENTIFIER,
     SyrConnectAuthError,
     SyrConnectConnectionError,
     SyrConnectInvalidResponseError,
     SyrConnectLoginFailedError,
     SyrConnectSessionExpiredError,
+    SyrConnectStatistic,
+    SyrConnectXmlAPI,
 )
-from custom_components.syr_connect.helpers.integration import build_user_agent
-from homeassistant.const import __version__ as HA_VERSION
 
-_SYR_SERVICE = _SYR_CONNECT_API_SERVICES[_SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER]
+# Measurement history series like those of the SafeFloor device file: temperature and
+# humidity
+_SYR_CONNECT_TEST_STATISTICS = (
+    SyrConnectStatistic(
+        key="getCEL",
+        method="GetSafeFloorStatistics",
+        rtyp=4,
+        t=1,
+        unit="°C",
+    ),
+    SyrConnectStatistic(
+        key="getHMD",
+        method="GetSafeFloorStatistics",
+        rtyp=4,
+        t=2,
+        unit="%",
+    ),
+)
+
+_SYR_SERVICE = API_SERVICES[DEFAULT_CF_BUNDLE_IDENTIFIER]
 
 
 @pytest.fixture
@@ -39,29 +54,29 @@ def mock_session() -> Any:
 
 
 @pytest.fixture
-def api_client(mock_session: MagicMock, integration_version: str) -> Any:
+def api_client(mock_session: MagicMock, user_agent: str) -> Any:
     """Create an API client instance."""
     return SyrConnectXmlAPI(
         mock_session,
         "test@example.com",
         "testpassword",
         service=_SYR_SERVICE,
-        user_agent=build_user_agent(integration_version),
+        user_agent=user_agent,
     )
 
 
 def test_request_urls_and_app_identity_come_from_the_service(
     mock_session: MagicMock,
-    integration_version: str,
+    user_agent: str,
 ) -> None:
     """The URLs, the app name and the bundle identifier are those of the service."""
-    svc = _SYR_CONNECT_API_SERVICES["de.consoft.gc.conel.connect"]
+    svc = API_SERVICES["de.consoft.gc.conel.connect"]
     api = SyrConnectXmlAPI(
         mock_session,
         "test@example.com",
         "testpassword",
         service=svc,
-        user_agent=build_user_agent(integration_version),
+        user_agent=user_agent,
     )
 
     assert (
@@ -76,16 +91,16 @@ def test_request_urls_and_app_identity_come_from_the_service(
 
 
 def test_crypt_values_select_the_login_response_key(
-    mock_session: MagicMock, integration_version: str
+    mock_session: MagicMock, user_agent: str
 ) -> None:
     """The login response is decrypted with the key and IV of the service."""
-    svc = _SYR_CONNECT_API_SERVICES["de.consoft.rwc.connect"]
+    svc = API_SERVICES["de.consoft.rwc.connect"]
     api = SyrConnectXmlAPI(
         mock_session,
         "test@example.com",
         "testpassword",
         service=svc,
-        user_agent=build_user_agent(integration_version),
+        user_agent=user_agent,
     )
 
     assert (
@@ -96,7 +111,7 @@ def test_crypt_values_select_the_login_response_key(
 
 
 async def test_login_does_not_log_payload(
-    mock_session: MagicMock, caplog: pytest.LogCaptureFixture, integration_version: str
+    mock_session: MagicMock, caplog: pytest.LogCaptureFixture, user_agent: str
 ) -> None:
     """The login payload is not logged, only its size, so the password never reaches the log."""
     api = SyrConnectXmlAPI(
@@ -104,7 +119,7 @@ async def test_login_does_not_log_payload(
         "user@example.com",
         "s3cr3t!",
         service=_SYR_SERVICE,
-        user_agent=build_user_agent(integration_version),
+        user_agent=user_agent,
         language="en-DE",
     )
     caplog.set_level("DEBUG", logger="custom_components.syr_connect.api_xml")
@@ -124,7 +139,7 @@ async def test_login_does_not_log_payload(
 
 def test_language_is_passed_to_payload_builder_and_http_client(
     mock_session: MagicMock,
-    integration_version: str,
+    user_agent: str,
 ) -> None:
     """The locale reaches the login/statistics payloads and the Accept-Language header."""
     api = SyrConnectXmlAPI(
@@ -132,7 +147,7 @@ def test_language_is_passed_to_payload_builder_and_http_client(
         "test@example.com",
         "testpassword",
         service=_SYR_SERVICE,
-        user_agent=build_user_agent(integration_version),
+        user_agent=user_agent,
         language="en-DE",
     )
 
@@ -143,13 +158,10 @@ def test_language_is_passed_to_payload_builder_and_http_client(
 
 def test_user_agent_names_integration_and_home_assistant(
     api_client: SyrConnectXmlAPI,
-    integration_version: str,
+    user_agent: str,
 ) -> None:
     """The User-Agent names the integration and Home Assistant with their versions."""
-    assert (
-        api_client.http_client.user_agent
-        == f"syr_connect/{integration_version} HomeAssistant/{HA_VERSION}"
-    )
+    assert api_client.http_client.user_agent == user_agent
 
 
 def test_language_defaults(api_client: SyrConnectXmlAPI) -> None:
@@ -160,7 +172,8 @@ def test_language_defaults(api_client: SyrConnectXmlAPI) -> None:
 
 
 INVALID_TOKEN_XML = (
-    Path(__file__).parent / "fixtures/xml/SyrTestDevice_InvalidSessionResponse.xml"
+    Path(__file__).parent.parent
+    / "fixtures/xml/SyrTestDevice_InvalidSessionResponse.xml"
 ).read_text(encoding="utf-8")
 
 
@@ -244,7 +257,7 @@ async def test_parallel_requests_share_a_failed_login(
         ("set_device_status", ("dclg1", [("setAB", "2")]), None),
         (
             "get_statistics",
-            ("dclg1", safefloor.STATISTICS[0]),
+            ("dclg1", _SYR_CONNECT_TEST_STATISTICS[0]),
             "parse_statistics_response",
         ),
     ],
@@ -619,7 +632,9 @@ async def test_get_statistics_posts_series_to_its_method(
             return_value=mock_stats,
         ),
     ):
-        result = await api_client.get_statistics("device1", safefloor.STATISTICS[1])
+        result = await api_client.get_statistics(
+            "device1", _SYR_CONNECT_TEST_STATISTICS[1]
+        )
 
     assert result == mock_stats
     url = mock_post.call_args.args[0]
@@ -642,7 +657,7 @@ async def test_get_statistics_exception_handling(api_client: SyrConnectXmlAPI) -
         ),
         pytest.raises(RuntimeError, match="Stats error"),
     ):
-        await api_client.get_statistics("device1", safefloor.STATISTICS[0])
+        await api_client.get_statistics("device1", _SYR_CONNECT_TEST_STATISTICS[0])
 
 
 async def test_login_with_parser_value_error(api_client: SyrConnectXmlAPI) -> None:
@@ -688,7 +703,7 @@ async def test_login_with_decryption_parser_error(api_client: SyrConnectXmlAPI) 
     [
         ("get_device_status", ("dclg1",)),
         ("set_device_status", ("dclg1", [("setAB", "2")])),
-        ("get_statistics", ("dclg1", safefloor.STATISTICS[0])),
+        ("get_statistics", ("dclg1", _SYR_CONNECT_TEST_STATISTICS[0])),
     ],
 )
 async def test_network_errors_are_wrapped_in_connection_error(
@@ -790,7 +805,9 @@ _SYR_CONNECT_TEST_MAINTENANCE_PAGE = "<html><body>Wartungsarbeiten</body>"
 _SYR_CONNECT_TEST_REQUESTS = [
     pytest.param("get_devices", ("project1",), id="device-list"),
     pytest.param("get_device_status", ("dclg1",), id="status"),
-    pytest.param("get_statistics", ("dclg1", safefloor.STATISTICS[0]), id="statistics"),
+    pytest.param(
+        "get_statistics", ("dclg1", _SYR_CONNECT_TEST_STATISTICS[0]), id="statistics"
+    ),
 ]
 
 
@@ -876,7 +893,7 @@ async def test_failed_login_logs_at_debug_level_only(
         ),
         pytest.param(
             "get_statistics",
-            ("dclg1", safefloor.STATISTICS[0]),
+            ("dclg1", _SYR_CONNECT_TEST_STATISTICS[0]),
             "SyrSafeFloor_GetSafeFloorStatistics_Temperature.xml",
             id="statistics",
         ),
@@ -893,7 +910,9 @@ async def test_each_answer_is_parsed_once(
 ) -> None:
     """An answer is parsed once, also for the check of a rejected token."""
     api_client.session_data = "token"
-    xml = (Path(__file__).parent / "fixtures/xml" / fixture).read_text(encoding="utf-8")
+    xml = (Path(__file__).parent.parent / "fixtures/xml" / fixture).read_text(
+        encoding="utf-8"
+    )
     parse_xml = api_client.response_parser.parse_xml
 
     with (

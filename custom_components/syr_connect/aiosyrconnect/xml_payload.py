@@ -6,7 +6,6 @@ import logging
 from typing import Any
 from xml.etree import ElementTree as ET
 
-from .checksum import SyrChecksum
 from .const import (
     _SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION,
     _SYR_CONNECT_CLIENT_OS_LANGUAGE,
@@ -14,7 +13,8 @@ from .const import (
     _SYR_CONNECT_CLIENT_OS_NAME,
     _SYR_CONNECT_CLIENT_OS_VERSION,
 )
-from .devices import SyrConnectStatistic
+from .models import SyrConnectStatistic
+from .xml_checksum import SyrChecksum
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -80,8 +80,8 @@ class PayloadBuilder:
     def _compute_locale_lang_reg(self) -> tuple[str, str]:
         """Return (lang, reg) from the instance language, e.g. ``de-DE`` -> ``("de", "DE")``.
 
-        The coordinator and config flow pass the Home Assistant locale (see
-        `helpers.integration.get_api_locale`). A language without region gets ``US``.
+        The caller passes its locale, e.g. the one of Home Assistant. A language
+        without region gets ``US``.
         """
         parts = self.language.replace("_", "-").split("-")
         lang = parts[0].lower()

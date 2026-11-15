@@ -15,10 +15,15 @@ import pytest
 from pytest_homeassistant.common import MockConfigEntry
 from pytest_homeassistant.components.recorder.common import async_wait_recording_done
 
-from custom_components.syr_connect.api_json import SyrConnectJsonAPI
+from custom_components.syr_connect.aiosyrconnect import (
+    API_SERVICES,
+    DEFAULT_CF_BUNDLE_IDENTIFIER,
+    SyrConnectAuthError,
+    SyrConnectConnectionError,
+    SyrConnectInvalidResponseError,
+    SyrConnectJsonAPI,
+)
 from custom_components.syr_connect.const import (
-    _SYR_CONNECT_API_SERVICES,
-    _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
     API_TYPE_JSON,
     CONF_API_TYPE,
     CONF_HOST,
@@ -33,11 +38,6 @@ from custom_components.syr_connect.coordinator import (
 )
 from custom_components.syr_connect.data import SyrConnectDevice
 from custom_components.syr_connect.devices import safefloor
-from custom_components.syr_connect.exceptions import (
-    SyrConnectAuthError,
-    SyrConnectConnectionError,
-    SyrConnectInvalidResponseError,
-)
 from custom_components.syr_connect.helpers.registry import clear_device_statistics
 from custom_components.syr_connect.models import UNKNOWN_MODEL
 from homeassistant.components.recorder import Recorder
@@ -1971,7 +1971,7 @@ async def test_coordinator_init_xml_api_with_conf_service(hass: HomeAssistant) -
     ) as mock_xml_api_class:
         mock_xml_api_class.return_value = MagicMock()
 
-        svc = _SYR_CONNECT_API_SERVICES[_SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER]
+        svc = API_SERVICES[DEFAULT_CF_BUNDLE_IDENTIFIER]
         config_data = {
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",

@@ -32,12 +32,11 @@ from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .api_json import SyrConnectJsonAPI
+from .aiosyrconnect import SyrConnectError, SyrConnectJsonAPI, SyrConnectStatus
 from .const import _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM, DOMAIN
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
-from .data import SyrConnectDevice, SyrConnectStatus
+from .data import SyrConnectDevice
 from .entity import SyrConnectEntity, async_add_device_entities
-from .exceptions import SyrConnectError
 from .helpers.device import get_device_model
 from .helpers.profile import get_model_supported_keys
 from .helpers.registry import find_entity_id, registry_cleanup

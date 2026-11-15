@@ -2,40 +2,17 @@
 
 from typing import Any, NotRequired, TypedDict
 
+from .aiosyrconnect import SyrConnectApiDevice
 from .models import SyrConnectModel
 
-# A value of the device status. The XML API reports text only; the local JSON API also
-# reports numbers, booleans and null, and lists or objects for a few keys (getCMS,
-# getFSL, getLMS, getPAH, getWFL).
-type SyrConnectStatusValue = (
-    str | int | float | bool | list[Any] | dict[str, Any] | None
-)
-# The status of a device: status key (e.g. "getFLO") -> value
-type SyrConnectStatus = dict[str, SyrConnectStatusValue]
 
-
-class SyrConnectDevice(TypedDict):
+class SyrConnectDevice(SyrConnectApiDevice):
     """A device as returned by the API clients and stored in the coordinator data.
 
     `status`, `model` and `available` are added by the coordinator once the status of
     the device has been fetched.
     """
 
-    id: str
-    dclg: str
-    name: str
-    # Added by the `get_devices` of both API clients, the XML response parser does not know it
-    project_id: NotRequired[str]
-    # Only reported by the XML API
-    serial_number: NotRequired[str]
-    dk: NotRequired[int]
-    dkv: NotRequired[int]
-    sbt: NotRequired[int]
-    # Current UTC offset of the project's time zone in seconds, from `tzo` of the device
-    # list ("02:00:00" in summer time). Only reported by the XML API
-    utc_offset: NotRequired[int]
-    # Set by the coordinator
-    status: NotRequired[SyrConnectStatus]
     # Detected from `status` whenever the coordinator changes it
     model: NotRequired[SyrConnectModel]
     available: NotRequired[bool]

@@ -13,6 +13,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+from .aiosyrconnect import SyrConnectError, SyrConnectStatus
 from .const import (
     _SYR_CONNECT_LEAK_PROTECTION_PROFILES,
     _SYR_CONNECT_SELECT_ALD_OPTIONS,
@@ -45,9 +46,8 @@ from .const import (
     DOMAIN,
 )
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
-from .data import SyrConnectDevice, SyrConnectStatus
+from .data import SyrConnectDevice
 from .entity import SyrConnectEntity, async_add_device_entities
-from .exceptions import SyrConnectError
 from .helpers.device import get_device_model
 from .helpers.profile import (
     get_cartridge_entity_keys,

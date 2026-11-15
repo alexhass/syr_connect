@@ -12,15 +12,34 @@ from zoneinfo import ZoneInfo
 from defusedxml import ElementTree as DefusedET
 import pytest
 
-from custom_components.syr_connect.checksum import SyrChecksum
-from custom_components.syr_connect.const import (
+from custom_components.syr_connect.aiosyrconnect import SyrConnectStatistic
+from custom_components.syr_connect.aiosyrconnect.const import (
     _SYR_CONNECT_CLIENT_CHECKSUM_KEY1,
     _SYR_CONNECT_CLIENT_CHECKSUM_KEY2,
 )
-from custom_components.syr_connect.devices import safefloor
-from custom_components.syr_connect.payload_builder import PayloadBuilder
+from custom_components.syr_connect.aiosyrconnect.xml_checksum import SyrChecksum
+from custom_components.syr_connect.aiosyrconnect.xml_payload import PayloadBuilder
 
-_TEMPERATURE, _HUMIDITY = safefloor.STATISTICS
+# Measurement history series like those of the SafeFloor device file: temperature and
+# humidity
+_SYR_CONNECT_TEST_STATISTICS = (
+    SyrConnectStatistic(
+        key="getCEL",
+        method="GetSafeFloorStatistics",
+        rtyp=4,
+        t=1,
+        unit="°C",
+    ),
+    SyrConnectStatistic(
+        key="getHMD",
+        method="GetSafeFloorStatistics",
+        rtyp=4,
+        t=2,
+        unit="%",
+    ),
+)
+
+_TEMPERATURE, _HUMIDITY = _SYR_CONNECT_TEST_STATISTICS
 
 
 def test_compute_locale_lang_reg_from_language() -> None:
@@ -172,7 +191,7 @@ def test_add_checksum_is_idempotent() -> None:
 
 # Request fixtures: realistic payload structure with placeholder ids; checksums are computed by
 # the integration itself, not captured from the app.
-REQUEST_FIXTURE_DIR = Path(__file__).parent / "fixtures/xml/requests"
+REQUEST_FIXTURE_DIR = Path(__file__).parent.parent / "fixtures/xml/requests"
 _REQUEST_FIXTURES = {
     "login": "ExampleRequest_Login.xml",
     "list": "ExampleRequest_GetProjectDeviceCollections.xml",
@@ -341,7 +360,7 @@ def test_get_timestamp_is_utc() -> None:
     """The request timestamp is the current UTC time as YYYY-MM-DD HH:MM:SS."""
     now = datetime(2026, 10, 17, 8, 5, 9, tzinfo=UTC)
     with patch(
-        "custom_components.syr_connect.payload_builder.datetime"
+        "custom_components.syr_connect.aiosyrconnect.xml_payload.datetime"
     ) as mock_datetime:
         mock_datetime.now.return_value = now
         assert PayloadBuilder.get_timestamp() == "2026-10-17 08:05:09"

@@ -30,7 +30,6 @@ from typing import Any
 
 import aiohttp
 
-from .checksum import SyrChecksum
 from .const import (
     _SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL,
     _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL,
@@ -44,11 +43,7 @@ from .const import (
     _SYR_CONNECT_CLIENT_OS_MODEL,
     _SYR_CONNECT_CLIENT_OS_NAME,
     _SYR_CONNECT_CLIENT_OS_VERSION,
-    SyrConnectService,
 )
-from .data import SyrConnectDevice, SyrConnectStatus
-from .devices import SyrConnectStatistic
-from .encryption import SyrEncryption
 from .exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
@@ -57,8 +52,16 @@ from .exceptions import (
     SyrConnectSessionExpiredError,
 )
 from .http_client import HTTPClient, mask_ug_value
-from .payload_builder import PayloadBuilder
-from .response_parser import ResponseParser
+from .models import (
+    SyrConnectApiDevice,
+    SyrConnectService,
+    SyrConnectStatistic,
+    SyrConnectStatus,
+)
+from .xml_checksum import SyrChecksum
+from .xml_encryption import SyrEncryption
+from .xml_parser import ResponseParser
+from .xml_payload import PayloadBuilder
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -86,13 +89,13 @@ class SyrConnectXmlAPI:
         """Initialize the cloud API client.
 
         Args:
-            session: aiohttp ClientSession provided by Home Assistant
+            session: aiohttp ClientSession of the caller
             username: SYR Connect cloud account email address
             password: SYR Connect cloud account password
-            service: Cloud API service of the account (from _SYR_CONNECT_API_SERVICES):
+            service: Cloud API service of the account (from API_SERVICES):
                 app name, base URL, bundle identifier and the key of the login response
             user_agent: HTTP User-Agent of the requests; names the caller
-            language: Locale like "de-DE" (from helpers.get_api_locale) sent in the app version string
+            language: Locale like "de-DE" sent in the app version string
                 "<si v=...>", as lng/reg at login, lg/rg in statistics requests and in the
                 Accept-Language header. Defaults to _SYR_CONNECT_CLIENT_OS_LANGUAGE ("en-US").
             local_now: Returns the current time in the time zone of the caller, for the
@@ -129,7 +132,7 @@ class SyrConnectXmlAPI:
         self._device_service_url = _base + _SYR_CONNECT_API_XML_DEVICE_SERVICE_PATH
 
         # Example: "App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect"
-        # The app sends the phone's language here; use the HA locale.
+        # The app sends the phone's language here; use the locale of the caller.
         _app_version = (
             f"App-{_SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION}"
             f"-{language}"
@@ -158,7 +161,7 @@ class SyrConnectXmlAPI:
         # XML response parsing (handles various response formats)
         self.response_parser = ResponseParser()
 
-        # HTTP client; the User-Agent identifies the integration and Home Assistant
+        # HTTP client; the User-Agent identifies the caller
         self.http_client = HTTPClient(session, user_agent, language=language)
 
     @property
@@ -364,7 +367,7 @@ class SyrConnectXmlAPI:
         else:
             return True
 
-    async def get_devices(self, project_id: str) -> list[SyrConnectDevice]:
+    async def get_devices(self, project_id: str) -> list[SyrConnectApiDevice]:
         """Fetch all devices in a project.
 
         Each project (building/location) can contain multiple devices.

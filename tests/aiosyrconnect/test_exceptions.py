@@ -1,6 +1,6 @@
 """Test the SYR Connect exceptions."""
 
-from custom_components.syr_connect.exceptions import (
+from custom_components.syr_connect.aiosyrconnect import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
     SyrConnectError,

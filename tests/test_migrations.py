@@ -5,18 +5,18 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from pytest_homeassistant.common import MockConfigEntry
 
+from custom_components.syr_connect.aiosyrconnect import (
+    DEFAULT_CF_BUNDLE_IDENTIFIER,
+    SyrConnectConnectionError,
+    SyrConnectInvalidResponseError,
+)
 from custom_components.syr_connect.const import (
-    _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
     CONF_HOST,
     CONF_MODEL,
     CONF_SERVICE,
-)
-from custom_components.syr_connect.exceptions import (
-    SyrConnectConnectionError,
-    SyrConnectInvalidResponseError,
 )
 from custom_components.syr_connect.migrations import (
     v1_to_v2_update_kwargs,
@@ -362,7 +362,7 @@ def test_v3_to_v4_adds_default_service_to_xml_entry() -> None:
 
     assert result is not None
     assert result["version"] == 4
-    assert result["data"][CONF_SERVICE] == _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER
+    assert result["data"][CONF_SERVICE] == DEFAULT_CF_BUNDLE_IDENTIFIER
     assert result["data"]["username"] == "user@example.com"
 
 

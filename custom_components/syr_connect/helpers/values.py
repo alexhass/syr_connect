@@ -5,8 +5,8 @@ import logging
 import re
 from typing import Any
 
+from ..aiosyrconnect import SyrConnectStatus, SyrConnectStatusValue
 from ..const import _SYR_CONNECT_SENSOR_CND_PER_DH
-from ..data import SyrConnectStatus, SyrConnectStatusValue
 
 _LOGGER = logging.getLogger(__name__)
 

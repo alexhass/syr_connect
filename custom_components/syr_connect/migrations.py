@@ -12,9 +12,12 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api_json import SyrConnectJsonAPI
+from .aiosyrconnect import (
+    DEFAULT_CF_BUNDLE_IDENTIFIER,
+    SyrConnectInvalidResponseError,
+    SyrConnectJsonAPI,
+)
 from .const import (
-    _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
@@ -23,7 +26,6 @@ from .const import (
     CONF_MODEL,
     CONF_SERVICE,
 )
-from .exceptions import SyrConnectInvalidResponseError
 from .helpers.integration import build_user_agent, get_integration_version
 from .helpers.registry import build_entry_unique_id
 from .models import detect_model
@@ -126,7 +128,7 @@ def v3_to_v4_add_service(entry: ConfigEntry) -> dict | None:
         return None
     if entry.data.get(CONF_SERVICE):
         return None
-    new_data = {**entry.data, CONF_SERVICE: _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER}
+    new_data = {**entry.data, CONF_SERVICE: DEFAULT_CF_BUNDLE_IDENTIFIER}
     return {"data": new_data, "version": 4}
 
 
