@@ -1,10 +1,8 @@
-"""Integration-wide helpers: version, scan interval, locale, hosts and HTTP responses."""
+"""Integration-wide helpers: version, scan interval, locale and hosts."""
 
 import ipaddress
 import logging
 import re
-
-import aiohttp
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import __version__ as HA_VERSION
@@ -14,7 +12,6 @@ from homeassistant.util import dt as dt_util
 
 from ..const import (
     _SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT,
-    _SYR_CONNECT_API_RESPONSE_SIZE_MAXIMUM,
     _SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT,
     _SYR_CONNECT_SCAN_INTERVAL_CONF,
     API_TYPE_JSON,
@@ -24,9 +21,6 @@ from ..const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
-
-# Number of bytes read at once from a response body
-_SYR_CONNECT_HELPERS_RESPONSE_CHUNK_SIZE = 64 * 1024
 
 
 def get_default_scan_interval_for_entry(entry: ConfigEntry | dict | None) -> int:
@@ -163,58 +157,3 @@ def get_api_locale(language: str | None, country: str | None) -> str:
     if region is None:
         region = country.upper() if country else "US"
     return f"{lang}-{region}"
-
-
-async def read_response_text(response: aiohttp.ClientResponse) -> str:
-    """Read the body of a response as text, up to the maximum response size.
-
-    The body is read in chunks, so that a server or device that sends endless data
-    cannot fill the memory. A wrong or missing charset falls back to UTF-8.
-
-    Args:
-        response: Response whose body has not been read yet
-
-    Returns:
-        The decoded body
-
-    Raises:
-        aiohttp.ClientPayloadError: If the body is larger than the maximum response size
-    """
-    limit = _SYR_CONNECT_API_RESPONSE_SIZE_MAXIMUM
-    # The announced size saves reading an oversized body; it is the compressed size and
-    # may be missing, so the bytes that arrive are counted as well
-    announced = response.content_length
-    if announced is not None and announced > limit:
-        raise aiohttp.ClientPayloadError(
-            f"Response of {announced} bytes exceeds the limit of {limit} bytes"
-        )
-    body = bytearray()
-    async for chunk in response.content.iter_chunked(
-        _SYR_CONNECT_HELPERS_RESPONSE_CHUNK_SIZE
-    ):
-        body.extend(chunk)
-        if len(body) > limit:
-            raise aiohttp.ClientPayloadError(
-                f"Response exceeds the limit of {limit} bytes"
-            )
-    try:
-        return body.decode(response.charset or "utf-8")
-    except LookupError:
-        return body.decode("utf-8")
-
-
-def mask_ug_value(payload: str) -> str:
-    """Redact `ug` attribute values in an XML payload.
-
-    Replaces values like `ug="..."` with `ug="***"` (case-insensitive)
-    so session tokens are not leaked in logs or diagnostics.
-
-    The payload is edited as text, not parsed, and `ug="..."` is masked anywhere in it: diagnostics
-    may pass truncated or malformed XML, server responses may contain a raw `>` inside attribute
-    values, and error messages may quote the token outside any tag. An unterminated value is masked
-    up to the end of the string. Non-string and empty payloads are returned unchanged.
-    """
-    if not isinstance(payload, str) or payload == "":
-        return payload
-    # The lookbehind keeps `ug` from matching inside longer names such as `xug` or `a:ug`.
-    return re.sub(r'(?i)(?<![\w:.-])(ug\s*=\s*")[^"]*', r"\1***", payload)

@@ -1,17 +1,78 @@
-"""HTTP client for the SYR Connect XML API."""
+"""HTTP client for the SYR Connect XML API and helpers for the API responses."""
 
 import logging
+import re
 from typing import Any
 
 import aiohttp
 
-from .const import _SYR_CONNECT_CLIENT_OS_LANGUAGE
-from .helpers.integration import read_response_text
+from .const import (
+    _SYR_CONNECT_API_RESPONSE_SIZE_MAXIMUM,
+    _SYR_CONNECT_CLIENT_OS_LANGUAGE,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
 # Default timeout for HTTP requests (seconds)
 _SYR_CONNECT_DEFAULT_HTTP_TIMEOUT = 30
+
+# Number of bytes read at once from a response body
+_SYR_CONNECT_HTTP_CLIENT_RESPONSE_CHUNK_SIZE = 64 * 1024
+
+
+async def read_response_text(response: aiohttp.ClientResponse) -> str:
+    """Read the body of a response as text, up to the maximum response size.
+
+    The body is read in chunks, so that a server or device that sends endless data
+    cannot fill the memory. A wrong or missing charset falls back to UTF-8.
+
+    Args:
+        response: Response whose body has not been read yet
+
+    Returns:
+        The decoded body
+
+    Raises:
+        aiohttp.ClientPayloadError: If the body is larger than the maximum response size
+    """
+    limit = _SYR_CONNECT_API_RESPONSE_SIZE_MAXIMUM
+    # The announced size saves reading an oversized body; it is the compressed size and
+    # may be missing, so the bytes that arrive are counted as well
+    announced = response.content_length
+    if announced is not None and announced > limit:
+        raise aiohttp.ClientPayloadError(
+            f"Response of {announced} bytes exceeds the limit of {limit} bytes"
+        )
+    body = bytearray()
+    async for chunk in response.content.iter_chunked(
+        _SYR_CONNECT_HTTP_CLIENT_RESPONSE_CHUNK_SIZE
+    ):
+        body.extend(chunk)
+        if len(body) > limit:
+            raise aiohttp.ClientPayloadError(
+                f"Response exceeds the limit of {limit} bytes"
+            )
+    try:
+        return body.decode(response.charset or "utf-8")
+    except LookupError:
+        return body.decode("utf-8")
+
+
+def mask_ug_value(payload: str) -> str:
+    """Redact `ug` attribute values in an XML payload.
+
+    Replaces values like `ug="..."` with `ug="***"` (case-insensitive)
+    so session tokens are not leaked in logs or diagnostics.
+
+    The payload is edited as text, not parsed, and `ug="..."` is masked anywhere in it: diagnostics
+    may pass truncated or malformed XML, server responses may contain a raw `>` inside attribute
+    values, and error messages may quote the token outside any tag. An unterminated value is masked
+    up to the end of the string. Non-string and empty payloads are returned unchanged.
+    """
+    if not isinstance(payload, str) or payload == "":
+        return payload
+    # The lookbehind keeps `ug` from matching inside longer names such as `xug` or `a:ug`.
+    return re.sub(r'(?i)(?<![\w:.-])(ug\s*=\s*")[^"]*', r"\1***", payload)
 
 
 class HTTPClient:

@@ -24,7 +24,7 @@ from .const import (
     CONF_SERVICE,
 )
 from .exceptions import SyrConnectInvalidResponseError
-from .helpers.integration import get_integration_version
+from .helpers.integration import build_user_agent, get_integration_version
 from .helpers.registry import build_entry_unique_id
 from .models import detect_model
 
@@ -267,7 +267,7 @@ async def _async_detect_local_model(
         host=entry.data[CONF_HOST],
         base_path=base_path,
         login_required=entry.data.get(CONF_LOGIN_REQUIRED),
-        integration_version=get_integration_version(hass),
+        user_agent=build_user_agent(get_integration_version(hass)),
     )
     devices = await api.get_devices("local")
     status = await api.get_device_status(devices[0]["id"])

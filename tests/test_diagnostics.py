@@ -31,6 +31,7 @@ from custom_components.syr_connect.exceptions import (
     SyrConnectConnectionError,
     SyrConnectHTTPError,
 )
+from custom_components.syr_connect.helpers.integration import build_user_agent
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
@@ -538,7 +539,7 @@ async def test_fetch_local_device_json(integration_version: str) -> None:
         session,
         host="192.168.1.100",
         base_path="/neosoft",
-        integration_version=integration_version,
+        user_agent=build_user_agent(integration_version),
     )
     api.get_device_status.assert_awaited_once_with("dev1")
     api.login.assert_not_awaited()
@@ -1046,5 +1047,5 @@ async def test_diagnostics_cloud_device_with_local_api(
     assert mock_api_class.call_args.kwargs == {
         "host": "192.168.1.100",
         "base_path": "/neosoft",
-        "integration_version": integration_version,
+        "user_agent": build_user_agent(integration_version),
     }

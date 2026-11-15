@@ -287,15 +287,25 @@ def test_build_device_get_statistics_payload_uses_series_checksum_and_lang() -> 
         ("America/St_Johns", 1, "-03:30:00"),
     ],
 )
-def test_compute_local_tzo_uses_ha_time_zone(
+def test_compute_local_tzo_uses_the_time_zone_of_local_now(
     time_zone: str, month: int, expected: str
 ) -> None:
-    """The offset comes from the HA time zone incl. DST; positive offsets have no sign."""
+    """The offset comes from the time zone of local_now incl. DST; positive offsets have no sign."""
     now = datetime(2026, month, 15, 12, 0, tzinfo=ZoneInfo(time_zone))
-    with patch(
-        "custom_components.syr_connect.payload_builder.dt_util.now", return_value=now
-    ):
-        assert PayloadBuilder._compute_local_tzo() == expected
+    pb = PayloadBuilder("1.2.3", MagicMock(), "SYR Connect", local_now=lambda: now)
+    assert pb._compute_local_tzo() == expected
+
+
+def test_compute_local_tzo_defaults_to_the_process_time_zone() -> None:
+    """Without local_now the offset is the one of the process time zone."""
+    pb = PayloadBuilder("1.2.3", MagicMock(), "SYR Connect")
+    offset = datetime.now().astimezone().utcoffset()
+    assert offset is not None
+    hours, rem = divmod(abs(int(offset.total_seconds())), 3600)
+    sign = "-" if offset.total_seconds() < 0 else ""
+    assert (
+        pb._compute_local_tzo() == f"{sign}{hours:02d}:{rem // 60:02d}:{rem % 60:02d}"
+    )
 
 
 def test_compute_locale_lang_reg_dash_and_single() -> None:

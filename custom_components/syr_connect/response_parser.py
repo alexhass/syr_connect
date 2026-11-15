@@ -15,7 +15,6 @@ from .exceptions import (
     SyrConnectLoginFailedError,
     SyrConnectSessionExpiredError,
 )
-from .helpers.device import is_device_offline
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -37,6 +36,20 @@ _SYR_CONNECT_RESPONSE_PARSER_C_EXTRAS = (
 def _as_list(value: Any) -> list[Any]:
     """Return a parsed XML element list; a single element is parsed as a dict."""
     return value if isinstance(value, list) else [value]
+
+
+def is_device_offline(dst: Any) -> bool:
+    """Return True if the cloud device state means offline.
+
+    dst="0" never online, dst="1" offline (2 = online, 3 = standby).
+
+    Args:
+        dst: The ``dst`` value of a status response
+
+    Returns:
+        True if the device is not reachable via the cloud
+    """
+    return str(dst if dst is not None else "").strip() in ("0", "1")
 
 
 def _parse_utc_offset(value: Any) -> int | None:

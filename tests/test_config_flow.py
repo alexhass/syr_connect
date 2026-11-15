@@ -12,7 +12,11 @@ from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.syr_connect.config_flow import (
     LOCAL_API_MODELS,
+    CannotConnectError,
     ConfigFlow,
+    HostInvalidError,
+    HostWithPortError,
+    InvalidAuthError,
     validate_input_json,
     validate_input_xml,
 )
@@ -28,10 +32,6 @@ from custom_components.syr_connect.const import (
     DOMAIN,
 )
 from custom_components.syr_connect.exceptions import (
-    CannotConnectError,
-    HostInvalidError,
-    HostWithPortError,
-    InvalidAuthError,
     SyrConnectAuthError,
     SyrConnectConnectionError,
     SyrConnectLoginFailedError,

@@ -42,13 +42,9 @@ from .const import (
 from .data import SyrConnectCoordinatorData, SyrConnectDevice, SyrConnectStatus
 from .devices import SyrConnectStatistic
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError, SyrConnectError
-from .helpers.device import (
-    detect_device_model,
-    get_device,
-    get_device_model,
-    is_device_offline,
-)
+from .helpers.device import detect_device_model, get_device, get_device_model
 from .helpers.integration import (
+    build_user_agent,
     get_api_locale,
     get_default_scan_interval_for_entry,
     get_integration_version,
@@ -57,6 +53,7 @@ from .helpers.registry import build_statistic_id
 from .helpers.values import get_sensor_iwh_value
 from .models import MODEL_SIGNATURES
 from .repairs import delete_issue
+from .response_parser import is_device_offline
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -139,7 +136,7 @@ class SyrConnectDataUpdateCoordinator(
                 host=host,
                 base_path=base_path,
                 login_required=config_data.get(CONF_LOGIN_REQUIRED),
-                integration_version=get_integration_version(hass),
+                user_agent=build_user_agent(get_integration_version(hass)),
             )
             self._username = None  # Not used for JSON API
             self._configuration_url: str | None = (
@@ -166,8 +163,10 @@ class SyrConnectDataUpdateCoordinator(
                 username,
                 password,
                 service=svc,
-                integration_version=get_integration_version(hass),
+                user_agent=build_user_agent(get_integration_version(hass)),
                 language=get_api_locale(hass.config.language, hass.config.country),
+                # The tzo of the login is the offset of the Home Assistant time zone
+                local_now=dt_util.now,
             )
             self._username = username
             self._configuration_url = svc.configuration_url

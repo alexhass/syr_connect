@@ -14,13 +14,13 @@ from custom_components.syr_connect.helpers.device import (
     get_current_mac,
     get_device,
     get_device_model,
-    is_device_offline,
 )
 from custom_components.syr_connect.models import (
     MODEL_SIGNATURES,
     UNKNOWN_MODEL,
     SyrConnectModel,
 )
+from custom_components.syr_connect.response_parser import is_device_offline
 from custom_components.syr_connect.sensor import is_sensor_visible
 
 
