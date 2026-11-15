@@ -22,6 +22,7 @@ from .const import API_SERVICES, DEFAULT_CF_BUNDLE_IDENTIFIER
 from .exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
+    SyrConnectDeviceNotFoundError,
     SyrConnectError,
     SyrConnectHTTPError,
     SyrConnectInvalidResponseError,
@@ -48,6 +49,7 @@ __all__ = [
     "SyrConnectApiDevice",
     "SyrConnectAuthError",
     "SyrConnectConnectionError",
+    "SyrConnectDeviceNotFoundError",
     "SyrConnectError",
     "SyrConnectHTTPError",
     "SyrConnectInvalidResponseError",

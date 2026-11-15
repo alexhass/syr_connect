@@ -56,6 +56,7 @@ async def test_open_close_calls_set(hass: HomeAssistant) -> None:
         "devices": [
             {
                 "id": "device1",
+                "dclg": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {"getAB": "2"},
@@ -86,6 +87,7 @@ async def test_async_setup_entry_creates_valve(
         "devices": [
             {
                 "id": "device1",
+                "dclg": "device1",
                 "name": "Test Device",
                 "project_id": "project1",
                 "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
@@ -107,6 +109,7 @@ async def test_available(hass: HomeAssistant) -> None:
         "devices": [
             {
                 "id": "device1",
+                "dclg": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
                 "available": True,
@@ -132,6 +135,7 @@ async def test_async_setup_entry_creates_valves(hass: HomeAssistant) -> None:
         "devices": [
             {
                 "id": "d1",
+                "dclg": "d1",
                 "name": "Device 1",
                 "project_id": "p1",
                 "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
@@ -139,6 +143,7 @@ async def test_async_setup_entry_creates_valves(hass: HomeAssistant) -> None:
             },
             {
                 "id": "d2",
+                "dclg": "d2",
                 "name": "Device 2",
                 "project_id": "p1",
                 "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
@@ -165,6 +170,7 @@ async def test_entity_properties_and_state_transitions(hass: HomeAssistant) -> N
         "devices": [
             {
                 "id": "dev",
+                "dclg": "dev",
                 "name": "Dev",
                 "project_id": "p1",
                 "status": {"getVLV": "10", "getAB": "2"},
@@ -189,7 +195,17 @@ async def test_entity_properties_and_state_transitions(hass: HomeAssistant) -> N
     # Update status to opening (21)
     coordinator.async_set_updated_data(
         cast(
-            Any, {"devices": [{"id": "dev", "name": "Dev", "status": {"getVLV": "21"}}]}
+            Any,
+            {
+                "devices": [
+                    {
+                        "id": "dev",
+                        "dclg": "dev",
+                        "name": "Dev",
+                        "status": {"getVLV": "21"},
+                    }
+                ]
+            },
         )
     )
     assert valve.is_opening is True
@@ -198,7 +214,9 @@ async def test_entity_properties_and_state_transitions(hass: HomeAssistant) -> N
 
 async def test_is_closed_reads_only_getab(hass: HomeAssistant) -> None:
     """Test is closed reads only getAB."""
-    data = {"devices": [{"id": "x", "name": "X", "status": {"getAB": "2"}}]}
+    data = {
+        "devices": [{"id": "x", "dclg": "x", "name": "X", "status": {"getAB": "2"}}]
+    }
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "x", "X")
 
@@ -207,14 +225,25 @@ async def test_is_closed_reads_only_getab(hass: HomeAssistant) -> None:
 
     # Invalid getAB -> unknown
     coordinator.async_set_updated_data(
-        cast(Any, {"devices": [{"id": "x", "name": "X", "status": {"getAB": "abc"}}]})
+        cast(
+            Any,
+            {
+                "devices": [
+                    {"id": "x", "dclg": "x", "name": "X", "status": {"getAB": "abc"}}
+                ]
+            },
+        )
     )
     assert valve.is_closed is None
 
 
 async def test_available_checks(hass: HomeAssistant) -> None:
     """Test available checks."""
-    data = {"devices": [{"id": "a", "name": "A", "status": {}, "available": True}]}
+    data = {
+        "devices": [
+            {"id": "a", "dclg": "a", "name": "A", "status": {}, "available": True}
+        ]
+    }
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "a", "A")
     assert valve.available is True
@@ -225,7 +254,11 @@ async def test_available_checks(hass: HomeAssistant) -> None:
     # If device present but marked unavailable
     coordinator.last_update_success = True
     coordinator.async_set_updated_data(
-        {"devices": [{"id": "a", "name": "A", "status": {}, "available": False}]}
+        {
+            "devices": [
+                {"id": "a", "dclg": "a", "name": "A", "status": {}, "available": False}
+            ]
+        }
     )
     assert valve.available is False
 
@@ -241,7 +274,11 @@ async def test_state_unknown_when_no_status(hass: HomeAssistant) -> None:
 
 async def test_is_closing_state(hass: HomeAssistant) -> None:
     """Test is closing state."""
-    data = {"devices": [{"id": "c1", "name": "C1", "status": {"getVLV": "11"}}]}
+    data = {
+        "devices": [
+            {"id": "c1", "dclg": "c1", "name": "C1", "status": {"getVLV": "11"}}
+        ]
+    }
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "c1", "C1")
 
@@ -263,7 +300,16 @@ async def test_extra_state_attributes_none_when_no_status(hass: HomeAssistant) -
 async def test_is_closed_none_when_device_missing(hass: HomeAssistant) -> None:
     """Test is closed none when device missing."""
     # Coordinator has devices but not our device id
-    data = {"devices": [{"id": "other", "name": "Other", "status": {"getVLV": "20"}}]}
+    data = {
+        "devices": [
+            {
+                "id": "other",
+                "dclg": "other",
+                "name": "Other",
+                "status": {"getVLV": "20"},
+            }
+        ]
+    }
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "missing_device", "Missing")
     assert valve._device is None
@@ -277,7 +323,12 @@ async def test_invalid_getvlv_does_not_raise_and_falls_back(
     """Test invalid getVLV does not raise and falls back."""
     data = {
         "devices": [
-            {"id": "v1", "name": "V1", "status": {"getVLV": "abc", "getAB": "1"}}
+            {
+                "id": "v1",
+                "dclg": "v1",
+                "name": "V1",
+                "status": {"getVLV": "abc", "getAB": "1"},
+            }
         ]
     }
     coordinator = _build_coordinator(hass, data)
@@ -315,7 +366,12 @@ async def test_state_open(hass: HomeAssistant) -> None:
     """Test state open."""
     data = {
         "devices": [
-            {"id": "o1", "name": "O1", "status": {"getVLV": "20", "getAB": "1"}}
+            {
+                "id": "o1",
+                "dclg": "o1",
+                "name": "O1",
+                "status": {"getVLV": "20", "getAB": "1"},
+            }
         ]
     }
     coordinator = _build_coordinator(hass, data)
@@ -331,6 +387,7 @@ async def test_async_setup_entry_skips_invalid_values(hass: HomeAssistant) -> No
         "devices": [
             {
                 "id": "bad",
+                "dclg": "bad",
                 "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "name": "Bad",
                 "project_id": "p",
@@ -355,6 +412,7 @@ async def test_async_setup_entry_skips_infinite_getab(hass: HomeAssistant) -> No
         "devices": [
             {
                 "id": "inf",
+                "dclg": "inf",
                 "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "name": "Inf",
                 "project_id": "p",
@@ -376,7 +434,12 @@ async def test_infinite_getvlv_returns_none(hass: HomeAssistant) -> None:
     """An infinite getVLV (OverflowError in int()) gives no opening/closing state."""
     data = {
         "devices": [
-            {"id": "v1", "name": "V1", "status": {"getVLV": "inf", "getAB": "1"}}
+            {
+                "id": "v1",
+                "dclg": "v1",
+                "name": "V1",
+                "status": {"getVLV": "inf", "getAB": "1"},
+            }
         ]
     }
     coordinator = _build_coordinator(hass, data)
@@ -388,7 +451,11 @@ async def test_infinite_getvlv_returns_none(hass: HomeAssistant) -> None:
 
 async def test_async_open_close_with_boolean_string_status(hass: HomeAssistant) -> None:
     """When device uses boolean-string getAB, setAB should use 'true'/'false'."""
-    data = {"devices": [{"id": "b1", "name": "B1", "status": {"getAB": "true"}}]}
+    data = {
+        "devices": [
+            {"id": "b1", "dclg": "b1", "name": "B1", "status": {"getAB": "true"}}
+        ]
+    }
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
 
@@ -410,6 +477,7 @@ async def test_async_setup_entry_empty_string_values(hass: HomeAssistant) -> Non
         "devices": [
             {
                 "id": "empty1",
+                "dclg": "empty1",
                 "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "name": "Empty1",
                 "project_id": "p1",
@@ -417,6 +485,7 @@ async def test_async_setup_entry_empty_string_values(hass: HomeAssistant) -> Non
             },
             {
                 "id": "empty2",
+                "dclg": "empty2",
                 "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "name": "Empty2",
                 "project_id": "p1",
@@ -441,6 +510,7 @@ async def test_async_setup_entry_typeerror_values(hass: HomeAssistant) -> None:
         "devices": [
             {
                 "id": "type1",
+                "dclg": "type1",
                 "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "name": "Type1",
                 "project_id": "p1",
@@ -448,6 +518,7 @@ async def test_async_setup_entry_typeerror_values(hass: HomeAssistant) -> None:
             },
             {
                 "id": "type2",
+                "dclg": "type2",
                 "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "name": "Type2",
                 "project_id": "p1",
@@ -472,6 +543,7 @@ async def test_async_setup_entry_getab_value_3_not_valid(hass: HomeAssistant) ->
         "devices": [
             {
                 "id": "ab3",
+                "dclg": "ab3",
                 "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "name": "AB3",
                 "project_id": "p1",
@@ -496,6 +568,7 @@ async def test_async_setup_entry_getvlv_value_5_not_valid(hass: HomeAssistant) -
         "devices": [
             {
                 "id": "vlv5",
+                "dclg": "vlv5",
                 "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "name": "VLV5",
                 "project_id": "p1",
@@ -516,7 +589,11 @@ async def test_async_setup_entry_getvlv_value_5_not_valid(hass: HomeAssistant) -
 
 async def test_is_closed_with_getvlv_11_closing(hass: HomeAssistant) -> None:
     """Test is_closed returns None for getVLV=11 (closing) without getAB."""
-    data = {"devices": [{"id": "v11", "name": "V11", "status": {"getVLV": "11"}}]}
+    data = {
+        "devices": [
+            {"id": "v11", "dclg": "v11", "name": "V11", "status": {"getVLV": "11"}}
+        ]
+    }
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "v11", "V11")
 
@@ -527,7 +604,11 @@ async def test_is_closed_with_getvlv_11_closing(hass: HomeAssistant) -> None:
 
 async def test_is_closed_with_getvlv_20_open(hass: HomeAssistant) -> None:
     """Test is_closed returns None for getVLV=20 (open) without getAB."""
-    data = {"devices": [{"id": "v20", "name": "V20", "status": {"getVLV": "20"}}]}
+    data = {
+        "devices": [
+            {"id": "v20", "dclg": "v20", "name": "V20", "status": {"getVLV": "20"}}
+        ]
+    }
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "v20", "V20")
 
@@ -538,7 +619,11 @@ async def test_is_closed_with_getvlv_20_open(hass: HomeAssistant) -> None:
 
 async def test_is_closed_with_getvlv_21_opening(hass: HomeAssistant) -> None:
     """Test is_closed returns None for getVLV=21 (opening) without getAB."""
-    data = {"devices": [{"id": "v21", "name": "V21", "status": {"getVLV": "21"}}]}
+    data = {
+        "devices": [
+            {"id": "v21", "dclg": "v21", "name": "V21", "status": {"getVLV": "21"}}
+        ]
+    }
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "v21", "V21")
 
@@ -551,7 +636,12 @@ async def test_is_closed_follows_getab_not_getvlv(hass: HomeAssistant) -> None:
     """Test that getAB=1 (open) correctly reflects open state regardless of getVLV."""
     data = {
         "devices": [
-            {"id": "cf", "name": "CF", "status": {"getVLV": "10", "getAB": "1"}}
+            {
+                "id": "cf",
+                "dclg": "cf",
+                "name": "CF",
+                "status": {"getVLV": "10", "getAB": "1"},
+            }
         ]
     }
     coordinator = _build_coordinator(hass, data)
@@ -562,7 +652,14 @@ async def test_is_closed_follows_getab_not_getvlv(hass: HomeAssistant) -> None:
 
     # Without getVLV, getAB=1 still means open
     coordinator.async_set_updated_data(
-        cast(Any, {"devices": [{"id": "cf", "name": "CF", "status": {"getAB": "1"}}]})
+        cast(
+            Any,
+            {
+                "devices": [
+                    {"id": "cf", "dclg": "cf", "name": "CF", "status": {"getAB": "1"}}
+                ]
+            },
+        )
     )
     assert valve.is_closed is False
 
@@ -573,6 +670,7 @@ async def test_is_closed_getvlv_valueerror(hass: HomeAssistant) -> None:
         "devices": [
             {
                 "id": "ve",
+                "dclg": "ve",
                 "name": "VE",
                 "status": {"getVLV": "not_a_number", "getAB": "2"},
             }
@@ -588,7 +686,11 @@ async def test_is_closed_getvlv_valueerror(hass: HomeAssistant) -> None:
 
 async def test_is_opening_valueerror(hass: HomeAssistant) -> None:
     """Test is_opening handles ValueError in getVLV parsing."""
-    data = {"devices": [{"id": "ove", "name": "OVE", "status": {"getVLV": "invalid"}}]}
+    data = {
+        "devices": [
+            {"id": "ove", "dclg": "ove", "name": "OVE", "status": {"getVLV": "invalid"}}
+        ]
+    }
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "ove", "OVE")
 
@@ -599,7 +701,14 @@ async def test_is_opening_valueerror(hass: HomeAssistant) -> None:
 async def test_is_closing_valueerror(hass: HomeAssistant) -> None:
     """Test is_closing handles ValueError in getVLV parsing."""
     data = {
-        "devices": [{"id": "cve", "name": "CVE", "status": {"getVLV": "bad_value"}}]
+        "devices": [
+            {
+                "id": "cve",
+                "dclg": "cve",
+                "name": "CVE",
+                "status": {"getVLV": "bad_value"},
+            }
+        ]
     }
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "cve", "CVE")
@@ -611,7 +720,14 @@ async def test_is_closing_valueerror(hass: HomeAssistant) -> None:
 async def test_is_closed_getvlv_empty_string(hass: HomeAssistant) -> None:
     """Test is_closed handles empty string getVLV."""
     data = {
-        "devices": [{"id": "es", "name": "ES", "status": {"getVLV": "", "getAB": "1"}}]
+        "devices": [
+            {
+                "id": "es",
+                "dclg": "es",
+                "name": "ES",
+                "status": {"getVLV": "", "getAB": "1"},
+            }
+        ]
     }
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "es", "ES")
@@ -623,7 +739,11 @@ async def test_is_closed_getvlv_empty_string(hass: HomeAssistant) -> None:
 
 async def test_is_opening_empty_string(hass: HomeAssistant) -> None:
     """Test is_opening returns None for empty string getVLV."""
-    data = {"devices": [{"id": "oes", "name": "OES", "status": {"getVLV": ""}}]}
+    data = {
+        "devices": [
+            {"id": "oes", "dclg": "oes", "name": "OES", "status": {"getVLV": ""}}
+        ]
+    }
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "oes", "OES")
 
@@ -633,7 +753,11 @@ async def test_is_opening_empty_string(hass: HomeAssistant) -> None:
 
 async def test_is_closing_empty_string(hass: HomeAssistant) -> None:
     """Test is_closing returns None for empty string getVLV."""
-    data = {"devices": [{"id": "ces", "name": "CES", "status": {"getVLV": ""}}]}
+    data = {
+        "devices": [
+            {"id": "ces", "dclg": "ces", "name": "CES", "status": {"getVLV": ""}}
+        ]
+    }
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "ces", "CES")
 
@@ -645,7 +769,12 @@ async def test_is_closed_getvlv_typeerror(hass: HomeAssistant) -> None:
     """Test is_closed handles TypeError in getVLV parsing."""
     data = {
         "devices": [
-            {"id": "te", "name": "TE", "status": {"getVLV": None, "getAB": "2"}}
+            {
+                "id": "te",
+                "dclg": "te",
+                "name": "TE",
+                "status": {"getVLV": None, "getAB": "2"},
+            }
         ]
     }
     coordinator = _build_coordinator(hass, data)
@@ -658,7 +787,11 @@ async def test_is_closed_getvlv_typeerror(hass: HomeAssistant) -> None:
 
 async def test_is_opening_typeerror(hass: HomeAssistant) -> None:
     """Test is_opening handles TypeError in getVLV parsing."""
-    data = {"devices": [{"id": "ote", "name": "OTE", "status": {"getVLV": None}}]}
+    data = {
+        "devices": [
+            {"id": "ote", "dclg": "ote", "name": "OTE", "status": {"getVLV": None}}
+        ]
+    }
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "ote", "OTE")
 
@@ -668,7 +801,11 @@ async def test_is_opening_typeerror(hass: HomeAssistant) -> None:
 
 async def test_is_closing_typeerror(hass: HomeAssistant) -> None:
     """Test is_closing handles TypeError in getVLV parsing."""
-    data = {"devices": [{"id": "cte", "name": "CTE", "status": {"getVLV": None}}]}
+    data = {
+        "devices": [
+            {"id": "cte", "dclg": "cte", "name": "CTE", "status": {"getVLV": None}}
+        ]
+    }
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "cte", "CTE")
 
@@ -682,24 +819,28 @@ async def test_async_setup_entry_getvlv_all_valid_codes(hass: HomeAssistant) -> 
         "devices": [
             {
                 "id": "v10",
+                "dclg": "v10",
                 "name": "V10",
                 "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "status": {"getVLV": "10"},
             },  # closed
             {
                 "id": "v11",
+                "dclg": "v11",
                 "name": "V11",
                 "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "status": {"getVLV": "11"},
             },  # closing
             {
                 "id": "v20",
+                "dclg": "v20",
                 "name": "V20",
                 "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "status": {"getVLV": "20"},
             },  # open
             {
                 "id": "v21",
+                "dclg": "v21",
                 "name": "V21",
                 "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "status": {"getVLV": "21"},
@@ -725,12 +866,14 @@ async def test_async_setup_entry_getab_valid_values_1_and_2(
         "devices": [
             {
                 "id": "ab1",
+                "dclg": "ab1",
                 "name": "AB1",
                 "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "status": {"getAB": "1"},
             },
             {
                 "id": "ab2",
+                "dclg": "ab2",
                 "name": "AB2",
                 "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "status": {"getAB": "2"},
@@ -758,24 +901,28 @@ async def test_async_setup_entry_boolean_and_boolean_string(
         "devices": [
             {
                 "id": "btrue",
+                "dclg": "btrue",
                 "name": "BTrue",
                 "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "status": {"getAB": True},
             },
             {
                 "id": "bfalse",
+                "dclg": "bfalse",
                 "name": "BFalse",
                 "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "status": {"getAB": False},
             },
             {
                 "id": "strtrue",
+                "dclg": "strtrue",
                 "name": "StrTrue",
                 "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "status": {"getAB": "true"},
             },
             {
                 "id": "strfalse",
+                "dclg": "strfalse",
                 "name": "StrFalse",
                 "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "status": {"getAB": "false"},
@@ -796,7 +943,7 @@ async def test_async_setup_entry_boolean_and_boolean_string(
 
 async def test_valve_initialization_uses_getab(hass: HomeAssistant) -> None:
     """The valve is always the shut-off valve getAB."""
-    data = {"devices": [{"id": "dsk", "name": "DSK", "status": {}}]}
+    data = {"devices": [{"id": "dsk", "dclg": "dsk", "name": "DSK", "status": {}}]}
     coordinator = _build_coordinator(hass, data)
 
     valve = SyrConnectValve(coordinator, "dsk", "DSK")
@@ -808,7 +955,11 @@ async def test_valve_initialization_uses_getab(hass: HomeAssistant) -> None:
 
 async def test_async_open_close_with_native_boolean_status(hass: HomeAssistant) -> None:
     """When device reports native boolean getAB, setAB should use 'true'/'false'."""
-    data = {"devices": [{"id": "nb1", "name": "NB1", "status": {"getAB": True}}]}
+    data = {
+        "devices": [
+            {"id": "nb1", "dclg": "nb1", "name": "NB1", "status": {"getAB": True}}
+        ]
+    }
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()
 
@@ -839,7 +990,11 @@ async def test_build_set_ab_command_respects_boolean_raw(hass: HomeAssistant) ->
 
 async def test_state_opening(hass: HomeAssistant) -> None:
     """State is opening when getVLV=21."""
-    data = {"devices": [{"id": "io1", "name": "IO1", "status": {"getVLV": "21"}}]}
+    data = {
+        "devices": [
+            {"id": "io1", "dclg": "io1", "name": "IO1", "status": {"getVLV": "21"}}
+        ]
+    }
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "io1", "IO1")
 
@@ -849,7 +1004,11 @@ async def test_state_opening(hass: HomeAssistant) -> None:
 
 async def test_state_closing(hass: HomeAssistant) -> None:
     """State is closing when getVLV=11."""
-    data = {"devices": [{"id": "ic1", "name": "IC1", "status": {"getVLV": "11"}}]}
+    data = {
+        "devices": [
+            {"id": "ic1", "dclg": "ic1", "name": "IC1", "status": {"getVLV": "11"}}
+        ]
+    }
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "ic1", "IC1")
 
@@ -859,7 +1018,7 @@ async def test_state_closing(hass: HomeAssistant) -> None:
 
 async def test_state_unknown(hass: HomeAssistant) -> None:
     """Without getVLV/getAB the valve has no state."""
-    data = {"devices": [{"id": "unk", "name": "UNK", "status": {}}]}
+    data = {"devices": [{"id": "unk", "dclg": "unk", "name": "UNK", "status": {}}]}
     coordinator = _build_coordinator(hass, data)
     valve = SyrConnectValve(coordinator, "unk", "UNK")
 
@@ -878,6 +1037,7 @@ async def test_setup_getab_invalid_value_hits_except_branch(
         "devices": [
             {
                 "id": "bad",
+                "dclg": "bad",
                 "name": "Bad",
                 "model": _SYR_CONNECT_TEST_SAFETECH_MODEL,
                 "status": {"getAB": "not_a_number"},
@@ -909,7 +1069,9 @@ async def test_setup_getab_invalid_value_hits_except_branch(
 async def test_available_fallback_when_device_not_in_data(hass: HomeAssistant) -> None:
     """The available property returns False when device_id is not in coordinator data (removed from the account)."""
     # Coordinator data contains a different device id
-    data = {"devices": [{"id": "other", "name": "Other", "status": {}}]}
+    data = {
+        "devices": [{"id": "other", "dclg": "other", "name": "Other", "status": {}}]
+    }
     coordinator = _build_coordinator(hass, data)
 
     valve = SyrConnectValve(coordinator, "missing_id", "Missing")
@@ -931,6 +1093,7 @@ async def test_async_open_valve_no_alarm_delegates_to_set_device_value(
         "devices": [
             {
                 "id": "dev1",
+                "dclg": "dev1",
                 "name": "Dev1",
                 "project_id": "p1",
                 "status": {"getAB": "2"},
@@ -951,6 +1114,7 @@ async def test_async_open_valve_sentinel_alarm_no_clear(hass: HomeAssistant) -> 
         "devices": [
             {
                 "id": "dev2",
+                "dclg": "dev2",
                 "name": "Dev2",
                 "project_id": "p1",
                 "status": {"getAB": "2", "getALA": "0"},
@@ -974,6 +1138,7 @@ async def test_async_open_valve_active_alarm_xml_sends_multi_command(
         "devices": [
             {
                 "id": "dev3",
+                "dclg": "dev3",
                 "name": "Dev3",
                 "project_id": "p1",
                 "status": {"getAB": "2", "getALA": "A5"},
@@ -1001,6 +1166,7 @@ async def test_async_open_valve_active_alarm_json_calls_clr_then_set(
         "devices": [
             {
                 "id": "dev4",
+                "dclg": "dev4",
                 "name": "Dev4",
                 "project_id": "p1",
                 "status": {"getAB": "2", "getALA": "A5"},
@@ -1027,6 +1193,7 @@ async def test_async_open_valve_alarm_style_alm_uses_clr_alm(
         "devices": [
             {
                 "id": "dev5",
+                "dclg": "dev5",
                 "name": "Dev5",
                 "project_id": "p1",
                 "status": {"getAB": "2", "getALM": "LowSalt", "getCNA": "LEXplus10S"},
@@ -1052,6 +1219,7 @@ async def test_async_open_valve_alarm_clear_via_set_sends_set_ala_ff(
         "devices": [
             {
                 "id": "dev6",
+                "dclg": "dev6",
                 "name": "Dev6",
                 "project_id": "p1",
                 # getSRN starting with "100AAA" matches Trio LS (srn_prefix="100")
@@ -1076,6 +1244,7 @@ async def test_async_open_calls_open_valve(hass: HomeAssistant) -> None:
         "devices": [
             {
                 "id": "v_open",
+                "dclg": "v_open",
                 "name": "VOpen",
                 "project_id": "p1",
                 "status": {"getAB": "2"},
@@ -1097,6 +1266,7 @@ async def test_async_open_valve_error_propagates(hass: HomeAssistant) -> None:
         "devices": [
             {
                 "id": "v_err",
+                "dclg": "v_err",
                 "name": "VErr",
                 "project_id": "p1",
                 "status": {"getAB": "2", "getALA": "A5"},
@@ -1131,7 +1301,13 @@ async def test_async_open_valve_unknown_device_raises(hass: HomeAssistant) -> No
     """async_open_valve raises HomeAssistantError when device_id is not in devices list."""
     data = {
         "devices": [
-            {"id": "other_device", "name": "Other", "project_id": "p1", "status": {}}
+            {
+                "id": "other_device",
+                "dclg": "other_device",
+                "name": "Other",
+                "project_id": "p1",
+                "status": {},
+            }
         ]
     }
     coordinator = _build_coordinator(hass, data)
@@ -1149,6 +1325,7 @@ async def test_async_open_valve_alarm_clear_via_set_json_api_sends_set_then_open
         "devices": [
             {
                 "id": "dev_z",
+                "dclg": "dev_z",
                 "name": "DevZ",
                 "project_id": "p1",
                 # getSRN "100AAA001" -> Trio LS (alarm_clear_via_set=True)
@@ -1181,7 +1358,13 @@ async def test_async_open_valve_alarm_clear_via_set_json_api_sends_set_then_open
 def _valve_data(status: dict[str, Any]) -> dict[str, Any]:
     return {
         "devices": [
-            {"id": "dev1", "name": "Dev1", "project_id": "p1", "status": status}
+            {
+                "id": "dev1",
+                "dclg": "dev1",
+                "name": "Dev1",
+                "project_id": "p1",
+                "status": status,
+            }
         ]
     }
 

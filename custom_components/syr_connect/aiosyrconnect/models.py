@@ -16,12 +16,14 @@ type SyrConnectStatus = dict[str, SyrConnectStatusValue]
 class SyrConnectApiDevice(TypedDict):
     """A device as returned by the API clients."""
 
+    # Serial number; the clients address the device by it
     id: str
-    dclg: str
     name: str
     # Added by the `get_devices` of both API clients, the XML response parser does not know it
     project_id: NotRequired[str]
     # Only reported by the XML API
+    # Device collection the cloud addresses the device by; the client resolves it
+    dclg: NotRequired[str]
     serial_number: NotRequired[str]
     dk: NotRequired[int]
     dkv: NotRequired[int]

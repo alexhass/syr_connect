@@ -47,7 +47,7 @@ async def main() -> None:
             await cloud.login()
             for project in cloud.projects:
                 for device in await cloud.get_devices(project["id"]):
-                    status = await cloud.get_device_status(device["dclg"])
+                    status = await cloud.get_device_status(device["id"])
                     print(device["name"], status)
         except SyrConnectAuthError:
             ...  # wrong password: ask for new credentials
@@ -61,7 +61,7 @@ async def main() -> None:
             user_agent="aiosyrconnect/1.0.0",
         )
         devices = await local.get_devices("local")
-        print(await local.get_device_status(devices[0]["dclg"]))
+        print(await local.get_device_status(devices[0]["id"]))
 ```
 
 What the caller passes:
@@ -86,6 +86,7 @@ All errors derive from `SyrConnectError`.
 | `SyrConnectLoginFailedError` | Login rejected for another cause than a wrong password (a `SyrConnectConnectionError`) |
 | `SyrConnectSessionExpiredError` | Session token rejected again after one new login (a `SyrConnectConnectionError`) |
 | `SyrConnectHTTPError` | HTTP error status of the local API, with `status` (a `SyrConnectConnectionError`) |
+| `SyrConnectDeviceNotFoundError` | The XML client was asked for a device that is in no device list it fetched; devices are addressed by their serial number (`id`) |
 | `SyrConnectInvalidResponseError` | Answer received but not usable, e.g. NSC or MIMA for a set command |
 
 The library logs failures at debug level only and raises them; the caller decides what the

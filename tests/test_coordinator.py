@@ -184,9 +184,7 @@ async def test_coordinator_set_device_value(
         await coordinator.async_set_device_value("device1", "setSIR", 0)
 
         # Verify API call
-        mock_api.set_device_status.assert_called_once_with(
-            "f47ac10b-58cc-4372-a567-0e02b2c3d479", [("setSIR", 0)]
-        )
+        mock_api.set_device_status.assert_called_once_with("device1", [("setSIR", 0)])
 
 
 async def test_set_device_status_api_raises_propagates(
@@ -694,7 +692,7 @@ async def test_coordinator_device_status_exception_result(
         # First device succeeds, second fails
         call_count = 0
 
-        async def get_device_status_side_effect(dclg: Any) -> Any:
+        async def get_device_status_side_effect(device_id: Any) -> Any:
             nonlocal call_count
             call_count += 1
             if call_count == 1:
@@ -918,85 +916,6 @@ async def test_coordinator_delete_offline_issue_on_recovery(
 
         # Verify delete_issue was called when device status was successfully fetched
         mock_delete_issue.assert_called_once_with(hass, "device_offline_device1")
-
-
-async def test_coordinator_device_without_dclg_uses_id(
-    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
-) -> None:
-    """Test coordinator uses device ID when dclg is missing."""
-    with patch(
-        "custom_components.syr_connect.coordinator.SyrConnectXmlAPI"
-    ) as mock_api_class:
-        mock_api = MagicMock()
-        mock_api.session_data = "test_session"
-        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
-        mock_api.is_session_valid = MagicMock(return_value=True)
-        mock_api.get_devices = AsyncMock(
-            return_value=[
-                {"id": "device1"}  # No 'dclg' field
-            ]
-        )
-        mock_api.get_device_status = AsyncMock(return_value={"getPRS": "50"})
-        mock_api_class.return_value = mock_api
-
-        config_data = {
-            CONF_SERVICE: "de.consoft.syr.connect",
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "password",
-        }
-        coordinator = SyrConnectDataUpdateCoordinator(
-            hass,
-            MagicMock(),
-            config_data,
-            60,
-        )
-        coordinator.config_entry = setup_in_progress_config_entry
-        await coordinator.async_config_entry_first_refresh()
-
-        # Verify get_device_status was called with device id (fallback)
-        mock_api.get_device_status.assert_called_once_with("device1")
-        assert coordinator.data is not None
-        assert coordinator.data["devices"][0]["available"] is True
-
-
-async def test_coordinator_set_value_device_without_dclg(
-    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
-) -> None:
-    """Test setting value for device without dclg uses device id."""
-    with patch(
-        "custom_components.syr_connect.coordinator.SyrConnectXmlAPI"
-    ) as mock_api_class:
-        mock_api = MagicMock()
-        mock_api.session_data = "test_session"
-        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
-        mock_api.get_devices = AsyncMock(
-            return_value=[
-                {"id": "device1"}  # No 'dclg' field
-            ]
-        )
-        mock_api.get_device_status = AsyncMock(return_value={"getSIR": "1"})
-        mock_api.set_device_status = AsyncMock(return_value=True)
-        mock_api.is_session_valid = MagicMock(return_value=True)
-        mock_api_class.return_value = mock_api
-
-        config_data = {
-            CONF_SERVICE: "de.consoft.syr.connect",
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "password",
-        }
-        coordinator = SyrConnectDataUpdateCoordinator(
-            hass,
-            MagicMock(),
-            config_data,
-            60,
-        )
-        coordinator.config_entry = setup_in_progress_config_entry
-        await coordinator.async_config_entry_first_refresh()
-
-        await coordinator.async_set_device_value("device1", "setSIR", 0)
-
-        # Should use device ID as fallback
-        mock_api.set_device_status.assert_called_once_with("device1", [("setSIR", 0)])
 
 
 async def test_coordinator_gather_returns_exception(
@@ -1272,8 +1191,8 @@ def _two_project_api(failing: set[str]) -> Any:
             }
         ]
 
-    async def _get_device_status(dclg: Any) -> Any:
-        return {"getSRN": dclg, "getFLO": "5"}
+    async def _get_device_status(device_id: Any) -> Any:
+        return {"getSRN": device_id, "getFLO": "5"}
 
     return SimpleNamespace(
         session_data="test_session",
@@ -1673,64 +1592,6 @@ async def test_coordinator_init_default_scan_interval(hass: HomeAssistant) -> No
         assert coordinator.update_interval == timedelta(seconds=60)
 
 
-async def test_resolve_device_dclg_returns_none_when_device_not_found(
-    hass: HomeAssistant,
-) -> None:
-    """_resolve_device_dclg returns None when device_id is not in coordinator data."""
-    with patch(
-        "custom_components.syr_connect.coordinator.SyrConnectXmlAPI"
-    ) as mock_api_class:
-        mock_api_class.return_value = MagicMock()
-        config_data = {
-            CONF_SERVICE: "de.consoft.syr.connect",
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "password",
-        }
-        coordinator = SyrConnectDataUpdateCoordinator(
-            hass, MagicMock(), config_data, 60
-        )
-        coordinator.data = {
-            "configuration_url": None,
-            "devices": [
-                {
-                    "id": "other_device",
-                    "dclg": "e6f7a8b9-c0d1-2345-efab-345678901234",
-                    "name": "Other Device",
-                }
-            ],
-            "projects": [],
-            "service": None,
-        }
-
-        result = coordinator._get_device_dclg_from_srn("nonexistent_device")
-
-        assert result is None
-
-
-async def test_resolve_device_dclg_returns_none_when_no_data(
-    hass: HomeAssistant,
-) -> None:
-    """_resolve_device_dclg returns None when coordinator.data is not yet available."""
-    with patch(
-        "custom_components.syr_connect.coordinator.SyrConnectXmlAPI"
-    ) as mock_api_class:
-        mock_api_class.return_value = MagicMock()
-        config_data = {
-            CONF_SERVICE: "de.consoft.syr.connect",
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "password",
-        }
-        coordinator = SyrConnectDataUpdateCoordinator(
-            hass, MagicMock(), config_data, 60
-        )
-        # data is None by default before the first successful update
-        coordinator.data = None
-
-        result = coordinator._get_device_dclg_from_srn("any_device")
-
-        assert result is None
-
-
 async def test_fetch_device_status_propagates_auth_error(hass: HomeAssistant) -> None:
     """If API raises `SyrConnectAuthError`, `_fetch_device_status` should re-raise it."""
     with patch(
@@ -1934,9 +1795,7 @@ async def test_async_clear_device_alarm_xml_api_sends_clr_command(
 
         await coordinator.async_clear_device_alarm("device1")
 
-        mock_api.set_device_status.assert_awaited_once_with(
-            "f47ac10b-58cc-4372-a567-0e02b2c3d479", [("clrALA", "")]
-        )
+        mock_api.set_device_status.assert_awaited_once_with("device1", [("clrALA", "")])
 
 
 async def test_async_clear_device_alarm_json_api_success(hass: HomeAssistant) -> None:
@@ -2077,9 +1936,7 @@ async def test_statistics_coordinator_imports_every_series(
     assert [call.args[1] for call in mock_api.get_statistics.await_args_list] == list(
         safefloor.STATISTICS
     )
-    assert mock_api.get_statistics.await_args_list[0].args[0] == (
-        "840fab82-3e71-4cfc-ab90-a0a1491ca881"
-    )
+    assert mock_api.get_statistics.await_args_list[0].args[0] == _STATS_DEVICE_ID
     metadata = [call.args[1] for call in mock_add.call_args_list]
     assert metadata == [
         {

@@ -3,6 +3,7 @@
 from custom_components.syr_connect.aiosyrconnect import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
+    SyrConnectDeviceNotFoundError,
     SyrConnectError,
     SyrConnectHTTPError,
     SyrConnectInvalidResponseError,
@@ -20,6 +21,7 @@ def test_exception_hierarchy() -> None:
     assert issubclass(SyrConnectAuthError, SyrConnectError)
     assert issubclass(SyrConnectConnectionError, SyrConnectError)
     assert issubclass(SyrConnectInvalidResponseError, SyrConnectError)
+    assert issubclass(SyrConnectDeviceNotFoundError, SyrConnectError)
     assert issubclass(SyrConnectLoginFailedError, SyrConnectConnectionError)
     assert issubclass(SyrConnectSessionExpiredError, SyrConnectConnectionError)
     assert issubclass(SyrConnectHTTPError, SyrConnectConnectionError)

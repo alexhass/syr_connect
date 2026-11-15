@@ -252,7 +252,7 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
         # key for setting: remove leading 'get' and prefix with 'set'
         set_key = f"set{self._sensor_key[3:]}"
         try:
-            # Use coordinator.async_set_device_value so the DCLG is resolved correctly
+            # The coordinator shows the value at once and rolls it back if the request fails
             await self.coordinator.async_set_device_value(
                 self._device_id, set_key, value
             )

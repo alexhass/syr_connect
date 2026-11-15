@@ -37,11 +37,11 @@ from homeassistant.core import HomeAssistant
 
 _SYR_CONNECT_TEST_DEVICE_LIST_XML = (
     '<sc><prs><pr pg="p1" pn="Haus+Mustermann" com="Max+Mustermann" /></prs>'
-    '<dvs><d dclg="dclg1" sn="206AAA67890" /></dvs></sc>'
+    '<dvs><d dclg="dclg1" sn="206AAA54321" /></dvs></sc>'
 )
 _SYR_CONNECT_TEST_STATUS_XML = (
-    '<sc><dvs><d dclg="dclg1" sn="206AAA67890">'
-    '<c n="getSRN" v="206AAA67890" /><c n="getWIP" v="192.168.1.20" />'
+    '<sc><dvs><d dclg="dclg1" sn="206AAA54321">'
+    '<c n="getSRN" v="206AAA54321" /><c n="getWIP" v="192.168.1.20" />'
     "</d></dvs></sc>"
 )
 _SYR_CONNECT_TEST_REDACTED_DEVICE_LIST_XML = (
@@ -100,7 +100,7 @@ def _xml_api(
     api.get_raw_device_list = AsyncMock(side_effect=responses[:1])
     api.get_raw_device_status = AsyncMock(side_effect=responses[1:])
     api.parse_device_list.return_value = (
-        [{"id": "206AAA67890", "dclg": "dclg1"}] if devices is None else devices
+        [{"id": "206AAA12345", "dclg": "dclg1"}] if devices is None else devices
     )
     return api
 
@@ -110,9 +110,9 @@ def _json_api(status: dict[str, Any] | None = None) -> MagicMock:
     api = MagicMock(spec=SyrConnectJsonAPI)
     api.is_session_valid.return_value = True
     api.login = AsyncMock()
-    api.get_devices = AsyncMock(return_value=[{"id": "206AAA67890"}])
+    api.get_devices = AsyncMock(return_value=[{"id": "206AAA12345"}])
     api.get_device_status = AsyncMock(
-        return_value={"getSRN": "206AAA67890", "getIPA": "192.168.1.20", "getFLO": "5"}
+        return_value={"getSRN": "206AAA12345", "getIPA": "192.168.1.20", "getFLO": "5"}
         if status is None
         else status
     )
@@ -154,9 +154,9 @@ def test_mask_mac_value_last_char_replace() -> None:
 @pytest.mark.parametrize(
     ("value", "expected"),
     [
-        pytest.param("206AAA67890", "206AAA12345", id="serial"),
+        pytest.param("206AAA54321", "206AAA12345", id="serial"),
         pytest.param("123456789", "123456789", id="other-format"),
-        pytest.param("206aaa67890", "206aaa67890", id="lowercase"),
+        pytest.param("206aaa54321", "206aaa54321", id="lowercase"),
         pytest.param(None, None, id="none"),
         pytest.param(5, 5, id="number"),
     ],
@@ -173,8 +173,8 @@ def test_redact_xml() -> None:
     """Token, serial numbers, addresses and the redacted keys are replaced in a text."""
     xml = (
         '<sc><us ug="SECRET_TOKEN" />   '
-        '<d sn="206AAA67890" getSRN="206AAA67890" getIPA="10.0.0.5">\n'
-        '  <c n="getSRN" v="206AAA67890" /><c n="getMAC" v="aa:bb:cc:dd:ee:ff" />'
+        '<d sn="206AAA54321" getSRN="206AAA54321" getIPA="10.0.0.5">\n'
+        '  <c n="getSRN" v="206AAA54321" /><c n="getMAC" v="aa:bb:cc:dd:ee:ff" />'
         '<c n="getMAC1" v="aa:bb:cc:dd:ee:ff" /><c n="getMAC2" v="aa:bb:cc:dd:ee:ff" />'
         '<c n="getWIP" v="192.168.1.20" /><c n="getFLO" v="5" />'
         "note getWFC: MyWifi mail user@example.com ip 8.8.8.8</d></sc> "
@@ -227,7 +227,7 @@ def test_redact_device_list_xml() -> None:
         'pho="%2b49+30+1234567" fax="" cph="%2b49+170+1234567" '
         'url="mustermann.example" /></prs>'
         '<col><dcl dclg="0b09f7ce" ali="Mustermann+Keller" /></col>'
-        '<dvs><d dg="cf36f6a5" sn="206AAA67890" sbt="2" /></dvs></sc>'
+        '<dvs><d dg="cf36f6a5" sn="206AAA54321" sbt="2" /></dvs></sc>'
     )
 
     # The country and the device name stay
@@ -243,7 +243,7 @@ def test_redact_device_list_xml() -> None:
 
 def test_redact_json_payload() -> None:
     """Redacted keys and the whole serial number are removed from a local payload."""
-    payload = {"getSRN": "206AAA67890", "getIPA": "192.168.1.20", "getFLO": "5"}
+    payload = {"getSRN": "206AAA54321", "getIPA": "192.168.1.20", "getFLO": "5"}
 
     assert diag._redact_json_payload(payload) == {
         "getSRN": "**REDACTED**",
@@ -251,7 +251,7 @@ def test_redact_json_payload() -> None:
         "getFLO": "5",
     }
     # The payload of the device is not changed
-    assert payload["getSRN"] == "206AAA67890"
+    assert payload["getSRN"] == "206AAA54321"
     assert diag._redact_json_payload(["no", "dict"]) == ["no", "dict"]
 
 
@@ -261,7 +261,7 @@ def test_redact_json_payload() -> None:
 def test_mask_sensitive() -> None:
     """Serial numbers and MAC addresses are masked in nested data, also in other keys."""
     data = {
-        "getSRN": "206AAA67890",
+        "getSRN": "206AAA54321",
         "getMAC": "aa:bb:cc:dd:ee:ff",
         "getMAC1": "11-22-33-44-55-66",
         "getMAC2": "aa:bb:cc:dd:ee:ff",
@@ -318,7 +318,7 @@ async def test_collect_raw_xml() -> None:
         }
     }
     api.get_raw_device_list.assert_awaited_once_with("p1")
-    api.get_raw_device_status.assert_awaited_once_with("dclg1")
+    api.get_raw_device_status.assert_awaited_once_with("206AAA12345")
     # The devices are read from the response as the cloud sent it
     api.parse_device_list.assert_called_once_with(_SYR_CONNECT_TEST_DEVICE_LIST_XML)
     api.login.assert_not_awaited()
@@ -391,22 +391,21 @@ async def test_collect_raw_xml_unparsable_device_list() -> None:
 
 
 async def test_collect_raw_xml_device_ids_and_failed_status() -> None:
-    """The status is fetched by dclg or id; a failing device does not stop the others.
+    """The status is fetched by serial number and stored by dclg; a failing device does not stop the others.
 
     A device whose request fails is listed with an empty answer.
     """
     devices = [
-        {"dclg": "bad"},
-        {"id": "only-id"},
-        {"name": "neither dclg nor id"},
-        {"dclg": "offline"},
+        {"id": "SN-bad", "dclg": "bad"},
+        {"id": "SN-ok", "dclg": "ok"},
+        {"id": "SN-offline", "dclg": "offline"},
     ]
     api = _xml_api([_SYR_CONNECT_TEST_DEVICE_LIST_XML], devices=devices)
 
     async def _raw_status(device_id: str) -> str:
-        if device_id == "bad":
+        if device_id == "SN-bad":
             raise RuntimeError("payload cannot be built")
-        if device_id == "offline":
+        if device_id == "SN-offline":
             raise SyrConnectConnectionError("down")
         return "<sc><ok /></sc>"
 
@@ -416,7 +415,7 @@ async def test_collect_raw_xml_device_ids_and_failed_status() -> None:
 
     assert result["p1"]["devices"] == {
         "bad": "",
-        "only-id": "<sc><ok /></sc>",
+        "ok": "<sc><ok /></sc>",
         "offline": "",
     }
 
@@ -437,17 +436,17 @@ async def test_collect_raw_xml_unexpected_error() -> None:
 async def test_collect_raw_json_local_entry() -> None:
     """The status of the local device is stored under its id of the coordinator data."""
     api = _json_api()
-    coordinator = _coordinator({"devices": [{"id": "206AAA67890"}]}, api=api)
+    coordinator = _coordinator({"devices": [{"id": "206AAA12345"}]}, api=api)
 
     assert await diag._collect_raw_json_local_entry(coordinator) == {
-        "206AAA67890": {
+        "206AAA12345": {
             "getSRN": "**REDACTED**",
             "getIPA": "**REDACTED**",
             "getFLO": "5",
         }
     }
     api.get_devices.assert_awaited_once_with("local")
-    api.get_device_status.assert_awaited_once_with("206AAA67890")
+    api.get_device_status.assert_awaited_once_with("206AAA12345")
     api.login.assert_not_awaited()
 
 
@@ -516,7 +515,7 @@ async def test_fetch_local_device_json(integration_version: str) -> None:
         api.is_session_valid.return_value = True
         api.login = AsyncMock()
         api.get_device_status = AsyncMock(
-            return_value={"getSRN": "206AAA67890", "getFLO": "5"}
+            return_value={"getSRN": "206AAA12345", "getFLO": "5"}
         )
 
         result = await diag._fetch_local_device_json(
@@ -600,24 +599,6 @@ async def test_fetch_local_device_json_skips_other_addresses(
 
     assert result == ("dev1", None)
     mock_api_class.assert_not_called()
-
-
-@pytest.mark.parametrize(
-    ("device", "device_id"),
-    [
-        pytest.param({"dclg": "dclg1"}, "dclg1", id="dclg"),
-        pytest.param({}, "unknown", id="neither"),
-    ],
-)
-async def test_fetch_local_device_json_device_id(
-    device: dict[str, Any], device_id: str, integration_version: str
-) -> None:
-    """A device without an id is named by its dclg, else "unknown"."""
-    result = await diag._fetch_local_device_json(
-        MagicMock(), cast(Any, device), "/trio", integration_version
-    )
-
-    assert result == (device_id, None)
 
 
 @pytest.mark.parametrize(
@@ -793,7 +774,7 @@ async def test_diagnostics_cloud_entry(hass: HomeAssistant) -> None:
     data = {
         "devices": [
             {
-                "id": "206AAA67890",
+                "id": "206AAA12345",
                 "name": "LEX Plus 10 S",
                 "dclg": "dclg1",
                 "available": True,
