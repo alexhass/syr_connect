@@ -35,7 +35,7 @@ repository.
 - Rationale (IANA / RFC): Per the IANA media types registry, `application/json` is the registered media type for JSON; HTTP semantics (RFC 7231) require senders to advertise the media type via `Content-Type`, and the JSON specification (RFC 8259) associates JSON with `application/json`. Devices SHOULD send `Content-Type: application/json; charset=utf-8` to ensure correct parsing, caching, and security behavior.
 - Impact: HTTP clients that enforce a `Content-Type` check can fail to parse valid JSON responses.
 - Mitigation in this project:
-  - The client uses `resp.json(content_type=None)` to tolerate missing or incorrect headers.
+  - The client reads the body as text (`read_response_text`, limited to 1 MB) and parses it with `json.loads()`, whatever the `Content-Type` says.
 - Evidence / references:
   - Client: [custom_components/syr_connect/api_json.py](custom_components/syr_connect/api_json.py)
 
