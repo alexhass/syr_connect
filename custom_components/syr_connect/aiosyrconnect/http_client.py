@@ -1,4 +1,4 @@
-"""HTTP client for the SYR Connect XML API and helpers for the API responses."""
+"""HTTP requests of the XML API and size-limited reading of the answers of both APIs."""
 
 import logging
 import re

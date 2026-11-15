@@ -86,7 +86,7 @@ class SyrEncryption:
                 "Decryption successful (result length: %d chars)", len(result)
             )
         except Exception as err:
-            _LOGGER.error("Decryption failed: %s", err)
+            _LOGGER.debug("Decryption failed: %s", err)
             raise ValueError(f"Failed to decrypt payload: {err}") from err
         else:
             return result

@@ -1,4 +1,4 @@
-"""Response parser and validator for SYR Connect API."""
+"""Answers of the SYR Connect XML API."""
 
 from datetime import UTC, datetime
 import logging
@@ -155,7 +155,7 @@ class ResponseParser:
             # Otherwise add it as #text key
             result["#text"] = text
 
-        return result or {}
+        return result
 
     @staticmethod
     def _raise_if_session_expired(parsed: dict[str, Any]) -> None:
@@ -287,17 +287,9 @@ class ResponseParser:
 
         projects_data = parsed["xml"]["prs"]["pre"]
 
-        # Ensure projects is a list
-        if not isinstance(projects_data, list):
-            projects_data = [projects_data]
-
-        # Parse projects
         projects = [
-            {
-                "id": project["@id"],
-                "name": project["@n"],
-            }
-            for project in projects_data
+            {"id": project["@id"], "name": project["@n"]}
+            for project in _as_list(projects_data)
         ]
 
         return session_id, projects
@@ -491,9 +483,7 @@ class ResponseParser:
                 dvs,
             )
             return None
-        # A single <d> element is parsed as a dict, several as a list
-        if not isinstance(device_list, list):
-            device_list = [device_list]
+        device_list = _as_list(device_list)
 
         # If the response is broken (broken fragments), skip it.
         if self._ignore_broken_response(device_list):
@@ -517,7 +507,7 @@ class ResponseParser:
         Dirty workaround:
         1. Syr Trio DFR/LS: For unknown reasons the device very often returns an XML
            response with getSRN, getALA, getNOT, getWRN only. This causes unwanted
-           sensor status flapping. This need to be ignored.
+           sensor status flapping. This needs to be ignored.
 
         Exception: devices the cloud reports offline (dst="0" never online, dst="1"
         offline) also answer with getSRN etc. only. That answer is passed on, so the
@@ -541,26 +531,22 @@ class ResponseParser:
         # entries with names in the broken set, treat as broken response.
         broken_names = {"getSRN", "getALA", "getNOT", "getWRN"}
 
-        def get_c_names(d: Any) -> set:
-            names: set = set()
-            if not isinstance(d, dict):
-                return names
-            c = d.get("c")
-            if not c:
-                return names
-            if isinstance(c, list):
-                for item in c:
-                    if isinstance(item, dict) and "@n" in item:
-                        names.add(item["@n"])
-            elif isinstance(c, dict) and "@n" in c:
-                names.add(c["@n"])
-            return names
+        def get_c_names(d: Any) -> set[str]:
+            """Return the names of the <c> elements of a <d> element."""
+            if not isinstance(d, dict) or not d.get("c"):
+                return set()
+            return {
+                item["@n"]
+                for item in _as_list(d["c"])
+                if isinstance(item, dict) and "@n" in item
+            }
 
         # A device the cloud reports offline (dst="0" never online, dst="1" offline) has
         # no more data than this; its minimal answer is genuine, not the Trio glitch
         # (which comes from online devices, dst="2"). Parsing it lets the caller
         # mark the device unavailable instead of keeping it "available" with no status.
-        # Exempt only the offline devices, so an online one in the same response is still checked.
+        # Exempt only the offline devices, so an online one in the same response is still
+        # checked.
         online_devices = [
             d
             for d in device_list
@@ -570,7 +556,7 @@ class ResponseParser:
             return False
 
         # Collect the <c n="..."> names reported by each online device
-        c_names_list: list[set] = [get_c_names(d) for d in online_devices]
+        c_names_list = [get_c_names(d) for d in online_devices]
 
         # If every device has at least one c-name and all names are a subset
         # of the minimal broken set, ignore the response.
@@ -654,9 +640,7 @@ class ResponseParser:
             for key, value in data.items():
                 if key == tag:
                     found.extend(
-                        item
-                        for item in (value if isinstance(value, list) else [value])
-                        if isinstance(item, dict)
+                        item for item in _as_list(value) if isinstance(item, dict)
                     )
                 else:
                     found.extend(ResponseParser._find_elements(value, tag))
@@ -687,15 +671,19 @@ class ResponseParser:
 
     @staticmethod
     def _flatten_attributes(data: dict | list) -> dict[str, Any]:
-        """Flatten XML attributes to simple dict.
+        """Flatten a parsed XML structure (see parse_xml) to one level.
+
+        Attributes lose their ``@``, the values of ``<c>`` elements are added by their
+        name (see _add_c_values), and the checksum ``<cs>`` is dropped. A later key
+        overwrites an earlier one of the same name.
 
         Args:
-            data: Data structure to flatten
+            data: Parsed XML structure
 
         Returns:
-            Flattened dictionary
+            The flattened status
         """
-        result = {}
+        result: dict[str, Any] = {}
 
         if isinstance(data, dict):
             for key, value in data.items():

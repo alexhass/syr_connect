@@ -292,7 +292,7 @@ class SyrConnectXmlAPI:
         _LOGGER.debug("Attempting login for user: %s", self.username)
 
         # --- Build Login Request ---
-        # Payload includes username, password, and checksum for integrity
+        # The login is the only request without checksum
         xml_data = self.payload_builder.build_login_payload(
             self.username, self.password
         )
@@ -307,12 +307,12 @@ class SyrConnectXmlAPI:
             _LOGGER.debug("Login XML response received")
 
             # --- Parse and Decrypt Response ---
-            # Response contains encrypted session data to protect credentials in transit
+            # The session token and the projects are AES encrypted in <api>
             encrypted_text, parsed = self.response_parser.parse_login_response(
                 xml_response
             )
             decrypted = self.encryption.decrypt(encrypted_text)
-            _LOGGER.info("Login response decrypted successfully")
+            _LOGGER.debug("Login response decrypted")
 
             # Success is reported by <suc v="true"/> only, as in the SYR app
             if not self.response_parser.is_login_successful(parsed):
