@@ -177,12 +177,12 @@ class PayloadBuilder:
         self._element(self._element(root, "prs"), "pr", pg=project_id)
         return self._add_checksum(root)
 
-    def build_device_get_status_payload(self, session_id: str, device_id: str) -> str:
+    def build_device_get_status_payload(self, session_id: str, dclg: str) -> str:
         """Build "get" device status XML payload with checksum.
 
         Args:
             session_id: Active session ID
-            device_id: Device ID to query (UUID)
+            dclg: Device collection of the device (UUID)
 
         Returns:
             XML string with checksum
@@ -197,20 +197,20 @@ class PayloadBuilder:
             </sc>
         """
         root = self._new_request(session_id)
-        self._element(self._element(root, "col"), "dcl", dclg=device_id, fref="1")
+        self._element(self._element(root, "col"), "dcl", dclg=dclg, fref="1")
         return self._add_checksum(root)
 
     def build_device_set_status_payload(
         self,
         session_id: str,
-        device_id: str,
+        dclg: str,
         commands: list[tuple[str, Any]],
     ) -> str:
         """Build "set" device status XML payload with checksum.
 
         Args:
             session_id: Active session ID
-            device_id: Device ID to control (UUID)
+            dclg: Device collection of the device (UUID)
             commands: Sequence of ``(command, value)`` pairs, executed in order
 
         Returns:
@@ -231,19 +231,19 @@ class PayloadBuilder:
             </sc>
         """
         root = self._new_request(session_id)
-        dcl = self._element(self._element(root, "col"), "dcl", dclg=device_id, fref="1")
+        dcl = self._element(self._element(root, "col"), "dcl", dclg=dclg, fref="1")
         for cmd, val in commands:
             self._element(dcl, "c", n=cmd, v=val)
         return self._add_checksum(root)
 
     def build_device_get_statistics_payload(
-        self, session_id: str, device_id: str, statistic: SyrConnectStatistic
+        self, session_id: str, dclg: str, statistic: SyrConnectStatistic
     ) -> str:
         """Build statistics XML payload with checksum.
 
         Args:
             session_id: Active session ID
-            device_id: Device ID to query (UUID)
+            dclg: Device collection of the device (UUID)
             statistic: Series to request (attributes of the ``<sh>`` element)
 
         Returns:
@@ -264,7 +264,7 @@ class PayloadBuilder:
             </sc>
         """
         root = self._new_request(session_id)
-        dcl = self._element(self._element(root, "col"), "dcl", dclg=device_id)
+        dcl = self._element(self._element(root, "col"), "dcl", dclg=dclg)
         lang, reg = self._compute_locale_lang_reg()
         self._element(
             dcl,

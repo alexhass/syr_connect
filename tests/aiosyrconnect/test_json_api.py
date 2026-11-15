@@ -1156,7 +1156,7 @@ async def test_get_devices_uses_frn_fallback(user_agent: str) -> None:
 
     assert len(devices) == 1
     assert devices[0]["id"] == "67890"  # Uses getFRN
-    assert devices[0]["name"] == "67890"  # Falls back to device_id
+    assert devices[0]["name"] == "67890"  # The serial number is the name
     assert devices[0]["project_id"] == "local"
 
 
@@ -1670,7 +1670,7 @@ async def test_validate_set_response_missing_key_on_login_raises(
 
     with pytest.raises(SyrConnectInvalidResponseError):
         client._validate_set_response(
-            {}, cmd="ADM", value="(2)f", device_id="login", is_login=True
+            {}, cmd="ADM", value="(2)f", serial_number="login", is_login=True
         )
 
 
@@ -1717,7 +1717,7 @@ def test_validate_set_response_missing_key_nonlogin_returns(
 
     # Should not raise for non-login missing key
     client._validate_set_response(
-        {}, cmd="TEST", value="123", device_id="dev1", is_login=False
+        {}, cmd="TEST", value="123", serial_number="dev1", is_login=False
     )
 
 
@@ -1760,7 +1760,7 @@ def test_validate_set_response_unknown_status_on_login_raises(
             {resp_key: "WEIRD"},
             cmd="ADM",
             value="(2)f",
-            device_id="login",
+            serial_number="login",
             is_login=True,
         )
 

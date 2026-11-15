@@ -47,6 +47,7 @@ from .const import (
 from .exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
+    SyrConnectDeviceNotFoundError,
     SyrConnectInvalidResponseError,
     SyrConnectLoginFailedError,
     SyrConnectSessionExpiredError,
@@ -122,6 +123,10 @@ class SyrConnectXmlAPI:
         # Cloud API organizes devices into projects (locations/buildings)
         # Each login returns a list of projects the user has access to
         self.projects: list[dict[str, Any]] = []
+        # Device collection (dclg) by serial number, from every device list fetched
+        # so far. The cloud addresses a device by its dclg, the caller by its serial
+        # number (see _dclg).
+        self._dclg_by_serial: dict[str, str] = {}
 
         # --- Service endpoints (of the service of the account) ---
         _app_name = service.api_app_name
@@ -366,9 +371,10 @@ class SyrConnectXmlAPI:
         subsequent status queries.
 
         Device information includes:
-        - id: Unique device identifier (serial number)
+        - id: Unique device identifier (serial number), used for all device requests
         - name: User-assigned device name
-        - dclg: Device collection group ID (used for status queries)
+        - dclg: Device collection group ID; the client remembers it for the device
+          requests, the caller does not need it
         - serial_number: Factory serial number
         - project_id: Parent project ID (added by this method)
 
@@ -412,6 +418,7 @@ class SyrConnectXmlAPI:
                     device.get("dclg"),
                 )
 
+            self._remember_devices(devices)
             _LOGGER.debug("Found %d device(s) in project %s", len(devices), project_id)
 
         except (aiohttp.ClientError, TimeoutError) as err:
@@ -424,7 +431,7 @@ class SyrConnectXmlAPI:
         else:
             return devices
 
-    async def get_device_status(self, device_id: str) -> SyrConnectStatus | None:
+    async def get_device_status(self, serial_number: str) -> SyrConnectStatus | None:
         """Fetch current status and parameters of a device.
 
         Device status includes all readable parameters:
@@ -438,7 +445,7 @@ class SyrConnectXmlAPI:
         - NeoSoft: Has softener-specific regeneration data
 
         Args:
-            device_id: Device collection group ID (DCLG) from get_devices()
+            serial_number: Serial number of the device (id from get_devices)
 
         Returns:
             Dictionary mapping parameter names (e.g., 'getFLO', 'getPRS') to values,
@@ -448,11 +455,14 @@ class SyrConnectXmlAPI:
         Raises:
             SyrConnectAuthError: If session expired and re-login fails
             SyrConnectConnectionError: If network/HTTP errors occur
+            SyrConnectDeviceNotFoundError: If the device is in no device list fetched so far
         """
+        dclg = self._dclg(serial_number)
+
         # --- Ensure Valid Session ---
         await self._ensure_session()
 
-        _LOGGER.debug("Getting status for device: %s", device_id)
+        _LOGGER.debug("Getting status for device: %s (DCLG: %s)", serial_number, dclg)
 
         try:
             # --- Make HTTP Request ---
@@ -462,13 +472,15 @@ class SyrConnectXmlAPI:
             status_data = await self._post_with_session(
                 self._device_get_status_url,
                 lambda token: self.payload_builder.build_device_get_status_payload(
-                    token, device_id
+                    token, dclg
                 ),
                 self.response_parser.parse_device_status_response,
                 "Status request",
             )
             if status_data is None:
-                _LOGGER.debug("Status parser returned None for device %s", device_id)
+                _LOGGER.debug(
+                    "Status parser returned None for device %s", serial_number
+                )
                 return None
 
             _LOGGER.debug("Status data parsed: %d attributes", len(status_data))
@@ -510,14 +522,14 @@ class SyrConnectXmlAPI:
         )
         return await self._post_raw(self._device_list_url, payload, "Raw device list")
 
-    async def get_raw_device_status(self, device_id: str) -> str:
+    async def get_raw_device_status(self, serial_number: str) -> str:
         """Return the status of a device as the cloud sends it, for diagnostics.
 
         The answer is neither parsed nor checked, and a rejected session token is not
         renewed, so it shows exactly what the cloud sends.
 
         Args:
-            device_id: Device collection group ID (DCLG) from get_devices()
+            serial_number: Serial number of the device (id from get_devices)
 
         Returns:
             The raw XML answer
@@ -525,10 +537,12 @@ class SyrConnectXmlAPI:
         Raises:
             SyrConnectAuthError: If the login fails
             SyrConnectConnectionError: If network/HTTP errors occur
+            SyrConnectDeviceNotFoundError: If the device is in no device list fetched so far
         """
+        dclg = self._dclg(serial_number)
         await self._ensure_session()
         payload = self.payload_builder.build_device_get_status_payload(
-            self.session_data, device_id
+            self.session_data, dclg
         )
         return await self._post_raw(
             self._device_get_status_url, payload, "Raw status request"
@@ -547,7 +561,32 @@ class SyrConnectXmlAPI:
             SyrConnectSessionExpiredError: If the answer rejects the session token
             ValueError: If the answer is no XML or contains no project
         """
-        return self.response_parser.parse_device_list_response(xml_response)
+        devices = self.response_parser.parse_device_list_response(xml_response)
+        self._remember_devices(devices)
+        return devices
+
+    def _remember_devices(self, devices: list[SyrConnectApiDevice]) -> None:
+        """Remember the device collection (dclg) of each device by its serial number."""
+        for device in devices:
+            dclg = device.get("dclg")
+            if dclg is not None:
+                self._dclg_by_serial[device["id"]] = dclg
+
+    def _dclg(self, serial_number: str) -> str:
+        """Return the device collection (dclg) the cloud addresses a device by.
+
+        Args:
+            serial_number: Serial number of the device (id from get_devices)
+
+        Raises:
+            SyrConnectDeviceNotFoundError: If no device list fetched so far has the device
+        """
+        try:
+            return self._dclg_by_serial[serial_number]
+        except KeyError:
+            raise SyrConnectDeviceNotFoundError(
+                f"Device {serial_number} is in no device list fetched so far"
+            ) from None
 
     async def _post_raw(self, url: str, payload: str, name: str) -> str:
         """Post an XML payload and return the raw answer.
@@ -563,13 +602,13 @@ class SyrConnectXmlAPI:
 
     async def set_device_status(
         self,
-        device_id: str,
+        serial_number: str,
         commands: list[tuple[str, Any]],
     ) -> bool:
         """Set one or more device parameters in a single XML request.
 
         Args:
-            device_id: Device collection group ID (DCLG)
+            serial_number: Serial number of the device (id from get_devices)
             commands: Sequence of ``(command, value)`` pairs, executed in order.
                 Use a single-element list for single commands.
 
@@ -579,12 +618,14 @@ class SyrConnectXmlAPI:
         Raises:
             SyrConnectAuthError: If session expired and re-login fails
             SyrConnectConnectionError: If network/HTTP errors occur
+            SyrConnectDeviceNotFoundError: If the device is in no device list fetched so far
         """
+        dclg = self._dclg(serial_number)
         await self._ensure_session()
 
         _LOGGER.debug(
             "Setting device %s with %d command(s): %s",
-            device_id,
+            serial_number,
             len(commands),
             commands,
         )
@@ -600,7 +641,7 @@ class SyrConnectXmlAPI:
             await self._post_with_session(
                 self._device_set_status_url,
                 lambda token: self.payload_builder.build_device_set_status_payload(
-                    token, device_id, normalized
+                    token, dclg, normalized
                 ),
                 self.response_parser.raise_if_session_expired,
                 "Set status",
@@ -608,7 +649,7 @@ class SyrConnectXmlAPI:
             _LOGGER.info(
                 "Successfully executed %d command(s) for device %s",
                 len(commands),
-                device_id,
+                serial_number,
             )
         except (aiohttp.ClientError, TimeoutError) as err:
             # Network errors: wrapped, so the caller gets an error of the library
@@ -620,7 +661,7 @@ class SyrConnectXmlAPI:
             return True
 
     async def get_statistics(
-        self, device_id: str, statistic: SyrConnectStatistic
+        self, serial_number: str, statistic: SyrConnectStatistic
     ) -> list[tuple[datetime, float]]:
         """Fetch the measurement history of one series of a device.
 
@@ -629,7 +670,7 @@ class SyrConnectXmlAPI:
         passes the series of the device family.
 
         Args:
-            device_id: Device collection group ID (DCLG)
+            serial_number: Serial number of the device (id from get_devices)
             statistic: Series to fetch (web service method and request attributes)
 
         Returns:
@@ -638,7 +679,10 @@ class SyrConnectXmlAPI:
         Raises:
             SyrConnectAuthError: If session expired and re-login fails
             SyrConnectConnectionError: If network/HTTP errors occur
+            SyrConnectDeviceNotFoundError: If the device is in no device list fetched so far
         """
+        dclg = self._dclg(serial_number)
+
         # --- Ensure Valid Session ---
         await self._ensure_session()
 
@@ -646,7 +690,7 @@ class SyrConnectXmlAPI:
             "Getting %s statistics (%s) for device: %s",
             statistic.key,
             statistic.method,
-            device_id,
+            serial_number,
         )
 
         try:
@@ -654,7 +698,7 @@ class SyrConnectXmlAPI:
             stats_data = await self._post_with_session(
                 self._device_service_url + statistic.method,
                 lambda token: self.payload_builder.build_device_get_statistics_payload(
-                    token, device_id, statistic
+                    token, dclg, statistic
                 ),
                 self.response_parser.parse_statistics_response,
                 "Statistics",

@@ -465,15 +465,12 @@ class SyrConnectDataUpdateCoordinator(
             Device dictionary with status or None if failed
         """
         try:
-            # DCLG remains the device identifier for XML API calls
-            dclg = device.get("dclg", device["id"])
-
             _LOGGER.debug(
                 "Device %s: Fetching status via %s API",
                 device.get("id"),
                 self._api_type.upper(),
             )
-            status = await self.api.get_device_status(dclg)
+            status = await self.api.get_device_status(device["id"])
 
             # If parser signaled that the response did not contain the
             # expected sc>dvs>d structure, it returns None. In this case we
@@ -559,26 +556,6 @@ class SyrConnectDataUpdateCoordinator(
         device["available"] = True
         return device
 
-    def _get_device_dclg_from_srn(self, device_id: str) -> str | None:
-        """Return the DCLG (Device Collection Group UUID) for the given device serial number.
-
-        The coordinator stores devices keyed by serial number (`device["id"]`),
-        but XML API calls require the DCLG — the cloud-side UUID assigned to the
-        device collection. This helper performs that mapping.
-
-        Args:
-            device_id: Serial number of the device to look up.
-
-        Returns:
-            The DCLG string when found, or `None` when no device with the given
-            serial number is present in coordinator data (including when coordinator
-            data is not yet available).
-        """
-        device = get_device(self.data, device_id)
-        if device is None:
-            return None
-        return device.get("dclg", device_id)
-
     async def async_set_device_value(
         self, device_id: str, command: str, value: Any
     ) -> None:
@@ -618,8 +595,7 @@ class SyrConnectDataUpdateCoordinator(
                 translation_key="coordinator_data_unavailable",
             )
 
-        dclg = self._get_device_dclg_from_srn(device_id)
-        if dclg is None:
+        if get_device(self.data, device_id) is None:
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
                 translation_key="device_not_found",
@@ -660,7 +636,7 @@ class SyrConnectDataUpdateCoordinator(
             optimistic_data = new_data
 
         try:
-            await self.api.set_device_status(dclg, commands)
+            await self.api.set_device_status(device_id, commands)
         except Exception:
             # Log at debug level since the exception will be caught and logged
             # properly by the calling entity (select, button, etc.)
@@ -703,8 +679,7 @@ class SyrConnectDataUpdateCoordinator(
                 "Coordinator: Cleared alarm via /clr/%s for device %s", field, device_id
             )
         else:
-            dclg = self._get_device_dclg_from_srn(device_id) or device_id
-            await self.api.set_device_status(dclg, [(f"clr{field.upper()}", "")])
+            await self.api.set_device_status(device_id, [(f"clr{field.upper()}", "")])
             _LOGGER.info(
                 "Coordinator: Cleared alarm via clr%s for device %s",
                 field.upper(),
@@ -744,17 +719,14 @@ class SyrConnectDataUpdateCoordinator(
                 translation_key="coordinator_data_unavailable",
             )
 
-        dclg = self._get_device_dclg_from_srn(device_id)
-        if dclg is None:
+        device = get_device(self.data, device_id)
+        if device is None:
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
                 translation_key="device_not_found",
             )
 
-        device = get_device(self.data, device_id)
-        status: SyrConnectStatus = (
-            (device.get("status") or {}) if device is not None else {}
-        )
+        status: SyrConnectStatus = device.get("status") or {}
 
         # --- Detect active alarm and compute clear command ---
         # Returns (command, value) when an alarm must be cleared first, or None.
@@ -879,10 +851,9 @@ class SyrConnectStatisticsCoordinator(DataUpdateCoordinator[None]):
             profile = get_device_model(device).device_profile
             if profile is None or not profile.statistics or not device.get("available"):
                 continue
-            dclg = device.get("dclg", device["id"])
             for statistic in profile.statistics:
                 try:
-                    measurements = await api.get_statistics(dclg, statistic)
+                    measurements = await api.get_statistics(device["id"], statistic)
                 except SyrConnectError as err:
                     _LOGGER.warning(
                         "Device %s: failed to import the %s history, retrying with the next run: %s",

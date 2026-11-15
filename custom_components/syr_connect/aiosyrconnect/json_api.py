@@ -549,7 +549,6 @@ class SyrConnectJsonAPI:
         Returns:
             List with single device dict containing:
             - id: Device serial number (from getSRN or getFRN)
-            - dclg: Device collection ID (same as id for JSON API)
             - name: The serial number (the local API reports no name)
             - project_id: The given project_id
 
@@ -572,46 +571,47 @@ class SyrConnectJsonAPI:
         # 1. getSRN: Serial number (most common)
         # 2. getFRN: Factory reference number (fallback for some devices)
         # 3. "local_device": Last resort if neither is present
-        device_id = str(status.get("getSRN") or status.get("getFRN") or "local_device")
+        serial_number = str(
+            status.get("getSRN") or status.get("getFRN") or "local_device"
+        )
 
         # --- Return Device List ---
         # Same format as the device list of the XML API client. The local API has no
-        # device collections, so dclg is the serial number too, and the name as well.
+        # device collections (dclg) and reports no name, so the name is the serial number.
         # "project_id" is not used by the JSON API but included as in the XML client.
         _LOGGER.debug(
-            "JSON API: Returning device %s, cached response for reuse", device_id
+            "JSON API: Returning device %s, cached response for reuse", serial_number
         )
         return [
             {
-                "id": device_id,
-                "dclg": device_id,
-                "name": device_id,
+                "id": serial_number,
+                "name": serial_number,
                 "project_id": str(project_id),
             }
         ]
 
-    async def get_device_status(self, device_id: str) -> SyrConnectStatus | None:
+    async def get_device_status(self, serial_number: str) -> SyrConnectStatus | None:
         """Return the device status, the flat /get/all object with getXYZ keys.
 
         Reuses the response cached by get_devices() if available, otherwise fetches
         /get/all.
 
         Args:
-            device_id: Device identifier (for logging; the client serves one device)
+            serial_number: Serial number of the device (for logging; the client serves one device)
 
         Raises:
             SyrConnectError: If /get/all cannot be fetched
         """
-        _LOGGER.debug("JSON API: Fetching device status for device_id=%s", device_id)
+        _LOGGER.debug("JSON API: Fetching device status for device %s", serial_number)
 
         # --- Optimization: Reuse cached response ---
         # If get_devices() was called just before this, use the cached /get/all response
         # to avoid a duplicate API call (callers call both methods back-to-back)
         if self._cached_get_all is not None:
             _LOGGER.debug(
-                "JSON API: Reusing cached /get/all response with %d keys for device_id=%s",
+                "JSON API: Reusing cached /get/all response with %d keys for device %s",
                 len(self._cached_get_all),
-                device_id,
+                serial_number,
             )
             status = self._cached_get_all
         else:
@@ -619,8 +619,8 @@ class SyrConnectJsonAPI:
             # Used when get_device_status() is called without get_devices() first
             # (e.g. for a device the caller also reaches through the cloud)
             _LOGGER.debug(
-                "JSON API: No cached response, fetching /get/all for device_id=%s",
-                device_id,
+                "JSON API: No cached response, fetching /get/all for device %s",
+                serial_number,
             )
             await self._ensure_session()
             status = await self.request_json_data(_ENDPOINT_GET_ALL)
@@ -629,19 +629,19 @@ class SyrConnectJsonAPI:
         # The JSON API returns a flat dict with getXYZ keys (getSRN, getAB, etc.)
         # Return as-is so callers can process it like the output of the XML parser
         _LOGGER.debug(
-            "JSON API: Returning status with %d keys for device_id=%s",
+            "JSON API: Returning status with %d keys for device %s",
             len(status),
-            device_id,
+            serial_number,
         )
         return dict(status)
 
     async def set_device_status(
-        self, device_id: str, commands: list[tuple[str, Any]]
+        self, serial_number: str, commands: list[tuple[str, Any]]
     ) -> bool:
         """Attempt to set one or more device values using the JSON API.
 
         Args:
-            device_id: Device identifier
+            serial_number: Serial number of the device (for logging; the client serves one device)
             commands: Sequence of (command, value) pairs, executed in order.
                 Each command is a string such as "setRTM" or "RTM" and
                 each value is the new value to set.
@@ -655,11 +655,11 @@ class SyrConnectJsonAPI:
             SyrConnectInvalidResponseError: On validation errors (NSC, MIMA)
         """
         for command, value in commands:
-            await self._set_device_status_single(device_id, command, value)
+            await self._set_device_status_single(serial_number, command, value)
         return True
 
     async def _set_device_status_single(
-        self, device_id: str, command: str, value: Any
+        self, serial_number: str, command: str, value: Any
     ) -> None:
         """Send a single set command to the JSON API."""
         # --- Normalize Command Name ---
@@ -678,7 +678,7 @@ class SyrConnectJsonAPI:
         url = self._build_set_url(base_cmd, value)
 
         _LOGGER.debug(
-            "JSON API: Setting %s=%s for device %s", base_cmd, value, device_id
+            "JSON API: Setting %s=%s for device %s", base_cmd, value, serial_number
         )
 
         # --- Make Request ---
@@ -688,10 +688,13 @@ class SyrConnectJsonAPI:
 
         # --- Validate Response Status ---
         # Use shared validation logic that checks for OK/MIMA/NSC status codes
-        self._validate_set_response(response, base_cmd, value, device_id)
+        self._validate_set_response(response, base_cmd, value, serial_number)
 
         _LOGGER.info(
-            "JSON API: Set %s=%s for device %s (status: OK)", base_cmd, value, device_id
+            "JSON API: Set %s=%s for device %s (status: OK)",
+            base_cmd,
+            value,
+            serial_number,
         )
 
     def _validate_set_response(
@@ -699,7 +702,7 @@ class SyrConnectJsonAPI:
         response: dict[str, Any],
         cmd: str,
         value: Any,
-        device_id: str,
+        serial_number: str,
         is_login: bool = False,
     ) -> None:
         """Validate a set-command response for success or error status codes.
@@ -712,7 +715,7 @@ class SyrConnectJsonAPI:
             response: JSON response from set-command
             cmd: Command name (e.g., "ADM", "SIR", "RTM")
             value: Value that was set
-            device_id: Device identifier (for logging)
+            serial_number: Serial number of the device (for logging)
             is_login: Whether this is a login command (raises on any non-OK status)
 
         Raises:
@@ -750,7 +753,10 @@ class SyrConnectJsonAPI:
         if not found_key:
             msg = f"Response missing expected key '{response_key}'"
             _LOGGER.warning(
-                "JSON API: %s for device %s (response: %s)", msg, device_id, response
+                "JSON API: %s for device %s (response: %s)",
+                msg,
+                serial_number,
+                response,
             )
             # For login, missing key is a failure
             if is_login:
@@ -771,18 +777,20 @@ class SyrConnectJsonAPI:
             msg = f"Value {value} is outside valid range for command {cmd}"
             # Log at debug level since the exception will be caught and logged
             # by the caller
-            _LOGGER.debug("JSON API: %s (device: %s)", msg, device_id)
+            _LOGGER.debug("JSON API: %s (device: %s)", msg, serial_number)
             raise SyrConnectInvalidResponseError(msg)
         if status in ("NSC", "ERROR: NSC"):
             # - Pontos / SafeTech V4: "ERROR: NSC"
             # - Other devices: "NSC"
-            msg = f"Command {cmd} does not exist for device {device_id}"
+            msg = f"Command {cmd} does not exist for device {serial_number}"
             # Log at debug level since the exception will be caught and logged
             # by the caller
             _LOGGER.debug("JSON API: %s", msg)
             raise SyrConnectInvalidResponseError(msg)
         # Unknown/unexpected status
-        msg = f"Unexpected status '{status}' for command {cmd} (device: {device_id})"
+        msg = (
+            f"Unexpected status '{status}' for command {cmd} (device: {serial_number})"
+        )
         _LOGGER.warning("JSON API: %s", msg)
         # For login, any non-OK status is a failure
         if is_login:

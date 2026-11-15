@@ -55,6 +55,15 @@ class SyrConnectHTTPError(SyrConnectConnectionError):
         self.status = status
 
 
+class SyrConnectDeviceNotFoundError(SyrConnectError):
+    """The XML API client does not know the device.
+
+    The cloud addresses a device by its device collection (dclg), not by its serial
+    number. The client takes the dclg from the device lists it has fetched
+    (get_devices, parse_device_list), so a device must be in one of them first.
+    """
+
+
 class SyrConnectInvalidResponseError(SyrConnectError):
     """An answer was received but cannot be used.
 

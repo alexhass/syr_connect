@@ -18,6 +18,7 @@ from custom_components.syr_connect.aiosyrconnect import (
     DEFAULT_CF_BUNDLE_IDENTIFIER,
     SyrConnectAuthError,
     SyrConnectConnectionError,
+    SyrConnectDeviceNotFoundError,
     SyrConnectInvalidResponseError,
     SyrConnectLoginFailedError,
     SyrConnectSessionExpiredError,
@@ -57,14 +58,21 @@ def mock_session() -> MagicMock:
 
 @pytest.fixture
 def api_client(mock_session: MagicMock, user_agent: str) -> SyrConnectXmlAPI:
-    """Create an API client instance."""
-    return SyrConnectXmlAPI(
+    """Create an API client instance that knows the devices of the tests.
+
+    The tests address the devices "SN1" and "device1" by their serial number, as if an
+    earlier device list had reported their device collections "dclg1" and
+    "dclg-device1".
+    """
+    api = SyrConnectXmlAPI(
         mock_session,
         "test@example.com",
         "testpassword",
         service=_SYR_SERVICE,
         user_agent=user_agent,
     )
+    api._dclg_by_serial = {"SN1": "dclg1", "device1": "dclg-device1"}
+    return api
 
 
 def test_request_urls_and_app_identity_come_from_the_service(
@@ -255,11 +263,11 @@ async def test_parallel_requests_share_a_failed_login(
     ("method", "args", "parser"),
     [
         ("get_devices", ("project1",), "parse_device_list_response"),
-        ("get_device_status", ("dclg1",), "parse_device_status_response"),
-        ("set_device_status", ("dclg1", [("setAB", "2")]), None),
+        ("get_device_status", ("SN1",), "parse_device_status_response"),
+        ("set_device_status", ("SN1", [("setAB", "2")]), None),
         (
             "get_statistics",
-            ("dclg1", _STATISTICS[0]),
+            ("SN1", _STATISTICS[0]),
             "parse_statistics_response",
         ),
     ],
@@ -320,7 +328,7 @@ async def test_rejected_token_twice_raises_session_expired(
         patch.object(api_client, "login", side_effect=_login) as login,
         pytest.raises(SyrConnectSessionExpiredError) as excinfo,
     ):
-        await api_client.get_device_status("dclg1")
+        await api_client.get_device_status("SN1")
 
     assert isinstance(excinfo.value, SyrConnectConnectionError)
     login.assert_awaited_once()
@@ -342,7 +350,7 @@ async def test_valid_response_does_not_relogin(api_client: SyrConnectXmlAPI) -> 
             return_value={"getFLO": "5"},
         ),
     ):
-        assert await api_client.get_device_status("dclg1") == {"getFLO": "5"}
+        assert await api_client.get_device_status("SN1") == {"getFLO": "5"}
 
     login.assert_not_called()
     post.assert_awaited_once()
@@ -701,11 +709,11 @@ async def test_login_with_decryption_parser_error(api_client: SyrConnectXmlAPI) 
 @pytest.mark.parametrize(
     ("method", "args"),
     [
-        ("get_device_status", ("dclg1",)),
-        ("set_device_status", ("dclg1", [("setAB", "2")])),
-        ("get_statistics", ("dclg1", _STATISTICS[0])),
+        ("get_device_status", ("SN1",)),
+        ("set_device_status", ("SN1", [("setAB", "2")])),
+        ("get_statistics", ("SN1", _STATISTICS[0])),
         ("get_raw_device_list", ("project1",)),
-        ("get_raw_device_status", ("dclg1",)),
+        ("get_raw_device_status", ("SN1",)),
     ],
 )
 async def test_network_errors_are_wrapped_in_connection_error(
@@ -804,8 +812,8 @@ async def test_get_devices_with_device_already_has_id(
 _MAINTENANCE_PAGE = "<html><body>Wartungsarbeiten</body>"
 _REQUESTS = [
     pytest.param("get_devices", ("project1",), id="device-list"),
-    pytest.param("get_device_status", ("dclg1",), id="status"),
-    pytest.param("get_statistics", ("dclg1", _STATISTICS[0]), id="statistics"),
+    pytest.param("get_device_status", ("SN1",), id="status"),
+    pytest.param("get_statistics", ("SN1", _STATISTICS[0]), id="statistics"),
 ]
 
 
@@ -885,19 +893,19 @@ async def test_failed_login_logs_at_debug_level_only(
         ),
         pytest.param(
             "get_device_status",
-            ("dclg1",),
+            ("SN1",),
             "SyrSafeFloor_GetDeviceCollectionStatus.xml",
             id="status",
         ),
         pytest.param(
             "get_statistics",
-            ("dclg1", _STATISTICS[0]),
+            ("SN1", _STATISTICS[0]),
             "SyrSafeFloor_GetSafeFloorStatistics_Temperature.xml",
             id="statistics",
         ),
         pytest.param(
             "set_device_status",
-            ("dclg1", [("setAB", "2")]),
+            ("SN1", [("setAB", "2")]),
             "SyrSafeFloor_GetDeviceCollectionStatus.xml",
             id="set",
         ),
@@ -948,7 +956,7 @@ async def test_get_raw_device_status_returns_the_answer_unparsed(
     api_client.session_data = "valid_session"
 
     with patch.object(api_client.http_client, "post", return_value="<sc />") as post:
-        assert await api_client.get_raw_device_status("dclg1") == "<sc />"
+        assert await api_client.get_raw_device_status("SN1") == "<sc />"
 
     url, data = post.call_args.args
     assert url == api_client._device_get_status_url
@@ -1000,3 +1008,63 @@ def test_missing_user_agent_is_rejected() -> None:
     """A caller that passes no User-Agent gets a ValueError."""
     with pytest.raises(ValueError, match="user_agent is required"):
         SyrConnectXmlAPI(MagicMock(), "user", "secret", service=_SYR_SERVICE)
+
+
+async def test_device_requests_use_the_dclg_of_the_device_list(
+    mock_session: MagicMock, user_agent: str
+) -> None:
+    """The caller addresses a device by its serial number, the request carries its dclg."""
+    api = SyrConnectXmlAPI(
+        mock_session, "user", "secret", service=_SYR_SERVICE, user_agent=user_agent
+    )
+    api.session_data = "token"
+    device_list = (
+        '<sc><prs><pr pg="p1"/></prs>'
+        '<dvs><d dclg="0b09f7ce-41a0-4085-9e69-fa8827a32b6f" sn="123456789"/></dvs></sc>'
+    )
+
+    with patch.object(api.http_client, "post", return_value=device_list):
+        [device] = await api.get_devices("p1")
+    assert device["id"] == "123456789"
+
+    with patch.object(api.http_client, "post", return_value="<sc></sc>") as post:
+        await api.set_device_status("123456789", [("setAB", "2")])
+    assert (
+        'dclg="0b09f7ce-41a0-4085-9e69-fa8827a32b6f"' in post.call_args.args[1]["xml"]
+    )
+
+
+def test_parse_device_list_remembers_the_dclg(
+    mock_session: MagicMock, user_agent: str
+) -> None:
+    """A device list parsed for diagnostics makes its devices known as well."""
+    api = SyrConnectXmlAPI(
+        mock_session, "user", "secret", service=_SYR_SERVICE, user_agent=user_agent
+    )
+    api.parse_device_list(
+        '<sc><prs><pr pg="p1"/></prs><dvs><d dclg="abc" sn="SN1"/></dvs></sc>'
+    )
+
+    assert api._dclg("SN1") == "abc"
+
+
+@pytest.mark.parametrize(
+    ("method", "args"),
+    [
+        ("get_device_status", ("SN-unknown",)),
+        ("get_raw_device_status", ("SN-unknown",)),
+        ("set_device_status", ("SN-unknown", [("setAB", "2")])),
+        ("get_statistics", ("SN-unknown", _STATISTICS[0])),
+    ],
+)
+async def test_unknown_device_raises_before_any_request(
+    api_client: SyrConnectXmlAPI, method: str, args: tuple[Any, ...]
+) -> None:
+    """A device that is in no device list fetched so far cannot be addressed."""
+    with (
+        patch.object(api_client.http_client, "post") as post,
+        pytest.raises(SyrConnectDeviceNotFoundError, match="SN-unknown"),
+    ):
+        await getattr(api_client, method)(*args)
+
+    post.assert_not_called()

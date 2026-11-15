@@ -13,6 +13,7 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
 from .aiosyrconnect import (
+    SyrConnectApiDevice,
     SyrConnectConnectionError,
     SyrConnectHTTPError,
     SyrConnectJsonAPI,
@@ -322,18 +323,18 @@ async def _async_project_raw_xml(
         )
         devices = []
 
-    async def _fetch_status(did: str) -> tuple[str, str]:
+    async def _fetch_status(device: SyrConnectApiDevice) -> tuple[str, str]:
         xml_status = await _async_raw_xml(
-            semaphore, xml_api.get_raw_device_status(did), f"status of {did}"
+            semaphore,
+            xml_api.get_raw_device_status(device["id"]),
+            f"status of {device['id']}",
         )
-        return did, _redact_xml(xml_status)
+        # Keyed by the device collection, as the cloud addresses the device; the parser
+        # takes only devices with one
+        return device["dclg"], _redact_xml(xml_status)
 
     # Fetch status for each device (limited concurrency by semaphore)
-    status_tasks = [
-        _fetch_status(device_id)
-        for device in devices
-        if (device_id := device.get("dclg") or device.get("id"))
-    ]
+    status_tasks = [_fetch_status(device) for device in devices]
     project_raw["devices"] = dict(await asyncio.gather(*status_tasks))
     return project_raw
 
@@ -478,7 +479,7 @@ async def _fetch_local_device_json(
     Returns (device id, data), with None as data when the device has no usable
     private IP or the request fails.
     """
-    dev_id = str(dev.get("id") or dev.get("dclg") or "unknown")
+    dev_id = dev["id"]
     ip = _private_device_ip(dev.get("status") or {})
     if ip is None:
         return dev_id, None
