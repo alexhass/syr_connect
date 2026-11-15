@@ -10,11 +10,13 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import pytest
 from pytest_homeassistant.common import MockConfigEntry
 
-from custom_components.syr_connect.api_json import SyrConnectJsonAPI
+from custom_components.syr_connect.aiosyrconnect import (
+    SyrConnectConnectionError,
+    SyrConnectJsonAPI,
+)
 from custom_components.syr_connect.button import SyrConnectButton, async_setup_entry
 from custom_components.syr_connect.const import CONF_SERVICE, DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
-from custom_components.syr_connect.exceptions import SyrConnectConnectionError
 from custom_components.syr_connect.models import MODEL_SIGNATURES
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant

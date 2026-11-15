@@ -10,8 +10,9 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.util import slugify
 
+from ..aiosyrconnect import SyrConnectStatus
 from ..const import API_TYPE_JSON, API_TYPE_XML, CONF_SERVICE, DOMAIN
-from ..data import SyrConnectCoordinatorData, SyrConnectDevice, SyrConnectStatus
+from ..data import SyrConnectCoordinatorData, SyrConnectDevice
 from ..models import MODEL_SIGNATURES, SyrConnectModel
 from .device import get_device_model
 from .profile import get_model_supported_keys

@@ -10,10 +10,10 @@ from unittest.mock import AsyncMock, MagicMock, call
 
 import pytest
 
+from custom_components.syr_connect.aiosyrconnect import SyrConnectConnectionError
+from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
 from custom_components.syr_connect.const import DOMAIN
-from custom_components.syr_connect.exceptions import SyrConnectConnectionError
 from custom_components.syr_connect.models import MODEL_SIGNATURES
-from custom_components.syr_connect.response_parser import ResponseParser
 from custom_components.syr_connect.switch import (
     SyrConnectBooleanSwitch,
     async_setup_entry,

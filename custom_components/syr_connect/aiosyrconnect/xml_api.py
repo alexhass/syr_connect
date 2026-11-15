@@ -30,7 +30,6 @@ from typing import Any
 
 import aiohttp
 
-from .checksum import SyrChecksum
 from .const import (
     _SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL,
     _SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL,
@@ -44,11 +43,7 @@ from .const import (
     _SYR_CONNECT_CLIENT_OS_MODEL,
     _SYR_CONNECT_CLIENT_OS_NAME,
     _SYR_CONNECT_CLIENT_OS_VERSION,
-    SyrConnectService,
 )
-from .data import SyrConnectDevice, SyrConnectStatus
-from .devices import SyrConnectStatistic
-from .encryption import SyrEncryption
 from .exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
@@ -57,8 +52,16 @@ from .exceptions import (
     SyrConnectSessionExpiredError,
 )
 from .http_client import HTTPClient, mask_ug_value
-from .payload_builder import PayloadBuilder
-from .response_parser import ResponseParser
+from .models import (
+    SyrConnectApiDevice,
+    SyrConnectService,
+    SyrConnectStatistic,
+    SyrConnectStatus,
+)
+from .xml_checksum import SyrChecksum
+from .xml_encryption import SyrEncryption
+from .xml_parser import ResponseParser
+from .xml_payload import PayloadBuilder
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -86,13 +89,13 @@ class SyrConnectXmlAPI:
         """Initialize the cloud API client.
 
         Args:
-            session: aiohttp ClientSession provided by Home Assistant
+            session: aiohttp ClientSession of the caller
             username: SYR Connect cloud account email address
             password: SYR Connect cloud account password
-            service: Cloud API service of the account (from _SYR_CONNECT_API_SERVICES):
+            service: Cloud API service of the account (from API_SERVICES):
                 app name, base URL, bundle identifier and the key of the login response
             user_agent: HTTP User-Agent of the requests; names the caller
-            language: Locale like "de-DE" (from helpers.get_api_locale) sent in the app version string
+            language: Locale like "de-DE" sent in the app version string
                 "<si v=...>", as lng/reg at login, lg/rg in statistics requests and in the
                 Accept-Language header. Defaults to _SYR_CONNECT_CLIENT_OS_LANGUAGE ("en-US").
             local_now: Returns the current time in the time zone of the caller, for the
@@ -129,7 +132,7 @@ class SyrConnectXmlAPI:
         self._device_service_url = _base + _SYR_CONNECT_API_XML_DEVICE_SERVICE_PATH
 
         # Example: "App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect"
-        # The app sends the phone's language here; use the HA locale.
+        # The app sends the phone's language here; use the locale of the caller.
         _app_version = (
             f"App-{_SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION}"
             f"-{language}"
@@ -158,7 +161,7 @@ class SyrConnectXmlAPI:
         # XML response parsing (handles various response formats)
         self.response_parser = ResponseParser()
 
-        # HTTP client; the User-Agent identifies the integration and Home Assistant
+        # HTTP client; the User-Agent identifies the caller
         self.http_client = HTTPClient(session, user_agent, language=language)
 
     @property
@@ -364,7 +367,7 @@ class SyrConnectXmlAPI:
         else:
             return True
 
-    async def get_devices(self, project_id: str) -> list[SyrConnectDevice]:
+    async def get_devices(self, project_id: str) -> list[SyrConnectApiDevice]:
         """Fetch all devices in a project.
 
         Each project (building/location) can contain multiple devices.
@@ -492,6 +495,80 @@ class SyrConnectXmlAPI:
             ) from err
         else:
             return status_data
+
+    async def get_raw_device_list(self, project_id: str) -> str:
+        """Return the device list of a project as the cloud sends it, for diagnostics.
+
+        The answer is neither parsed nor checked, and a rejected session token is not
+        renewed, so it shows exactly what the cloud sends. `parse_device_list` reads the
+        devices from it.
+
+        Args:
+            project_id: Project ID (obtained from login response)
+
+        Returns:
+            The raw XML answer
+
+        Raises:
+            SyrConnectAuthError: If the login fails
+            SyrConnectConnectionError: If network/HTTP errors occur
+        """
+        await self._ensure_session()
+        payload = self.payload_builder.build_device_get_list_payload(
+            self.session_data, project_id
+        )
+        return await self._post_raw(self._device_list_url, payload, "Raw device list")
+
+    async def get_raw_device_status(self, device_id: str) -> str:
+        """Return the status of a device as the cloud sends it, for diagnostics.
+
+        The answer is neither parsed nor checked, and a rejected session token is not
+        renewed, so it shows exactly what the cloud sends.
+
+        Args:
+            device_id: Device collection group ID (DCLG) from get_devices()
+
+        Returns:
+            The raw XML answer
+
+        Raises:
+            SyrConnectAuthError: If the login fails
+            SyrConnectConnectionError: If network/HTTP errors occur
+        """
+        await self._ensure_session()
+        payload = self.payload_builder.build_device_get_status_payload(
+            self.session_data, device_id
+        )
+        return await self._post_raw(
+            self._device_get_status_url, payload, "Raw status request"
+        )
+
+    def parse_device_list(self, xml_response: str) -> list[SyrConnectApiDevice]:
+        """Return the devices of a raw device list answer (see get_raw_device_list).
+
+        Args:
+            xml_response: Raw XML answer of the device list
+
+        Returns:
+            The devices, without project_id
+
+        Raises:
+            SyrConnectSessionExpiredError: If the answer rejects the session token
+            ValueError: If the answer is no XML or contains no project
+        """
+        return self.response_parser.parse_device_list_response(xml_response)
+
+    async def _post_raw(self, url: str, payload: str, name: str) -> str:
+        """Post an XML payload and return the raw answer.
+
+        Raises:
+            SyrConnectConnectionError: If network/HTTP errors occur
+        """
+        _LOGGER.debug("%s payload: %s", name, mask_ug_value(payload))
+        try:
+            return await self.http_client.post(url, {"xml": payload})
+        except (aiohttp.ClientError, TimeoutError) as err:
+            raise SyrConnectConnectionError(f"{name} failed: {err}") from err
 
     async def set_device_status(
         self,

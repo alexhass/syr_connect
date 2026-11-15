@@ -5,7 +5,10 @@ from typing import Any, cast
 
 import pytest
 
-from custom_components.syr_connect.data import SyrConnectStatus, SyrConnectStatusValue
+from custom_components.syr_connect.aiosyrconnect import (
+    SyrConnectStatus,
+    SyrConnectStatusValue,
+)
 from custom_components.syr_connect.helpers.values import (
     build_set_ab_command,
     get_sensor_ab_value,

@@ -1,6 +1,7 @@
 """Diagnostics support for SYR Connect."""
 
 import asyncio
+from collections.abc import Coroutine
 from datetime import datetime
 import ipaddress
 import logging
@@ -11,16 +12,20 @@ from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
-from .api_json import SyrConnectJsonAPI
-from .api_xml import SyrConnectXmlAPI
+from .aiosyrconnect import (
+    SyrConnectConnectionError,
+    SyrConnectHTTPError,
+    SyrConnectJsonAPI,
+    SyrConnectStatus,
+    SyrConnectXmlAPI,
+    mask_ug_value,
+)
 from .const import API_TYPE_JSON, API_TYPE_XML, CONF_API_TYPE, CONF_MODEL, CONF_SERVICE
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
-from .data import SyrConnectDevice, SyrConnectStatus
-from .exceptions import SyrConnectConnectionError, SyrConnectHTTPError
+from .data import SyrConnectDevice
 from .helpers.device import get_device_model
 from .helpers.integration import build_user_agent, get_integration_version
 from .helpers.values import is_empty_ip
-from .http_client import mask_ug_value
 from .sensor import sensor_keys_for_status
 
 _LOGGER = logging.getLogger(__name__)
@@ -278,18 +283,15 @@ async def _async_xml_api_with_session(
     return xml_api
 
 
-async def _async_post_xml(
-    xml_api: SyrConnectXmlAPI,
-    semaphore: asyncio.Semaphore,
-    url: str,
-    payload: dict[str, Any],
+async def _async_raw_xml(
+    semaphore: asyncio.Semaphore, request: Coroutine[Any, Any, str], name: str
 ) -> str:
     """Return the raw XML answer of a request; empty if the request fails."""
     try:
         async with semaphore:
-            return await xml_api.http_client.post(url, payload)
+            return await request
     except Exception:
-        _LOGGER.debug("Diagnostics: XML request to %s failed", url, exc_info=True)
+        _LOGGER.debug("Diagnostics: XML request %s failed", name, exc_info=True)
         return ""
 
 
@@ -304,17 +306,14 @@ async def _async_project_raw_xml(
         `{"device_list": xml, "devices": {dclg: status_xml}}`
     """
     project_raw: dict[str, Any] = {"device_list": "", "devices": {}}
-    payload = xml_api.payload_builder.build_device_get_list_payload(
-        xml_api.session_data or "", pid
-    )
-    xml_resp = await _async_post_xml(
-        xml_api, semaphore, xml_api.device_list_url, {"xml": payload}
+    xml_resp = await _async_raw_xml(
+        semaphore, xml_api.get_raw_device_list(pid), f"device list of {pid}"
     )
     project_raw["device_list"] = _redact_device_list_xml(xml_resp)
 
     # Parse devices (best-effort) from the original, unredacted response
     try:
-        devices = xml_api.response_parser.parse_device_list_response(xml_resp)
+        devices = xml_api.parse_device_list(xml_resp)
     except Exception:
         _LOGGER.debug(
             "Diagnostics: device list of project %s could not be parsed",
@@ -324,11 +323,8 @@ async def _async_project_raw_xml(
         devices = []
 
     async def _fetch_status(did: str) -> tuple[str, str]:
-        status_payload = xml_api.payload_builder.build_device_get_status_payload(
-            xml_api.session_data or "", did
-        )
-        xml_status = await _async_post_xml(
-            xml_api, semaphore, xml_api.device_get_status_url, {"xml": status_payload}
+        xml_status = await _async_raw_xml(
+            semaphore, xml_api.get_raw_device_status(did), f"status of {did}"
         )
         return did, _redact_xml(xml_status)
 
@@ -338,11 +334,7 @@ async def _async_project_raw_xml(
         for device in devices
         if (device_id := device.get("dclg") or device.get("id"))
     ]
-    results = await asyncio.gather(*status_tasks, return_exceptions=True)
-    for res in results:
-        if isinstance(res, tuple) and len(res) == 2:
-            did, xmls = res
-            project_raw["devices"][did] = xmls
+    project_raw["devices"] = dict(await asyncio.gather(*status_tasks))
     return project_raw
 
 

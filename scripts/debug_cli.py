@@ -133,9 +133,13 @@ try:
     import aiohttp
     import defusedxml.ElementTree as DefusedET
 
-    from custom_components.syr_connect.checksum import SyrChecksum
-    from custom_components.syr_connect.const import (
-        _SYR_CONNECT_API_SERVICES,
+    from custom_components.syr_connect.aiosyrconnect import (
+        API_SERVICES,
+        DEFAULT_CF_BUNDLE_IDENTIFIER,
+        SyrConnectApiDevice,
+        SyrConnectStatistic,
+    )
+    from custom_components.syr_connect.aiosyrconnect.const import (
         _SYR_CONNECT_API_XML_DEVICE_SERVICE_PATH,
         _SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION,
         _SYR_CONNECT_CLIENT_CHECKSUM_KEY1,
@@ -144,19 +148,17 @@ try:
         _SYR_CONNECT_CLIENT_OS_MODEL,
         _SYR_CONNECT_CLIENT_OS_NAME,
         _SYR_CONNECT_CLIENT_OS_VERSION,
-        _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
     )
-    from custom_components.syr_connect.data import SyrConnectDevice
-    from custom_components.syr_connect.devices import SyrConnectStatistic
-    from custom_components.syr_connect.encryption import SyrEncryption
+    from custom_components.syr_connect.aiosyrconnect.http_client import HTTPClient
+    from custom_components.syr_connect.aiosyrconnect.xml_checksum import SyrChecksum
+    from custom_components.syr_connect.aiosyrconnect.xml_encryption import SyrEncryption
+    from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
+    from custom_components.syr_connect.aiosyrconnect.xml_payload import PayloadBuilder
     from custom_components.syr_connect.helpers.integration import (
         build_user_agent,
         get_month_version,
     )
-    from custom_components.syr_connect.http_client import HTTPClient
     from custom_components.syr_connect.models import detect_model
-    from custom_components.syr_connect.payload_builder import PayloadBuilder
-    from custom_components.syr_connect.response_parser import ResponseParser
 except ModuleNotFoundError as err:
     _exit_missing_dependency(err)
 
@@ -292,9 +294,9 @@ class DebugXmlClient:
         self.projects: list[dict[str, Any]] = []
 
         # Key and IV of the service of the package name, SYR Connect if unknown
-        svc = _SYR_CONNECT_API_SERVICES.get(
+        svc = API_SERVICES.get(
             api_package_name,
-            _SYR_CONNECT_API_SERVICES[_SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER],
+            API_SERVICES[DEFAULT_CF_BUNDLE_IDENTIFIER],
         )
         self.encryption = SyrEncryption(svc.crypt_key, svc.crypt_vector)
         checksum = SyrChecksum(
@@ -431,7 +433,7 @@ class DebugXmlClient:
     # Devices
     # ------------------------------------------------------------------
 
-    async def get_devices(self, project_id: str) -> list[SyrConnectDevice]:
+    async def get_devices(self, project_id: str) -> list[SyrConnectApiDevice]:
         """Fetch and log the devices of a project."""
         _LOGGER.info("=== GET DEVICES  project_id=%s ===", project_id)
 
@@ -447,7 +449,7 @@ class DebugXmlClient:
         )
         _LOGGER.debug("--- Raw device list response ---\n%s", raw_response)
 
-        devices: list[SyrConnectDevice] = (
+        devices: list[SyrConnectApiDevice] = (
             self.response_parser.parse_device_list_response(raw_response)
         )
         for dev in devices:
@@ -470,7 +472,7 @@ class DebugXmlClient:
     # Status
     # ------------------------------------------------------------------
 
-    async def get_status(self, device: SyrConnectDevice) -> dict[str, Any]:
+    async def get_status(self, device: SyrConnectApiDevice) -> dict[str, Any]:
         """Fetch and log the status of a device."""
         device_id = device.get("id", "?")
         dclg = device.get("dclg", "")
@@ -584,7 +586,7 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--api-package-name",
-        default=_SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
+        default=DEFAULT_CF_BUNDLE_IDENTIFIER,
         help="Package name embedded in the app-version string (default: %(default)s)",
     )
     parser.add_argument(
@@ -654,8 +656,8 @@ def _parse_args() -> argparse.Namespace:
 
 
 def _find_device(
-    devices: list[SyrConnectDevice], identity: str
-) -> SyrConnectDevice | None:
+    devices: list[SyrConnectApiDevice], identity: str
+) -> SyrConnectApiDevice | None:
     """Return the device matching id, dclg, serial number or name, logging the rest."""
     target = next(
         (
@@ -746,9 +748,9 @@ async def _get_statistics(client: DebugXmlClient, args: argparse.Namespace) -> N
             _LOGGER.debug("Statistics traceback", exc_info=True)
 
 
-async def _collect_devices(client: DebugXmlClient) -> list[SyrConnectDevice]:
+async def _collect_devices(client: DebugXmlClient) -> list[SyrConnectApiDevice]:
     """Fetch devices across all projects, logging and skipping per-project failures."""
-    all_devices: list[SyrConnectDevice] = []
+    all_devices: list[SyrConnectApiDevice] = []
     for project in client.projects:
         try:
             devices = await client.get_devices(project["id"])

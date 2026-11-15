@@ -16,8 +16,8 @@ from custom_components.syr_connect import (
     sensor as sensor_module,
     valve as valve_module,
 )
-from custom_components.syr_connect.api_json import SyrConnectJsonAPI
-from custom_components.syr_connect.response_parser import ResponseParser
+from custom_components.syr_connect.aiosyrconnect import SyrConnectJsonAPI
+from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
 from custom_components.syr_connect.select import (
     SyrConnectPrfSelect,
     SyrConnectRotationSelect,

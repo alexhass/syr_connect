@@ -7,7 +7,11 @@ from typing import Any, cast
 import pytest
 
 from custom_components.syr_connect import sensor
-from custom_components.syr_connect.data import SyrConnectDevice, SyrConnectStatus
+from custom_components.syr_connect.aiosyrconnect import (
+    SyrConnectStatus,
+    is_device_offline,
+)
+from custom_components.syr_connect.data import SyrConnectDevice
 from custom_components.syr_connect.helpers.device import (
     build_device_info,
     detect_device_model,
@@ -20,7 +24,6 @@ from custom_components.syr_connect.models import (
     UNKNOWN_MODEL,
     SyrConnectModel,
 )
-from custom_components.syr_connect.response_parser import is_device_offline
 from custom_components.syr_connect.sensor import is_sensor_visible
 
 

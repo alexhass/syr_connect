@@ -35,6 +35,7 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
+from .aiosyrconnect import SyrConnectStatus, SyrConnectStatusValue
 from .binary_sensor import _SYR_CONNECT_BINARY_SENSOR_SUPPORTED_KEYS
 from .const import (
     _SYR_CONNECT_LEAK_PROTECTION_PROFILES,
@@ -48,7 +49,7 @@ from .const import (
     _SYR_CONNECT_SENSOR_UL_VALUE_MAP,
 )
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
-from .data import SyrConnectDevice, SyrConnectStatus, SyrConnectStatusValue
+from .data import SyrConnectDevice
 from .entity import SyrConnectEntity, async_add_device_entities
 from .helpers.device import get_device_model
 from .helpers.profile import (

@@ -20,6 +20,8 @@ in the platform modules (sensor.py, select.py, ...).
 from collections.abc import Mapping, Set as AbstractSet
 from dataclasses import dataclass, field
 
+from ..aiosyrconnect import SyrConnectStatistic
+
 # Water hardness unit codes (getWHU) of the device families: code -> unit. Each family
 # numbers the units differently, see docs/syrconnect-protocol.md.
 WHU_UNITS_LEX = {
@@ -51,26 +53,6 @@ WHU_FACTORS_FROM_DH = {
     "°fH": 1.78480457,
     "ppm": 17.8480457,
 }
-
-
-@dataclass(frozen=True, kw_only=True)
-class SyrConnectStatistic:
-    """Measurement history series that the cloud keeps for a device family.
-
-    The fields are the web service method and the attributes of the ``<sh>`` element
-    of the request, see "SafeFloor measurement history" in docs/syrconnect-protocol.md.
-    """
-
-    # Sensor key whose measurement history this series holds
-    key: str
-    # Web service method below the device service path, e.g. "GetSafeFloorStatistics"
-    method: str
-    # Report type: 1 = week, 2 = month, 3 = year, 4 = raw measurements
-    rtyp: int
-    # Measurement within the method, e.g. 1 = temperature, 2 = humidity
-    t: int
-    # Unit of the measurement; the cloud answers with an empty <col /> without it
-    unit: str
 
 
 @dataclass(frozen=True, kw_only=True)

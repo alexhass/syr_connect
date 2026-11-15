@@ -6,11 +6,11 @@ from typing import Any, cast
 from defusedxml import ElementTree as DefusedET
 import pytest
 
-from custom_components.syr_connect.checksum import SyrChecksum
-from custom_components.syr_connect.const import (
+from custom_components.syr_connect.aiosyrconnect.const import (
     _SYR_CONNECT_CLIENT_CHECKSUM_KEY1,
     _SYR_CONNECT_CLIENT_CHECKSUM_KEY2,
 )
+from custom_components.syr_connect.aiosyrconnect.xml_checksum import SyrChecksum
 
 
 def test_checksum_init() -> None:
@@ -95,8 +95,8 @@ def test_compute_checksum_with_high_offset_key() -> None:
 
 _XML_FIXTURES = sorted(
     [
-        *(Path(__file__).parent / "fixtures/xml").glob("*.xml"),
-        *(Path(__file__).parent / "fixtures/xml/requests").glob("*.xml"),
+        *(Path(__file__).parent.parent / "fixtures/xml").glob("*.xml"),
+        *(Path(__file__).parent.parent / "fixtures/xml/requests").glob("*.xml"),
     ]
 )
 

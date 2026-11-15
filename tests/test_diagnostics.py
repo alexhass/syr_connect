@@ -11,7 +11,11 @@ import pytest
 from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.syr_connect import diagnostics as diag
-from custom_components.syr_connect.api_json import SyrConnectJsonAPI
+from custom_components.syr_connect.aiosyrconnect import (
+    SyrConnectConnectionError,
+    SyrConnectHTTPError,
+    SyrConnectJsonAPI,
+)
 from custom_components.syr_connect.const import (
     API_TYPE_JSON,
     API_TYPE_XML,
@@ -26,10 +30,6 @@ from custom_components.syr_connect.diagnostics import (
     async_get_config_entry_diagnostics,
     mask_mac_value,
     mask_srn_value,
-)
-from custom_components.syr_connect.exceptions import (
-    SyrConnectConnectionError,
-    SyrConnectHTTPError,
 )
 from custom_components.syr_connect.helpers.integration import build_user_agent
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
@@ -96,15 +96,10 @@ def _xml_api(
     api.is_session_valid.return_value = True
     api.login = AsyncMock()
     api.projects = [{"id": "p1", "name": "Haus Mustermann"}]
-    api.session_data = "sess"
-    api.device_list_url = "https://example.invalid/list"
-    api.device_get_status_url = "https://example.invalid/status"
-    api.http_client.post = AsyncMock(side_effect=responses)
-    api.payload_builder.build_device_get_list_payload.return_value = "<list/>"
-    api.payload_builder.build_device_get_status_payload.side_effect = (
-        lambda _session, device_id: f"<status {device_id}/>"
-    )
-    api.response_parser.parse_device_list_response.return_value = (
+    # The first response is the device list, the others the device statuses
+    api.get_raw_device_list = AsyncMock(side_effect=responses[:1])
+    api.get_raw_device_status = AsyncMock(side_effect=responses[1:])
+    api.parse_device_list.return_value = (
         [{"id": "206AAA67890", "dclg": "dclg1"}] if devices is None else devices
     )
     return api
@@ -322,17 +317,10 @@ async def test_collect_raw_xml() -> None:
             "devices": {"dclg1": _SYR_CONNECT_TEST_REDACTED_STATUS_XML},
         }
     }
-    assert api.http_client.post.await_args_list == [
-        call("https://example.invalid/list", {"xml": "<list/>"}),
-        call("https://example.invalid/status", {"xml": "<status dclg1/>"}),
-    ]
-    api.payload_builder.build_device_get_list_payload.assert_called_once_with(
-        "sess", "p1"
-    )
+    api.get_raw_device_list.assert_awaited_once_with("p1")
+    api.get_raw_device_status.assert_awaited_once_with("dclg1")
     # The devices are read from the response as the cloud sent it
-    api.response_parser.parse_device_list_response.assert_called_once_with(
-        _SYR_CONNECT_TEST_DEVICE_LIST_XML
-    )
+    api.parse_device_list.assert_called_once_with(_SYR_CONNECT_TEST_DEVICE_LIST_XML)
     api.login.assert_not_awaited()
 
 
@@ -362,12 +350,12 @@ async def test_collect_raw_xml_without_usable_session(case: str) -> None:
         api.login.side_effect = SyrConnectConnectionError("down")
     elif case == "no_projects":
         api.projects = []
-    post = api.http_client.post
+    get_raw_device_list = api.get_raw_device_list
     if case == "no_api":
         api = None
 
     assert await diag._collect_raw_xml(_coordinator(api=api)) == {}
-    post.assert_not_awaited()
+    get_raw_device_list.assert_not_awaited()
 
 
 async def test_collect_raw_xml_skips_project_without_id() -> None:
@@ -376,7 +364,7 @@ async def test_collect_raw_xml_skips_project_without_id() -> None:
     api.projects = [{"name": "No id"}]
 
     assert await diag._collect_raw_xml(_coordinator(api=api)) == {}
-    api.http_client.post.assert_not_awaited()
+    api.get_raw_device_list.assert_not_awaited()
 
 
 async def test_collect_raw_xml_failed_device_list_request() -> None:
@@ -391,7 +379,7 @@ async def test_collect_raw_xml_failed_device_list_request() -> None:
 async def test_collect_raw_xml_unparsable_device_list() -> None:
     """A device list that cannot be parsed is kept, without device status."""
     api = _xml_api([_SYR_CONNECT_TEST_DEVICE_LIST_XML])
-    api.response_parser.parse_device_list_response.side_effect = ValueError("broken")
+    api.parse_device_list.side_effect = ValueError("broken")
 
     assert await diag._collect_raw_xml(_coordinator(api=api)) == {
         "p1": {
@@ -399,37 +387,38 @@ async def test_collect_raw_xml_unparsable_device_list() -> None:
             "devices": {},
         }
     }
-    assert api.http_client.post.await_count == 1
+    api.get_raw_device_status.assert_not_awaited()
 
 
 async def test_collect_raw_xml_device_ids_and_failed_status() -> None:
-    """The status is fetched by dclg or id; a failing device does not stop the others."""
+    """The status is fetched by dclg or id; a failing device does not stop the others.
+
+    A device whose request fails is listed with an empty answer.
+    """
     devices = [
         {"dclg": "bad"},
         {"id": "only-id"},
         {"name": "neither dclg nor id"},
         {"dclg": "offline"},
     ]
-    api = _xml_api(
-        [
-            _SYR_CONNECT_TEST_DEVICE_LIST_XML,
-            "<sc><ok /></sc>",
-            SyrConnectConnectionError("down"),
-        ],
-        devices=devices,
-    )
+    api = _xml_api([_SYR_CONNECT_TEST_DEVICE_LIST_XML], devices=devices)
 
-    def _status_payload(_session: str, device_id: str) -> str:
+    async def _raw_status(device_id: str) -> str:
         if device_id == "bad":
             raise RuntimeError("payload cannot be built")
-        return f"<status {device_id}/>"
+        if device_id == "offline":
+            raise SyrConnectConnectionError("down")
+        return "<sc><ok /></sc>"
 
-    api.payload_builder.build_device_get_status_payload.side_effect = _status_payload
+    api.get_raw_device_status = AsyncMock(side_effect=_raw_status)
 
     result = await diag._collect_raw_xml(_coordinator(api=api))
 
-    # "bad" raised, "offline" got no answer
-    assert result["p1"]["devices"] == {"only-id": "<sc><ok /></sc>", "offline": ""}
+    assert result["p1"]["devices"] == {
+        "bad": "",
+        "only-id": "<sc><ok /></sc>",
+        "offline": "",
+    }
 
 
 async def test_collect_raw_xml_unexpected_error() -> None:

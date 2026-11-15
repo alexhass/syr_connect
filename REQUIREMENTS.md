@@ -132,12 +132,22 @@ config/
    └── syr_connect/
       ├── __init__.py
       ├── manifest.json
+      ├── aiosyrconnect/
+      │  ├── __init__.py
+      │  ├── const.py
+      │  ├── exceptions.py
+      │  ├── http_client.py
+      │  ├── json_api.py
+      │  ├── models.py
+      │  ├── py.typed
+      │  ├── xml_api.py
+      │  ├── xml_checksum.py
+      │  ├── xml_encryption.py
+      │  ├── xml_parser.py
+      │  └── xml_payload.py
       ├── config_flow.py
       ├── const.py
-      ├── api_json.py
-      ├── api_xml.py
       ├── models.py
-      ├── checksum.py
       ├── coordinator.py
       ├── data.py
       ├── sensor.py
@@ -148,9 +158,7 @@ config/
       ├── update.py
       ├── valve.py
       ├── diagnostics.py
-      ├── encryption.py
       ├── entity.py
-      ├── exceptions.py
       ├── helpers/
       │  ├── __init__.py
       │  ├── device.py
@@ -158,12 +166,9 @@ config/
       │  ├── profile.py
       │  ├── registry.py
       │  └── values.py
-      ├── http_client.py
       ├── icons.json
       ├── migrations.py
-      ├── payload_builder.py
       ├── repairs.py
-      ├── response_parser.py
       ├── devices/
       │  ├── __init__.py
       │  └── <one file per device family>.py

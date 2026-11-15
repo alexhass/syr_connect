@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, Mock
 
 from pytest_homeassistant.common import MockConfigEntry
 
-from custom_components.syr_connect.response_parser import ResponseParser
+from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
 from custom_components.syr_connect.sensor import async_setup_entry
 from homeassistant.const import UnitOfTime
 from homeassistant.core import HomeAssistant
