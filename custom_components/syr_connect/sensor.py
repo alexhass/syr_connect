@@ -182,6 +182,11 @@ def _value_bap(
     """
     if value is not None and not (isinstance(value, str) and value.strip() == ""):
         return sensor.numeric_value(value)
+    return _battery_level_from_voltages(status)
+
+
+def _battery_level_from_voltages(status: SyrConnectStatus) -> int | None:
+    """Battery level from getBAT between getBMI (0 %) and getBMA (100 %), see _value_bap."""
     bat = get_sensor_bat_value(status.get("getBAT"))
     bma = get_sensor_bat_value(status.get("getBMA"))
     bmi = get_sensor_bat_value(status.get("getBMI"))
@@ -430,26 +435,39 @@ def _value_rpw(
     0 -> "0" ("Not specified" translation key), otherwise comma-separated localized
     short weekday names.
     """
-    if value is None or value == "":
+    mask = _weekday_mask(value)
+    if mask is None:
         return None
-    try:
-        mask = int(to_float(value))
-    except ValueError, TypeError, OverflowError:
-        try:
-            mask = int(str(value).strip())
-        except ValueError, TypeError:
-            return None
-
     if mask == 0:
         return "0"
 
-    # Localize with the Home Assistant language; a reference Monday maps the weekday offsets.
-    # Babel takes "pt_BR", not the "pt-BR" of Home Assistant.
-    ref_monday = datetime(2024, 1, 1)
     try:
         language = getattr(sensor.hass.config, "language", None)
     except AttributeError:
         language = None
+    return _weekday_names(mask, language)
+
+
+def _weekday_mask(value: SyrConnectStatusValue) -> int | None:
+    """Return the weekday bitmask of getRPW, or None if the value is no number."""
+    if value is None or value == "":
+        return None
+    try:
+        return int(to_float(value))
+    except ValueError, TypeError, OverflowError:
+        try:
+            return int(str(value).strip())
+        except ValueError, TypeError:
+            return None
+
+
+def _weekday_names(mask: int, language: str | None) -> str:
+    """Return the comma-separated short weekday names of a bitmask (bit 1 = Monday).
+
+    Localized with the Home Assistant language; a reference Monday maps the weekday
+    offsets. Babel takes "pt_BR", not the "pt-BR" of Home Assistant.
+    """
+    ref_monday = datetime(2024, 1, 1)
     locale = language.replace("-", "_") if language else None
 
     parts: list[str] = []
@@ -2436,6 +2454,15 @@ def _to_float(value: Any) -> float | None:
         return None
 
 
+# Value rules of single keys, on the value as number (None if it is no number)
+_SYR_CONNECT_SENSOR_VALUE_RULES: dict[str, Callable[[float | None], bool]] = {
+    # Display rotation (getSRO): only an integer value
+    "getSRO": lambda number: number is not None and number.is_integer(),
+    # getFFM: only a value >= 1
+    "getFFM": lambda number: number is not None and number >= 1,
+}
+
+
 def _is_sensor_wanted(
     status: SyrConnectStatus,
     key: str,
@@ -2470,28 +2497,28 @@ def _is_sensor_wanted(
         return False
 
     if registered:
-        description = _SYR_CONNECT_SENSOR_DESCRIPTIONS.get(key)
-        if description is not None and description.hidden_when == "always":
-            return False
-        return value is None or isinstance(value, int | float | str)
+        return _is_registered_sensor_wanted(key, value)
 
     # Centralized visibility check
     if not is_sensor_visible(status, key, value):
         return False
 
-    # Special: only create getSRO sensor when the reported value is an integer
-    if key == "getSRO":
-        number = _to_float(value)
-        if number is None or not number.is_integer():
-            return False
-
-    # Special: only create getFFM sensor when the reported value is >= 1
-    if key == "getFFM":
-        number = _to_float(value)
-        if number is None or number < 1:
-            return False
+    value_rule = _SYR_CONNECT_SENSOR_VALUE_RULES.get(key)
+    if value_rule is not None and not value_rule(_to_float(value)):
+        return False
 
     return isinstance(value, int | float | str)
+
+
+def _is_registered_sensor_wanted(key: str, value: Any) -> bool:
+    """Return True if an already registered sensor keeps its entity.
+
+    Any value counts, except for hidden_when="always".
+    """
+    description = _SYR_CONNECT_SENSOR_DESCRIPTIONS.get(key)
+    if description is not None and description.hidden_when == "always":
+        return False
+    return value is None or isinstance(value, int | float | str)
 
 
 def _async_setup_muco_conditional_sensors(
@@ -2584,6 +2611,16 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         self._sensor_key = sensor_key
         self.entity_description = _SYR_CONNECT_SENSOR_DESCRIPTIONS[sensor_key]
 
+        self._apply_hardness_unit()
+        self._apply_profile_names()
+        self._apply_profile_scale()
+
+        # Cache last non-None native value to avoid writing None when API omits values
+        self._last_native_value: str | int | float | datetime | None = None
+
+    def _apply_hardness_unit(self) -> None:
+        """Set the unit and the factor of a water hardness sensor from getWHU."""
+        sensor_key = self._sensor_key
         # Set unit of measurement for water hardness sensors dynamically
         if sensor_key in ("getIWH", "getOWH"):
             self._attr_native_unit_of_measurement = get_whu_unit(
@@ -2600,58 +2637,60 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
                     self.device_model, self._status.get("getWHU")
                 )
 
+    def _apply_profile_names(self) -> None:
+        """Rename getBAT and getBAR for the devices whose profile gives them another meaning."""
+        profile = self.device_model.device_profile
+        if profile is None:
+            return
         # Override getBAT attributes for devices that report battery as percentage (SafeFloor).
         # The name follows the unit: "Battery level" like getBAP instead of "Battery voltage".
-        if sensor_key == "getBAT":
-            profile = self.device_model.device_profile
-            if profile is not None and profile.bat_in_percent:
-                self._attr_native_unit_of_measurement = UnitOfRatio.PERCENTAGE
-                self._attr_device_class = SensorDeviceClass.BATTERY
-                self._attr_suggested_display_precision = 0
-                self._attr_translation_key = "getbap"
+        if self._sensor_key == "getBAT" and profile.bat_in_percent:
+            self._attr_native_unit_of_measurement = UnitOfRatio.PERCENTAGE
+            self._attr_device_class = SensorDeviceClass.BATTERY
+            self._attr_suggested_display_precision = 0
+            self._attr_translation_key = "getbap"
 
         # On devices that report the inlet pressure in getIBA, getBAR is the system pressure
-        if sensor_key == "getBAR":
-            profile = self.device_model.device_profile
-            if profile is not None and profile.bar_is_system_pressure:
-                self._attr_translation_key = "getbar_system"
+        if self._sensor_key == "getBAR" and profile.bar_is_system_pressure:
+            self._attr_translation_key = "getbar_system"
 
-        # A device may report a key in another scale than its description, e.g. milliliters
-        # instead of liters or l/min instead of l/h. The value keeps the unit of the
-        # description, and with it its display precision.
+    def _apply_profile_scale(self) -> None:
+        """Use the scale the device profile reports a key in.
+
+        A device may report a key in another scale than its description, e.g. milliliters
+        instead of liters or l/min instead of l/h. The value keeps the unit of the
+        description, and with it its display precision.
+        """
         profile = self.device_model.device_profile
-        if profile is not None:
-            description = self.entity_description
-            hardness_divisor = (
-                get_hardness_divisor(self.device_model, self._status.get("getWHU"))
-                if sensor_key in ("getIWH", "getOWH")
-                else 1
+        if profile is None:
+            return
+        sensor_key = self._sensor_key
+        description = self.entity_description
+        hardness_divisor = (
+            get_hardness_divisor(self.device_model, self._status.get("getWHU"))
+            if sensor_key in ("getIWH", "getOWH")
+            else 1
+        )
+        divide_by = (
+            profile.sensor_divisors.get(sensor_key, description.divide_by)
+            * hardness_divisor
+        )
+        multiply_by = profile.sensor_factors.get(sensor_key, description.multiply_by)
+        # The water hardness takes the unit of getWHU instead, which can need decimals
+        # the description does not have (tenths of mmol/l)
+        precision = description.suggested_display_precision
+        if precision is not None and hardness_divisor > 1:
+            precision += math.ceil(math.log10(hardness_divisor))
+        if (divide_by, multiply_by) != (
+            description.divide_by,
+            description.multiply_by,
+        ):
+            self.entity_description = replace(
+                description,
+                divide_by=divide_by,
+                multiply_by=multiply_by,
+                suggested_display_precision=precision,
             )
-            divide_by = (
-                profile.sensor_divisors.get(sensor_key, description.divide_by)
-                * hardness_divisor
-            )
-            multiply_by = profile.sensor_factors.get(
-                sensor_key, description.multiply_by
-            )
-            # The water hardness takes the unit of getWHU instead, which can need decimals
-            # the description does not have (tenths of mmol/l)
-            precision = description.suggested_display_precision
-            if precision is not None and hardness_divisor > 1:
-                precision += math.ceil(math.log10(hardness_divisor))
-            if (divide_by, multiply_by) != (
-                description.divide_by,
-                description.multiply_by,
-            ):
-                self.entity_description = replace(
-                    description,
-                    divide_by=divide_by,
-                    multiply_by=multiply_by,
-                    suggested_display_precision=precision,
-                )
-
-        # Cache last non-None native value to avoid writing None when API omits values
-        self._last_native_value: str | int | float | datetime | None = None
 
     def _apply_numeric_conversion(self, value: float) -> float | int:
         """Apply sensor-specific unit conversion and precision.
