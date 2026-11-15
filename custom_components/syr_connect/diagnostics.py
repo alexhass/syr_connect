@@ -18,8 +18,9 @@ from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice, SyrConnectStatus
 from .exceptions import SyrConnectConnectionError, SyrConnectHTTPError
 from .helpers.device import get_device_model
-from .helpers.integration import get_integration_version, mask_ug_value
+from .helpers.integration import build_user_agent, get_integration_version
 from .helpers.values import is_empty_ip
+from .http_client import mask_ug_value
 from .sensor import sensor_keys_for_status
 
 _LOGGER = logging.getLogger(__name__)
@@ -494,7 +495,7 @@ async def _fetch_local_device_json(
         session,
         host=ip,
         base_path=base_path,
-        integration_version=integration_version,
+        user_agent=build_user_agent(integration_version),
     )
     try:
         if not await _async_local_login(json_api, dev_id, ip):

@@ -56,8 +56,7 @@ from .exceptions import (
     SyrConnectLoginFailedError,
     SyrConnectSessionExpiredError,
 )
-from .helpers.integration import build_user_agent, mask_ug_value
-from .http_client import HTTPClient
+from .http_client import HTTPClient, mask_ug_value
 from .payload_builder import PayloadBuilder
 from .response_parser import ResponseParser
 
@@ -80,8 +79,9 @@ class SyrConnectXmlAPI:
         password: str,
         *,
         service: SyrConnectService,
-        integration_version: str,
+        user_agent: str,
         language: str = _SYR_CONNECT_CLIENT_OS_LANGUAGE,
+        local_now: Callable[[], datetime] | None = None,
     ) -> None:
         """Initialize the cloud API client.
 
@@ -91,11 +91,12 @@ class SyrConnectXmlAPI:
             password: SYR Connect cloud account password
             service: Cloud API service of the account (from _SYR_CONNECT_API_SERVICES):
                 app name, base URL, bundle identifier and the key of the login response
-            integration_version: Version of this integration (from helpers.get_integration_version),
-                sent in the User-Agent header.
+            user_agent: HTTP User-Agent of the requests; names the caller
             language: Locale like "de-DE" (from helpers.get_api_locale) sent in the app version string
                 "<si v=...>", as lng/reg at login, lg/rg in statistics requests and in the
                 Accept-Language header. Defaults to _SYR_CONNECT_CLIENT_OS_LANGUAGE ("en-US").
+            local_now: Returns the current time in the time zone of the caller, for the
+                UTC offset (tzo) of the login; default the local time of the process
         """
         # --- Authentication credentials ---
         self.username = username
@@ -151,16 +152,14 @@ class SyrConnectXmlAPI:
 
         # XML payload construction with embedded checksums
         self.payload_builder = PayloadBuilder(
-            _app_version, self.checksum, _app_name, language
+            _app_version, self.checksum, _app_name, language, local_now
         )
 
         # XML response parsing (handles various response formats)
         self.response_parser = ResponseParser()
 
         # HTTP client; the User-Agent identifies the integration and Home Assistant
-        self.http_client = HTTPClient(
-            session, build_user_agent(integration_version), language=language
-        )
+        self.http_client = HTTPClient(session, user_agent, language=language)
 
     @property
     def device_get_status_url(self) -> str:

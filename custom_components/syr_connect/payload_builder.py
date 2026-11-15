@@ -1,11 +1,10 @@
 """XML payload builder for SYR Connect API."""
 
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 import logging
 from typing import Any
 from xml.etree import ElementTree as ET
-
-from homeassistant.util import dt as dt_util
 
 from .checksum import SyrChecksum
 from .const import (
@@ -22,6 +21,11 @@ _LOGGER = logging.getLogger(__name__)
 _XML_DECLARATION = '<?xml version="1.0" encoding="utf-8"?>'
 
 
+def _local_now_of_process() -> datetime:
+    """Return the current time in the time zone of the process."""
+    return datetime.now().astimezone()
+
+
 class PayloadBuilder:
     """Build XML payloads for SYR Connect API requests."""
 
@@ -31,6 +35,7 @@ class PayloadBuilder:
         checksum_calculator: SyrChecksum,
         app_name: str,
         language: str = _SYR_CONNECT_CLIENT_OS_LANGUAGE,
+        local_now: Callable[[], datetime] | None = None,
     ) -> None:
         """Initialize payload builder.
 
@@ -39,11 +44,14 @@ class PayloadBuilder:
             checksum_calculator: Checksum calculator instance
             app_name: Application name sent in the login payload ``<nfo v=...>``
             language: Locale like ``de-DE`` for ``lng``/``reg`` and ``lg``/``rg``
+            local_now: Returns the current time in the time zone of the caller, for
+                the ``tzo`` of the login; default the local time of the process
         """
         self.app_version = app_version
         self.checksum = checksum_calculator
         self.app_name = app_name
         self.language = language
+        self._local_now = local_now or _local_now_of_process
 
     @staticmethod
     def get_timestamp() -> str:
@@ -54,16 +62,15 @@ class PayloadBuilder:
         """
         return datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
 
-    @staticmethod
-    def _compute_local_tzo() -> str:
-        """Return the current UTC offset of the Home Assistant time zone as ``HH:MM:SS``.
+    def _compute_local_tzo(self) -> str:
+        """Return the current UTC offset of the caller's time zone as ``HH:MM:SS``.
 
-        Uses the time zone configured in Home Assistant, not the one of the process (often UTC
-        in Docker), including daylight saving time: Europe/Berlin gives ``02:00:00`` in summer
+        Uses the time zone of `local_now`; Home Assistant passes its configured time zone,
+        not the one of the process (often UTC in Docker), including daylight saving time: Europe/Berlin gives ``02:00:00`` in summer
         and ``01:00:00`` in winter. Positive offsets have no sign, like the ``tzo`` the server
         returns for projects; negative offsets get ``-`` (e.g. ``-05:30:00``).
         """
-        offset = dt_util.now().utcoffset() or timedelta(0)
+        offset = self._local_now().utcoffset() or timedelta(0)
         total_seconds = int(offset.total_seconds())
         sign = "-" if total_seconds < 0 else ""
         hours, rem = divmod(abs(total_seconds), 3600)

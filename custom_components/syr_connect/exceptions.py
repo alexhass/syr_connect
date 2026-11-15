@@ -1,9 +1,7 @@
 """Custom exceptions for SYR Connect integration."""
 
-from homeassistant.exceptions import HomeAssistantError
 
-
-class SyrConnectError(HomeAssistantError):
+class SyrConnectError(Exception):
     """Base exception for SYR Connect."""
 
 
@@ -51,19 +49,3 @@ class SyrConnectHTTPError(SyrConnectConnectionError):
 
 class SyrConnectInvalidResponseError(SyrConnectError):
     """Invalid response error."""
-
-
-class CannotConnectError(HomeAssistantError):
-    """Error to indicate we cannot connect."""
-
-
-class InvalidAuthError(HomeAssistantError):
-    """Error to indicate there is invalid auth."""
-
-
-class HostInvalidError(HomeAssistantError):
-    """Error to indicate the host field value is invalid."""
-
-
-class HostWithPortError(HostInvalidError):
-    """Error to indicate the host field contains a port, which is not allowed (fixed port 5333)."""

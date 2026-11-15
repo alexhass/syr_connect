@@ -26,6 +26,7 @@ from custom_components.syr_connect.exceptions import (
     SyrConnectLoginFailedError,
     SyrConnectSessionExpiredError,
 )
+from custom_components.syr_connect.helpers.integration import build_user_agent
 from homeassistant.const import __version__ as HA_VERSION
 
 _SYR_SERVICE = _SYR_CONNECT_API_SERVICES[_SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER]
@@ -45,7 +46,7 @@ def api_client(mock_session: MagicMock, integration_version: str) -> Any:
         "test@example.com",
         "testpassword",
         service=_SYR_SERVICE,
-        integration_version=integration_version,
+        user_agent=build_user_agent(integration_version),
     )
 
 
@@ -60,7 +61,7 @@ def test_request_urls_and_app_identity_come_from_the_service(
         "test@example.com",
         "testpassword",
         service=svc,
-        integration_version=integration_version,
+        user_agent=build_user_agent(integration_version),
     )
 
     assert (
@@ -84,7 +85,7 @@ def test_crypt_values_select_the_login_response_key(
         "test@example.com",
         "testpassword",
         service=svc,
-        integration_version=integration_version,
+        user_agent=build_user_agent(integration_version),
     )
 
     assert (
@@ -103,7 +104,7 @@ async def test_login_does_not_log_payload(
         "user@example.com",
         "s3cr3t!",
         service=_SYR_SERVICE,
-        integration_version=integration_version,
+        user_agent=build_user_agent(integration_version),
         language="en-DE",
     )
     caplog.set_level("DEBUG", logger="custom_components.syr_connect.api_xml")
@@ -131,7 +132,7 @@ def test_language_is_passed_to_payload_builder_and_http_client(
         "test@example.com",
         "testpassword",
         service=_SYR_SERVICE,
-        integration_version=integration_version,
+        user_agent=build_user_agent(integration_version),
         language="en-DE",
     )
 

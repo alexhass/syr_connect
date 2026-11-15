@@ -9,8 +9,10 @@ from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry, ConfigFlowResult
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, UnitOfTime
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.util import dt as dt_util
 
 from .api_json import SyrConnectJsonAPI
 from .api_xml import SyrConnectXmlAPI
@@ -31,16 +33,13 @@ from .const import (
     DOMAIN,
 )
 from .exceptions import (
-    CannotConnectError,
-    HostInvalidError,
-    HostWithPortError,
-    InvalidAuthError,
     SyrConnectAuthError,
     SyrConnectConnectionError,
     SyrConnectInvalidResponseError,
     SyrConnectLoginFailedError,
 )
 from .helpers.integration import (
+    build_user_agent,
     get_api_locale,
     get_default_scan_interval_for_entry,
     get_integration_version,
@@ -51,6 +50,23 @@ from .helpers.registry import build_entry_unique_id
 from .models import MODEL_SIGNATURES
 
 _LOGGER = logging.getLogger(__name__)
+
+
+class CannotConnectError(HomeAssistantError):
+    """Error to indicate we cannot connect."""
+
+
+class InvalidAuthError(HomeAssistantError):
+    """Error to indicate there is invalid auth."""
+
+
+class HostInvalidError(HomeAssistantError):
+    """Error to indicate the host field value is invalid."""
+
+
+class HostWithPortError(HostInvalidError):
+    """Error to indicate the host field contains a port, which is not allowed (fixed port 5333)."""
+
 
 # Schema for Cloud/XML API initial setup (backend selector + username + password)
 STEP_CLOUD_XML_DATA_SCHEMA = probatio.Schema(
@@ -159,8 +175,10 @@ async def validate_input_xml(
         data[CONF_USERNAME],
         data[CONF_PASSWORD],
         service=svc,
-        integration_version=get_integration_version(hass),
+        user_agent=build_user_agent(get_integration_version(hass)),
         language=get_api_locale(hass.config.language, hass.config.country),
+        # The tzo of the login is the offset of the Home Assistant time zone
+        local_now=dt_util.now,
     )
 
     # Test authentication. Failures are logged at debug level only: the form shows them.
@@ -267,7 +285,7 @@ async def validate_input_json(
         session,
         host=host,
         base_path=base_path,
-        integration_version=get_integration_version(hass),
+        user_agent=build_user_agent(get_integration_version(hass)),
     )
 
     # Test connection by attempting login and fetching device data via public API.

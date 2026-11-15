@@ -6,12 +6,15 @@ from custom_components.syr_connect.exceptions import (
     SyrConnectError,
     SyrConnectInvalidResponseError,
 )
-from homeassistant.exceptions import HomeAssistantError
 
 
 def test_exception_hierarchy() -> None:
-    """Test that all exceptions inherit correctly."""
-    assert issubclass(SyrConnectError, HomeAssistantError)
+    """Test that all exceptions inherit correctly.
+
+    SyrConnectError does not depend on Home Assistant; the integration turns it into
+    the Home Assistant errors.
+    """
+    assert issubclass(SyrConnectError, Exception)
     assert issubclass(SyrConnectAuthError, SyrConnectError)
     assert issubclass(SyrConnectConnectionError, SyrConnectError)
     assert issubclass(SyrConnectInvalidResponseError, SyrConnectError)

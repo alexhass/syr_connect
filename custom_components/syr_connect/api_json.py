@@ -41,7 +41,7 @@ from .exceptions import (
     SyrConnectHTTPError,
     SyrConnectInvalidResponseError,
 )
-from .helpers.integration import build_user_agent, read_response_text
+from .http_client import read_response_text
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -94,8 +94,7 @@ class SyrConnectJsonAPI:
         host: IP address or hostname of the device (optional if base_url provided)
         base_path: path component for the device (optional)
         base_url: explicit base URL (overrides host/base_path)
-        integration_version: version of this integration (from
-            helpers.get_integration_version), sent in the User-Agent header
+        user_agent: HTTP User-Agent of the requests; names the caller
     """
 
     def __init__(
@@ -106,7 +105,7 @@ class SyrConnectJsonAPI:
         base_url: str | None = None,
         login_required: bool | None = None,
         *,
-        integration_version: str,
+        user_agent: str,
     ) -> None:
         """Initialize the JSON API client.
 
@@ -119,7 +118,7 @@ class SyrConnectJsonAPI:
 
         # The User-Agent identifies the integration and Home Assistant, as for the
         # cloud API
-        self._headers = {"User-Agent": build_user_agent(integration_version)}
+        self._headers = {"User-Agent": user_agent}
 
         # URL construction parameters (option 1: host + base_path)
         self._host = host
