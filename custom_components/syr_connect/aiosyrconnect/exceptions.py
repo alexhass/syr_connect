@@ -1,24 +1,32 @@
-"""Custom exceptions for SYR Connect integration."""
+"""Errors raised by the SYR Connect API clients."""
 
 
 class SyrConnectError(Exception):
-    """Base exception for SYR Connect."""
+    """Base class of all errors raised by the SYR Connect clients."""
 
 
 class SyrConnectAuthError(SyrConnectError):
-    """Authentication error."""
+    """The credentials were rejected.
+
+    Raised by the XML API client for a wrong password and by the JSON API client for
+    HTTP 401/403 or an ADM request the device does not accept. The caller should ask
+    for new credentials.
+    """
 
 
 class SyrConnectConnectionError(SyrConnectError):
-    """Connection error."""
+    """The cloud or the device could not be reached or gave no usable answer.
+
+    Temporary by nature: the caller can retry later.
+    """
 
 
 class SyrConnectLoginFailedError(SyrConnectConnectionError):
     """The XML webservice rejected the login (<suc v="false"/>) for another cause than a wrong password.
 
     The cloud gives the same generic message for an unknown username and during
-    outages (see docs/known_issues_xml_api.md, issue 3). The config flow reports it
-    as invalid credentials; during operation it is handled like any other connection
+    outages (see docs/known_issues_xml_api.md, issue 3). A setup can report it as
+    invalid credentials; during operation it can be handled like any other connection
     error: the next update logs in again, without a re-authentication.
     """
 
@@ -34,18 +42,22 @@ class SyrConnectSessionExpiredError(SyrConnectConnectionError):
 
 
 class SyrConnectHTTPError(SyrConnectConnectionError):
-    """HTTP error with status code information.
-
-    Args:
-        msg: Error message
-        status: Optional HTTP status code
-    """
+    """The local JSON API answered with an HTTP error status."""
 
     def __init__(self, msg: str | None = None, status: int | None = None) -> None:
-        """Initialize the error with a message and an optional HTTP status code."""
+        """Initialize the error.
+
+        Args:
+            msg: Error message; default "HTTP error"
+            status: HTTP status code, if known
+        """
         super().__init__(msg or "HTTP error")
         self.status = status
 
 
 class SyrConnectInvalidResponseError(SyrConnectError):
-    """Invalid response error."""
+    """An answer was received but cannot be used.
+
+    For example an empty answer of the JSON API, JSON that is no object, an error code
+    (NSC, MIMA) for a set command, or a statistics answer that is no XML.
+    """

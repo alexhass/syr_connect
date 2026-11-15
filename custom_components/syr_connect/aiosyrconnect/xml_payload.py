@@ -1,4 +1,4 @@
-"""XML payload builder for SYR Connect API."""
+"""Requests of the SYR Connect XML API."""
 
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
@@ -7,11 +7,11 @@ from typing import Any
 from xml.etree import ElementTree as ET
 
 from .const import (
-    _SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION,
-    _SYR_CONNECT_CLIENT_OS_LANGUAGE,
-    _SYR_CONNECT_CLIENT_OS_MODEL,
-    _SYR_CONNECT_CLIENT_OS_NAME,
-    _SYR_CONNECT_CLIENT_OS_VERSION,
+    CLIENT_CF_BUNDLE_VERSION,
+    CLIENT_OS_LANGUAGE,
+    CLIENT_OS_MODEL,
+    CLIENT_OS_NAME,
+    CLIENT_OS_VERSION,
 )
 from .models import SyrConnectStatistic
 from .xml_checksum import SyrChecksum
@@ -34,7 +34,7 @@ class PayloadBuilder:
         app_version: str,
         checksum_calculator: SyrChecksum,
         app_name: str,
-        language: str = _SYR_CONNECT_CLIENT_OS_LANGUAGE,
+        language: str = CLIENT_OS_LANGUAGE,
         local_now: Callable[[], datetime] | None = None,
     ) -> None:
         """Initialize payload builder.
@@ -55,20 +55,17 @@ class PayloadBuilder:
 
     @staticmethod
     def get_timestamp() -> str:
-        """Get current timestamp in required format.
-
-        Returns:
-            Formatted timestamp string
-        """
+        """Return the current UTC time as ``YYYY-MM-DD HH:MM:SS`` for the login."""
         return datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
 
     def _compute_local_tzo(self) -> str:
         """Return the current UTC offset of the caller's time zone as ``HH:MM:SS``.
 
-        Uses the time zone of `local_now`; Home Assistant passes its configured time zone,
-        not the one of the process (often UTC in Docker), including daylight saving time: Europe/Berlin gives ``02:00:00`` in summer
-        and ``01:00:00`` in winter. Positive offsets have no sign, like the ``tzo`` the server
-        returns for projects; negative offsets get ``-`` (e.g. ``-05:30:00``).
+        Uses the time zone of ``local_now``, so the caller can pass its own time zone
+        instead of the one of the process (often UTC in a container). Daylight saving time
+        is included: Europe/Berlin gives ``02:00:00`` in summer and ``01:00:00`` in winter.
+        Positive offsets have no sign, like the ``tzo`` the server returns for projects;
+        negative offsets get ``-`` (e.g. ``-05:30:00``).
         """
         offset = self._local_now().utcoffset() or timedelta(0)
         total_seconds = int(offset.total_seconds())
@@ -80,8 +77,7 @@ class PayloadBuilder:
     def _compute_locale_lang_reg(self) -> tuple[str, str]:
         """Return (lang, reg) from the instance language, e.g. ``de-DE`` -> ``("de", "DE")``.
 
-        The caller passes its locale, e.g. the one of Home Assistant. A language
-        without region gets ``US``.
+        The caller passes its locale. A language without region gets ``US``.
         """
         parts = self.language.replace("_", "-").split("-")
         lang = parts[0].lower()
@@ -146,10 +142,10 @@ class PayloadBuilder:
             api,
             "nfo",
             v=self.app_name,
-            version=_SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION,
-            osv=_SYR_CONNECT_CLIENT_OS_VERSION,
-            os=_SYR_CONNECT_CLIENT_OS_NAME,
-            dn=_SYR_CONNECT_CLIENT_OS_MODEL,
+            version=CLIENT_CF_BUNDLE_VERSION,
+            osv=CLIENT_OS_VERSION,
+            os=CLIENT_OS_NAME,
+            dn=CLIENT_OS_MODEL,
             ts=self.get_timestamp(),
             tzo=tzo,
             lng=lang,

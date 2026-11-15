@@ -4,47 +4,47 @@ from .models import SyrConnectService
 
 # Largest response body the cloud or a device may send. Real answers stay far below it;
 # the limit keeps a broken or hostile server from filling the memory.
-_SYR_CONNECT_API_RESPONSE_SIZE_MAXIMUM = 1024 * 1024  # bytes
+RESPONSE_SIZE_MAXIMUM = 1024 * 1024  # bytes
 
 # Interval in minutes after which the local JSON API sends ADM again before /get/all, for
 # devices that need it. Assumed; the device itself is not known to leave ADM mode. The XML
 # (cloud) API has no client-side timeout; it logs in again when the server rejects the token.
-_SYR_CONNECT_SESSION_TIMEOUT_MINUTES = 30
+JSON_SESSION_TIMEOUT_MINUTES = 30
 
-# API URLs (internal)
-_SYR_CONNECT_API_XML_LOGIN_URL = "WebServices/Api/SyrApiService.svc/REST/GetProjects"
-_SYR_CONNECT_API_XML_DEVICE_GET_LIST_URL = (
+# Paths of the XML API, relative to the api_base_url of the service
+XML_LOGIN_URL = "WebServices/Api/SyrApiService.svc/REST/GetProjects"
+XML_DEVICE_GET_LIST_URL = (
     "WebServices/SyrControlWebServiceTest2.asmx/GetProjectDeviceCollections"
 )
-_SYR_CONNECT_API_XML_DEVICE_GET_STATUS_URL = (
+XML_DEVICE_GET_STATUS_URL = (
     "WebServices/SyrControlWebServiceTest2.asmx/GetDeviceCollectionStatus"
 )
-_SYR_CONNECT_API_XML_DEVICE_SET_STATUS_URL = (
+XML_DEVICE_SET_STATUS_URL = (
     "WebServices/SyrControlWebServiceTest2.asmx/SetDeviceCollectionStatus"
 )
 # Path of the device web services; the statistics method of a device family is appended
-_SYR_CONNECT_API_XML_DEVICE_SERVICE_PATH = "WebServices/SyrControlWebServiceTest2.asmx/"
+XML_DEVICE_SERVICE_PATH = "WebServices/SyrControlWebServiceTest2.asmx/"
 
-# Encryption of the login response - internal
+# Encryption of the login response
 # Key and IV that crypt_key and crypt_vector of every service are encrypted with
-_SYR_CONNECT_CLIENT_SECURE_KEY = "v6XrGwdRGjcUNlM5BPYEPDEWExpNB4jWdmlMjtGljZ4="
-_SYR_CONNECT_CLIENT_SECURE_VECTOR = "4zfS5TBSqLpnRlKwOZt/CQ=="
+XML_SECURE_KEY = "v6XrGwdRGjcUNlM5BPYEPDEWExpNB4jWdmlMjtGljZ4="
+XML_SECURE_VECTOR = "4zfS5TBSqLpnRlKwOZt/CQ=="
 
-# Checksum keys - internal
-_SYR_CONNECT_CLIENT_CHECKSUM_KEY1 = "L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP"
-_SYR_CONNECT_CLIENT_CHECKSUM_KEY2 = "KHGK5X29LVNZU56T"
+# Keys of the request checksum (see xml_checksum)
+XML_CHECKSUM_KEY1 = "L8KZG4F5DSM6ANBV3CXY7W2ER1T9H0UP"
+XML_CHECKSUM_KEY2 = "KHGK5X29LVNZU56T"
 
-# Device info - internal
-# CF = Core Foundation (iOS/macOS framework)
-# Example: "App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect"
-_SYR_CONNECT_CLIENT_OS_LANGUAGE = "en-US"  # Default; callers pass their own locale
-_SYR_CONNECT_CLIENT_OS_NAME = "iOS"
-_SYR_CONNECT_CLIENT_OS_VERSION = "27.0.0"
-_SYR_CONNECT_CLIENT_OS_MODEL = "iPhone"
-_SYR_CONNECT_CLIENT_CF_BUNDLE_VERSION = "3.9.7"
+# Client identity sent in the XML payloads, e.g. in the app version string
+# "App-3.9.7-de-DE-iOS-iPhone-27.0.0-de.consoft.syr.connect". The values come from a real
+# capture of the SYR app; do not "correct" them. CF = Core Foundation (iOS framework).
+CLIENT_OS_LANGUAGE = "en-US"  # Default; callers pass their own locale
+CLIENT_OS_NAME = "iOS"
+CLIENT_OS_VERSION = "27.0.0"
+CLIENT_OS_MODEL = "iPhone"
+CLIENT_CF_BUNDLE_VERSION = "3.9.7"
 
-# Cloud API service registry: one entry per backend service, keyed by
-# cf_bundle_identifier.
+# Cloud services, keyed by cf_bundle_identifier. Brands of the same cloud share its
+# base URL and keys.
 API_SERVICES: dict[str, SyrConnectService] = {
     "de.consoft.syr.connect": SyrConnectService(
         api_app_name="SYR Connect",
@@ -120,6 +120,5 @@ API_SERVICES: dict[str, SyrConnectService] = {
     ),
 }
 
-# Default CF bundle identifier used as the default selection in the UI
-# Keep as a separate named constant to avoid hard-coded strings scattered across the codebase.
+# Service of the SYR Connect app itself, the default for a new account
 DEFAULT_CF_BUNDLE_IDENTIFIER = "de.consoft.syr.connect"

@@ -4,7 +4,7 @@ import base64
 from xml.etree.ElementTree import Element
 
 # Standard Base32 alphabet (RFC 4648); the index of a character is its 5-bit value
-_SYR_CONNECT_BASE32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
+_BASE32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
 
 
 class SyrChecksum:
@@ -56,7 +56,7 @@ class SyrChecksum:
         for chunk_index, char in enumerate(encoded):
             # Shift the chunk by the key character for this position (Vigenère-like)
             index = (
-                _SYR_CONNECT_BASE32_ALPHABET.index(char)
+                _BASE32_ALPHABET.index(char)
                 + self._key_offsets[chunk_index % len(self._key_offsets)]
             )
 

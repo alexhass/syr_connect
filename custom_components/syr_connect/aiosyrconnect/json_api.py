@@ -11,17 +11,16 @@ The expected endpoints used here are:
 - GET {BASE_URL}/get/{key}       -> returns single value: {"get{key}": value}
 
 ADM is no login with credentials, the methods are only named like those of the XML
-client. The config flow sends it once: a device that answers 404 does not need it,
-which is stored in the config entry (CONF_LOGIN_REQUIRED), and ADM is never sent to
-it again. A device that needs it gets it again every
-_SYR_CONNECT_SESSION_TIMEOUT_MINUTES before /get/all.
+client. The caller sends it once: a device that answers 404 does not need it, which
+the caller can store and pass as `login_required`, and ADM is never sent to it again.
+A device that needs it gets it again every JSON_SESSION_TIMEOUT_MINUTES before /get/all.
 
 Known API error codes in responses:
 - "NSC": Command does not exist (No Such Command)
 - "MIMA": Value outside valid range (Min/Max exceeded)
 
 The client is intentionally small and mirrors the interface used by the
-XML API client, so the coordinator can use both alike.
+XML API client, so a caller can use both alike.
 """
 
 from datetime import UTC, datetime, timedelta
@@ -33,7 +32,7 @@ from typing import Any
 import aiohttp
 from yarl import URL
 
-from .const import _SYR_CONNECT_SESSION_TIMEOUT_MINUTES
+from .const import JSON_SESSION_TIMEOUT_MINUTES
 from .exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
@@ -46,14 +45,14 @@ from .models import SyrConnectApiDevice, SyrConnectStatus
 _LOGGER = logging.getLogger(__name__)
 
 # Local JSON API defaults
-_SYR_CONNECT_JSON_API_SCHEME = "http"
-_SYR_CONNECT_JSON_API_PORT = 5333
+_SCHEME = "http"
+_PORT = 5333
 
 # Default timeout for local JSON API requests (seconds)
-_SYR_CONNECT_DEFAULT_API_TIMEOUT = 10
+_DEFAULT_TIMEOUT = 10
 
 # JSON API endpoint paths
-_SYR_CONNECT_JSON_ENDPOINT_GET_ALL = "/get/all"
+_ENDPOINT_GET_ALL = "/get/all"
 
 
 def _format_host_for_url(host: str) -> str:
@@ -87,15 +86,7 @@ def _raise_for_redirect(resp: aiohttp.ClientResponse) -> None:
 
 
 class SyrConnectJsonAPI:
-    """Client for the local JSON API served by some SYR devices.
-
-    Args:
-        session: aiohttp ClientSession of the caller
-        host: IP address or hostname of the device (optional if base_url provided)
-        base_path: path component for the device (optional)
-        base_url: explicit base URL (overrides host/base_path)
-        user_agent: HTTP User-Agent of the requests; names the caller
-    """
+    """Client for the local JSON API served by some SYR devices."""
 
     def __init__(
         self,
@@ -109,15 +100,22 @@ class SyrConnectJsonAPI:
     ) -> None:
         """Initialize the JSON API client.
 
-        The client can be initialized in two ways:
-        1. With host + base_path: URL will be constructed as http://host:5333/base_path
-        2. With base_url: Use the explicit URL (useful for tests)
+        The URL is either built from host and base_path as http://host:5333/base_path,
+        or given as base_url (e.g. for tests), which overrides both.
+
+        Args:
+            session: aiohttp ClientSession of the caller
+            host: IP address or hostname of the device
+            base_path: Path of the device family, e.g. "/neosoft"
+            base_url: Explicit base URL; no ADM is sent to it
+            login_required: Whether the device needs ADM, as the caller stored it from
+                an earlier `login_required`; None if unknown
+            user_agent: HTTP User-Agent of the requests; names the caller
         """
         # HTTP session management
         self._session = session
 
-        # The User-Agent identifies the caller, as for the
-        # cloud API
+        # The User-Agent identifies the caller, as for the cloud API
         self._headers = {"User-Agent": user_agent}
 
         # URL construction parameters (option 1: host + base_path)
@@ -130,13 +128,13 @@ class SyrConnectJsonAPI:
         # Time of the last ADM request (some devices report all fields only after it)
         self._last_login: datetime | None = None
 
-        # Whether the device needs ADM, from the config entry (CONF_LOGIN_REQUIRED):
+        # Whether the device needs ADM, as the caller stored it (login_required):
         # - None: unknown (not checked yet)
-        # - True: needed, sent every _SYR_CONNECT_SESSION_TIMEOUT_MINUTES
+        # - True: needed, sent every JSON_SESSION_TIMEOUT_MINUTES
         # - False: not needed (the device answered 404), never sent
         self._login_required: bool | None = login_required
 
-        # Project list (single-item placeholder for coordinator compatibility)
+        # Project list (single-item placeholder, like the projects of the XML client)
         self.projects: list[dict[str, Any]] = []
 
         # Cache /get/all response to avoid duplicate API calls when get_devices()
@@ -145,11 +143,9 @@ class SyrConnectJsonAPI:
 
     @property
     def login_required(self) -> bool | None:
-        """Whether ADM login is required for this device.
+        """Return whether the device needs ADM; None if not determined yet.
 
-        Returns:
-            True if login is required, False if not required,
-            None if not yet determined.
+        The caller can store it and pass it to a new client as ``login_required``.
         """
         return self._login_required
 
@@ -157,26 +153,27 @@ class SyrConnectJsonAPI:
         """Build the base URL for API requests.
 
         Priority order:
-        1. Explicit base_url (if provided) - used for tests or custom configurations
-        2. Constructed from host + base_path (standard production use)
+        1. Explicit base_url, if given (tests or custom configurations)
+        2. Built from host + base_path (standard use)
 
         Returns:
             Base URL with trailing slash, or None if neither option is available
         """
-        # Option 2: Use explicit base_url if provided (e.g., for tests)
+        # Option 1: explicit base_url (e.g. for tests)
         if self._base_url:
             result = f"{self._base_url.rstrip('/')}/"
             _LOGGER.debug("JSON API: Built base URL from explicit base_url: %s", result)
             return result
 
-        # Option 1: Construct from host + base_path (standard production use)
+        # Option 2: host + base_path (standard use)
         _LOGGER.debug(
             "JSON API: Attempting to build base URL - host=%r, base_path=%r",
             self._host,
             self._base_path,
         )
         if not self._host or not self._base_path:
-            _LOGGER.error(
+            # The caller gets a ValueError from _construct_url
+            _LOGGER.debug(
                 "JSON API: Cannot build base URL - host=%r, base_path=%r",
                 self._host,
                 self._base_path,
@@ -184,12 +181,12 @@ class SyrConnectJsonAPI:
             return None
 
         host = _format_host_for_url(self._host)
-        result = f"{_SYR_CONNECT_JSON_API_SCHEME}://{host}:{_SYR_CONNECT_JSON_API_PORT}{self._base_path}"
+        result = f"{_SCHEME}://{host}:{_PORT}{self._base_path}"
         _LOGGER.debug(
             "JSON API: Built base URL from host and base_path: %s (host=%r, port=%s, base_path=%r)",
             result,
             self._host,
-            _SYR_CONNECT_JSON_API_PORT,
+            _PORT,
             self._base_path,
         )
         return result
@@ -198,7 +195,7 @@ class SyrConnectJsonAPI:
         """Return True if the last ADM request is less than the timeout ago.
 
         There is no session: the device is not known to leave ADM mode again. ADM is
-        repeated every _SYR_CONNECT_SESSION_TIMEOUT_MINUTES instead of before every
+        repeated every JSON_SESSION_TIMEOUT_MINUTES instead of before every
         /get/all, which keeps the load on the device low.
 
         Returns:
@@ -206,7 +203,7 @@ class SyrConnectJsonAPI:
         """
         return self._last_login is not None and datetime.now(
             UTC
-        ) < self._last_login + timedelta(minutes=_SYR_CONNECT_SESSION_TIMEOUT_MINUTES)
+        ) < self._last_login + timedelta(minutes=JSON_SESSION_TIMEOUT_MINUTES)
 
     async def _ensure_session(self) -> None:
         """Ensure a valid session exists before making an API request.
@@ -218,7 +215,10 @@ class SyrConnectJsonAPI:
 
         Calls ``login()`` when the session is expired or login status is unknown.
         """
-        if self._base_url or self.is_session_valid():
+        if self._base_url:
+            _LOGGER.debug("JSON API: Explicit base URL; skipping login")
+            return
+        if self.is_session_valid():
             _LOGGER.debug(
                 "JSON API: ADM session still valid; skipping login for %s",
                 self._build_base_url(),
@@ -265,7 +265,8 @@ class SyrConnectJsonAPI:
         parts = [str(part) for part in path_parts]
         return URL(f"{base.rstrip('/')}/{'/'.join(parts)}")
 
-    def _strip_set_prefix(self, command: str) -> str:
+    @staticmethod
+    def _strip_set_prefix(command: str) -> str:
         """Strip leading 'set' prefix from a command if present.
 
         Accepts either 'setRTM' or 'RTM' and returns the base command
@@ -273,7 +274,8 @@ class SyrConnectJsonAPI:
         """
         return command[3:] if command.lower().startswith("set") else command
 
-    def _normalize_cmd_for_url(self, cmd: str) -> str:
+    @staticmethod
+    def _normalize_cmd_for_url(cmd: str) -> str:
         """Normalize command for use in URL path.
 
         - 'ADM' remains uppercase (device login command)
@@ -281,7 +283,8 @@ class SyrConnectJsonAPI:
         """
         return "ADM" if str(cmd).upper() == "ADM" else str(cmd).lower()
 
-    def _response_key_for(self, cmd: str, value: Any) -> str:
+    @staticmethod
+    def _response_key_for(cmd: str, value: Any) -> str:
         """Construct the expected response key for a set-command.
 
         Devices return set-command keys with the command portion UPPERCASE,
@@ -304,7 +307,7 @@ class SyrConnectJsonAPI:
         self,
         url: URL | str,
         *,
-        timeout: int = _SYR_CONNECT_DEFAULT_API_TIMEOUT,
+        timeout: int = _DEFAULT_TIMEOUT,
         operation: str = "request",
     ) -> dict[str, Any]:
         """Central method for all HTTP requests with unified error handling.
@@ -323,14 +326,14 @@ class SyrConnectJsonAPI:
         Raises:
             SyrConnectAuthError: On 401/403 errors
             SyrConnectConnectionError: On connection/HTTP errors and an answer that is
-                no JSON (the config flow shows both as "cannot connect")
+                no JSON (a setup can report both as "cannot connect")
             SyrConnectInvalidResponseError: On an empty answer or JSON that is no object
         """
         _LOGGER.debug("JSON API: %s - URL: %s", operation, url)
         try:
             timeout_obj = aiohttp.ClientTimeout(total=timeout)
             # Redirects are not followed: the local API is unencrypted, and a redirect
-            # could send Home Assistant to any address
+            # could send the caller to any address
             async with self._session.get(
                 url, headers=self._headers, timeout=timeout_obj, allow_redirects=False
             ) as resp:
@@ -367,8 +370,8 @@ class SyrConnectJsonAPI:
                 data = json.loads(text) if text.strip() else None
 
         # --- HTTP Error Handling ---
-        # Errors are logged at debug level only: the coordinator, the config flow and the
-        # entities decide what the user sees, e.g. a failed update once instead of at every poll
+        # Errors are logged at debug level only: the caller decides what the user sees,
+        # e.g. a failed update once instead of at every poll
         except aiohttp.ClientResponseError as err:
             # 404: Endpoint doesn't exist (wrong base_path or device model?)
             if err.status == 404:
@@ -486,10 +489,7 @@ class SyrConnectJsonAPI:
                 self._cached_get_all = None
                 self.projects = [{"id": "local", "name": "Local JSON API"}]
                 return True
-            # Re-raise other HTTP errors
-            raise
-        except SyrConnectConnectionError:
-            # Non-HTTP connection errors (network, timeouts) should propagate
+            # Other HTTP errors propagate, like connection errors
             raise
         else:
             # Successful HTTP call to login endpoint - record that login is required
@@ -509,14 +509,14 @@ class SyrConnectJsonAPI:
         # Clear any cached data from previous session
         self._cached_get_all = None
 
-        # Create single-project placeholder (coordinator expects projects list)
+        # Create single-project placeholder, like the projects of the XML client
         self.projects = [{"id": "local", "name": "Local JSON API"}]
 
         _LOGGER.info("JSON API: Logged in at %s", self._build_base_url())
         return True
 
     async def request_json_data(
-        self, path: str, timeout: int = _SYR_CONNECT_DEFAULT_API_TIMEOUT
+        self, path: str, timeout: int = _DEFAULT_TIMEOUT
     ) -> dict[str, Any]:
         """Fetch JSON data from a relative path.
 
@@ -538,7 +538,7 @@ class SyrConnectJsonAPI:
         1. Fetches /get/all to get device information
         2. Extracts the device serial number (getSRN or getFRN)
         3. Caches the response for immediate reuse by get_device_status()
-        4. Returns a single-item list compatible with the coordinator's expectations
+        4. Returns a single-item list in the format of the XML client
 
         Args:
             project_id: Project identifier (ignored for JSON API, kept for interface compatibility)
@@ -547,7 +547,8 @@ class SyrConnectJsonAPI:
             List with single device dict containing:
             - id: Device serial number (from getSRN or getFRN)
             - dclg: Device collection ID (same as id for JSON API)
-            - name: Device name (custom name or serial number)
+            - name: The serial number (the local API reports no name)
+            - project_id: The given project_id
 
         Raises:
             SyrConnectAuthError: On authentication errors
@@ -557,10 +558,10 @@ class SyrConnectJsonAPI:
         await self._ensure_session()
 
         # Fetch device status from /get/all endpoint
-        status = await self.request_json_data(_SYR_CONNECT_JSON_ENDPOINT_GET_ALL)
+        status = await self.request_json_data(_ENDPOINT_GET_ALL)
 
         # Cache the response so get_device_status() can reuse it without another API call
-        # This is an optimization: coordinator calls get_devices() then get_device_status()
+        # This is an optimization: callers call get_devices() then get_device_status()
         # back-to-back for each device, but we only need one /get/all request
         self._cached_get_all = status
 
@@ -568,37 +569,32 @@ class SyrConnectJsonAPI:
         # 1. getSRN: Serial number (most common)
         # 2. getFRN: Factory reference number (fallback for some devices)
         # 3. "local_device": Last resort if neither is present
-        device_id = status.get("getSRN") or status.get("getFRN") or "local_device"
-
-        # Use device_id as name
-        name = device_id
+        device_id = str(status.get("getSRN") or status.get("getFRN") or "local_device")
 
         # --- Return Device List ---
-        # Format matches XML API client output for coordinator compatibility
-        # - id: Unique device identifier (serial number)
-        # - dclg: Device collection (same as id for JSON API, no hierarchical structure)
-        # - name: Display name for UI
+        # Same format as the device list of the XML API client. The local API has no
+        # device collections, so dclg is the serial number too, and the name as well.
+        # "project_id" is not used by the JSON API but included as in the XML client.
         _LOGGER.debug(
-            "JSON API: Returning device (device_id=%s, name=%s), cached response for reuse",
-            device_id,
-            name,
+            "JSON API: Returning device %s, cached response for reuse", device_id
         )
-        # "project_id" is not used by the JSON API but is included in the returned dict for compatibility
-        # with coordinator expectations and potential future use cases where it might be relevant.
         return [
             {
-                "id": str(device_id),
-                "dclg": str(device_id),
-                "name": str(name),
+                "id": device_id,
+                "dclg": device_id,
+                "name": device_id,
                 "project_id": str(project_id),
             }
         ]
 
     async def get_device_status(self, device_id: str) -> SyrConnectStatus | None:
-        """Return the device status dictionary parsed from JSON.
+        """Return the device status, the flat /get/all object with getXYZ keys.
 
-        This method reuses the cached response from get_devices() if available,
-        otherwise fetches /get/all directly.
+        Reuses the response cached by get_devices() if available, otherwise fetches
+        /get/all.
+
+        Args:
+            device_id: Device identifier (for logging; the client serves one device)
 
         Raises:
             SyrConnectError: If /get/all cannot be fetched
@@ -607,7 +603,7 @@ class SyrConnectJsonAPI:
 
         # --- Optimization: Reuse cached response ---
         # If get_devices() was called just before this, use the cached /get/all response
-        # to avoid a duplicate API call (coordinator calls both methods back-to-back)
+        # to avoid a duplicate API call (callers call both methods back-to-back)
         if self._cached_get_all is not None:
             _LOGGER.debug(
                 "JSON API: Reusing cached /get/all response with %d keys for device_id=%s",
@@ -624,11 +620,11 @@ class SyrConnectJsonAPI:
                 device_id,
             )
             await self._ensure_session()
-            status = await self.request_json_data(_SYR_CONNECT_JSON_ENDPOINT_GET_ALL)
+            status = await self.request_json_data(_ENDPOINT_GET_ALL)
 
         # --- Return Status Dictionary ---
         # The JSON API returns a flat dict with getXYZ keys (getSRN, getAB, etc.)
-        # Return as-is so the rest of the integration can process it like XML parser output
+        # Return as-is so callers can process it like the output of the XML parser
         _LOGGER.debug(
             "JSON API: Returning status with %d keys for device_id=%s",
             len(status),
@@ -789,7 +785,6 @@ class SyrConnectJsonAPI:
         if is_login:
             raise SyrConnectInvalidResponseError(f"Device returned status '{status}'")
         # For other commands, don't fail hard on unknown status codes
-        return
 
     def _validate_response_errors(self, data: dict[str, Any], url: str) -> None:
         """Check response for API-level error codes and log warnings.

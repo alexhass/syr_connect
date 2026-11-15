@@ -48,7 +48,7 @@ class SyrConnectService:
     # User-facing URL of the service, may differ from api_base_url
     configuration_url: str
     # AES-256 key and IV of the login response, each AES-CBC encrypted with
-    # _SYR_CONNECT_CLIENT_SECURE_KEY/_VECTOR (PKCS7) around the base64 text of
+    # XML_SECURE_KEY and XML_SECURE_VECTOR (PKCS7) around the base64 text of
     # the raw bytes, and base64 encoded. They differ per service.
     crypt_key: str
     crypt_vector: str

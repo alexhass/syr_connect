@@ -6,7 +6,7 @@ import logging
 from Cryptodome.Cipher import AES
 from Cryptodome.Util.Padding import unpad
 
-from .const import _SYR_CONNECT_CLIENT_SECURE_KEY, _SYR_CONNECT_CLIENT_SECURE_VECTOR
+from .const import XML_SECURE_KEY, XML_SECURE_VECTOR
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -21,9 +21,9 @@ def _decrypt_crypt_value(value: str) -> bytes:
         Raw key or IV bytes
     """
     cipher = AES.new(
-        base64.b64decode(_SYR_CONNECT_CLIENT_SECURE_KEY),
+        base64.b64decode(XML_SECURE_KEY),
         AES.MODE_CBC,
-        base64.b64decode(_SYR_CONNECT_CLIENT_SECURE_VECTOR),
+        base64.b64decode(XML_SECURE_VECTOR),
     )
     return base64.b64decode(
         unpad(cipher.decrypt(base64.b64decode(value)), AES.block_size)
@@ -86,7 +86,7 @@ class SyrEncryption:
                 "Decryption successful (result length: %d chars)", len(result)
             )
         except Exception as err:
-            _LOGGER.error("Decryption failed: %s", err)
+            _LOGGER.debug("Decryption failed: %s", err)
             raise ValueError(f"Failed to decrypt payload: {err}") from err
         else:
             return result
