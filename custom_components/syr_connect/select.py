@@ -520,6 +520,58 @@ class _SyrConnectSelectBuilder:
         """
         self.add_numeric(key, values[0], values[-1], options=_unit_options(key, values))
 
+    def offer_discrete(
+        self,
+        key: str,
+        options_map: Mapping[str, int | None],
+        is_valid: Callable[[Any], bool] = _is_number,
+    ) -> None:
+        """Add a select with a fixed option map if `allowed` (see add_discrete).
+
+        Args:
+            key: Status key, e.g. "getCRT"
+            options_map: Option keys as shown (or translated) mapped to raw device values
+            is_valid: Check for the raw value; default `_is_number`
+        """
+        if self.allowed(key, is_valid):
+            self.add_discrete(key, options_map)
+
+    def offer_numeric(
+        self, key: str, min_value: int, max_value: int, **kwargs: Any
+    ) -> None:
+        """Add a select with the raw values min_value..max_value if `allowed` (see add_numeric).
+
+        Args:
+            key: Status key, e.g. "getRMN"
+            min_value: Lowest raw value
+            max_value: Highest raw value
+            **kwargs: Passed to SyrConnectNumericSelect (`scale`, `options`)
+        """
+        if self.allowed(key):
+            self.add_numeric(key, min_value, max_value, **kwargs)
+
+    def offer_numeric_steps(self, key: str, values: list[int]) -> None:
+        """Add a numeric select with a list of steps if `allowed` (see add_numeric_steps).
+
+        Args:
+            key: Status key, e.g. "getRMT"
+            values: Raw values in ascending order (e.g. `_SYR_CONNECT_SELECT_RMT_OPTIONS`)
+        """
+        if self.allowed(key):
+            self.add_numeric_steps(key, values)
+
+    def profile_options(self, key: str, default: list[int]) -> list[int]:
+        """Return the select steps of the device profile for `key`, or `default`.
+
+        Args:
+            key: Status key, e.g. "getRMT"
+            default: Steps of a model whose profile has none for the key
+        """
+        profile = self.model_info.device_profile
+        if profile is None:
+            return default
+        return profile.select_options.get(key, default)
+
 
 def _build_device_selects(
     coordinator: SyrConnectDataUpdateCoordinator, device: SyrConnectDevice
@@ -527,8 +579,8 @@ def _build_device_selects(
     """Return the selects of one device (except the conditional cartridge keys).
 
     A select is only created when the detected model lists its key and the device
-    reports a valid value for it; a few keys are not limited to the allowlist (marked
-    below). The selects are created in a fixed order, one block per key.
+    reports a valid value for it. The `_add_*_selects` functions add them by topic, in a
+    fixed order.
 
     Args:
         coordinator: Data update coordinator
@@ -538,7 +590,10 @@ def _build_device_selects(
         The select entities to add for this device
     """
     builder = _SyrConnectSelectBuilder(coordinator, device)
-    _add_softener_selects(builder)
+    _add_device_setting_selects(builder)
+    _add_regeneration_selects(builder)
+    _add_salt_selects(builder)
+    _add_hardness_selects(builder)
     _add_muco_selects(builder)
     _add_safefloor_selects(builder)
     _add_hygbox_selects(builder)
@@ -547,21 +602,11 @@ def _build_device_selects(
     return builder.entities
 
 
-def _add_softener_selects(b: _SyrConnectSelectBuilder) -> None:
-    """Add the selects for regeneration, salt, hardness and the general device settings."""
-    status = b.status
-    supported_select_keys = b.supported_select_keys
-
-    # Regeneration time (getRTM): may contain a combined HH:MM string when `getRTH` is
-    # not provided, or act as minutes when `getRTH` is present.
-    if b.allowed("getRTM", lambda v: v is not None and v != ""):
-        b.entities.append(
-            SyrConnectRegenerationSelect(b.coordinator, b.device_id, b.device_name)
-        )
-
+def _add_device_setting_selects(b: _SyrConnectSelectBuilder) -> None:
+    """Add the selects for the active leak protection profile and the display rotation."""
     # Active leak-protection profile (getPRF), if any profile getPAx is active (e.g. "true" or "1")
-    if "getPRF" in supported_select_keys and any(
-        is_value_true(status.get(f"getPA{i}"))
+    if "getPRF" in b.supported_select_keys and any(
+        is_value_true(b.status.get(f"getPA{i}"))
         for i in _SYR_CONNECT_LEAK_PROTECTION_PROFILES
     ):
         b.entities.append(
@@ -574,29 +619,55 @@ def _add_softener_selects(b: _SyrConnectSelectBuilder) -> None:
             SyrConnectRotationSelect(b.coordinator, b.device_id, b.device_name)
         )
 
-    # Salt amounts (getSV1-3): the maximum depends on the model; models without salt containers have none
-    max_capacity = b.model_info.maximum_salt_volume
-    if max_capacity is not None:
-        for sv_key in ("getSV1", "getSV2", "getSV3"):
-            if b.allowed(sv_key):
-                b.add_numeric(sv_key, 0, max_capacity)
+
+def _add_regeneration_selects(b: _SyrConnectSelectBuilder) -> None:
+    """Add the selects for the regeneration time, interval and mode."""
+    # Regeneration time (getRTM): may contain a combined HH:MM string when `getRTH` is
+    # not provided, or act as minutes when `getRTH` is present.
+    if b.allowed("getRTM", lambda v: v is not None and v != ""):
+        b.entities.append(
+            SyrConnectRegenerationSelect(b.coordinator, b.device_id, b.device_name)
+        )
 
     # Regeneration interval in days (getRPD): the maximum depends on the model; models without
     # regeneration have none. 0 means no interval regeneration, so no select is created.
     max_rpd = b.model_info.maximum_regeneration_interval
-    if max_rpd is not None and b.allowed("getRPD") and to_float(status["getRPD"]) != 0:
+    if (
+        max_rpd is not None
+        and b.allowed("getRPD")
+        and to_float(b.status["getRPD"]) != 0
+    ):
         b.add_numeric("getRPD", 1, max_rpd)
 
-    # Raw water hardness (getIWH, 1-100) and outlet/soft water hardness (getOWH, 0-100), plain LEX
-    # family, MuCo filling and All-in-One+ (see docs/syrconnect-protocol.md). The unit suffix
-    # follows the device's getWHU setting. On the MuCo filling and the All-in-One+, the ranges
-    # depend on the unit, and the soft water hardness (getOHW, getOWH) is that of the HWE
-    # cartridge, added by _async_setup_muco_conditional_selects.
+    # Regeneration mode (getRMO), only for a value >= 1
+    if b.allowed("getRMO", _is_integer) and int(to_float(b.status["getRMO"])) >= 1:
+        b.add_discrete("getRMO", _SYR_CONNECT_SELECT_RMO_MAP)
+
+
+def _add_salt_selects(b: _SyrConnectSelectBuilder) -> None:
+    """Add the selects for the salt amounts (getSV1-3).
+
+    The maximum depends on the model; models without salt containers have none.
+    """
+    max_capacity = b.model_info.maximum_salt_volume
+    if max_capacity is None:
+        return
+    for sv_key in ("getSV1", "getSV2", "getSV3"):
+        b.offer_numeric(sv_key, 0, max_capacity)
+
+
+def _add_hardness_selects(b: _SyrConnectSelectBuilder) -> None:
+    """Add the selects for the raw (getIWH, 1-100) and the soft water hardness (getOWH, 0-100).
+
+    Plain LEX family, MuCo filling and All-in-One+ (see docs/syrconnect-protocol.md). The
+    unit suffix follows the device's getWHU setting. On the MuCo filling and the
+    All-in-One+, the ranges depend on the unit, and the soft water hardness (getOHW,
+    getOWH) is that of the HWE cartridge, added by _async_setup_muco_conditional_selects.
+    """
     profile = b.model_info.device_profile
+    cartridge_keys = get_cartridge_keys(b.model_info)
     for hardness_key, hardness_min in (("getIWH", 1), ("getOWH", 0)):
-        if not b.allowed(hardness_key) or hardness_key in get_cartridge_keys(
-            b.model_info
-        ):
+        if not b.allowed(hardness_key) or hardness_key in cartridge_keys:
             continue
         if profile is not None and hardness_key in profile.hardness_ranges:
             b.entities.append(
@@ -617,10 +688,6 @@ def _add_softener_selects(b: _SyrConnectSelectBuilder) -> None:
                 )
             )
 
-    # Regeneration mode (getRMO), only for a value >= 1
-    if b.allowed("getRMO", _is_integer) and int(to_float(status["getRMO"])) >= 1:
-        b.add_discrete("getRMO", _SYR_CONNECT_SELECT_RMO_MAP)
-
 
 def _add_muco_selects(b: _SyrConnectSelectBuilder) -> None:
     """Add the MuCo selects for the water treatment / filling mode configuration.
@@ -631,62 +698,47 @@ def _add_muco_selects(b: _SyrConnectSelectBuilder) -> None:
     applies instead of creating it and showing it as unavailable.
     """
     # Cartridge size (getCRS); a model with a custom size (getFCS) also offers "custom"
-    if b.allowed("getCRS", _is_integer):
-        b.add_discrete(
-            "getCRS",
-            _SYR_CONNECT_SELECT_CRS_CUSTOM_MAP
-            if "getFCS" in b.supported_select_keys
-            else _SYR_CONNECT_SELECT_CRS_MAP,
-        )
+    b.offer_discrete(
+        "getCRS",
+        _SYR_CONNECT_SELECT_CRS_CUSTOM_MAP
+        if "getFCS" in b.supported_select_keys
+        else _SYR_CONNECT_SELECT_CRS_MAP,
+        _is_integer,
+    )
     # getCRT and getRCD have an option for the empty value, so any reported value counts
-    if "getCRT" in b.supported_select_keys and "getCRT" in b.status:
-        b.add_discrete("getCRT", _SYR_CONNECT_SELECT_CRT_MAP)
-    if "getRCD" in b.supported_select_keys and "getRCD" in b.status:
-        b.add_discrete("getRCD", _SYR_CONNECT_SELECT_RCD_MAP)
+    for key, options_map in (
+        ("getCRT", _SYR_CONNECT_SELECT_CRT_MAP),
+        ("getRCD", _SYR_CONNECT_SELECT_RCD_MAP),
+    ):
+        if key in b.supported_select_keys and key in b.status:
+            b.add_discrete(key, options_map)
     # Remaining capacity warning threshold (getCWL): 1-10 % in steps of 1
-    if b.allowed("getCWL"):
-        b.add_numeric_steps("getCWL", list(range(1, 11)))
+    b.offer_numeric_steps("getCWL", list(range(1, 11)))
     # Filling processes count (getRMN): 1-10
-    if b.allowed("getRMN"):
-        b.add_numeric("getRMN", 1, 10)
+    b.offer_numeric("getRMN", 1, 10)
     # Maximum filling duration (getRMT) and charges (getRVT): non-uniform minute/liter steps
     # (see docs/syrconnect-protocol.md); the All-in-One+ has other getRMT steps
-    if b.allowed("getRMT"):
-        profile = b.model_info.device_profile
-        rmt_options = (
-            profile.select_options.get("getRMT", _SYR_CONNECT_SELECT_RMT_OPTIONS)
-            if profile is not None
-            else _SYR_CONNECT_SELECT_RMT_OPTIONS
-        )
-        b.add_numeric_steps("getRMT", rmt_options)
-    if b.allowed("getRVT"):
-        b.add_numeric_steps("getRVT", _SYR_CONNECT_SELECT_RVT_OPTIONS)
+    b.offer_numeric_steps(
+        "getRMT", b.profile_options("getRMT", _SYR_CONNECT_SELECT_RMT_OPTIONS)
+    )
+    b.offer_numeric_steps("getRVT", _SYR_CONNECT_SELECT_RVT_OPTIONS)
     # Initial filling (All-in-One+): maximum volume (getFVT, same steps as getRVT) and
     # maximum duration (getFMT)
-    if b.allowed("getFVT"):
-        b.add_numeric_steps("getFVT", _SYR_CONNECT_SELECT_RVT_OPTIONS)
-    if b.allowed("getFMT"):
-        b.add_numeric_steps("getFMT", _SYR_CONNECT_SELECT_FMT_OPTIONS)
+    b.offer_numeric_steps("getFVT", _SYR_CONNECT_SELECT_RVT_OPTIONS)
+    b.offer_numeric_steps("getFMT", _SYR_CONNECT_SELECT_FMT_OPTIONS)
     # Target pressure (getTPR): 0.5-5.0 bar in 0.1 bar steps (raw value is stored as 1/10 bar)
-    if b.allowed("getTPR"):
-        b.add_numeric("getTPR", 5, 50, scale=10)
+    b.offer_numeric("getTPR", 5, 50, scale=10)
 
 
 def _add_safefloor_selects(b: _SyrConnectSelectBuilder) -> None:
     """Add the SafeFloor selects: alarm/humidity/temperature thresholds and sync/measurement intervals."""
-    if b.allowed("getMIH"):
-        b.add_discrete("getMIH", _SYR_CONNECT_SELECT_MIH_MAP)
-    if b.allowed("getMXH"):
-        b.add_discrete("getMXH", _SYR_CONNECT_SELECT_MXH_MAP)
-    if b.allowed("getMIT"):
-        b.add_discrete("getMIT", _SYR_CONNECT_SELECT_MIT_MAP)
-    if b.allowed("getMXT"):
-        b.add_discrete("getMXT", _SYR_CONNECT_SELECT_MXT_MAP)
+    b.offer_discrete("getMIH", _SYR_CONNECT_SELECT_MIH_MAP)
+    b.offer_discrete("getMXH", _SYR_CONNECT_SELECT_MXH_MAP)
+    b.offer_discrete("getMIT", _SYR_CONNECT_SELECT_MIT_MAP)
+    b.offer_discrete("getMXT", _SYR_CONNECT_SELECT_MXT_MAP)
     # Alarm duration (getALD): documented GUI Settings step list (see docs/syrconnect-protocol.md)
-    if b.allowed("getALD"):
-        b.add_numeric_steps("getALD", _SYR_CONNECT_SELECT_ALD_OPTIONS)
-    if b.allowed("getWMP"):
-        b.add_discrete("getWMP", _SYR_CONNECT_SELECT_WMP_MAP)
+    b.offer_numeric_steps("getALD", _SYR_CONNECT_SELECT_ALD_OPTIONS)
+    b.offer_discrete("getWMP", _SYR_CONNECT_SELECT_WMP_MAP)
     # Synchronization interval (getRCP); the HygBox offers a part of the steps
     if b.allowed("getRCP"):
         profile = b.model_info.device_profile
@@ -705,13 +757,10 @@ def _add_safefloor_selects(b: _SyrConnectSelectBuilder) -> None:
 
 def _add_hygbox_selects(b: _SyrConnectSelectBuilder) -> None:
     """Add the HygBox selects: water type and the stagnation, temperature and periodic flushing."""
-    if b.allowed("getWTY", _is_integer):
-        b.add_discrete("getWTY", _SYR_CONNECT_SELECT_WTY_MAP)
+    b.offer_discrete("getWTY", _SYR_CONNECT_SELECT_WTY_MAP, _is_integer)
     # Stagnation flushing: stagnation time (getSTP) and flushing volume (getSTV)
-    if b.allowed("getSTP"):
-        b.add_numeric_steps("getSTP", _SYR_CONNECT_SELECT_STP_OPTIONS)
-    if b.allowed("getSTV"):
-        b.add_numeric_steps("getSTV", _SYR_CONNECT_SELECT_FLUSHING_VOLUME_OPTIONS)
+    b.offer_numeric_steps("getSTP", _SYR_CONNECT_SELECT_STP_OPTIONS)
+    b.offer_numeric_steps("getSTV", _SYR_CONNECT_SELECT_FLUSHING_VOLUME_OPTIONS)
     # Temperature flushing: start and stop temperature (getTTT, getF2W), whose range follows
     # the water type, maximum duration (getF2T) and flushings per day (getMTF)
     for temperature_key in ("getTTT", "getF2W"):
@@ -721,15 +770,11 @@ def _add_hygbox_selects(b: _SyrConnectSelectBuilder) -> None:
                     b.coordinator, b.device_id, b.device_name, temperature_key
                 )
             )
-    if b.allowed("getF2T"):
-        b.add_numeric_steps("getF2T", _SYR_CONNECT_SELECT_F2T_OPTIONS)
-    if b.allowed("getMTF"):
-        b.add_numeric("getMTF", 1, 50)
+    b.offer_numeric_steps("getF2T", _SYR_CONNECT_SELECT_F2T_OPTIONS)
+    b.offer_numeric("getMTF", 1, 50)
     # Periodic flushing: interval (getF3P) and flushing volume (getF3V)
-    if b.allowed("getF3P"):
-        b.add_numeric_steps("getF3P", _SYR_CONNECT_SELECT_F3P_OPTIONS)
-    if b.allowed("getF3V"):
-        b.add_numeric_steps("getF3V", _SYR_CONNECT_SELECT_FLUSHING_VOLUME_OPTIONS)
+    b.offer_numeric_steps("getF3P", _SYR_CONNECT_SELECT_F3P_OPTIONS)
+    b.offer_numeric_steps("getF3V", _SYR_CONNECT_SELECT_FLUSHING_VOLUME_OPTIONS)
 
 
 def _add_hygiene_module_selects(b: _SyrConnectSelectBuilder) -> None:
@@ -778,12 +823,9 @@ def _add_hygiene_module_selects(b: _SyrConnectSelectBuilder) -> None:
 
 def _add_dosing_pump_selects(b: _SyrConnectSelectBuilder) -> None:
     """Add the dosing pump selects: canister size, dosing liquid and operating mode."""
-    if b.allowed("getCAS", _is_integer):
-        b.add_discrete("getCAS", _SYR_CONNECT_SELECT_CAS_MAP)
-    if b.allowed("getDSL", _is_integer):
-        b.add_discrete("getDSL", _SYR_CONNECT_SELECT_DSL_MAP)
-    if b.allowed("getDMO", _is_integer):
-        b.add_discrete("getDMO", _SYR_CONNECT_SELECT_DMO_MAP)
+    b.offer_discrete("getCAS", _SYR_CONNECT_SELECT_CAS_MAP, _is_integer)
+    b.offer_discrete("getDSL", _SYR_CONNECT_SELECT_DSL_MAP, _is_integer)
+    b.offer_discrete("getDMO", _SYR_CONNECT_SELECT_DMO_MAP, _is_integer)
 
 
 async def async_setup_entry(
