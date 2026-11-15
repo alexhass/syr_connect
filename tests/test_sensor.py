@@ -18,6 +18,7 @@ from pytest_homeassistant.common import MockConfigEntry
 from custom_components.syr_connect import sensor as sensor_module
 from custom_components.syr_connect.const import CONF_SERVICE, DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+from custom_components.syr_connect.data import SyrConnectStatus
 from custom_components.syr_connect.devices import SyrConnectDeviceProfile
 from custom_components.syr_connect.models import (
     MODEL_SIGNATURES,
@@ -673,7 +674,7 @@ async def test_sensor_lar_zero_value(hass: HomeAssistant) -> None:
 
 async def test_sensor_zero_values_created_and_kept(hass: HomeAssistant) -> None:
     """Test sensors reporting 0 are created and not removed by the registry cleanup."""
-    status = {
+    status: SyrConnectStatus = {
         "getCND": "0",
         "getCYT": "0",
         "getLAR": "0",
@@ -4853,7 +4854,7 @@ def test_conductivity_factor(
 
 def test_owh_sensor_without_cartridge_type_always_applies() -> None:
     """A softener reports getOWH without getCRT, there it is the outlet water hardness."""
-    status = {"getOWH": "7", "getWHU": "0"}
+    status: SyrConnectStatus = {"getOWH": "7", "getWHU": "0"}
 
     keys = sensor_module.sensor_keys_for_status(status, _signature("lex30"))
 

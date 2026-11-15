@@ -21,7 +21,7 @@ from .exceptions import SyrConnectError
 from .helpers.device import get_device_model
 from .helpers.profile import get_model_supported_keys
 from .helpers.registry import registry_cleanup
-from .helpers.values import build_set_ab_command, get_sensor_ab_value
+from .helpers.values import build_set_ab_command, get_sensor_ab_value, to_float
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -103,7 +103,7 @@ def _build_device_valves(
                     and ab_value.strip().lower() in ("true", "false")
                 )
                 # Numeric representation (1=open, 2=closed)
-                or int(float(ab_value)) in (1, 2)
+                or int(to_float(ab_value)) in (1, 2)
             ):
                 create = True
     except ValueError, TypeError, OverflowError:
@@ -193,7 +193,7 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
         if vlv is None or vlv == "":
             return None
         try:
-            return int(float(vlv)) == 21
+            return int(to_float(vlv)) == 21
         except ValueError, TypeError, OverflowError:
             return None
 
@@ -211,7 +211,7 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
         if vlv is None or vlv == "":
             return None
         try:
-            return int(float(vlv)) == 11
+            return int(to_float(vlv)) == 11
         except ValueError, TypeError, OverflowError:
             return None
 

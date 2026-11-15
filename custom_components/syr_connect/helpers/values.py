@@ -6,6 +6,7 @@ import re
 from typing import Any
 
 from ..const import _SYR_CONNECT_SENSOR_CND_PER_DH
+from ..data import SyrConnectStatus, SyrConnectStatusValue
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -109,7 +110,33 @@ def get_sensor_avo_value(value: Any) -> float | None:
     return None
 
 
-def get_sensor_vol_value(value: str | float) -> str | int | float | None:
+def to_float(value: SyrConnectStatusValue) -> float:
+    """Return a status value as float, like float().
+
+    Raises:
+        TypeError: If the value is no text or number: None, or a list or object of
+            the local JSON API
+        ValueError: If the text is no number
+    """
+    if isinstance(value, str | int | float):
+        return float(value)
+    raise TypeError(f"Not a number: {value!r}")
+
+
+def to_int(value: SyrConnectStatusValue) -> int:
+    """Return a status value as int, like int().
+
+    Raises:
+        TypeError: If the value is no text or number: None, or a list or object of
+            the local JSON API
+        ValueError: If the text is no whole number
+    """
+    if isinstance(value, str | int | float):
+        return int(value)
+    raise TypeError(f"Not a number: {value!r}")
+
+
+def get_sensor_vol_value(value: SyrConnectStatusValue) -> SyrConnectStatusValue:
     """Clean sensor value by removing prefixes like 'Vol[L]6530' -> '6530'.
 
     Some devices send values with prefixes that include the parameter name
@@ -149,7 +176,7 @@ def get_sensor_vol_value(value: str | float) -> str | int | float | None:
     return value
 
 
-def get_sensor_lng_value(value: str | float) -> str | int | float | None:
+def get_sensor_lng_value(value: SyrConnectStatusValue) -> SyrConnectStatusValue:
     """Extract the leading integer from a getLNG value.
 
     Some devices append a human-readable annotation to the numeric value,
@@ -311,7 +338,7 @@ def get_sensor_bat_value(value: Any) -> float | None:
     return None
 
 
-def get_sensor_rtm_value(status: dict[str, Any]) -> str | None:
+def get_sensor_rtm_value(status: SyrConnectStatus) -> str | None:
     """Return regeneration time as HH:MM string or None.
 
     Handles two device representations:
@@ -344,8 +371,8 @@ def get_sensor_rtm_value(status: dict[str, Any]) -> str | None:
 
     # Case B: Separate numeric values
     try:
-        h = int(float(rth))
-        m = int(float(rtm))
+        h = int(to_float(rth))
+        m = int(to_float(rtm))
         # Strict validation: hours 0-23, minutes 0-59
         if 0 <= h <= 23 and 0 <= m <= 59:
             return f"{h:02d}:{m:02d}"
@@ -356,7 +383,7 @@ def get_sensor_rtm_value(status: dict[str, Any]) -> str | None:
     return None
 
 
-def get_sensor_iwh_value(status: dict[str, Any]) -> int | float | None:
+def get_sensor_iwh_value(status: SyrConnectStatus) -> int | float | None:
     """Compute or return incoming water hardness (getIWH).
 
     Rules:
@@ -374,7 +401,7 @@ def get_sensor_iwh_value(status: dict[str, Any]) -> int | float | None:
     # Only accept an explicit getIWH when WHU is also present (unit known)
     if raw_iwh is not None and raw_iwh != "" and raw_whu is not None and raw_whu != "":
         try:
-            val = float(raw_iwh)
+            val = to_float(raw_iwh)
             # Persist normalized numeric getiwh back into status
             status["getIWH"] = int(val) if val.is_integer() else val
             # Return int when it's an exact whole number
@@ -388,14 +415,14 @@ def get_sensor_iwh_value(status: dict[str, Any]) -> int | float | None:
     if raw_cnd is None or raw_cnd == "":
         return None
     try:
-        cnd = float(raw_cnd)
+        cnd = to_float(raw_cnd)
     except ValueError, TypeError:
         return None
 
     # Normalize/ensure getWHU exists; default to 0 when missing or invalid
     raw_whu = status.get("getWHU")
     try:
-        whu = int(float(raw_whu)) if (raw_whu is not None and raw_whu != "") else 0
+        whu = int(to_float(raw_whu)) if (raw_whu is not None and raw_whu != "") else 0
     except ValueError, TypeError, OverflowError:
         whu = 0
     status["getWHU"] = whu
@@ -407,7 +434,9 @@ def get_sensor_iwh_value(status: dict[str, Any]) -> int | float | None:
     return iwh_out
 
 
-def set_sensor_rtm_value(status: dict[str, Any], option: str) -> list[tuple[str, Any]]:
+def set_sensor_rtm_value(
+    status: SyrConnectStatus, option: str
+) -> list[tuple[str, Any]]:
     """Build set commands for regeneration time selection.
 
     Given the current `status` and a chosen `option` string in "HH:MM" format,
@@ -451,7 +480,7 @@ def set_sensor_rtm_value(status: dict[str, Any], option: str) -> list[tuple[str,
     return commands
 
 
-def get_sensor_ab_value(status: dict[str, Any]) -> bool | None:
+def get_sensor_ab_value(status: SyrConnectStatus) -> bool | None:
     """Parse `getAB` value from device status and return closed state as bool.
 
     Returns:
@@ -522,7 +551,7 @@ def _parse_ab_raw(val: Any) -> bool | None:
 
 
 def build_set_ab_command(
-    status: dict[str, Any], closed: bool
+    status: SyrConnectStatus, closed: bool
 ) -> tuple[str, Any] | None:
     """Build the appropriate (`setAB`, value) command for desired closed state.
 

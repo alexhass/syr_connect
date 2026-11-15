@@ -46,7 +46,7 @@ from .const import (
     _SYR_CONNECT_CLIENT_OS_VERSION,
     SyrConnectService,
 )
-from .data import SyrConnectDevice
+from .data import SyrConnectDevice, SyrConnectStatus
 from .devices import SyrConnectStatistic
 from .encryption import SyrEncryption
 from .exceptions import (
@@ -431,7 +431,7 @@ class SyrConnectXmlAPI:
         else:
             return devices
 
-    async def get_device_status(self, device_id: str) -> dict[str, Any] | None:
+    async def get_device_status(self, device_id: str) -> SyrConnectStatus | None:
         """Fetch current status and parameters of a device.
 
         Device status includes all readable parameters:

@@ -19,6 +19,7 @@ from custom_components.syr_connect import (
     switch as switch_module,
 )
 from custom_components.syr_connect.const import DOMAIN
+from custom_components.syr_connect.data import SyrConnectStatus
 from custom_components.syr_connect.models import (
     MODEL_SIGNATURES,
     SyrConnectModel,
@@ -398,7 +399,12 @@ def test_allinoneplus_owh_sensor_only_for_hwe_cartridge(
     crt: str, expected: set[str]
 ) -> None:
     """On the All-in-One+, getOWH is the soft water hardness of the HWE cartridge."""
-    status = {"getCRT": crt, "getOWH": "5", "getLOT": "7", "getOHW": "3"}
+    status: SyrConnectStatus = {
+        "getCRT": crt,
+        "getOWH": "5",
+        "getLOT": "7",
+        "getOHW": "3",
+    }
     model = _signature("allinoneplus")
 
     keys = sensor_module.sensor_keys_for_status(status, model)

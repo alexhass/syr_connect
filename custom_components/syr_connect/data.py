@@ -4,6 +4,15 @@ from typing import Any, NotRequired, TypedDict
 
 from .models import SyrConnectModel
 
+# A value of the device status. The XML API reports text only; the local JSON API also
+# reports numbers, booleans and null, and lists or objects for a few keys (getCMS,
+# getFSL, getLMS, getPAH, getWFL).
+type SyrConnectStatusValue = (
+    str | int | float | bool | list[Any] | dict[str, Any] | None
+)
+# The status of a device: status key (e.g. "getFLO") -> value
+type SyrConnectStatus = dict[str, SyrConnectStatusValue]
+
 
 class SyrConnectDevice(TypedDict):
     """A device as returned by the API clients and stored in the coordinator data.
@@ -26,7 +35,7 @@ class SyrConnectDevice(TypedDict):
     # list ("02:00:00" in summer time). Only reported by the XML API
     utc_offset: NotRequired[int]
     # Set by the coordinator
-    status: NotRequired[dict[str, Any]]
+    status: NotRequired[SyrConnectStatus]
     # Detected from `status` whenever the coordinator changes it
     model: NotRequired[SyrConnectModel]
     available: NotRequired[bool]

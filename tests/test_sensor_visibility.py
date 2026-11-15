@@ -4,6 +4,7 @@
 # ruff: noqa: SLF001
 
 from custom_components.syr_connect import sensor
+from custom_components.syr_connect.data import SyrConnectStatus
 from custom_components.syr_connect.helpers.values import is_value_true
 from custom_components.syr_connect.sensor import is_sensor_visible
 
@@ -20,7 +21,7 @@ def _keys_hidden_when(rule: str) -> set[str]:
 def test_is_sensor_visible_group_control_and_cs_and_empty_ip() -> None:
     """Test group-controlled visibility, getCS1 at zero, and empty-IP exclusions."""
     # Group-controlled: getPA1 false -> getPV1 hidden
-    status = {"getPA1": "0"}
+    status: SyrConnectStatus = {"getPA1": "0"}
     assert not is_sensor_visible(status, "getPV1", "1")
 
     # getCS1 visible at '0' without looking at getSV1
@@ -52,7 +53,7 @@ def test_is_sensor_visible_empty_string_and_value_exclusions() -> None:
 
 def test_is_sensor_visible_group_pa_true_shows_group_keys() -> None:
     """If getPAx is truthy, related group keys should be visible."""
-    status = {"getPA1": "1"}
+    status: SyrConnectStatus = {"getPA1": "1"}
     assert is_sensor_visible(status, "getPV1", "0") is True
 
 

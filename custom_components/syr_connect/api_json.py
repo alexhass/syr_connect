@@ -34,7 +34,7 @@ import aiohttp
 from yarl import URL
 
 from .const import _SYR_CONNECT_SESSION_TIMEOUT_MINUTES
-from .data import SyrConnectDevice
+from .data import SyrConnectDevice, SyrConnectStatus
 from .exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
@@ -595,7 +595,7 @@ class SyrConnectJsonAPI:
             }
         ]
 
-    async def get_device_status(self, device_id: str) -> dict[str, Any] | None:
+    async def get_device_status(self, device_id: str) -> SyrConnectStatus | None:
         """Return the device status dictionary parsed from JSON.
 
         This method reuses the cached response from get_devices() if available,

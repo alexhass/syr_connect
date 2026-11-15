@@ -8,6 +8,7 @@ from typing import Any
 import pytest
 
 from custom_components.syr_connect import devices
+from custom_components.syr_connect.data import SyrConnectStatus
 from custom_components.syr_connect.devices import (
     hva,
     lex,
@@ -58,7 +59,7 @@ def test_get_sensor_maps_and_visibility_additional() -> None:
     assert get_sensor_wrn_map(UNKNOWN_MODEL, "01")[0] == "power_outage"
 
     # ALA mapping with detected model
-    status = {"getCNA": "LEXplus10"}
+    status: SyrConnectStatus = {"getCNA": "LEXplus10"}
     assert get_sensor_ala_map(detect_model(status), "0")[0] == "no_alarm"
 
     # Unknown model falls back to the generic alarm codes

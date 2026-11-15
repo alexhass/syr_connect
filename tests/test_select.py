@@ -1896,6 +1896,29 @@ async def test_prf_select_option_selection(hass: HomeAssistant) -> None:
     coordinator.async_set_device_value.assert_called_once_with("device1", "setPRF", 2)
 
 
+async def test_prf_select_current_option_numeric_name(hass: HomeAssistant) -> None:
+    """A profile name the JSON API reports as a number is the option as text."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getPA2": True,
+                    "getPN2": 2024,
+                    "getPRF": 2,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    select = SyrConnectPrfSelect(coordinator, "device1", "Device 1")
+
+    assert select.options == ["2024"]
+    assert select.current_option == "2024"
+
+
 async def test_prf_select_missing_profile_name(hass: HomeAssistant) -> None:
     """Test PRF select when profile name (getPN) is missing, fallback to index."""
     data = {
