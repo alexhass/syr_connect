@@ -11,16 +11,20 @@ from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
-from .api_json import SyrConnectJsonAPI
-from .api_xml import SyrConnectXmlAPI
+from .aiosyrconnect import (
+    SyrConnectConnectionError,
+    SyrConnectHTTPError,
+    SyrConnectJsonAPI,
+    SyrConnectStatus,
+    SyrConnectXmlAPI,
+    mask_ug_value,
+)
 from .const import API_TYPE_JSON, API_TYPE_XML, CONF_API_TYPE, CONF_MODEL, CONF_SERVICE
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
-from .data import SyrConnectDevice, SyrConnectStatus
-from .exceptions import SyrConnectConnectionError, SyrConnectHTTPError
+from .data import SyrConnectDevice
 from .helpers.device import get_device_model
 from .helpers.integration import build_user_agent, get_integration_version
 from .helpers.values import is_empty_ip
-from .http_client import mask_ug_value
 from .sensor import sensor_keys_for_status
 
 _LOGGER = logging.getLogger(__name__)

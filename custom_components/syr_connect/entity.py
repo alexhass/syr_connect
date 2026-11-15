@@ -9,8 +9,9 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from .aiosyrconnect import SyrConnectStatus
 from .coordinator import SyrConnectDataUpdateCoordinator
-from .data import SyrConnectDevice, SyrConnectStatus
+from .data import SyrConnectDevice
 from .helpers.device import (
     build_device_info,
     get_device,

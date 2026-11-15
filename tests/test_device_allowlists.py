@@ -10,11 +10,11 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from custom_components.syr_connect.api_json import SyrConnectJsonAPI
+from custom_components.syr_connect.aiosyrconnect import SyrConnectJsonAPI
+from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
 from custom_components.syr_connect.button import SyrConnectButton, _build_device_buttons
 from custom_components.syr_connect.data import SyrConnectDevice
 from custom_components.syr_connect.models import MODEL_SIGNATURES, SyrConnectModel
-from custom_components.syr_connect.response_parser import ResponseParser
 from custom_components.syr_connect.select import (
     SyrConnectPrfSelect,
     SyrConnectRegenerationSelect,

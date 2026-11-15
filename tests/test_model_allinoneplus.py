@@ -18,14 +18,14 @@ from custom_components.syr_connect import (
     sensor as sensor_module,
     switch as switch_module,
 )
+from custom_components.syr_connect.aiosyrconnect import SyrConnectStatus
+from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
 from custom_components.syr_connect.const import DOMAIN
-from custom_components.syr_connect.data import SyrConnectStatus
 from custom_components.syr_connect.models import (
     MODEL_SIGNATURES,
     SyrConnectModel,
     detect_model,
 )
-from custom_components.syr_connect.response_parser import ResponseParser
 from custom_components.syr_connect.select import (
     SyrConnectHardnessSelect,
     SyrConnectRangedHardnessSelect,

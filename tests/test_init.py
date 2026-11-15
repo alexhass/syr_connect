@@ -16,6 +16,11 @@ from custom_components.syr_connect import (
     async_setup_entry,
     async_unload_entry,
 )
+from custom_components.syr_connect.aiosyrconnect import (
+    SyrConnectConnectionError,
+    SyrConnectInvalidResponseError,
+)
+from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
 from custom_components.syr_connect.config_flow import ConfigFlow
 from custom_components.syr_connect.const import (
     API_TYPE_JSON,
@@ -26,11 +31,6 @@ from custom_components.syr_connect.const import (
     CONF_SERVICE,
     DOMAIN,
 )
-from custom_components.syr_connect.exceptions import (
-    SyrConnectConnectionError,
-    SyrConnectInvalidResponseError,
-)
-from custom_components.syr_connect.response_parser import ResponseParser
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant

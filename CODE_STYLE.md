@@ -47,6 +47,17 @@ Conventions for all Python code in `custom_components/syr_connect/` and `tests/`
 - Comments explain why something is done, especially protocol quirks and workarounds. Reference the issue in `docs/known_issues_xml_api.md` or `docs/known_issues_json_api.md` when a workaround exists because of one.
 - Do not leave commented-out code or notes about the change history ("changed from …", "new: …").
 
+## Library aiosyrconnect
+
+The code that talks to the cloud and to the devices is the library `aiosyrconnect` in `custom_components/syr_connect/aiosyrconnect/`. Home Assistant core only accepts integrations whose communication is in a library on PyPI; the library is to move to a repository of its own and to PyPI later, with only its import changed.
+
+- The library imports neither Home Assistant nor a module of the integration, and only relative imports from its own package (`from .models import ...`, never `from ..const import ...`). `tests/aiosyrconnect/test_package.py` checks this, also for the tests of the library.
+- What the integration uses is public: exported in `aiosyrconnect/__init__.py` (`__all__`), without leading underscore. The integration imports it from the package (`from .aiosyrconnect import SyrConnectXmlAPI`); only the tests and `scripts/debug_cli.py` import the modules of the library directly.
+- Everything Home Assistant knows is passed in by the caller: the `aiohttp.ClientSession`, the `user_agent`, the locale (`language`) and the time zone (`local_now`). The library never creates or closes a session.
+- The library holds the protocol knowledge: URLs, keys, checksums, encryption, the client identity of the app and the cloud services (`aiosyrconnect/const.py`), the requests and the parsing of the answers. Entities, allowlists of the device files, model detection, translations and the registry stay in the integration.
+- The modules of the cloud start with `xml_` (`xml_api.py`, `xml_parser.py`, `xml_payload.py`, `xml_checksum.py`, `xml_encryption.py`), the local API is `json_api.py`. Data types are in `models.py`, errors in `exceptions.py`.
+- The tests of the library live in `tests/aiosyrconnect/`, one test module per library module (`test_xml_api.py` for `xml_api.py`). They use only the library and the fixtures in `tests/fixtures/`.
+
 ## Logging
 
 - Each module defines `_LOGGER = logging.getLogger(__name__)`.
@@ -56,22 +67,22 @@ Conventions for all Python code in `custom_components/syr_connect/` and `tests/`
 
 ## Errors
 
-- Raise the exceptions from `exceptions.py`. `SyrConnectError` is the base class. `SyrConnectAuthError` means the credentials are wrong and triggers a re-authentication. `SyrConnectConnectionError` (and its subclasses) means a network or server problem. `SyrConnectInvalidResponseError` means an answer that cannot be used.
+- Raise the exceptions from `aiosyrconnect/exceptions.py`. `SyrConnectError` is the base class. `SyrConnectAuthError` means the credentials are wrong and triggers a re-authentication. `SyrConnectConnectionError` (and its subclasses) means a network or server problem. `SyrConnectInvalidResponseError` means an answer that cannot be used. These errors do not derive from Home Assistant errors: the coordinator, the config flow and the entities catch them and raise the Home Assistant errors. The errors of the config flow (`CannotConnectError`, `InvalidAuthError`, ...) live in `config_flow.py`.
 - Chain exceptions with `raise ... from err`.
 - Temporary connection problems are logged, and the entities keep their previous values. See the deliberate decisions in `AGENTS.md`.
 - Do not catch `Exception` without logging it. Broad catches are only acceptable where a failure must never stop the caller (diagnostics, cleanup).
 - Catch only exceptions that real input can raise. No defensive `try`/`except` (or `contextlib.suppress`) around code that cannot fail: `int()` of a digit group matched by a regex, `round()` or `float()` of a number, `re` with a constant pattern, `str()` of a string, an assignment to a dict. Such a branch can only be tested by patching builtins and was removed on purpose; do not add it back.
-- The API layer (`http_client.py`, `api_xml.py`, `api_json.py`, `response_parser.py`) logs a failure at debug level and raises; it does not log it as warning or error, and does not log and re-raise. The coordinator, the config flow and the entities decide what the user sees, for example a failed update once instead of at every poll.
+- The API layer (the library `aiosyrconnect`) logs a failure at debug level and raises; it does not log it as warning or error, and does not log and re-raise. The coordinator, the config flow and the entities decide what the user sees, for example a failed update once instead of at every poll.
 
 ## Values and XML
 
 - Check for missing values with `is None` / `is not None`. Device values can legitimately be `0`, `""` or empty collections.
 - Parse XML only with `defusedxml`. Build request payloads with `xml.etree.ElementTree` so that values are escaped. Never build XML by string concatenation.
-- Every XML request carries a checksum computed by `SyrChecksum`. When a request payload changes, the checksums in `tests/fixtures/xml/requests/` and in the `payload_builder.py` docstrings change too.
+- Every XML request carries a checksum computed by `SyrChecksum`. When a request payload changes, the checksums in `tests/fixtures/xml/requests/` and in the `aiosyrconnect/xml_payload.py` docstrings change too.
 
 ## Tests
 
 - Every behavior change comes with a test. Bug fixes get a test that fails without the fix.
 - Line coverage of `custom_components/syr_connect` must stay at 100 %: no line without test coverage is accepted. Check it after every change (see `AGENTS.md`, Commands) and add tests for every uncovered line. Do not add `# pragma: no cover` to reach it.
-- Fixtures live in `tests/fixtures/xml/` and `tests/fixtures/json/`. They are anonymised copies of real answers; keep their checksums valid (`tests/test_checksum.py` checks them).
+- Fixtures live in `tests/fixtures/xml/` and `tests/fixtures/json/`. They are anonymised copies of real answers; keep their checksums valid (`tests/aiosyrconnect/test_xml_checksum.py` checks them).
 - Further test rules are in `.github/instructions/tests.instructions.md`.

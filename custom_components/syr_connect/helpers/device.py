@@ -5,8 +5,9 @@ from typing import Any
 
 from homeassistant.helpers.device_registry import DeviceInfo
 
+from ..aiosyrconnect import SyrConnectStatus
 from ..const import DOMAIN
-from ..data import SyrConnectCoordinatorData, SyrConnectDevice, SyrConnectStatus
+from ..data import SyrConnectCoordinatorData, SyrConnectDevice
 from ..models import UNKNOWN_MODEL, SyrConnectModel, detect_model
 from .values import is_empty_ip, to_int
 

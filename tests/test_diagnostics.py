@@ -11,7 +11,11 @@ import pytest
 from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.syr_connect import diagnostics as diag
-from custom_components.syr_connect.api_json import SyrConnectJsonAPI
+from custom_components.syr_connect.aiosyrconnect import (
+    SyrConnectConnectionError,
+    SyrConnectHTTPError,
+    SyrConnectJsonAPI,
+)
 from custom_components.syr_connect.const import (
     API_TYPE_JSON,
     API_TYPE_XML,
@@ -26,10 +30,6 @@ from custom_components.syr_connect.diagnostics import (
     async_get_config_entry_diagnostics,
     mask_mac_value,
     mask_srn_value,
-)
-from custom_components.syr_connect.exceptions import (
-    SyrConnectConnectionError,
-    SyrConnectHTTPError,
 )
 from custom_components.syr_connect.helpers.integration import build_user_agent
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME

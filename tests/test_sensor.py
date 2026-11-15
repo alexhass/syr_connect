@@ -16,9 +16,10 @@ import pytest
 from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.syr_connect import sensor as sensor_module
+from custom_components.syr_connect.aiosyrconnect import SyrConnectStatus
+from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
 from custom_components.syr_connect.const import CONF_SERVICE, DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
-from custom_components.syr_connect.data import SyrConnectStatus
 from custom_components.syr_connect.devices import SyrConnectDeviceProfile
 from custom_components.syr_connect.models import (
     MODEL_SIGNATURES,
@@ -26,7 +27,6 @@ from custom_components.syr_connect.models import (
     SyrConnectModel,
     detect_model,
 )
-from custom_components.syr_connect.response_parser import ResponseParser
 from custom_components.syr_connect.sensor import (
     _SYR_CONNECT_SENSOR_DESCRIPTIONS,
     _SYR_CONNECT_SENSOR_PROFILE_ONLY_KEYS,

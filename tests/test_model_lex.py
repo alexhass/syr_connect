@@ -15,13 +15,13 @@ from custom_components.syr_connect import (
     select as select_module,
     sensor as sensor_module,
 )
+from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
 from custom_components.syr_connect.helpers.profile import get_sensor_ala_map
 from custom_components.syr_connect.models import (
     MODEL_SIGNATURES,
     SyrConnectModel,
     detect_model,
 )
-from custom_components.syr_connect.response_parser import ResponseParser
 from custom_components.syr_connect.select import SyrConnectHardnessSelect
 from homeassistant.core import HomeAssistant
 

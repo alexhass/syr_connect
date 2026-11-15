@@ -6,15 +6,15 @@ from typing import Any
 from Cryptodome.Cipher import AES
 import pytest
 
-from custom_components.syr_connect.const import (
-    _SYR_CONNECT_API_SERVICES,
-    _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
+from custom_components.syr_connect.aiosyrconnect import (
+    API_SERVICES,
+    DEFAULT_CF_BUNDLE_IDENTIFIER,
 )
-from custom_components.syr_connect.encryption import SyrEncryption
+from custom_components.syr_connect.aiosyrconnect.xml_encryption import SyrEncryption
 
 _SYR_KEY = "d805a5c409dc354b6ccf03a2c29a5825851cf31979abf526ede72570c52cf954"
 _SYR_IV = "408a42beb8a1cefad990098584ed51a5"
-_SYR_SERVICE = _SYR_CONNECT_API_SERVICES[_SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER]
+_SYR_SERVICE = API_SERVICES[DEFAULT_CF_BUNDLE_IDENTIFIER]
 
 
 @pytest.fixture
@@ -52,7 +52,7 @@ def test_encryption_initialization(encryption: SyrEncryption) -> None:
 )
 def test_service_crypt_values(bundle_id: str, key: str, iv: str) -> None:
     """The crypt values of every service decrypt to its key and IV."""
-    svc = _SYR_CONNECT_API_SERVICES[bundle_id]
+    svc = API_SERVICES[bundle_id]
 
     enc = SyrEncryption(svc.crypt_key, svc.crypt_vector)
 
@@ -141,7 +141,7 @@ def test_decrypt_wrong_key() -> None:
     enc1 = SyrEncryption(_SYR_SERVICE.crypt_key, _SYR_SERVICE.crypt_vector)
 
     # Encrypt with the different key of another service
-    svc = _SYR_CONNECT_API_SERVICES["de.consoft.rwc.connect"]
+    svc = API_SERVICES["de.consoft.rwc.connect"]
     enc2 = SyrEncryption(svc.crypt_key, svc.crypt_vector)
 
     plaintext = "secret message"

@@ -34,7 +34,6 @@ import aiohttp
 from yarl import URL
 
 from .const import _SYR_CONNECT_SESSION_TIMEOUT_MINUTES
-from .data import SyrConnectDevice, SyrConnectStatus
 from .exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
@@ -42,6 +41,7 @@ from .exceptions import (
     SyrConnectInvalidResponseError,
 )
 from .http_client import read_response_text
+from .models import SyrConnectApiDevice, SyrConnectStatus
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -90,7 +90,7 @@ class SyrConnectJsonAPI:
     """Client for the local JSON API served by some SYR devices.
 
     Args:
-        session: aiohttp ClientSession provided by Home Assistant
+        session: aiohttp ClientSession of the caller
         host: IP address or hostname of the device (optional if base_url provided)
         base_path: path component for the device (optional)
         base_url: explicit base URL (overrides host/base_path)
@@ -116,7 +116,7 @@ class SyrConnectJsonAPI:
         # HTTP session management
         self._session = session
 
-        # The User-Agent identifies the integration and Home Assistant, as for the
+        # The User-Agent identifies the caller, as for the
         # cloud API
         self._headers = {"User-Agent": user_agent}
 
@@ -530,7 +530,7 @@ class SyrConnectJsonAPI:
             url, timeout=timeout, operation=f"fetch {path}"
         )
 
-    async def get_devices(self, project_id: str) -> list[SyrConnectDevice]:
+    async def get_devices(self, project_id: str) -> list[SyrConnectApiDevice]:
         """Return a single-device list for the local JSON API.
 
         The local JSON API is single-device focused (one device per base_path).

@@ -20,7 +20,7 @@ rules:
     comment: |
       - coordinator.py for the data update coordinators
       - entity.py for the base entity (SyrConnectEntity)
-      - api_xml.py and api_json.py for the cloud and the local API
+      - aiosyrconnect/ for the communication with the cloud and the local API (xml_api.py, json_api.py), a library without Home Assistant dependencies
       - helpers/ for shared helpers, one module per topic (DeviceInfo, unique_id, registry cleanup, status values)
   
   config-flow-test-coverage:

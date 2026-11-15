@@ -7,13 +7,13 @@ from unittest.mock import patch
 
 import pytest
 
+from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
 from custom_components.syr_connect.devices import muco_triolock
 from custom_components.syr_connect.models import (
     MODEL_SIGNATURES,
     UNKNOWN_MODEL,
     detect_model,
 )
-from custom_components.syr_connect.response_parser import ResponseParser
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures/xml"
 

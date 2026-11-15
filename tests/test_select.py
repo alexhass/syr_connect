@@ -14,13 +14,13 @@ import pytest
 from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.syr_connect import select as select_module
-from custom_components.syr_connect.const import CONF_SERVICE, DOMAIN
-from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
-from custom_components.syr_connect.devices import SyrConnectDeviceProfile
-from custom_components.syr_connect.exceptions import (
+from custom_components.syr_connect.aiosyrconnect import (
     SyrConnectConnectionError,
     SyrConnectError,
 )
+from custom_components.syr_connect.const import CONF_SERVICE, DOMAIN
+from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+from custom_components.syr_connect.devices import SyrConnectDeviceProfile
 from custom_components.syr_connect.helpers.registry import build_unique_id
 from custom_components.syr_connect.models import (
     MODEL_SIGNATURES,

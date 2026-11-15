@@ -22,7 +22,7 @@ test fixtures, and in the parsing/encryption layers implemented here.
   as broken and ignored to avoid spurious sensor updates.
 - Impact: Partial but valid responses containing only those names will be skipped as a conservative choice to prevent state flapping.
 - Mitigation in this project:
-  - Ignores broken responses: `_ignore_broken_response()` in `custom_components/syr_connect/response_parser.py` implements this heuristic.
+  - Ignores broken responses: `_ignore_broken_response()` in `custom_components/syr_connect/aiosyrconnect/xml_parser.py` implements this heuristic.
 
 ### 2. Offline devices return incorrect data types
 
@@ -63,13 +63,13 @@ test fixtures, and in the parsing/encryption layers implemented here.
 
 - Impact: The HTTP status cannot distinguish rejected credentials from a successful login. `suc` and `typ="1"` do not name the cause. Only the `<msg>` text does, and only partly: a wrong password names the problem ("Username and password do not match"), an unknown username and a cloud outage get the same generic text ("The operation could not be performed"). The text is always German, whatever locale is sent (see issue 4).
 - Mitigation in this project:
-  - `SyrConnectXmlAPI.login()` in `custom_components/syr_connect/api_xml.py` accepts a login only with `<suc v="true"/>` (`is_login_successful()` in `custom_components/syr_connect/response_parser.py`). A successful login without session is a malformed answer (`SyrConnectConnectionError`).
-  - `raise_login_rejected()` in `custom_components/syr_connect/response_parser.py` checks the text of a rejected login:
+  - `SyrConnectXmlAPI.login()` in `custom_components/syr_connect/aiosyrconnect/xml_api.py` accepts a login only with `<suc v="true"/>` (`is_login_successful()` in `custom_components/syr_connect/aiosyrconnect/xml_parser.py`). A successful login without session is a malformed answer (`SyrConnectConnectionError`).
+  - `raise_login_rejected()` in `custom_components/syr_connect/aiosyrconnect/xml_parser.py` checks the text of a rejected login:
     - `Benutzername und das Passwort stimmen nicht überein`: `SyrConnectAuthError`, which triggers the re-authentication flow.
     - Any other text or no `<msg>`: `SyrConnectLoginFailedError`, a `SyrConnectConnectionError`. It is only logged, entities keep their last values, and the next update logs in again; on the first refresh after a restart the setup is retried (`ConfigEntryNotReady`). The config flow reports it as invalid credentials, because a mistyped username is the likely cause while the user enters them.
   - The server's `<msg v="…">` text is appended to the error message for the log, and the decrypted content is logged at debug level (it contains no session token).
   - Every other unexpected login response (no XML, e.g. a maintenance page, no `sc>api`, no projects) is raised as `SyrConnectConnectionError`: it is only logged, entities keep their last values, and no re-authentication is requested.
-  - Tests: `test_is_login_successful`, `test_raise_login_rejected_wrong_password` and `test_raise_login_rejected_other_cause` in `tests/test_response_parser.py`, `test_login_auth_error`, `test_login_rejected_for_other_cause` and `test_login_without_suc_is_rejected` in `tests/test_api_xml.py`.
+  - Tests: `test_is_login_successful`, `test_raise_login_rejected_wrong_password` and `test_raise_login_rejected_other_cause` in `tests/aiosyrconnect/test_xml_parser.py`, `test_login_auth_error`, `test_login_rejected_for_other_cause` and `test_login_without_suc_is_rejected` in `tests/aiosyrconnect/test_xml_api.py`.
 
 ### 4. Invalid or expired session token returns HTTP 200 with a message
 
@@ -98,20 +98,20 @@ test fixtures, and in the parsing/encryption layers implemented here.
 
 - Impact: The HTTP status cannot distinguish a rejected token from a successful request. Without special handling, the response looks like an incomplete answer (no `prs`/`dvs`), and the session would never be renewed. `mtid="1"` does not tell a rejected token from a cloud failure, and a new login during an outage is rejected as well (see issue 3).
 - Mitigation in this project:
-  - The response parser recognizes every `<msg mtid="1">`, whatever its text, and raises `SyrConnectSessionExpiredError` (a `SyrConnectConnectionError`): `_raise_if_session_expired()` / `raise_if_session_expired()` in `custom_components/syr_connect/response_parser.py`.
-  - `SyrConnectXmlAPI._post_with_session()` in `custom_components/syr_connect/api_xml.py` then logs in again and repeats the request once with the new token. Parallel requests that get the rejection at the same time share one login (`_relogin()`, guarded by a lock); if it fails, the waiting requests get its error instead of logging in again (`_login_shared()`). If the new token is rejected as well, or the login is rejected during an outage, the error is handled like any other connection error: logged, entities keep their last values, and the next update tries again.
+  - The response parser recognizes every `<msg mtid="1">`, whatever its text, and raises `SyrConnectSessionExpiredError` (a `SyrConnectConnectionError`): `_raise_if_session_expired()` / `raise_if_session_expired()` in `custom_components/syr_connect/aiosyrconnect/xml_parser.py`.
+  - `SyrConnectXmlAPI._post_with_session()` in `custom_components/syr_connect/aiosyrconnect/xml_api.py` then logs in again and repeats the request once with the new token. Parallel requests that get the rejection at the same time share one login (`_relogin()`, guarded by a lock); if it fails, the waiting requests get its error instead of logging in again (`_login_shared()`). If the new token is rejected as well, or the login is rejected during an outage, the error is handled like any other connection error: logged, entities keep their last values, and the next update tries again.
   - There is no client-side session expiry: a new login only happens when the server rejects the token.
-  - Fixtures: `tests/fixtures/xml/SyrTestDevice_InvalidSessionResponse.xml` and `tests/fixtures/xml/SyrSafeFloor_GetSafeFloorStatistics_InvalidUnit.xml`. Tests: `test_invalid_token_response_raises_session_expired` and `test_cloud_error_response_raises_session_expired` in `tests/test_response_parser.py`, `test_rejected_token_relogs_in_and_retries_once`, `test_rejected_token_twice_raises_session_expired` and `test_parallel_requests_share_a_failed_login` in `tests/test_api_xml.py`.
+  - Fixtures: `tests/fixtures/xml/SyrTestDevice_InvalidSessionResponse.xml` and `tests/fixtures/xml/SyrSafeFloor_GetSafeFloorStatistics_InvalidUnit.xml`. Tests: `test_invalid_token_response_raises_session_expired` and `test_cloud_error_response_raises_session_expired` in `tests/aiosyrconnect/test_xml_parser.py`, `test_rejected_token_relogs_in_and_retries_once`, `test_rejected_token_twice_raises_session_expired` and `test_parallel_requests_share_a_failed_login` in `tests/aiosyrconnect/test_xml_api.py`.
 
 ### 5. Time values are local time, not UTC
 
 - Description: Time values count the local wall time of the device in seconds since 1970, not UTC. `getLAR` (last regeneration) of 23 October 2026 01:16 local time is reported as `1792718160`, which is 01:16 UTC; read as a UNIX timestamp, the regeneration appears two hours later in summer time (one hour in winter time). The cloud knows the time zone of each project: `GetProjectDeviceCollections` returns `tz="W.+Europe+Standard+Time"` and the current offset `tzo="02:00:00"`. The same is assumed for all devices and for the local JSON API, because the value comes from the device.
 - Impact: A timestamp sensor shows the time shifted by the UTC offset of the device's time zone.
 - Mitigation in this project:
-  - `parse_device_list_response()` in `custom_components/syr_connect/response_parser.py` parses `tzo` of the project into seconds and stores it as `utc_offset` of each device. The cloud switches `tzo` with daylight saving time (`01:00:00` in winter, `02:00:00` in summer), and the device list is fetched once per hour, so the offset follows the season at most one hour late.
+  - `parse_device_list_response()` in `custom_components/syr_connect/aiosyrconnect/xml_parser.py` parses `tzo` of the project into seconds and stores it as `utc_offset` of each device. The cloud switches `tzo` with daylight saving time (`01:00:00` in winter, `02:00:00` in summer), and the device list is fetched once per hour, so the offset follows the season at most one hour late.
   - `_value_lar()` in `custom_components/syr_connect/sensor.py` subtracts `utc_offset` from the value. Without it (local JSON API) the value is read as wall time in the time zone of Home Assistant.
-  - Tests: `test_parse_utc_offset` and `test_device_list_has_utc_offset_of_project` in `tests/test_response_parser.py`, `test_sensor_native_value_timestamp_uses_cloud_utc_offset` and `test_sensor_native_value_timestamp_is_local_time` in `tests/test_sensor.py`.
+  - Tests: `test_parse_utc_offset` and `test_device_list_has_utc_offset_of_project` in `tests/aiosyrconnect/test_xml_parser.py`, `test_sensor_native_value_timestamp_uses_cloud_utc_offset` and `test_sensor_native_value_timestamp_is_local_time` in `tests/test_sensor.py`.
 
 ## References
 
-- Parser: [custom_components/syr_connect/response_parser.py](custom_components/syr_connect/response_parser.py)
+- Parser: [custom_components/syr_connect/aiosyrconnect/xml_parser.py](custom_components/syr_connect/aiosyrconnect/xml_parser.py)

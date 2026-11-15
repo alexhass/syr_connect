@@ -14,14 +14,20 @@ from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.util import dt as dt_util
 
-from .api_json import SyrConnectJsonAPI
-from .api_xml import SyrConnectXmlAPI
+from .aiosyrconnect import (
+    API_SERVICES,
+    DEFAULT_CF_BUNDLE_IDENTIFIER,
+    SyrConnectAuthError,
+    SyrConnectConnectionError,
+    SyrConnectInvalidResponseError,
+    SyrConnectJsonAPI,
+    SyrConnectLoginFailedError,
+    SyrConnectXmlAPI,
+)
 from .const import (
     _SYR_CONNECT_API_JSON_SCAN_INTERVAL_MINIMUM,
     _SYR_CONNECT_API_SCAN_INTERVAL_MAXIMUM,
-    _SYR_CONNECT_API_SERVICES,
     _SYR_CONNECT_API_XML_SCAN_INTERVAL_MINIMUM,
-    _SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER,
     _SYR_CONNECT_SCAN_INTERVAL_CONF,
     API_TYPE_JSON,
     API_TYPE_XML,
@@ -31,12 +37,6 @@ from .const import (
     CONF_MODEL,
     CONF_SERVICE,
     DOMAIN,
-)
-from .exceptions import (
-    SyrConnectAuthError,
-    SyrConnectConnectionError,
-    SyrConnectInvalidResponseError,
-    SyrConnectLoginFailedError,
 )
 from .helpers.integration import (
     build_user_agent,
@@ -72,7 +72,7 @@ class HostWithPortError(HostInvalidError):
 STEP_CLOUD_XML_DATA_SCHEMA = probatio.Schema(
     {
         probatio.Required(
-            CONF_SERVICE, default=_SYR_CONNECT_DEFAULT_CF_BUNDLE_IDENTIFIER
+            CONF_SERVICE, default=DEFAULT_CF_BUNDLE_IDENTIFIER
         ): selector.SelectSelector(
             selector.SelectSelectorConfig(
                 options=[
@@ -80,7 +80,7 @@ STEP_CLOUD_XML_DATA_SCHEMA = probatio.Schema(
                         value=svc.cf_bundle_identifier, label=svc.display_name
                     )
                     for svc in sorted(
-                        _SYR_CONNECT_API_SERVICES.values(),
+                        API_SERVICES.values(),
                         key=lambda s: s.display_name.casefold(),
                     )
                 ],
@@ -144,7 +144,7 @@ def _entry_title(api_type: str, data: dict[str, Any]) -> str:
     """
     if api_type == API_TYPE_JSON:
         return f"SYR Connect Local ({data[CONF_HOST]})"
-    service = _SYR_CONNECT_API_SERVICES[data[CONF_SERVICE]]
+    service = API_SERVICES[data[CONF_SERVICE]]
     return f"{service.display_name} ({data[CONF_USERNAME]})"
 
 
@@ -167,8 +167,8 @@ async def validate_input_xml(
     _LOGGER.debug("Validating XML API credentials for user: %s", data[CONF_USERNAME])
     session = async_get_clientsession(hass)
 
-    # The schema only offers services of _SYR_CONNECT_API_SERVICES
-    svc = _SYR_CONNECT_API_SERVICES[data[CONF_SERVICE]]
+    # The schema only offers services of API_SERVICES
+    svc = API_SERVICES[data[CONF_SERVICE]]
 
     api = SyrConnectXmlAPI(
         session,

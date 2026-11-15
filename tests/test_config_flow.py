@@ -10,6 +10,12 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from pytest_homeassistant.common import MockConfigEntry
 
+from custom_components.syr_connect.aiosyrconnect import (
+    API_SERVICES,
+    SyrConnectAuthError,
+    SyrConnectConnectionError,
+    SyrConnectLoginFailedError,
+)
 from custom_components.syr_connect.config_flow import (
     LOCAL_API_MODELS,
     CannotConnectError,
@@ -21,7 +27,6 @@ from custom_components.syr_connect.config_flow import (
     validate_input_xml,
 )
 from custom_components.syr_connect.const import (
-    _SYR_CONNECT_API_SERVICES,
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
@@ -30,11 +35,6 @@ from custom_components.syr_connect.const import (
     CONF_MODEL,
     CONF_SERVICE,
     DOMAIN,
-)
-from custom_components.syr_connect.exceptions import (
-    SyrConnectAuthError,
-    SyrConnectConnectionError,
-    SyrConnectLoginFailedError,
 )
 from custom_components.syr_connect.helpers.registry import build_entry_unique_id
 from custom_components.syr_connect.models import MODEL_SIGNATURES
@@ -104,7 +104,7 @@ async def test_form_api_xml_invalid_auth(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
+        "custom_components.syr_connect.aiosyrconnect.xml_api.SyrConnectXmlAPI.login",
         side_effect=SyrConnectAuthError("Authentication failed"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -173,7 +173,7 @@ async def test_form_api_xml_cannot_connect(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
+        "custom_components.syr_connect.aiosyrconnect.xml_api.SyrConnectXmlAPI.login",
         side_effect=SyrConnectConnectionError("Connection error"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -289,11 +289,11 @@ async def test_form_api_json(hass: HomeAssistant) -> None:
 
     with (
         patch(
-            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
+            "custom_components.syr_connect.aiosyrconnect.json_api.SyrConnectJsonAPI.login",
             new_callable=AsyncMock,
         ),
         patch(
-            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.request_json_data",
+            "custom_components.syr_connect.aiosyrconnect.json_api.SyrConnectJsonAPI.request_json_data",
             new_callable=AsyncMock,
             return_value={"getSRN": "12345", "getVER": "test"},
         ),
@@ -330,11 +330,11 @@ async def test_form_api_json_strips_host_whitespace(hass: HomeAssistant) -> None
 
     with (
         patch(
-            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
+            "custom_components.syr_connect.aiosyrconnect.json_api.SyrConnectJsonAPI.login",
             new_callable=AsyncMock,
         ),
         patch(
-            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.request_json_data",
+            "custom_components.syr_connect.aiosyrconnect.json_api.SyrConnectJsonAPI.request_json_data",
             new_callable=AsyncMock,
             return_value={"getSRN": "12345", "getVER": "test"},
         ),
@@ -553,7 +553,7 @@ async def test_form_api_json_cannot_connect(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
+        "custom_components.syr_connect.aiosyrconnect.json_api.SyrConnectJsonAPI.login",
         side_effect=SyrConnectConnectionError("Connection error"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -590,11 +590,11 @@ async def test_form_api_json_already_configured(hass: HomeAssistant) -> None:
 
     with (
         patch(
-            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
+            "custom_components.syr_connect.aiosyrconnect.json_api.SyrConnectJsonAPI.login",
             new_callable=AsyncMock,
         ),
         patch(
-            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.request_json_data",
+            "custom_components.syr_connect.aiosyrconnect.json_api.SyrConnectJsonAPI.request_json_data",
             new_callable=AsyncMock,
             return_value={"getSRN": "12345", "getVER": "test"},
         ),
@@ -747,7 +747,7 @@ async def test_reauth_flow_invalid_auth(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
+        "custom_components.syr_connect.aiosyrconnect.xml_api.SyrConnectXmlAPI.login",
         side_effect=SyrConnectAuthError("Invalid credentials"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -786,7 +786,7 @@ async def test_reauth_flow_cannot_connect(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
+        "custom_components.syr_connect.aiosyrconnect.xml_api.SyrConnectXmlAPI.login",
         side_effect=SyrConnectConnectionError("Network error"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -825,7 +825,7 @@ async def test_reauth_flow_unknown_error(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
+        "custom_components.syr_connect.aiosyrconnect.xml_api.SyrConnectXmlAPI.login",
         side_effect=RuntimeError("Unexpected error"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -983,7 +983,7 @@ async def test_reconfigure_flow_invalid_auth(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
+        "custom_components.syr_connect.aiosyrconnect.xml_api.SyrConnectXmlAPI.login",
         side_effect=SyrConnectAuthError("Invalid credentials"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -1021,7 +1021,7 @@ async def test_reconfigure_flow_cannot_connect(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
+        "custom_components.syr_connect.aiosyrconnect.xml_api.SyrConnectXmlAPI.login",
         side_effect=SyrConnectConnectionError("Network error"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -1058,7 +1058,7 @@ async def test_reconfigure_flow_unknown_error(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
+        "custom_components.syr_connect.aiosyrconnect.xml_api.SyrConnectXmlAPI.login",
         side_effect=RuntimeError("Unexpected error"),
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -1087,7 +1087,7 @@ async def test_validate_input_xml_auth_error(
 
     with (
         patch(
-            "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
+            "custom_components.syr_connect.aiosyrconnect.xml_api.SyrConnectXmlAPI.login",
             side_effect=error,
         ),
         pytest.raises(InvalidAuthError),
@@ -1107,7 +1107,7 @@ async def test_validate_input_xml_connection_error(hass: HomeAssistant) -> None:
 
     with (
         patch(
-            "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
+            "custom_components.syr_connect.aiosyrconnect.xml_api.SyrConnectXmlAPI.login",
             side_effect=SyrConnectConnectionError("Network error"),
         ),
         pytest.raises(CannotConnectError),
@@ -1126,7 +1126,7 @@ async def test_validate_input_xml_uses_the_selected_service(
     hass: HomeAssistant,
 ) -> None:
     """The login is tested with the selected service, which also names the entry."""
-    svc = _SYR_CONNECT_API_SERVICES["de.consoft.rwc.connect"]
+    svc = API_SERVICES["de.consoft.rwc.connect"]
 
     with patch(
         "custom_components.syr_connect.config_flow.SyrConnectXmlAPI"
@@ -1150,7 +1150,7 @@ async def test_validate_input_json_connection_error(hass: HomeAssistant) -> None
 
     with (
         patch(
-            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
+            "custom_components.syr_connect.aiosyrconnect.json_api.SyrConnectJsonAPI.login",
             side_effect=SyrConnectConnectionError("Network error"),
         ),
         pytest.raises(CannotConnectError),
@@ -1623,11 +1623,11 @@ async def test_validate_input_json_empty_result(hass: HomeAssistant) -> None:
     """Test validate_input_json with empty API result."""
     with (
         patch(
-            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
+            "custom_components.syr_connect.aiosyrconnect.json_api.SyrConnectJsonAPI.login",
             return_value=None,
         ),
         patch(
-            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.request_json_data",
+            "custom_components.syr_connect.aiosyrconnect.json_api.SyrConnectJsonAPI.request_json_data",
             return_value={},
         ),
         pytest.raises(CannotConnectError),
@@ -1645,11 +1645,11 @@ async def test_validate_input_json_missing_serial_fields(hass: HomeAssistant) ->
     """Test validate_input_json with missing getSRN/getFRN fields."""
     with (
         patch(
-            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
+            "custom_components.syr_connect.aiosyrconnect.json_api.SyrConnectJsonAPI.login",
             return_value=None,
         ),
         patch(
-            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.request_json_data",
+            "custom_components.syr_connect.aiosyrconnect.json_api.SyrConnectJsonAPI.request_json_data",
             return_value={"someOtherField": "value"},
         ),
         pytest.raises(CannotConnectError),
@@ -1722,11 +1722,11 @@ async def test_reconfigure_flow_json_api(hass: HomeAssistant) -> None:
 
     with (
         patch(
-            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
+            "custom_components.syr_connect.aiosyrconnect.json_api.SyrConnectJsonAPI.login",
             return_value=None,
         ),
         patch(
-            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.request_json_data",
+            "custom_components.syr_connect.aiosyrconnect.json_api.SyrConnectJsonAPI.request_json_data",
             return_value={"getSRN": "12345"},
         ),
     ):
@@ -1879,7 +1879,7 @@ async def test_validate_input_json_auth_error(hass: HomeAssistant) -> None:
 
     with (
         patch(
-            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
+            "custom_components.syr_connect.aiosyrconnect.json_api.SyrConnectJsonAPI.login",
             side_effect=SyrConnectAuthError("Invalid credentials"),
         ),
         pytest.raises(InvalidAuthError),
@@ -1895,7 +1895,7 @@ async def test_validate_input_json_syr_connection_error(hass: HomeAssistant) -> 
 
     with (
         patch(
-            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
+            "custom_components.syr_connect.aiosyrconnect.json_api.SyrConnectJsonAPI.login",
             side_effect=SyrConnectConnectionError("timeout"),
         ),
         pytest.raises(CannotConnectError),
@@ -2082,7 +2082,7 @@ async def test_form_api_json_invalid_auth_error(hass: HomeAssistant) -> None:
 
 def test_api_services_keyed_by_cf_bundle_identifier() -> None:
     """Every service is stored under its own cf_bundle_identifier."""
-    for key, svc in _SYR_CONNECT_API_SERVICES.items():
+    for key, svc in API_SERVICES.items():
         assert key == svc.cf_bundle_identifier
 
 
@@ -2124,11 +2124,11 @@ async def test_validation_errors_are_logged_at_debug_level_only(
     with (
         caplog.at_level(logging.DEBUG, logger="custom_components.syr_connect"),
         patch(
-            "custom_components.syr_connect.api_xml.SyrConnectXmlAPI.login",
+            "custom_components.syr_connect.aiosyrconnect.xml_api.SyrConnectXmlAPI.login",
             side_effect=SyrConnectAuthError("Invalid credentials."),
         ),
         patch(
-            "custom_components.syr_connect.api_json.SyrConnectJsonAPI.login",
+            "custom_components.syr_connect.aiosyrconnect.json_api.SyrConnectJsonAPI.login",
             side_effect=SyrConnectConnectionError("Connection failed"),
         ),
         pytest.raises(error),
