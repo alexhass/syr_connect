@@ -21,8 +21,10 @@ setNOT and setWRN send "FF" (XML API) or 255 (JSON API) via the standard set
 command.
 """
 
+from collections.abc import Awaitable, Callable
+from dataclasses import dataclass
 import logging
-from typing import override
+from typing import Any, override
 
 from homeassistant.components.button import ButtonEntity, ButtonEntityDescription
 from homeassistant.core import HomeAssistant
@@ -50,28 +52,157 @@ _LOGGER = logging.getLogger(__name__)
 PARALLEL_UPDATES = 1
 
 
+@dataclass(frozen=True, kw_only=True)
+class _SyrConnectButtonPress:
+    """The pressed button and the device it belongs to, for a press handler."""
+
+    command: str
+    coordinator: SyrConnectDataUpdateCoordinator
+    device_id: str
+    device_name: str
+    model: SyrConnectModel
+    status: dict[str, Any]
+
+
+@dataclass(frozen=True, kw_only=True)
+class SyrConnectButtonEntityDescription(ButtonEntityDescription):
+    """Describes a SYR Connect button; `key` is the command (e.g. "setSIR")."""
+
+    # Sends the command of the button; raises ServiceValidationError if the device
+    # state does not allow it
+    press_fn: Callable[[_SyrConnectButtonPress], Awaitable[None]]
+
+
+# --- Press handlers -------------------------------------------------------------
+# The `press_fn` of a button description. Each handler gets the pressed button with
+# the status of its device and sends the command.
+
+
+async def _async_press_sir(press: _SyrConnectButtonPress) -> None:
+    """Manual regeneration (setSIR): the value follows the format of getSIR.
+
+    Values:
+    - getSIR False or "false": "true"
+    - Any other getSIR (e.g. "1", 1): 0
+    """
+    raw_sir = press.status.get("getSIR")
+    value_sir: int | str
+    if raw_sir is False or str(raw_sir).strip().lower() == "false":
+        value_sir = "true"
+    else:
+        value_sir = 0
+    await press.coordinator.async_set_device_value(
+        press.device_id, press.command, value_sir
+    )
+
+
+def _dex_value(typ: Any) -> int | str:
+    """Return the value that starts the microleakage test (setDEX), by device type (getTYP).
+
+    Values:
+    - getTYP below 100: 1
+    - getTYP 100 or more, absent or not numeric: "true"
+    """
+    try:
+        return 1 if int(typ) < 100 else "true"
+    except ValueError, TypeError:
+        return "true"
+
+
+async def _async_press_dex(press: _SyrConnectButtonPress) -> None:
+    """Microleakage test (setDEX): start it unless one is running (getDSV 1)."""
+    if str(press.status.get("getDSV")).strip() == "1":
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="microleakage_test_running",
+            translation_placeholders={"device": press.device_name},
+        )
+    await press.coordinator.async_set_device_value(
+        press.device_id, press.command, _dex_value(press.status.get("getTYP"))
+    )
+
+
+async def _async_press_flush(press: _SyrConnectButtonPress) -> None:
+    """Manual flushing of a hygiene module line (setMFC, setMFW): the command has no value."""
+    await press.coordinator.async_set_device_value(press.device_id, press.command, "")
+
+
+def _has_active_code(press: _SyrConnectButtonPress) -> bool:
+    """Return True if a reset button (setALA, setNOT, setWRN) has an active code to reset."""
+    return _is_active_code(press.status.get(_reset_get_key(press.command, press.model)))
+
+
+async def _async_press_ala(press: _SyrConnectButtonPress) -> None:
+    """Alarm reset (setALA): field and method follow the model, see the module docstring."""
+    if not _has_active_code(press):
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="no_alarm_to_reset",
+            translation_placeholders={"device": press.device_name},
+        )
+    field = _reset_get_key(press.command, press.model)[3:].lower()
+    if press.model.alarm_clear_via_set:
+        await press.coordinator.async_set_device_value(
+            press.device_id, f"set{field.upper()}", "FF"
+        )
+    else:
+        await press.coordinator.async_clear_device_alarm(press.device_id, field)
+
+
+async def _async_press_not_wrn(press: _SyrConnectButtonPress) -> None:
+    """Notification or warning reset (setNOT, setWRN): send the "nothing active" code.
+
+    Values:
+    - JSON API: 255, sent as /set/not/255 or /set/wrn/255
+    - XML API: "FF"
+    """
+    if not _has_active_code(press):
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key=(
+                "no_notification_to_reset"
+                if press.command == "setNOT"
+                else "no_warning_to_reset"
+            ),
+            translation_placeholders={"device": press.device_name},
+        )
+    reset_value: int | str = (
+        255 if isinstance(press.coordinator.api, SyrConnectJsonAPI) else "FF"
+    )
+    await press.coordinator.async_set_device_value(
+        press.device_id, press.command, reset_value
+    )
+
+
 # Descriptions of all buttons, in the order they are created
-_SYR_CONNECT_BUTTON_TYPES: tuple[ButtonEntityDescription, ...] = (
-    ButtonEntityDescription(
+_SYR_CONNECT_BUTTON_TYPES: tuple[SyrConnectButtonEntityDescription, ...] = (
+    SyrConnectButtonEntityDescription(
         key="setSIR",  # Trigger manual regeneration
+        press_fn=_async_press_sir,
     ),
-    ButtonEntityDescription(
+    SyrConnectButtonEntityDescription(
         key="setALA",  # Reset alarm
+        press_fn=_async_press_ala,
     ),
-    ButtonEntityDescription(
+    SyrConnectButtonEntityDescription(
         key="setNOT",  # Reset notification
+        press_fn=_async_press_not_wrn,
     ),
-    ButtonEntityDescription(
+    SyrConnectButtonEntityDescription(
         key="setWRN",  # Reset warning
+        press_fn=_async_press_not_wrn,
     ),
-    ButtonEntityDescription(
+    SyrConnectButtonEntityDescription(
         key="setDEX",  # Start microleakage test
+        press_fn=_async_press_dex,
     ),
-    ButtonEntityDescription(
+    SyrConnectButtonEntityDescription(
         key="setMFC",  # Start a manual flushing of the cold water line (hygiene module)
+        press_fn=_async_press_flush,
     ),
-    ButtonEntityDescription(
+    SyrConnectButtonEntityDescription(
         key="setMFW",  # Start a manual flushing of the hot water line (hygiene module)
+        press_fn=_async_press_flush,
     ),
 )
 
@@ -83,7 +214,7 @@ _SYR_CONNECT_BUTTON_PRESENCE_KEYS = {
     "setMFW": "getSWF",
 }
 
-_SYR_CONNECT_BUTTON_DESCRIPTIONS: dict[str, ButtonEntityDescription] = {
+_SYR_CONNECT_BUTTON_DESCRIPTIONS: dict[str, SyrConnectButtonEntityDescription] = {
     description.key: description for description in _SYR_CONNECT_BUTTON_TYPES
 }
 
@@ -237,6 +368,8 @@ def _build_device_buttons(
 class SyrConnectButton(SyrConnectEntity, ButtonEntity):
     """Representation of a SYR Connect button."""
 
+    entity_description: SyrConnectButtonEntityDescription
+
     def __init__(
         self,
         coordinator: SyrConnectDataUpdateCoordinator,
@@ -276,151 +409,24 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
 
     @override
     async def async_press(self) -> None:
-        """Press the button.
-
-        Sends the command to the device to trigger the action.
-
-        Reset buttons (setALA, setNOT, setWRN) perform additional validation
-        before triggering a reset: they read the device's current getXYZ value
-        and only proceed when an active code is present. See module docstring
-        for the full list of "no alarm" sentinel values.
-
-        For setALA, the alarm field (ALA vs ALM) and the reset method
-        (set command vs dedicated clr endpoint) are determined from the
-        model signature flags alarm_style_alm and alarm_clear_via_set.
+        """Press the button: send the command with the press handler of its description.
 
         Raises:
-            ServiceValidationError: If a microleakage test is already running
-            HomeAssistantError: If the button press fails or no reset is required
+            ServiceValidationError: If the device state does not allow the command, e.g.
+                no active code to reset or a microleakage test already running
+            HomeAssistantError: If sending the command fails
         """
-        # Avoid accessing possibly unset internal name attribute; use translation key or unique id
-        button_id = getattr(self, "_attr_translation_key", None) or getattr(
-            self, "_attr_unique_id", None
+        _LOGGER.debug("Button pressed: %s (device: %s)", self._command, self._device_id)
+        press = _SyrConnectButtonPress(
+            command=self._command,
+            coordinator=self.coordinator,
+            device_id=self._device_id,
+            device_name=self._device_name,
+            model=self.device_model,
+            status=self._status,
         )
-        _LOGGER.debug("Button pressed: %s (device: %s)", button_id, self._device_id)
-
-        coordinator = self.coordinator
-        status = self._status
         try:
-            # Handle setDEX: start the microleakage test by sending True.
-            # Reject the request if getDSV=1, which means a test is already running.
-            # Value encoding: getTYP < 100 → integer 1, otherwise → boolean "true".
-            if self._command == "setDEX":
-                raw_dsv = status.get("getDSV")
-                if str(raw_dsv).strip() == "1":
-                    raise ServiceValidationError(
-                        translation_domain=DOMAIN,
-                        translation_key="microleakage_test_running",
-                        translation_placeholders={"device": self._device_name},
-                    )
-                # Determine value encoding from getTYP (JSON devices only).
-                typ = status.get("getTYP")
-                try:
-                    dex_value: int | str = 1 if int(typ) < 100 else "true"  # type: ignore[arg-type]
-                except ValueError, TypeError:
-                    dex_value = "true"  # getTYP absent or non-numeric → boolean
-                await coordinator.async_set_device_value(
-                    self._device_id, self._command, dex_value
-                )
-                return
-
-            # Handle setSIR: initiate regeneration with the appropriate value.
-            # getSIR = 1 (integer/string) → send setSIR = 0 (integer).
-            # getSIR = False / "false" → send setSIR = "true" (string, lowercase).
-            if self._command == "setSIR":
-                raw_sir = status.get("getSIR")
-                # Map the reported getSIR value to the correct setSIR payload.
-                # - Boolean False (or the string "false") → send "true" (lowercase string).
-                # - Anything else (e.g. "1", 1) → send 0.
-                value_sir: int | str
-                if raw_sir is False or str(raw_sir).strip().lower() == "false":
-                    value_sir = "true"
-                else:
-                    value_sir = 0
-                await coordinator.async_set_device_value(
-                    self._device_id, self._command, value_sir
-                )
-                return
-
-            # Manual flushing of a hygiene module line: the command has no value
-            if self._command in _SYR_CONNECT_BUTTON_PRESENCE_KEYS:
-                await coordinator.async_set_device_value(
-                    self._device_id, self._command, ""
-                )
-                return
-
-            # Reset buttons (setALA, setNOT, setWRN): read the current alarm/notification/
-            # warning value from the device status and only send a reset if an active code
-            # is present. This avoids unnecessary API calls when nothing needs clearing.
-            if self._command in ("setALA", "setNOT", "setWRN"):
-                if self._command == "setALA":
-                    # Resolve alarm field (ALA vs ALM) and clear method (set vs clr)
-                    # from model signature flags:
-                    #   alarm_style_alm: True  → field = ALM (uses getALM / setALM / clrALM)
-                    #   alarm_style_alm: False → field = ALA (uses getALA / setALA / clrALA)
-                    #   alarm_clear_via_set: True  → reset via setALA/setALM "FF"
-                    #   alarm_clear_via_set: False → reset via dedicated clrALA/clrALM endpoint
-                    model_info = self.device_model
-                    get_key = _reset_get_key(self._command, model_info)
-                    field = get_key[3:].lower()
-
-                    # Read the current alarm value. raw may be None, a string, or a number
-                    # depending on the device firmware.
-                    raw = status.get(get_key)
-                    # Sentinel values that indicate no active alarm (see module docstring).
-                    if not _is_active_code(raw):
-                        raise ServiceValidationError(
-                            translation_domain=DOMAIN,
-                            translation_key="no_alarm_to_reset",
-                            translation_placeholders={"device": self._device_name},
-                        )
-
-                    if model_info.alarm_clear_via_set:
-                        # Device resets the alarm via a standard set command with value "FF".
-                        set_cmd = f"set{field.upper()}"
-                        await coordinator.async_set_device_value(
-                            self._device_id, set_cmd, "FF"
-                        )
-                    else:
-                        # Active alarm confirmed above via getALA / getALM;
-                        # send dedicated clear command (clrALA / clrALM).
-                        await coordinator.async_clear_device_alarm(
-                            self._device_id, field
-                        )
-                    return
-
-                # setNOT / setWRN: determine the corresponding get key, check for an
-                # active code, then send the appropriate reset value via the standard
-                # set command.
-                # - JSON API: integer 255 → URL path /set/not/255 or /set/wrn/255
-                # - XML API: string "FF" → payload value
-                if self._command == "setNOT":
-                    get_key = "getNOT"
-                else:
-                    get_key = "getWRN"
-
-                # raw may be None, a string, or a number depending on the device firmware.
-                raw = status.get(get_key)
-
-                # Sentinel values that indicate no active notification / warning.
-                if not _is_active_code(raw):
-                    raise ServiceValidationError(
-                        translation_domain=DOMAIN,
-                        translation_key=(
-                            "no_notification_to_reset"
-                            if get_key == "getNOT"
-                            else "no_warning_to_reset"
-                        ),
-                        translation_placeholders={"device": self._device_name},
-                    )
-
-                reset_value: int | str = (
-                    255 if isinstance(coordinator.api, SyrConnectJsonAPI) else "FF"
-                )
-                await coordinator.async_set_device_value(
-                    self._device_id, self._command, reset_value
-                )
-                return
+            await self.entity_description.press_fn(press)
         except SyrConnectError as err:
             _LOGGER.error(
                 "Failed to press %s on %s: %s", self._command, self._device_id, err
