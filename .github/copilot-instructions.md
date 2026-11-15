@@ -3,7 +3,7 @@
 This file contains the official Home Assistant Copilot & Claude code instructions, integration quality scale, code review guidelines, Python requirements, code quality standards, code organization, async programming, integration guidelines, entity development, device management, diagnostics, testing requirements, development commands, integration templates, and best practices for AI agents and contributors.
 
 For the full and up-to-date content, see:
-https://github.com/home-assistant/core/blob/dev/.github/copilot-instructions.md
+<https://github.com/home-assistant/core/blob/dev/.github/copilot-instructions.md>
 
 ---
 
