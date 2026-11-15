@@ -184,7 +184,7 @@ class SyrConnectDataUpdateCoordinator(
                 local_now=dt_util.now,
             )
             self._username = username
-            self._configuration_url = svc.website_url
+            self._configuration_url = svc.configuration_url
             self._service = conf_service
             self._model = None
             _LOGGER.debug(
