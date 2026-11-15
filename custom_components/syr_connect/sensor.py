@@ -49,31 +49,32 @@ from .const import (
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .entity import SyrConnectEntity, async_add_device_entities
-from .helpers import (
-    find_entity_id,
+from .helpers.device import get_device_model
+from .helpers.profile import (
     get_cartridge_entity_keys,
     get_cartridge_keys,
-    get_device_model,
     get_hardness_divisor,
     get_hardness_factor,
-    get_hygiene_module_value,
     get_model_supported_keys,
     get_reported_cartridge_keys,
-    get_sensor_ab_value,
     get_sensor_ala_map,
+    get_sensor_not_map,
+    get_sensor_wrn_map,
+    get_whu_unit,
+)
+from .helpers.registry import find_entity_id, registry_cleanup
+from .helpers.values import (
+    get_hygiene_module_value,
+    get_sensor_ab_value,
     get_sensor_avo_value,
     get_sensor_bat_value,
     get_sensor_iwh_value,
     get_sensor_lng_value,
     get_sensor_net_value,
-    get_sensor_not_map,
     get_sensor_rtm_value,
     get_sensor_vol_value,
-    get_sensor_wrn_map,
-    get_whu_unit,
     is_empty_ip,
     is_value_true,
-    registry_cleanup,
 )
 from .models import SyrConnectModel
 

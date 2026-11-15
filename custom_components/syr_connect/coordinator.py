@@ -42,17 +42,19 @@ from .const import (
 from .data import SyrConnectCoordinatorData, SyrConnectDevice
 from .devices import SyrConnectStatistic
 from .exceptions import SyrConnectAuthError, SyrConnectConnectionError, SyrConnectError
-from .helpers import (
-    build_statistic_id,
+from .helpers.device import (
     detect_device_model,
-    get_api_locale,
-    get_default_scan_interval_for_entry,
     get_device,
     get_device_model,
-    get_integration_version,
-    get_sensor_iwh_value,
     is_device_offline,
 )
+from .helpers.integration import (
+    get_api_locale,
+    get_default_scan_interval_for_entry,
+    get_integration_version,
+)
+from .helpers.registry import build_statistic_id
+from .helpers.values import get_sensor_iwh_value
 from .models import MODEL_SIGNATURES
 from .repairs import delete_issue
 

@@ -36,7 +36,7 @@ from custom_components.syr_connect.exceptions import (
     SyrConnectConnectionError,
     SyrConnectLoginFailedError,
 )
-from custom_components.syr_connect.helpers import build_entry_unique_id
+from custom_components.syr_connect.helpers.registry import build_entry_unique_id
 from custom_components.syr_connect.models import MODEL_SIGNATURES
 from homeassistant import config_entries
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME

@@ -17,12 +17,10 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .entity import SyrConnectEntity, async_add_device_entities
-from .helpers import (
-    get_device_model,
-    get_model_supported_keys,
-    is_value_true,
-    registry_cleanup,
-)
+from .helpers.device import get_device_model
+from .helpers.profile import get_model_supported_keys
+from .helpers.registry import registry_cleanup
+from .helpers.values import is_value_true
 from .models import SyrConnectModel
 
 _LOGGER = logging.getLogger(__name__)

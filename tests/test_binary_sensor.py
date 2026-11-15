@@ -531,7 +531,7 @@ async def test_async_setup_entry_registry_exception(
     entities, async_add_entities = mock_add_entities()
 
     with patch(
-        "custom_components.syr_connect.helpers.er.async_get",
+        "custom_components.syr_connect.helpers.registry.er.async_get",
         side_effect=RuntimeError("Registry error"),
     ) as mock_registry:
         await async_setup_entry(hass, mock_config_entry, async_add_entities)

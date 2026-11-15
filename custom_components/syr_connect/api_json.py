@@ -41,7 +41,7 @@ from .exceptions import (
     SyrConnectHTTPError,
     SyrConnectInvalidResponseError,
 )
-from .helpers import build_user_agent, read_response_text
+from .helpers.integration import build_user_agent, read_response_text
 
 _LOGGER = logging.getLogger(__name__)
 

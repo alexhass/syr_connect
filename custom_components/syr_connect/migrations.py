@@ -24,7 +24,8 @@ from .const import (
     CONF_SERVICE,
 )
 from .exceptions import SyrConnectInvalidResponseError
-from .helpers import build_entry_unique_id, get_integration_version
+from .helpers.integration import get_integration_version
+from .helpers.registry import build_entry_unique_id
 from .models import detect_model
 
 # Renamed local JSON API models (CONF_MODEL) -> their new name

@@ -11,14 +11,13 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .coordinator import SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
-from .helpers import (
+from .helpers.device import (
     build_device_info,
-    build_entity_id,
-    build_unique_id,
     get_device,
     get_device_model,
     is_device_available,
 )
+from .helpers.registry import build_entity_id, build_unique_id
 from .models import SyrConnectModel
 
 

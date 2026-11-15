@@ -26,11 +26,8 @@ from .coordinator import (
     SyrConnectStatisticsCoordinator,
 )
 from .exceptions import SyrConnectConnectionError, SyrConnectError
-from .helpers import (
-    cleanup_removed_devices,
-    clear_device_statistics,
-    get_default_scan_interval_for_entry,
-)
+from .helpers.integration import get_default_scan_interval_for_entry
+from .helpers.registry import cleanup_removed_devices, clear_device_statistics
 from .migrations import (
     v1_to_v2_update_kwargs,
     v2_to_v3_fix_flo_unit,

@@ -38,12 +38,9 @@ from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .entity import SyrConnectEntity, async_add_device_entities
 from .exceptions import SyrConnectError
-from .helpers import (
-    find_entity_id,
-    get_device_model,
-    get_model_supported_keys,
-    registry_cleanup,
-)
+from .helpers.device import get_device_model
+from .helpers.profile import get_model_supported_keys
+from .helpers.registry import find_entity_id, registry_cleanup
 from .models import SyrConnectModel
 
 _LOGGER = logging.getLogger(__name__)
