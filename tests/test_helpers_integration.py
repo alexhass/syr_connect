@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 import pytest
 
-from custom_components.syr_connect.aiosyrconnect.http_client import is_valid_user_agent
+from custom_components.syr_connect.aiosyrconnect.http_client import check_user_agent
 from custom_components.syr_connect.const import (
     _SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT,
     _SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT,
@@ -186,5 +186,6 @@ def test_build_user_agent(integration_version: str) -> None:
         build_user_agent(integration_version, "2026.11.0")
         == f"syr_connect/{integration_version} HomeAssistant/2026.11.0"
     )
-    # The library accepts it (RFC 9110)
-    assert is_valid_user_agent(build_user_agent(integration_version))
+    # The library accepts it
+    user_agent = build_user_agent(integration_version)
+    assert check_user_agent(user_agent) == user_agent

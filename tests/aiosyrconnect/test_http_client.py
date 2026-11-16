@@ -14,7 +14,6 @@ from custom_components.syr_connect.aiosyrconnect import mask_ug_value
 from custom_components.syr_connect.aiosyrconnect.const import RESPONSE_SIZE_MAXIMUM
 from custom_components.syr_connect.aiosyrconnect.http_client import (
     HTTPClient,
-    is_valid_user_agent,
     read_response_text,
 )
 
@@ -387,14 +386,10 @@ def test_empty_user_agent_is_rejected(user_agent: str | None) -> None:
         "aiosyrconnect/1.0.0 aiohttp/3.13.2",
         "aiosyrconnect/1.0.0 (+https://example.com/aiosyrconnect)",
         "aiosyrconnect/1.0.0 (Linux; x86_64) aiohttp/3.13.2",
-        "aiosyrconnect/1.0.0 (nested (comment) \\) ok)",
-        "aiosyrconnect/1.0.0\t(tab before comment)",
-        "aiosyrconnect/1.0.0 (obs-text \xe4)",
     ],
 )
 def test_valid_user_agent(user_agent: str) -> None:
-    """Products and comments per RFC 9110 are accepted."""
-    assert is_valid_user_agent(user_agent)
+    """A User-Agent without whitespace at the ends and without control characters is sent."""
     assert (
         HTTPClient(session=MagicMock(), user_agent=user_agent).user_agent == user_agent
     )
@@ -405,23 +400,12 @@ def test_valid_user_agent(user_agent: str) -> None:
     [
         " aiosyrconnect/1.0.0",
         "aiosyrconnect/1.0.0 ",
-        "aiosyrconnect/",
-        "/1.0",
-        "aiosyrconnect/1.0.0/2",
-        "aiosyrconnect@1.0.0",
         "aiosyrconnect/1.0.0\r\nX-Injected: 1",
-        "aiosyrconnect/1.0.0(no space)",
-        "aiosyrconnect/1.0.0 (unclosed",
-        "aiosyrconnect/1.0.0 (stray ) )",
-        "aiosyrconnect/1.0.0 (bad \\\n escape)",
-        "aiosyrconnect/1.0.0 (trailing backslash \\",
+        "aiosyrconnect/1.0.0\t(tab)",
         "aiosyrconnect/1.0.0 (control \x7f)",
-        "aiosyrconnect/1.0.0 (beyond latin-1 \u20ac)",
-        "aiosyrconnect/1.0.0 ()x",
     ],
 )
 def test_invalid_user_agent_is_rejected(user_agent: str) -> None:
-    """A User-Agent that breaks the grammar of RFC 9110 raises before any request."""
-    assert not is_valid_user_agent(user_agent)
-    with pytest.raises(ValueError, match="not a valid User-Agent"):
+    """Whitespace at the ends and control characters such as CR/LF raise before any request."""
+    with pytest.raises(ValueError, match="control characters"):
         HTTPClient(session=MagicMock(), user_agent=user_agent)

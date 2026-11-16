@@ -112,7 +112,7 @@ class SyrConnectJsonAPI:
             user_agent: HTTP User-Agent of the requests; names the caller
 
         Raises:
-            ValueError: If user_agent is missing, empty or no valid User-Agent (RFC 9110)
+            ValueError: If user_agent is missing, empty or has control characters
         """
         # HTTP session management
         self._session = session
