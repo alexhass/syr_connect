@@ -7,10 +7,14 @@
 [![syr_connect installs](https://img.shields.io/badge/dynamic/json?logo=home-assistant&logoColor=ccc&label=usage&suffix=%20installs&cacheSeconds=15600&url=https://analytics.home-assistant.io/custom_integrations.json&query=$.syr_connect.total)](https://my.home-assistant.io/redirect/config_flow_start/?domain=syr_connect)
 [![Quality scale: Platinum](https://img.shields.io/badge/Quality%20scale-Platinum%20%F0%9F%8F%86-b5d2e0?style=flat)](https://github.com/alexhass/syr_connect/blob/main/quality_scale.yaml)
 
+<!-- ha-marketplace:exclude-start -->
+
 [![hassfest](https://github.com/alexhass/syr_connect/actions/workflows/hassfest.yaml/badge.svg)](https://github.com/alexhass/syr_connect/actions/workflows/hassfest.yaml)
 [![HACS](https://github.com/alexhass/syr_connect/actions/workflows/hacs.yaml/badge.svg)](https://github.com/alexhass/syr_connect/actions/workflows/hacs.yaml)
 [![ci](https://github.com/alexhass/syr_connect/actions/workflows/ci.yml/badge.svg)](https://github.com/alexhass/syr_connect/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/alexhass/syr_connect/graph/badge.svg?token=8P822HPPF3)](https://codecov.io/gh/alexhass/syr_connect)
+
+<!-- ha-marketplace:exclude-end -->
 
 This custom integration enables control of SYR Connect devices through Home Assistant. This integration can also be used with identical devices from other brands. Mixed installations of different brands are supported as well.
 
@@ -36,6 +40,8 @@ Examples of device interfaces:
 
 ![Safe-T+ screenshot](docs/assets/screenshots/en/safetplus.png)
 
+<!-- ha-marketplace:exclude-start -->
+
 ## Installation
 
 [![Open the Home Assistant instance and open a repository inside the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=alexhass&repository=syr_connect&category=integration)
@@ -51,6 +57,8 @@ Examples of device interfaces:
 
 1. Copy the `syr_connect` folder to the `custom_components` directory.
 2. Restart Home Assistant.
+
+<!-- ha-marketplace:exclude-end -->
 
 ## Configuration
 
@@ -614,6 +622,8 @@ Temporary problems with the connection or the cloud service do not make entities
 - **Increase update interval**: Set a higher value (e.g., 120–300 seconds) in integration options.
 - This reduces API calls and system load.
 
+<!-- ha-marketplace:exclude-start -->
+
 ## Dependencies
 
 The integration requires the following Python packages:
@@ -629,6 +639,8 @@ Home Assistant installs the packages **automatically** when:
 2. Home Assistant is restarted after the installation.
 
 For detailed system requirements and troubleshooting, see [REQUIREMENTS.md](REQUIREMENTS.md).
+
+<!-- ha-marketplace:exclude-end -->
 
 ## Disclaimer
 
