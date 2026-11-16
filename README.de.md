@@ -349,7 +349,7 @@ Die Integration fragt die Geräte-API in regelmäßigen Abständen ab (Standard:
 ### Aktualisierung über die Cloud-API
 
 1. **Anmeldung**: Authentifiziert sich mit den Zugangsdaten bei der SYR Connect-Cloud-API.
-2. **Geräteerkennung**: Ruft alle Projekte und Geräte ab, die mit dem Konto verknüpft sind.
+2. **Geräteerkennung**: Ruft alle Projekte und Geräte ab, die mit dem Konto verknüpft sind, beim Start und danach alle 30 Minuten. Ein Gerät, das aus dem Konto gelöscht wurde, wird mit seinen Entitäten aus Home Assistant entfernt.
 3. **Statusabfrage**: Holt für jedes Gerät die aktuellen Statuswerte.
 4. **Aktualisierung der Entitäten**: Aktualisiert alle Home Assistant-Entitäten mit den neuesten Werten.
 

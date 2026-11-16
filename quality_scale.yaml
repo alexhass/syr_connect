@@ -208,7 +208,7 @@ rules:
   
   stale-devices:
     status: done
-    comment: Devices removed from the account are removed at the next setup of the entry if the device list was complete; until then their entities are unavailable
+    comment: Devices removed from the account are removed together with their entities at the setup and after every update with a complete device list; the cloud device lists are fetched every 30 minutes
   
   # PLATINUM TIER
   async-dependency:

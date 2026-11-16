@@ -90,7 +90,7 @@ def is_device_available(coordinator: Any, device_id: str) -> bool:
     - The device's own `available` flag otherwise (False while the cloud reports it offline).
     - False if the device is not in the data: temporary failures keep the devices of the
       last update, so a missing device was removed from the account (it is removed from
-      Home Assistant at the next setup).
+      Home Assistant once the device list is complete).
     """
     if not coordinator.last_update_success:
         return False

@@ -116,7 +116,9 @@ def async_add_device_entities(
 
     A device is set up once, as soon as the coordinator data has a status for it: at
     the setup of the platform, or at the first update that has it, for a device added
-    to the account later or one whose status could not be fetched at the setup.
+    to the account later or one whose status could not be fetched at the setup. A
+    device that is gone from the data was deleted from the account and removed from
+    the registry; if it is added to the account again, it is set up again.
 
     Args:
         entry: Config entry of the platform
@@ -129,7 +131,9 @@ def async_add_device_entities(
     @callback
     def _add_new_devices() -> None:
         entities: list[Entity] = []
-        for device in coordinator.data.get("devices", []) if coordinator.data else []:
+        devices = coordinator.data.get("devices", []) if coordinator.data else []
+        set_up.intersection_update(device["id"] for device in devices)
+        for device in devices:
             if device["id"] in set_up or not device.get("status"):
                 continue
             set_up.add(device["id"])

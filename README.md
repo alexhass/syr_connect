@@ -349,7 +349,7 @@ The integration polls the device API at regular intervals (default: 60 seconds).
 ### Cloud API update process
 
 1. **Login**: Authenticates with the SYR Connect cloud API using the credentials.
-2. **Device discovery**: Retrieves all projects and devices associated with the account.
+2. **Device discovery**: Retrieves all projects and devices associated with the account, at the start and then every 30 minutes. A device that was deleted from the account is removed from Home Assistant together with its entities.
 3. **Status updates**: For each device, fetches current status including all sensor values.
 4. **Entity updates**: Updates all Home Assistant entities with the latest values.
 
