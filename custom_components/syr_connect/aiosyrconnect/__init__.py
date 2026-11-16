@@ -41,8 +41,6 @@ from .models import (
 from .xml_api import SyrConnectXmlAPI
 from .xml_parser import is_device_offline
 
-__version__ = "1.0.0"
-
 __all__ = [
     "API_SERVICES",
     "DEFAULT_CF_BUNDLE_IDENTIFIER",
