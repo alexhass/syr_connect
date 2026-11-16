@@ -8,7 +8,7 @@ import logging
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_USERNAME, Platform
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -288,13 +288,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: SyrConnectConfigEntry) -
 
     entry.runtime_data = coordinator
 
-    # Remove devices that were removed from the account (e.g. by another user
-    # of the same hub) so they don't linger in HA forever alongside their entities.
-    # Skipped if a project's device list failed: its devices are missing, not deleted.
-    if coordinator.device_list_complete:
-        cleanup_removed_devices(hass, coordinator.data, entry.entry_id)
-    else:
+    @callback
+    def _async_remove_deleted_devices() -> None:
+        """Remove the devices that were deleted from the account.
+
+        Runs at the setup and after every update, so a device deleted from the
+        account (e.g. by another user of the same hub) is removed together with its
+        entities once the device list is fetched again (every 30 minutes for the
+        cloud). Skipped if a project's device list failed: its devices are missing,
+        not deleted.
+        """
+        if coordinator.device_list_complete:
+            cleanup_removed_devices(hass, coordinator.data, entry.entry_id)
+
+    if not coordinator.device_list_complete:
         _LOGGER.warning("Device list incomplete; skipping removal of stale devices")
+    _async_remove_deleted_devices()
+    entry.async_on_unload(coordinator.async_add_listener(_async_remove_deleted_devices))
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 

@@ -81,7 +81,10 @@ async def test_async_setup_entry_success(hass: HomeAssistant) -> None:
 async def test_async_setup_entry_removes_stale_devices_only_with_complete_list(
     hass: HomeAssistant, complete: bool
 ) -> None:
-    """Stale devices are only removed if every project's device list was fetched."""
+    """Stale devices are only removed if every project's device list was fetched.
+
+    The removal runs at the setup and again after every update of the coordinator.
+    """
     config_entry = MockConfigEntry(
         domain=DOMAIN,
         data={CONF_USERNAME: "test@example.com", CONF_PASSWORD: "password"},
@@ -104,8 +107,16 @@ async def test_async_setup_entry_removes_stale_devices_only_with_complete_list(
         mock_coordinator_class.return_value = mock_coordinator
 
         assert await async_setup_entry(hass, config_entry) is True
+        assert mock_cleanup.call_count == int(complete)
 
-    assert mock_cleanup.called is complete
+        # The listener added to the coordinator repeats it after every update
+        listener = mock_coordinator.async_add_listener.call_args.args[0]
+        listener()
+        assert mock_cleanup.call_count == 2 * int(complete)
+        if complete:
+            mock_cleanup.assert_called_with(
+                hass, mock_coordinator.data, config_entry.entry_id
+            )
 
 
 async def test_async_migrate_entry_v1_missing_username(hass: HomeAssistant) -> None:

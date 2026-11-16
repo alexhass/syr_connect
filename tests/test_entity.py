@@ -92,6 +92,26 @@ def test_add_device_entities_waits_for_the_status() -> None:
     add_entities.assert_called_once_with(["entity-A"])
 
 
+def test_add_device_entities_sets_up_a_device_added_again() -> None:
+    """A device deleted from the account and added again gets its entities again."""
+    coordinator = MagicMock()
+    coordinator.data = {"devices": [_device("A", {"getSRN": "A"})]}
+    add_entities = MagicMock()
+
+    async_add_device_entities(MagicMock(), coordinator, add_entities, _build)
+    listener = coordinator.async_add_listener.call_args.args[0]
+
+    # Deleted from the account: the registry cleanup removes its entities
+    coordinator.data["devices"].clear()
+    add_entities.reset_mock()
+    listener()
+    add_entities.assert_not_called()
+
+    coordinator.data["devices"].append(_device("A", {"getSRN": "A"}))
+    listener()
+    add_entities.assert_called_once_with(["entity-A"])
+
+
 def test_add_device_entities_without_data() -> None:
     """Without coordinator data nothing is added."""
     coordinator = MagicMock()
