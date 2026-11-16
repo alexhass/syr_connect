@@ -6,7 +6,6 @@ import logging
 from typing import Any, override
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import entity_registry as er
@@ -863,7 +862,7 @@ async def async_setup_entry(
 
 def _async_setup_muco_conditional_selects(
     hass: HomeAssistant,
-    entry: ConfigEntry,
+    entry: SyrConnectConfigEntry,
     coordinator: SyrConnectDataUpdateCoordinator,
     async_add_entities: AddEntitiesCallback,
 ) -> None:

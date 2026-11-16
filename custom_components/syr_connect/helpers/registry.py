@@ -1,4 +1,4 @@
-"""Entity and device registry: ids, lookups, cleanup and recorder statistics."""
+"""Entity, device and issue registry: ids, lookups, cleanup and recorder statistics."""
 
 from collections.abc import Callable, Mapping, Set as AbstractSet
 import logging
@@ -7,7 +7,11 @@ from typing import Any
 from homeassistant.components.recorder import get_instance
 from homeassistant.const import CONF_HOST, CONF_USERNAME
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import device_registry as dr, entity_registry as er
+from homeassistant.helpers import (
+    device_registry as dr,
+    entity_registry as er,
+    issue_registry as ir,
+)
 from homeassistant.util import slugify
 
 from ..aiosyrconnect import SyrConnectStatus
@@ -161,6 +165,16 @@ def find_entity_id(
     return registry.async_get_entity_id(
         domain, DOMAIN, build_unique_id(entry_id, device_id, key)
     )
+
+
+def delete_issue(hass: HomeAssistant, issue_id: str) -> None:
+    """Delete a repair issue of this integration.
+
+    Args:
+        hass: Home Assistant instance
+        issue_id: Unique identifier for the issue to delete
+    """
+    ir.async_delete_issue(hass, DOMAIN, issue_id)
 
 
 def cleanup_removed_devices(

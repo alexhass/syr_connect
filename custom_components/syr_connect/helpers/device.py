@@ -1,9 +1,9 @@
 """Device data of the coordinator: lookup, model, availability and device info."""
 
 import logging
-from typing import Any
 
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from ..aiosyrconnect import SyrConnectStatus
 from ..const import DOMAIN
@@ -82,7 +82,10 @@ def get_device_model(device: SyrConnectDevice | None) -> SyrConnectModel:
     return detect_device_model(device)
 
 
-def is_device_available(coordinator: Any, device_id: str) -> bool:
+def is_device_available(
+    coordinator: DataUpdateCoordinator[SyrConnectCoordinatorData | None],
+    device_id: str,
+) -> bool:
     """Return whether the entities of a device are available.
 
     Shared by the `available` property of all entities of a device:
