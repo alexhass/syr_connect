@@ -5,15 +5,12 @@ import base64
 from Cryptodome.Cipher import AES
 import pytest
 
-from custom_components.syr_connect.aiosyrconnect import (
-    API_SERVICES,
-    DEFAULT_CF_BUNDLE_IDENTIFIER,
-)
+from custom_components.syr_connect.aiosyrconnect import API_SERVICES
 from custom_components.syr_connect.aiosyrconnect.xml_encryption import SyrEncryption
 
 _SYR_KEY = "d805a5c409dc354b6ccf03a2c29a5825851cf31979abf526ede72570c52cf954"
 _SYR_IV = "408a42beb8a1cefad990098584ed51a5"
-_SYR_SERVICE = API_SERVICES[DEFAULT_CF_BUNDLE_IDENTIFIER]
+_SYR_SERVICE = API_SERVICES["de.consoft.syr.connect"]
 
 
 @pytest.fixture

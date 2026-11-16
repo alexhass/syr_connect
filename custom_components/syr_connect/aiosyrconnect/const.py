@@ -119,6 +119,3 @@ API_SERVICES: dict[str, SyrConnectService] = {
         display_name="POLYGONVATRO Connect",
     ),
 }
-
-# Service of the SYR Connect app itself, the default for a new account
-DEFAULT_CF_BUNDLE_IDENTIFIER = "de.consoft.syr.connect"

@@ -15,7 +15,6 @@ import pytest
 
 from custom_components.syr_connect.aiosyrconnect import (
     API_SERVICES,
-    DEFAULT_CF_BUNDLE_IDENTIFIER,
     SyrConnectAuthError,
     SyrConnectConnectionError,
     SyrConnectDeviceNotFoundError,
@@ -47,7 +46,7 @@ _STATISTICS = (
     ),
 )
 
-_SYR_SERVICE = API_SERVICES[DEFAULT_CF_BUNDLE_IDENTIFIER]
+_SYR_SERVICE = API_SERVICES["de.consoft.syr.connect"]
 
 
 @pytest.fixture
