@@ -17,7 +17,6 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.components.sensor.const import NON_NUMERIC_DEVICE_CLASSES
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     UnitOfConductivity,
     UnitOfElectricPotential,
@@ -2523,7 +2522,7 @@ def _is_registered_sensor_wanted(key: str, value: Any) -> bool:
 
 def _async_setup_muco_conditional_sensors(
     hass: HomeAssistant,
-    entry: ConfigEntry,
+    entry: SyrConnectConfigEntry,
     coordinator: SyrConnectDataUpdateCoordinator,
     async_add_entities: AddEntitiesCallback,
 ) -> None:

@@ -3,14 +3,13 @@
 from collections.abc import Callable, Iterable
 from typing import override
 
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import callback
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .aiosyrconnect import SyrConnectStatus
-from .coordinator import SyrConnectDataUpdateCoordinator
+from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .helpers.device import (
     build_device_info,
@@ -107,7 +106,7 @@ class SyrConnectEntity(CoordinatorEntity[SyrConnectDataUpdateCoordinator]):
 
 
 def async_add_device_entities(
-    entry: ConfigEntry,
+    entry: SyrConnectConfigEntry,
     coordinator: SyrConnectDataUpdateCoordinator,
     async_add_entities: AddEntitiesCallback,
     build_entities: Callable[[SyrConnectDevice], Iterable[Entity]],

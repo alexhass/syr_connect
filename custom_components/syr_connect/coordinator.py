@@ -56,10 +56,9 @@ from .helpers.integration import (
     get_default_scan_interval_for_entry,
     get_integration_version,
 )
-from .helpers.registry import build_statistic_id
+from .helpers.registry import build_statistic_id, delete_issue
 from .helpers.values import get_sensor_iwh_value
 from .models import MODEL_SIGNATURES
-from .repairs import delete_issue
 
 _LOGGER = logging.getLogger(__name__)
 

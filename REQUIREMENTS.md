@@ -168,7 +168,6 @@ config/
       │  └── values.py
       ├── icons.json
       ├── migrations.py
-      ├── repairs.py
       ├── devices/
       │  ├── __init__.py
       │  └── <one file per device family>.py

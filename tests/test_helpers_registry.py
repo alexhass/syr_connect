@@ -18,6 +18,7 @@ from custom_components.syr_connect.helpers.registry import (
     build_unique_id,
     cleanup_removed_devices,
     clear_device_statistics,
+    delete_issue,
     registry_cleanup,
 )
 from custom_components.syr_connect.sensor import _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
@@ -819,3 +820,13 @@ def test_registry_cleanup_conditional_only_applies_to_sensor_domain() -> None:
 def test_entity_key(unique_id: str, domain: str, expected: str | None) -> None:
     """The key comes from the unique_id of an entity of the device, else None."""
     assert _entity_key(unique_id, "01jentry_206aaa12345_", domain) == expected
+
+
+async def test_delete_issue(hass: HomeAssistant) -> None:
+    """A repair issue is deleted from the issue registry of the integration."""
+    with patch(
+        "homeassistant.helpers.issue_registry.async_delete_issue"
+    ) as mock_delete:
+        delete_issue(hass, "test_issue_to_delete")
+
+        mock_delete.assert_called_once_with(hass, DOMAIN, "test_issue_to_delete")

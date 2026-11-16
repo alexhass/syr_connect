@@ -5,11 +5,11 @@ rules:
   # BRONZE TIER
   action-setup:
     status: exempt
-    comment: Integration has no service actions defined (only Button entities)
+    comment: Integration registers no service actions; devices are controlled through entities (buttons, selects, switches, valves, update)
   
   appropriate-polling:
     status: done
-    comment: Polling interval is configurable (default 60s) via Options Flow
+    comment: Polling interval is configurable via the options flow (default 60 s; minimum 60 s for the cloud and 10 s for the local API, maximum 600 s)
   
   brands:
     status: done
@@ -25,7 +25,7 @@ rules:
   
   config-flow-test-coverage:
     status: done
-    comment: tests/test_config_flow.py (92 tests) covers the user steps, options, reauth (cloud and local), reconfigure and the error handling
+    comment: tests/test_config_flow.py (81 tests) covers the user steps, options, reauth (cloud and local), reconfigure and the error handling
   
   config-flow:
     status: done
@@ -38,11 +38,15 @@ rules:
   
   dependency-transparency:
     status: done
-    comment: Dependencies declared in manifest.json (pycryptodomex, defusedxml); no hidden runtime deps
+    comment: External dependencies (pycryptodomex, defusedxml) are declared in manifest.json and published on PyPI; aiohttp comes with Home Assistant. The protocol library aiosyrconnect is bundled in the integration and not published on PyPI
   
   docs-actions:
     status: exempt
-    comment: No service actions - only Button entities
+    comment: Integration registers no service actions
+
+  docs-conditions:
+    status: exempt
+    comment: Integration provides no conditions
   
   docs-high-level-description:
     status: done
@@ -54,7 +58,11 @@ rules:
   
   docs-removal-instructions:
     status: done
-    comment: Removal instructions added to README.md
+    comment: README.md section "Removal" describes how to remove the integration
+
+  docs-triggers:
+    status: exempt
+    comment: Integration provides no triggers
   
   entity-event-setup:
     status: exempt
@@ -95,11 +103,11 @@ rules:
   
   docs-configuration-parameters:
     status: done
-    comment: Scan interval described in README.md under Configuration Options
+    comment: Scan interval described in README.md section "Configuration options"
   
   docs-installation-parameters:
     status: done
-    comment: Username and password described in README
+    comment: README.md section "Configuration" describes the cloud parameters (service, username, password) and the local parameters (model, host)
   
   entity-unavailable:
     status: done
@@ -123,7 +131,7 @@ rules:
   
   test-coverage:
     status: done
-    comment: 2393 tests; 100 % line coverage of custom_components/syr_connect is required (pytest-cov) and reported to codecov
+    comment: 2904 tests; 100 % line coverage of custom_components/syr_connect is required (pytest-cov) and reported to codecov
 
   # GOLD TIER
   devices:
@@ -144,23 +152,23 @@ rules:
   
   docs-data-update:
     status: done
-    comment: README.md section "How Data is Updated" describes polling mechanism
+    comment: README.md section "How data is updated" describes the polling of the cloud and the local API
   
   docs-examples:
     status: done
-    comment: README.md section "Automation Examples" with 6 automations (alerts, reports, monitoring)
+    comment: README.md section "Automation examples" with 6 automations (alerts, reports, monitoring)
   
   docs-known-limitations:
     status: done
-    comment: README.md section "Known Limitations" lists all constraints
+    comment: README.md section "Known limitations" lists all constraints
   
   docs-supported-devices:
     status: done
-    comment: README.md section "Supported Devices" lists compatible models
+    comment: README.md section "Supported devices" lists compatible models
   
   docs-supported-functions:
     status: done
-    comment: README.md section "Supported Functionality" describes all features
+    comment: README.md section "Supported functionality" describes all features
   
   docs-troubleshooting:
     status: done
@@ -168,7 +176,7 @@ rules:
   
   docs-use-cases:
     status: done
-    comment: README.md section "Use Cases & Examples" with practical scenarios
+    comment: README.md section "Use cases & examples" with practical scenarios
   
   dynamic-devices:
     status: done
@@ -184,7 +192,7 @@ rules:
   
   entity-disabled-by-default:
     status: done
-    comment: 83 of 223 sensor descriptions and 4 selects are disabled by default (technical values, leak protection profiles)
+    comment: 92 of 262 sensor descriptions, 3 of 52 select descriptions and 2 of 9 binary sensor descriptions are disabled by default (technical values, leak protection profiles)
   
   entity-translations:
     status: done
@@ -213,7 +221,7 @@ rules:
   # PLATINUM TIER
   async-dependency:
     status: done
-    comment: All dependencies are async - aiohttp for HTTP, defusedxml for secure XML parsing, pycryptodomex for crypto
+    comment: The library aiosyrconnect does all I/O with aiohttp; defusedxml (XML parsing) and pycryptodomex (AES) perform no I/O
   
   inject-websession:
     status: done
@@ -221,10 +229,10 @@ rules:
   
   strict-typing:
     status: done
-    comment: mypy runs with the strict settings of Home Assistant core (mypy.ini); the typed SyrConnectConfigEntry types the runtime data; py.typed marker file present for PEP 561 compliance
+    comment: mypy runs with the strict settings of Home Assistant core (mypy.ini); the typed SyrConnectConfigEntry is used for every entry that carries the runtime data; py.typed marker file present for PEP 561 compliance
 
 # Summary
-# Bronze: 18/18 completed (100%) ✅ (3 exempt rules)
+# Bronze: 20/20 completed (100%) ✅ (5 exempt rules)
 # Silver: 10/10 completed (100%) ✅
 # Gold: 21/21 completed (100%) ✅🥇 (3 exempt rules)
 # Platinum: 3/3 completed (100%) ✅🏆
