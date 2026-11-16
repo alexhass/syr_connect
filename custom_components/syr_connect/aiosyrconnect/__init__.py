@@ -18,7 +18,7 @@ It imports only its own modules, the standard library and the requirements liste
 README.md (tests/aiosyrconnect/test_package.py checks this).
 """
 
-from .const import API_SERVICES, DEFAULT_CF_BUNDLE_IDENTIFIER
+from .const import API_SERVICES
 from .exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
@@ -43,7 +43,6 @@ from .xml_parser import is_device_offline
 
 __all__ = [
     "API_SERVICES",
-    "DEFAULT_CF_BUNDLE_IDENTIFIER",
     "SyrConnectApiDevice",
     "SyrConnectAuthError",
     "SyrConnectConnectionError",

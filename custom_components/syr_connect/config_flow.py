@@ -16,7 +16,6 @@ from homeassistant.util import dt as dt_util
 
 from .aiosyrconnect import (
     API_SERVICES,
-    DEFAULT_CF_BUNDLE_IDENTIFIER,
     SyrConnectAuthError,
     SyrConnectConnectionError,
     SyrConnectInvalidResponseError,
@@ -29,6 +28,7 @@ from .const import (
     _SYR_CONNECT_API_SCAN_INTERVAL_MAXIMUM,
     _SYR_CONNECT_API_XML_SCAN_INTERVAL_MINIMUM,
     _SYR_CONNECT_SCAN_INTERVAL_CONF,
+    _SYR_CONNECT_SERVICE_DEFAULT,
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
@@ -72,7 +72,7 @@ class HostWithPortError(HostInvalidError):
 STEP_CLOUD_XML_DATA_SCHEMA = probatio.Schema(
     {
         probatio.Required(
-            CONF_SERVICE, default=DEFAULT_CF_BUNDLE_IDENTIFIER
+            CONF_SERVICE, default=_SYR_CONNECT_SERVICE_DEFAULT
         ): selector.SelectSelector(
             selector.SelectSelectorConfig(
                 options=[

@@ -13,6 +13,10 @@ CONF_SERVICE = "service"
 API_TYPE_XML = "xml"
 API_TYPE_JSON = "json"
 
+# Service of the SYR Connect app itself: preselected for a new account, and the service
+# of the entries made before the service could be chosen
+_SYR_CONNECT_SERVICE_DEFAULT = "de.consoft.syr.connect"
+
 _SYR_CONNECT_SCAN_INTERVAL_CONF = "scan_interval"
 _SYR_CONNECT_API_XML_SCAN_INTERVAL_DEFAULT = 60  # seconds
 _SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT = 60  # seconds

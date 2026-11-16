@@ -17,13 +17,13 @@ from pytest_homeassistant.components.recorder.common import async_wait_recording
 
 from custom_components.syr_connect.aiosyrconnect import (
     API_SERVICES,
-    DEFAULT_CF_BUNDLE_IDENTIFIER,
     SyrConnectAuthError,
     SyrConnectConnectionError,
     SyrConnectInvalidResponseError,
     SyrConnectJsonAPI,
 )
 from custom_components.syr_connect.const import (
+    _SYR_CONNECT_SERVICE_DEFAULT,
     API_TYPE_JSON,
     CONF_API_TYPE,
     CONF_HOST,
@@ -1830,7 +1830,7 @@ async def test_coordinator_init_xml_api_with_conf_service(hass: HomeAssistant) -
     ) as mock_xml_api_class:
         mock_xml_api_class.return_value = MagicMock()
 
-        svc = API_SERVICES[DEFAULT_CF_BUNDLE_IDENTIFIER]
+        svc = API_SERVICES[_SYR_CONNECT_SERVICE_DEFAULT]
         config_data = {
             CONF_USERNAME: "test@example.com",
             CONF_PASSWORD: "password",

@@ -25,7 +25,6 @@ import aiohttp
 
 from aiosyrconnect import (
     API_SERVICES,
-    DEFAULT_CF_BUNDLE_IDENTIFIER,
     SyrConnectAuthError,
     SyrConnectConnectionError,
     SyrConnectJsonAPI,
@@ -39,7 +38,7 @@ async def main() -> None:
             session,
             "user@example.com",
             "secret",
-            service=API_SERVICES[DEFAULT_CF_BUNDLE_IDENTIFIER],
+            service=API_SERVICES["de.consoft.syr.connect"],
             user_agent="aiosyrconnect/1.0.0",
             language="de-DE",
         )

@@ -132,7 +132,6 @@ try:
 
     from custom_components.syr_connect.aiosyrconnect import (
         API_SERVICES,
-        DEFAULT_CF_BUNDLE_IDENTIFIER,
         SyrConnectApiDevice,
         SyrConnectStatistic,
     )
@@ -151,6 +150,7 @@ try:
     from custom_components.syr_connect.aiosyrconnect.xml_encryption import SyrEncryption
     from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
     from custom_components.syr_connect.aiosyrconnect.xml_payload import PayloadBuilder
+    from custom_components.syr_connect.const import _SYR_CONNECT_SERVICE_DEFAULT
     from custom_components.syr_connect.helpers.integration import (
         build_user_agent,
         get_month_version,
@@ -276,7 +276,7 @@ class DebugXmlClient:
         # Key and IV of the service of the package name, SYR Connect if unknown
         svc = API_SERVICES.get(
             api_package_name,
-            API_SERVICES[DEFAULT_CF_BUNDLE_IDENTIFIER],
+            API_SERVICES[_SYR_CONNECT_SERVICE_DEFAULT],
         )
         self.encryption = SyrEncryption(svc.crypt_key, svc.crypt_vector)
         checksum = SyrChecksum(
@@ -564,7 +564,7 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--api-package-name",
-        default=DEFAULT_CF_BUNDLE_IDENTIFIER,
+        default=_SYR_CONNECT_SERVICE_DEFAULT,
         help="Package name embedded in the app-version string (default: %(default)s)",
     )
     parser.add_argument(
