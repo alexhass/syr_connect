@@ -68,7 +68,7 @@ What the caller passes:
 | Argument | Client | Purpose |
 | --- | --- | --- |
 | `session` | both | `aiohttp.ClientSession` of the caller |
-| `user_agent` | both | HTTP User-Agent that names the caller; it does not imitate the SYR app. Required: a missing or empty value, or one that is no valid User-Agent per RFC 9110, raises `ValueError` |
+| `user_agent` | both | HTTP User-Agent that names the caller; it does not imitate the SYR app. Required: a missing or empty value, leading or trailing whitespace or a control character raises `ValueError` |
 | `service` | XML | Cloud service of the account, one of `API_SERVICES` |
 | `language` | XML | Locale like `de-DE` for the requests; default `en-US` |
 | `local_now` | XML | Returns the current time in the caller's time zone, for the UTC offset of the login; default the time zone of the process |

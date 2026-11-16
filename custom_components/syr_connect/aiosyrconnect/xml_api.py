@@ -103,7 +103,7 @@ class SyrConnectXmlAPI:
                 UTC offset (tzo) of the login; default the local time of the process
 
         Raises:
-            ValueError: If user_agent is missing, empty or no valid User-Agent (RFC 9110)
+            ValueError: If user_agent is missing, empty or has control characters
         """
         # --- Authentication credentials ---
         self.username = username
