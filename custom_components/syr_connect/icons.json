@@ -258,6 +258,9 @@
       "getbar_system": {
         "default": "mdi:gauge"
       },
+      "getbar2": {
+        "default": "mdi:gauge"
+      },
       "getbat": {
         "default": "mdi:car-battery",
         "range": {
@@ -265,11 +268,14 @@
           "0.01": "mdi:car-battery"
         }
       },
-      "getbar2": {
-        "default": "mdi:gauge"
-      },
       "getcas": {
         "default": "mdi:bottle-tonic-outline"
+      },
+      "getccf": {
+        "default": "mdi:calendar-sync"
+      },
+      "getccl": {
+        "default": "mdi:thermometer-high"
       },
       "getcel": {
         "default": "mdi:thermometer"
@@ -323,6 +329,15 @@
       },
       "getcs3": {
         "default": "mdi:beaker"
+      },
+      "getcsl": {
+        "default": "mdi:cup-water"
+      },
+      "getcss": {
+        "default": "mdi:timer-outline"
+      },
+      "getcwf": {
+        "default": "mdi:calendar-sync"
       },
       "getcwl": {
         "default": "mdi:gauge-low"
@@ -844,6 +859,9 @@
       "getrvt": {
         "default": "mdi:water-plus"
       },
+      "getscf": {
+        "default": "mdi:timer-sand"
+      },
       "getsle": {
         "default": "mdi:timer-sand"
       },
@@ -903,6 +921,9 @@
       },
       "getsv3": {
         "default": "mdi:delete-variant"
+      },
+      "getswf": {
+        "default": "mdi:timer-sand"
       },
       "gett1": {
         "default": "mdi:timer-outline"
@@ -970,6 +991,9 @@
       "getvs3": {
         "default": "mdi:gauge"
       },
+      "getwcl": {
+        "default": "mdi:thermometer-low"
+      },
       "getwfc": {
         "default": "mdi:wifi"
       },
@@ -994,38 +1018,14 @@
       "getwrn": {
         "default": "mdi:alert-outline"
       },
-      "getwty": {
-        "default": "mdi:water-thermometer"
-      },
-      "getscf": {
-        "default": "mdi:timer-sand"
-      },
-      "getswf": {
-        "default": "mdi:timer-sand"
-      },
-      "getccf": {
-        "default": "mdi:calendar-sync"
-      },
-      "getcwf": {
-        "default": "mdi:calendar-sync"
-      },
-      "getccl": {
-        "default": "mdi:thermometer-high"
-      },
-      "getwcl": {
-        "default": "mdi:thermometer-low"
-      },
-      "getcss": {
-        "default": "mdi:timer-outline"
+      "getwsl": {
+        "default": "mdi:cup-water"
       },
       "getwss": {
         "default": "mdi:timer-outline"
       },
-      "getcsl": {
-        "default": "mdi:cup-water"
-      },
-      "getwsl": {
-        "default": "mdi:cup-water"
+      "getwty": {
+        "default": "mdi:water-thermometer"
       }
     },
     "switch": {
