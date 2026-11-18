@@ -1,16 +1,11 @@
 """Device profile lookups: allowlists, alarm codes, water hardness and cartridges."""
 
-from collections.abc import Set as AbstractSet
+from collections.abc import Mapping, Set as AbstractSet
 import logging
 import math
 from typing import Any
 
 from ..aiosyrconnect import SyrConnectStatus
-from ..const import (
-    _SYR_CONNECT_SENSOR_ALA_CODES_GENERIC,
-    _SYR_CONNECT_SENSOR_NOT_CODES_GENERIC,
-    _SYR_CONNECT_SENSOR_WRN_CODES_GENERIC,
-)
 from ..devices import WHU_FACTORS_FROM_DH
 from ..models import SyrConnectModel
 
@@ -55,6 +50,30 @@ def get_model_supported_keys(
     return set(device_keys)
 
 
+def _map_family_code(
+    codes: Mapping[str, str] | None, raw_code: Any
+) -> tuple[str | None, str]:
+    """Map a raw alarm, notification or warning code with the codes of the family.
+
+    Each device family numbers its codes differently; without the codes of the
+    family (unknown models) the raw code is kept.
+
+    Args:
+        codes: Codes of the device family (raw code -> translation key), or None.
+        raw_code: Raw code value from the API (e.g. "FF", "A5", "0").
+
+    Returns:
+        (mapped_key, raw_code) where mapped_key is the translation key or None.
+    """
+    if raw_code is None:
+        return (None, "")
+    code = str(raw_code)
+    if codes is None:
+        return (None, code)
+    mapped = codes.get(code.strip().upper())
+    return (mapped, code) if mapped is not None else (None, code)
+
+
 def get_sensor_ala_map(model: SyrConnectModel, raw_code: Any) -> tuple[str | None, str]:
     """Map raw getALA alarm code to internal translation key.
 
@@ -65,23 +84,10 @@ def get_sensor_ala_map(model: SyrConnectModel, raw_code: Any) -> tuple[str | Non
     Returns:
         Internal translation key (e.g. "no_alarm", "alarm_salt_supply_low") or None if unknown.
     """
-    if raw_code is None:
-        return (None, "")
-
-    # Normalize code and prepare uppercase form for mapping lookups
-    code = str(raw_code)
-    code_upper = code.strip().upper()
-
-    # Model-specific families take precedence; every other model (including unknown ones) uses the generic codes.
     profile = model.device_profile
-    codes = (
-        profile.ala_codes
-        if profile is not None and profile.ala_codes is not None
-        else _SYR_CONNECT_SENSOR_ALA_CODES_GENERIC
+    return _map_family_code(
+        profile.ala_codes if profile is not None else None, raw_code
     )
-
-    mapped = codes.get(code_upper)
-    return (mapped, code) if mapped is not None else (None, code)
 
 
 def get_whu_unit(model: SyrConnectModel, raw_code: Any) -> str | None:
@@ -256,37 +262,29 @@ def get_sensor_not_map(model: SyrConnectModel, raw_code: Any) -> tuple[str | Non
     """Map raw getNOT notification code to internal translation key.
 
     Args:
-        model: Detected model of the device (unused but kept for signature parity)
+        model: Detected model of the device (selects the code family).
         raw_code: Raw code value from the API (e.g. "01", "FF")
 
     Returns:
         (mapped_key, raw_code) where mapped_key is internal translation key or None
     """
-    # Accept None
-    if raw_code is None:
-        return (None, "")
-
-    code = str(raw_code)
-    code_upper = code.strip().upper()
-    mapped = _SYR_CONNECT_SENSOR_NOT_CODES_GENERIC.get(code_upper)
-    return (mapped, code) if mapped is not None else (None, code)
+    profile = model.device_profile
+    return _map_family_code(
+        profile.not_codes if profile is not None else None, raw_code
+    )
 
 
 def get_sensor_wrn_map(model: SyrConnectModel, raw_code: Any) -> tuple[str | None, str]:
     """Map raw getWRN warning code to internal translation key.
 
     Args:
-        model: Detected model of the device (unused but kept for signature parity)
+        model: Detected model of the device (selects the code family).
         raw_code: Raw code value from the API (e.g. "01", "FF")
 
     Returns:
         (mapped_key, raw_code) where mapped_key is internal translation key or None
     """
-    # Accept None
-    if raw_code is None:
-        return (None, "")
-
-    code = str(raw_code)
-    code_upper = code.strip().upper()
-    mapped = _SYR_CONNECT_SENSOR_WRN_CODES_GENERIC.get(code_upper)
-    return (mapped, code) if mapped is not None else (None, code)
+    profile = model.device_profile
+    return _map_family_code(
+        profile.wrn_codes if profile is not None else None, raw_code
+    )

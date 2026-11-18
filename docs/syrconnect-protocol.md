@@ -519,7 +519,7 @@ Some further data about the device
 
 | Property | Example | Unit | Access level | Default | Description |
 | --- | --- | --- | --- | --- | --- |
-| getALA | "" | | USER | | Current alarm code — used on SafeTech, SafeTech+, LEXplus10SL and similar leak-protection devices. Translated to human-readable alarm strings (e.g. `alarm_leakage_volume_reached`, `alarm_microleakage_detected`). FF = no alarm. SafeTech codes: see [Alarm codes (getALA) — SafeTech](#alarm-codes-getala--safetech) |
+| getALA | "" | | USER | | Current alarm code. Each device family has its own codes, see [Alarm codes (getALA) — common table](#alarm-codes-getala--common-table) and the tables of the families below. FF = no alarm |
 | setALA | "255"<br>"161" | | SERVICE | | 255 = acknowledges the current alarm (official API; the value is decimal, getALA returns hexadecimal). SafeTech: 161–172 = sets alarm A1–AC (write-only) |
 | clrALA | "" | | SERVICE | | Clears the current alarm and opens the valve (write-only) |
 | getALH | "2026-02-07 17:41:10:A0..." | | USER | 10 | Alarm history log — multiline, one timestamped entry per line (NeoSoft, Sanibel). SafeTech: the last 0–100 entries as CSV; the number of entries is passed as value |
@@ -529,44 +529,63 @@ Some further data about the device
 | getDEN | "1" | | | | Device enabled/disabled flag (1 = enabled, 0 = disabled) |
 | getLOCK | "False" | | | | Shut-off lock during a filter change: True = a filter change of a replaceable filter is running, and the shut-off is locked so that it cannot be moved. Read it for display only, never set it (issue #23). Reported by Trio DFR/LS and SafeTech |
 | setNOT | "255" | | | | 255 = acknowledges the current notification (write-only) |
-| getNOT | "" | | | | Current notification code (e.g. `new_software_available`, `annual_maintenance`). |
+| getNOT | "" | | | | Current notification code, see [Notification codes (getNOT) — common table](#notification-codes-getnot--common-table) |
 | getSTA | "Bitte Salz nachfüllen"<br>"Płukanie wsteczne"<br>"Płukanie regenerantem"<br>"Płukanie wolne"<br>"Płukanie szybkie"<br>"Napełnianie" | | | | Status messages of the regeneration, in this case in German: "Please refill salt". Polish strings are not localized.<br>Newer models (Syr AC 3200, AC 3228 / SYR MultiController) report this as an integer instead: 0 = Standby, 1 = Initial filling, 2 = Automatic filling, 3 = Manual filling. |
 | setWRN | "255" | | | | 255 = acknowledges the current warning (write-only) |
-| getWRN | "" | | | | Current warning code (non-critical, e.g. `power_outage`, `salt_supply_low`). Translated to human-readable warning strings. |
+| getWRN | "" | | | | Current warning code (non-critical), see [Warning codes (getWRN) — common table](#warning-codes-getwrn--common-table) |
 
-#### Alarm codes (getALA) — NeoSoft / MuCo / Trio family
+#### Alarm codes (getALA) — common table
 
-Applies to NeoSoft, Trio DFR/LS, MuCo/Lock/RSA family devices (Conel/Sanibel/Optima/Concept/Ditech MuCo, Syr SafeTech-Lock/AC 3200/AC 3228/RSA/Trio-Lock). SafeTech+ uses a different code scheme (see below).
+Every device family numbers its alarm, warning and notification codes differently. There is no generic table: a model without the codes of its family shows the raw code.
 
-| Code | Meaning (official) | Translation key |
+The common table applies to NeoSoft (dk 1200–1222), Trio DFR/LS (dk 1100, 1110, 1111, 1113), SafeTech+ (dk 1112) and the MultiController (dk 1500–1506, every getDFM role) (`devices.ALA_CODES_COMMON`). The SafeTech+ with dk 142 uses the SafeTech codes (see below).
+
+| Code | Meaning | Translation key |
 | --- | --- | --- |
-| 0D | Salzvorrat leer | `alarm_salt_supply_empty` |
-| 0E | Ventilposition | `alarm_valve_position` |
-| 15 | Volumenleckage Heizungsbefüllung | `alarm_heating_fill_volume_leak` |
-| 16 | Zeitleckage Heizungsbefüllung | `alarm_heating_fill_time_leak` |
-| 17 | Füllzyklen überschritten | `alarm_fill_cycles_exceeded` |
-| 18 | Kartusche erschöpft (Kartuschenkapazität) | `alarm_cartridge_exhausted_capacity` |
-| 19 | Kartusche erschöpft (Leitwertanstieg) | `alarm_cartridge_exhausted_conductivity` |
-| 1A | Solldruck kann nicht erreicht werden | `alarm_target_pressure_unreachable` |
-| A1 | Endschalter | `alarm_end_switch` |
-| A2 | Motorstrom | `alarm_motor_current_exceeded` |
-| A3 | Volumenleckage | `alarm_leakage_volume_reached` |
-| A4 | Zeitleckage | `alarm_leakage_time_reached` |
-| A5 | Durchflussleckage | `alarm_max_flow_rate_reached` |
-| A6 | Mikroleckageverdacht | `alarm_microleakage_detected` |
-| A7 | Bodensensorleckage | `alarm_external_sensor_leakage_radio` |
-| A8 | Störung Durchflusssensor | `alarm_flow_sensor_fault` |
-| A9 | Störung Drucksensor | `alarm_pressure_sensor_faulty` |
-| AA | Störung Temperatursensor | `alarm_temperature_sensor_faulty` |
-| AB | Störung Leitwertsensor | `fault_conductance_sensor` |
-| AC | Störung Leitwertsensor | `fault_conductance_sensor` |
-| AD | Erhöhte Wasserhärte | `alarm_increased_water_hardness` |
-| AE | *(no information available)* | `error_no_information` |
-| FF | Kein Alarm | `no_alarm` |
+| 01 | Inlet pressure too low | `alarm_pressure_too_low` |
+| 02 | Inlet pressure too high | `alarm_pressure_too_high` |
+| 03 | Position error of the mixing valve | `alarm_mixing_valve_position` |
+| 04 | Position error of the changeover valve | `alarm_changeover_valve_position` |
+| 05 | Position error of column 1 | `alarm_column_1_position` |
+| 06 | Position error of column 2 | `alarm_column_2_position` |
+| 07 | Level in the salt container too low | `alarm_brine_level_low` |
+| 08 | Too little brine drawn in during the regeneration | `alarm_brine_suction_too_low` |
+| 09 | Electrolysis cell of column 1 | `alarm_electrolysis_cell_column_1` |
+| 0A | Electrolysis cell of column 2 | `alarm_electrolysis_cell_column_2` |
+| 0B | No USB drive detected | `alarm_no_usb_drive` |
+| 0C | Electrolysis cell | `alarm_electrolysis_cell` |
+| 0D | Salt supply empty | `alarm_salt_supply_empty` |
+| 0E | Position error of the column | `alarm_valve_position` |
+| 15 | Volume leakage of the heating filling | `alarm_heating_fill_volume_leak` |
+| 16 | Time leakage of the heating filling | `alarm_heating_fill_time_leak` |
+| 17 | Filling cycles exceeded | `alarm_fill_cycles_exceeded` |
+| 18 | Cartridge exhausted (capacity) | `alarm_cartridge_exhausted_capacity` |
+| 19 | Cartridge exhausted (conductivity) | `alarm_cartridge_exhausted_conductivity` |
+| 1A | Target pressure cannot be reached | `alarm_target_pressure_unreachable` |
+| 96 | Volume leakage without shut-off | `alarm_leakage_volume_no_shutoff` |
+| 97 | Time leakage without shut-off | `alarm_leakage_time_no_shutoff` |
+| 9F | End switch | `alarm_end_switch` |
+| A0 | Connection to the leak protection interrupted | `alarm_leak_protection_connection` |
+| A1 | End switch | `alarm_end_switch` |
+| A2 | Motor current | `alarm_motor_current_exceeded` |
+| A3 | Volume leakage | `alarm_leakage_volume_reached` |
+| A4 | Time leakage | `alarm_leakage_time_reached` |
+| A5 | Flow leakage | `alarm_max_flow_rate_reached` |
+| A6 | Microleakage | `alarm_microleakage_detected` |
+| A7 | Floor sensor leakage | `alarm_external_sensor_leakage_radio` |
+| A8 | Flow sensor fault | `alarm_flow_sensor_fault` |
+| A9 | Pressure sensor fault | `alarm_pressure_sensor_faulty` |
+| AA | Temperature sensor fault | `alarm_temperature_sensor_faulty` |
+| AB | Conductivity sensor fault | `fault_conductance_sensor` |
+| AC | Increased water hardness | `alarm_increased_water_hardness` |
+| AD | Conductivity sensor 2 fault | `alarm_conductivity_sensor_2_faulty` |
+| AE | Shut-off valve does not move | `alarm_valve_no_movement` |
+| AF | Pressure sensor 2 fault | `alarm_pressure_sensor_2_faulty` |
+| FF | No alarm | `no_alarm` |
 
 #### Alarm codes (getALA) — SafeTech
 
-Alarm codes of the SafeTech (dk 140). A1 and A3–AB match the NeoSoft / MuCo / Trio family above; A2 and AC–AF differ.
+Alarm codes of the SafeTech (dk 140, 141, 145) and of the SafeTech+ with dk 142 (`safetech.ALA_CODES`). A1 and A3–AB match the common table above; A2 and AC–AF differ. The SafeTech and the SafeTech+ with dk 142 have no known warning or notification codes; only FF (none) is mapped.
 
 | Code | Meaning (official) | Translation key |
 | --- | --- | --- |
@@ -634,38 +653,113 @@ LEXplus10SL (dk 80, sbt 7) knows the full table (`lexplus10sl.ALA_CODES`):
 | other unmatched | Hex-parse | – | – (null) | no alarm (fallback) | `no_alarm` |
 | anything else | – | – | – | no alarm | `no_alarm` |
 
-#### Warning codes (getWRN) — NeoSoft / MuCo / Trio family
+#### Alarm codes (getALA) — Safe-T family
 
-Non-critical warnings, same device family as the alarm codes above.
+Alarm codes of the Safe-T+, Safe-T Master/Slave, communication module and Safe-T hygiene module (dk 1–5), also used by the Inliner-HWA 3300 (dk 25) and the CONTROLICmini (dk 100) (`safetplus.ALA_CODES`).
 
-| Code | Meaning (official) | Translation key |
+| Code | Meaning | Translation key |
 | --- | --- | --- |
-| 01 | Stromunterbrechung | `power_outage` |
-| 02 | Salzvorrat geht zur Neige | `salt_supply_low` |
-| 07 | Leckagewarnung | `leak_warning` |
-| 08 | Batterien erschöpft | `battery_low` |
-| 09 | Erstbefüllung | `initial_filling` |
-| 0A | Leckagewarnung Volumen | `leak_warning_volume` |
-| 0B | Leckagewarnung Zeit | `leak_warning_time` |
-| 10 | Kartusche annähernd erschöpft | `cartridge_almost_exhausted` |
-| 11 | Leckagewarnung Zeit | `leak_warning_time` |
-| 13 | Keine Batterien eingelegt | `no_batteries_detected` |
-| 14 | Ausgangsdruck zu hoch | `outlet_pressure_too_high` |
-| A6 | Mikroleckageverdacht | `microleakage_suspected` |
-| FF | Kein Warnung | `no_warning` |
+| A0 | Microleakage detected | `alarm_safet_microleakage_detected` |
+| A1 | Valve cannot be operated | `alarm_safet_valve_cannot_be_operated` |
+| A2 | No turbine signal (no water drawn for 30 days) | `alarm_safet_turbine_no_signal` |
+| A3 | Presence leakage (volume exceeded) | `alarm_safet_leakage_volume_reached` |
+| A4 | Flow leakage (flow > 3500 l/h) | `alarm_safet_flow_leakage_detected` |
+| A5 | Absence leakage (volume exceeded) | `alarm_safet_absence_leakage_detected` |
+| A6 | Leakage at the floor sensor (input IN1) | `alarm_safefloor_flood` |
+| A7 | Leakage at the external input IN2 | `alarm_external_sensor_leakage_in2` |
+| A8 | 48-hour leakage | `alarm_safet_48h_leakage` |
+| A9 | Flow time exceeded | `alarm_safet_flow_time_exceeded` |
+| BA | Batteries empty | `alarm_battery_low` |
+| LOWBAT (text) | Batteries empty | `alarm_battery_low` |
+| WEAKBAT (text) | Batteries almost empty | `alarm_battery_weak` |
+| FF | No alarm | `no_alarm` |
 
-#### Notification codes (getNOT)
+#### Alarm codes (getALA) — All-in-One+
 
-| Code | Meaning (official) | Translation key |
+Alarm codes of the All-in-One+ (dk 160, `allinoneplus.ALA_CODES`).
+
+| Code | Meaning | Translation key |
 | --- | --- | --- |
-| 01 | Neues Software Update Verfügbar! | `new_software_available` |
-| 02 | Halbjährliche Wartung | `bi_annual_maintenance` |
-| 03 | Jährliche Wartung | `annual_maintenance` |
-| 04 | Neues Software Update installiert! | `new_software_installed` |
-| 07 | Erinnerung Filterwartung | `filter_maintenance_reminder` |
-| 08 | Erinnerung Filterservice | `filter_service_reminder` |
-| 09 | Druckgesteuerte Rückspülerinnerung | `backwash_reminder_pressure` |
-| FF | Kein Notification | `no_notification` |
+| A1 | Stop valve is not operating | `alarm_end_switch` |
+| A2 | Pressure sensor P1 fault | `alarm_pressure_sensor_faulty` |
+| A3 | Pressure sensor P2 fault | `alarm_pressure_sensor_2_faulty` |
+| A4 | Flow sensor fault | `alarm_flow_sensor_fault` |
+| A5 | Conductivity sensor LW1 fault | `fault_conductance_sensor` |
+| A6 | Conductivity sensor LW2 fault | `alarm_conductivity_sensor_2_faulty` |
+| A7 | Temperature sensor fault | `alarm_temperature_sensor_faulty` |
+| A8 | Filling cycles exceeded | `alarm_fill_cycles_exceeded` |
+| A9 | Volume leakage of the filling | `alarm_heating_fill_volume_leak` |
+| AA | Time leakage of the filling | `alarm_heating_fill_time_leak` |
+| AB | Cartridge almost exhausted | `alarm_cartridge_almost_exhausted` |
+| AC | Cartridge exhausted | `alarm_cartridge_exhausted` |
+| AD | Batteries exhausted | `alarm_battery_low` |
+| AE | SL module communication failure | `alarm_sl_module_communication` |
+| AF | Inlet pressure too low | `alarm_pressure_too_low` |
+| B0 | Target pressure cannot be reached | `alarm_target_pressure_unreachable` |
+| B1 | Power outage | `alarm_no_power_supply` |
+| FF | No alarm | `no_alarm` |
+
+#### Alarm codes (getALA) — HVA
+
+Alarm codes of the HVA (dk 20, `hva.ALA_CODES`). The HVA has no known warning or notification codes; only FF (none) is mapped.
+
+| Code | Meaning | Translation key |
+| --- | --- | --- |
+| A1 | Shut-off valve cannot be operated | `alarm_safet_valve_cannot_be_operated` |
+| A2 | Flow sensor sends no signal | `alarm_flow_sensor_fault` |
+| A3 | Volume limit exceeded during the filling | `alarm_heating_fill_volume_leak` |
+| A4 | Flow limit exceeded during the filling | `alarm_heating_fill_flow_leak` |
+| A5 | Conductivity sensor sends no signal, or the HVE cartridge is exhausted | `alarm_conductivity_sensor_or_cartridge` |
+| A6 | Batteries exhausted | `alarm_battery_low` |
+| A7 | Cartridge exhausted | `alarm_cartridge_exhausted` |
+| A8 | Filling time exceeded during the filling | `alarm_heating_fill_time_leak` |
+| A9 | Filling cycles exceeded during the filling | `alarm_fill_cycles_exceeded` |
+| AA | Minimum filling volume not reached in time | `alarm_minimum_fill_volume_not_reached` |
+| AB | No minimum pressure rise in time | `alarm_minimum_pressure_rise_not_reached` |
+| AC | Pressure sensor sends no signal | `alarm_pressure_sensor_faulty` |
+| FF | No alarm | `no_alarm` |
+
+#### Warning codes (getWRN) — common table
+
+Non-critical warnings of the same device families as the common alarm codes (`devices.WRN_CODES_COMMON`). The other device families have no known warning codes: the SafeTech, the SafeTech+ with dk 142 and the HVA only map FF (`devices.WRN_CODES_NONE`), every other model shows the raw code.
+
+| Code | Meaning | Translation key |
+| --- | --- | --- |
+| 01 | Power outage | `power_outage` |
+| 02 | Salt supply running low | `salt_supply_low` |
+| 03 | Water temperature too low (below 5 °C) | `water_temperature_too_low` |
+| 04 | Water temperature too high (above 25 °C) | `water_temperature_too_high` |
+| 05 | Salt container not refilled in time | `salt_refill_timeout` |
+| 06 | Possible change of the raw water hardness | `water_hardness_change` |
+| 07 | Leakage warning (volume almost reached) | `leak_warning` |
+| 08 | Batteries exhausted | `battery_low` |
+| 09 | Initial filling | `initial_filling` |
+| 0A | Leakage warning (volume) | `leak_warning_volume` |
+| 0B | Leakage warning (time) | `leak_warning_time` |
+| 10 | Cartridge almost exhausted | `cartridge_almost_exhausted` |
+| 11 | Regeneration due, but the leak protection is closed | `regeneration_required` |
+| 12 | Batteries running low | `batteries_running_low` |
+| 13 | No batteries detected | `no_batteries_detected` |
+| 14 | Pressure too high | `outlet_pressure_too_high` |
+| 1A | System time lost (no internet connection for too long) | `system_time_lost` |
+| 1B | Start condition of a profile missing | `start_condition_missing` |
+| A6 | Microleakage suspected | `microleakage_suspected` |
+| FF | No warning | `no_warning` |
+
+#### Notification codes (getNOT) — common table
+
+Notifications of the same device families as the common alarm codes (`devices.NOT_CODES_COMMON`). The other device families have no known notification codes: the SafeTech, the SafeTech+ with dk 142, the HVA and the LEX family only map FF (`devices.NOT_CODES_NONE`), every other model shows the raw code.
+
+| Code | Meaning | Translation key |
+| --- | --- | --- |
+| 01 | New software update available | `new_software_available` |
+| 02 | Semi-annual maintenance due | `bi_annual_maintenance` |
+| 03 | Annual maintenance due | `annual_maintenance` |
+| 04 | New software update installed | `new_software_installed` |
+| 07 | Filter maintenance reminder | `filter_maintenance_reminder` |
+| 08 | Filter service | `filter_service_reminder` |
+| 09 | Pressure-controlled backwash reminder | `backwash_reminder_pressure` |
+| FF | No notification | `no_notification` |
 
 ### Network
 
@@ -1142,7 +1236,7 @@ The app reads only the part of a value before a `[`, for getCCF/getCWF (and for 
 
 | Property | Example | Unit | Access level | Default | Description |
 | --- | --- | --- | --- | --- | --- |
-| getALA / clrALA | "FF" (assumed) | | | | Current alarm code. On dk 60–63 see [Hygiene module alarms (getALA)](#hygiene-module-alarms-getala); the Safe-T Hygiene module (dk 4) uses the generic alarm texts. clrALA resets the alarm |
+| getALA / clrALA | "FF" (assumed) | | | | Current alarm code. On dk 60–63 see [Hygiene module alarms (getALA)](#hygiene-module-alarms-getala); the Safe-T Hygiene module (dk 4) uses the [Safe-T alarm codes](#alarm-codes-getala--safe-t-family). clrALA resets the alarm |
 | getBAT | "6,12" (assumed) | V | | | Battery voltage, two decimals |
 | getCCF / setCCF | "7" (assumed) | days | | | Periodic flushing of the cold line: 0 = off, 1–30 = every n days |
 | getCWF / setCWF | "7" (assumed) | days | | | Periodic flushing of the hot line: 0 = off, 1–30 = every n days |

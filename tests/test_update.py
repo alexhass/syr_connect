@@ -98,7 +98,7 @@ def test_update_entity_update_available() -> None:
     device = {
         "id": "SN4",
         "name": "Dev4",
-        "status": {"getNOT": "01", "getVER": "MuCo V.2.14"},
+        "status": {"getNOT": "01", "getSRN": "200AAA12345", "getVER": "MuCo V.2.14"},
     }
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [device]}
@@ -111,7 +111,11 @@ def test_update_entity_update_available() -> None:
 
 def test_update_entity_update_available_no_installed_version() -> None:
     """latest_version still signals an update when getVER is missing."""
-    device = {"id": "SN5", "name": "Dev5", "status": {"getNOT": "01"}}
+    device = {
+        "id": "SN5",
+        "name": "Dev5",
+        "status": {"getNOT": "01", "getSRN": "200AAA12345"},
+    }
     mock_coordinator = MagicMock()
     mock_coordinator.data = {"devices": [device]}
 
@@ -180,7 +184,7 @@ async def test_update_entity_async_install_wraps_errors() -> None:
 
 async def test_update_entity_in_progress_until_getnot_04() -> None:
     """in_progress is True after install until getNOT switches to '04'."""
-    status = {"getNOT": "01", "getVER": "MuCo V.2.14"}
+    status = {"getNOT": "01", "getSRN": "200AAA12345", "getVER": "MuCo V.2.14"}
     mock_coordinator = MagicMock()
     mock_coordinator.data = {
         "devices": [{"id": "SN9", "name": "Dev9", "status": status}]

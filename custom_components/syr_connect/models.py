@@ -11,12 +11,14 @@ import logging
 from .devices import (
     SyrConnectDeviceProfile,
     allinoneplus,
+    controlicmini,
     dosingpump,
     hva,
     hygbox,
     hygienemodule,
     hygienemodule_cold,
     hygienemodule_hot,
+    inlinerhwa,
     lex,
     lexplus10s,
     lexplus10sl,
@@ -230,6 +232,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     # ── Inliner-HWA 3300 (dk=25) ─────────────────────────────────────────────────
     SyrConnectModel(
         base_path=None,
+        device_profile=inlinerhwa.PROFILE,
         display_name="Inliner-HWA 3300",
         dk=25,
         dkv=26,
@@ -613,6 +616,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     # ── CONTROLICmini (dk=100) ───────────────────────────────────────────────────
     SyrConnectModel(
         base_path=None,
+        device_profile=controlicmini.PROFILE,
         display_name="CONTROLICmini",
         dk=100,
         dkv=27,
@@ -773,7 +777,7 @@ MODEL_SIGNATURES: list[SyrConnectModel] = [
     ),
     SyrConnectModel(
         base_path=None,
-        device_profile=safetechplus.PROFILE,
+        device_profile=safetech.PROFILE,
         display_name="SafeTech+ Connect",
         dk=142,
         dkv=39,

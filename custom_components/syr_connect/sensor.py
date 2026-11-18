@@ -38,7 +38,6 @@ from .aiosyrconnect import SyrConnectStatus, SyrConnectStatusValue
 from .binary_sensor import _SYR_CONNECT_BINARY_SENSOR_SUPPORTED_KEYS
 from .const import (
     _SYR_CONNECT_LEAK_PROTECTION_PROFILES,
-    _SYR_CONNECT_SENSOR_ALM_VALUE_MAP,
     _SYR_CONNECT_SENSOR_CAS_VALUE_MAP,
     _SYR_CONNECT_SENSOR_CND_PER_DH,
     _SYR_CONNECT_SENSOR_CRS_VALUE_MAP,
@@ -138,20 +137,20 @@ def _value_wrn(
 def _value_alm(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
-    """Alarm (getALM): model-aware mapping like getALA, then the static getALM value map.
+    """Alarm (getALM): model-aware mapping like getALA, else the alarm memory.
 
-    Without a mapping the raw value is shown. The alarm memory loses its "Alarms:"
-    prefix; the "->" before the current alarm stays, it marks the newest entry:
+    The LEX family reports its current alarm here ("NoSalt", "LowSalt"), the alarm
+    codes of the model map it. An empty value means no alarm. Without a mapping the
+    raw value is shown. The alarm memory loses its "Alarms:" prefix; the "->" before
+    the current alarm stays, it marks the newest entry:
     - SafeTech: "Alarms:->A4 A4 AF AF A3 AF A3 AF" -> "->A4 A4 AF AF A3 AF A3 AF"
     - Safe-T+: "Alarms: A5 A5 A6 ->A6 A5 A5 A5 A5" -> "A5 A5 A6 ->A6 A5 A5 A5 A5"
     """
-    raw_str = str(value) if value is not None else ""
-    ala_mapped, _ = get_sensor_ala_map(sensor.device_model, value)
-    std_mapped = _SYR_CONNECT_SENSOR_ALM_VALUE_MAP.get(raw_str.strip().upper())
-    mapped = ala_mapped or std_mapped
-    # Mapped key (e.g. 'alarm_salt_supply_empty', 'no_alarm') or the raw value as fallback
+    mapped, _ = get_sensor_ala_map(sensor.device_model, value)
     if mapped is not None:
         return mapped
+    if value is None or str(value).strip() == "":
+        return "no_alarm"
     if isinstance(value, str) and value.startswith("Alarms:"):
         return value.removeprefix("Alarms:").lstrip()
     return value

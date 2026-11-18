@@ -28,7 +28,7 @@ used, move them into SENSOR_SUPPORTED_KEYS below (after adding them to the
 global sensor.py allowlist first).
 """
 
-from . import WHU_UNITS_LEX, SyrConnectDeviceProfile
+from . import NOT_CODES_NONE, WHU_UNITS_LEX, SyrConnectDeviceProfile
 
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
@@ -132,6 +132,7 @@ PROFILE = SyrConnectDeviceProfile(
     ala_codes=ALA_CODES,
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
+    not_codes=NOT_CODES_NONE,
     select=SELECT_SUPPORTED_KEYS,
     sensor=SENSOR_SUPPORTED_KEYS,
     sensor_factors={

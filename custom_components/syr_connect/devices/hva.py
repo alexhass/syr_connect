@@ -17,7 +17,7 @@ are listed, unlike the shared global allowlists of the platforms which have to
 cover every supported model at once.
 """
 
-from . import SyrConnectDeviceProfile
+from . import NOT_CODES_NONE, WRN_CODES_NONE, SyrConnectDeviceProfile
 
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
@@ -52,12 +52,32 @@ BUTTON_SUPPORTED_KEYS = {
 
 VALVE_SUPPORTED_KEYS: set[str] = set()
 
+# Alarm codes of the HVA (raw API getALA -> internal translation key)
+ALA_CODES = {
+    "A1": "alarm_safet_valve_cannot_be_operated",
+    "A2": "alarm_flow_sensor_fault",
+    "A3": "alarm_heating_fill_volume_leak",
+    "A4": "alarm_heating_fill_flow_leak",
+    "A5": "alarm_conductivity_sensor_or_cartridge",
+    "A6": "alarm_battery_low",
+    "A7": "alarm_cartridge_exhausted",
+    "A8": "alarm_heating_fill_time_leak",
+    "A9": "alarm_fill_cycles_exceeded",
+    "AA": "alarm_minimum_fill_volume_not_reached",
+    "AB": "alarm_minimum_pressure_rise_not_reached",
+    "AC": "alarm_pressure_sensor_faulty",
+    "FF": "no_alarm",
+}
+
 
 PROFILE = SyrConnectDeviceProfile(
+    ala_codes=ALA_CODES,
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
+    not_codes=NOT_CODES_NONE,
     select=SELECT_SUPPORTED_KEYS,
     sensor=SENSOR_SUPPORTED_KEYS,
     switch=SWITCH_SUPPORTED_KEYS,
     valve=VALVE_SUPPORTED_KEYS,
+    wrn_codes=WRN_CODES_NONE,
 )

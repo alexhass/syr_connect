@@ -79,7 +79,7 @@ def _select_key(entity: Any) -> str:
 def _allowlist(model: SyrConnectModel, platform: str) -> set[str]:
     """Return the allowlist of the device file for a platform, empty without one."""
     profile = model.device_profile
-    return set(getattr(profile, platform)) if profile is not None else set()
+    return set(getattr(profile, platform) or set()) if profile is not None else set()
 
 
 @pytest.mark.parametrize("model", MODEL_SIGNATURES, ids=lambda model: model.name)
@@ -138,5 +138,5 @@ def test_regeneration_button_only_for_models_with_regeneration(
     regeneration makes no sense there (issue #24).
     """
     assert model.device_profile is not None
-    if "setSIR" in model.device_profile.button:
+    if "setSIR" in (model.device_profile.button or set()):
         assert model.maximum_regeneration_interval is not None

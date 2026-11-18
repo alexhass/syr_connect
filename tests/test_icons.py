@@ -68,10 +68,10 @@ def test_connection_state_icons() -> None:
 def _sensor_state(
     create_mock_coordinator: Callable[..., MagicMock], key: str, raw: str
 ) -> str:
+    # The alarm codes depend on the model, the Safe-T+ maps "FF" to no alarm
+    status = {key: raw, "getVER": "Safe-T+ V2.00e"}
     data = {
-        "devices": [
-            {"id": "d1", "name": "D1", "project_id": "p1", "status": {key: raw}}
-        ]
+        "devices": [{"id": "d1", "name": "D1", "project_id": "p1", "status": status}]
     }
     sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", key)
     return str(sensor.native_value)

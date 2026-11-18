@@ -5,19 +5,19 @@ JSON/XML fixtures. Keys are included when observed in at least one family
 fixture and supported by the integration's global entity metadata; optional
 keys only create entities when the device actually reports them.
 
-The self-learning-phase keys (getSLE/getSLF/getSLP/getSLT/getSLV) are omitted:
-they are present with value 0 in every SafeTech fixture and are associated
-with the Trio DFR/LS feature set, not SafeTech. The self-learning settings
-(getSLO/getSOF/getSMF) and the leakage warning threshold (getLWT) are included:
-SYR's SafeTech command table lists them, and every fixture reports their
-defaults (10 %, 20 %, 3500 l/h, 90 %).
+The self-learning phase (getSLE) and its remaining time (getSLP) are included:
+the SafeTech shows them in its status. The self-learning results
+(getSLF/getSLT/getSLV) are omitted, no SafeTech fixture reports them. The
+self-learning settings (getSLO/getSOF/getSMF) and the leakage warning threshold
+(getLWT) are included: SYR's SafeTech command table lists them, and every fixture
+reports their defaults (10 %, 20 %, 3500 l/h, 90 %).
 
 The battery level (getBAP) is omitted: of the SafeTech family only the SafeTech+
 with dk 1112 (dkv 112) reports it; the SafeTech reports the battery voltage
 (getBAT) only.
 """
 
-from . import SyrConnectDeviceProfile
+from . import NOT_CODES_NONE, WRN_CODES_NONE, SyrConnectDeviceProfile
 
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
@@ -59,9 +59,11 @@ SENSOR_SUPPORTED_KEYS = {
     "getDTT",
     "getNPS",
     "getTTM",
-    # --- Leak protection and self-learning settings ---
+    # --- Leak protection and self-learning ---
     "getLWT",
+    "getSLE",
     "getSLO",
+    "getSLP",
     "getSMF",
     "getSOF",
     # --- Leak-protection profiles ---
@@ -223,8 +225,10 @@ PROFILE = SyrConnectDeviceProfile(
     ala_codes=ALA_CODES,
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
+    not_codes=NOT_CODES_NONE,
     select=SELECT_SUPPORTED_KEYS,
     sensor=SENSOR_SUPPORTED_KEYS,
     switch=SWITCH_SUPPORTED_KEYS,
     valve=VALVE_SUPPORTED_KEYS,
+    wrn_codes=WRN_CODES_NONE,
 )

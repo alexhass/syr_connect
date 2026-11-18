@@ -517,6 +517,7 @@ async def test_sensor_alarm_mapping(hass: HomeAssistant) -> None:
                 "project_id": "project1",
                 "status": {
                     "getALM": "LowSalt",
+                    "getCNA": "LEXplus10S",
                 },
             }
         ]
@@ -982,6 +983,7 @@ def test_extra_getsta_getalm_getle_and_gett1_mappings(
                 "status": {
                     "getSTA": "Płukanie regenerantem (587mA)",
                     "getALM": "NoSalt",
+                    "getCNA": "LEXplus10S",
                     "getLE": "2",
                     "getT1": "3",
                 },
@@ -2855,7 +2857,7 @@ async def test_leak_protection_boolean_flags_empty_and_none(
 
 
 async def test_sensor_ala_not_wrn_exhaustive_variants(hass: HomeAssistant) -> None:
-    """Blank getALA codes give None; other codes give a string (mapped key or the raw value)."""
+    """Blank codes of an unknown model give None; other codes give the raw value."""
     unmapped = {"true", "off", "UnknownValue", "CompletelyUnknown", 123}
     variants = [None, "", "   ", "1", "0", 1, 0, True, False, *unmapped]
 
@@ -2876,10 +2878,8 @@ async def test_sensor_ala_not_wrn_exhaustive_variants(hass: HomeAssistant) -> No
 
             val = s.native_value
 
-            # getNOT/getWRN map an empty code to their "none" key, so only None and getALA blanks give None.
-            if raw is None or (
-                key == "getALA" and isinstance(raw, str) and raw.strip() == ""
-            ):
+            # Without a model there are no codes, so blanks are not mapped
+            if raw is None or (isinstance(raw, str) and raw.strip() == ""):
                 assert val is None, (
                     f"Key {key} raw={raw!r} -> got {val!r}, expected None"
                 )
@@ -3577,10 +3577,10 @@ def test_apply_numeric_conversion_precision_zero_returns_int(
     assert result == 5
 
 
-def test_getala_uses_generic_codes_for_unknown_model(
+def test_getala_shows_raw_code_for_unknown_model(
     create_mock_coordinator: Callable[..., MagicMock],
 ) -> None:
-    """When model is unknown getALA is mapped with the generic alarm codes."""
+    """When the model is unknown getALA shows the raw alarm code."""
     data = {
         "devices": [
             {"id": "d1", "name": "D", "project_id": "p1", "status": {"getALA": "A5"}}
@@ -3589,7 +3589,7 @@ def test_getala_uses_generic_codes_for_unknown_model(
     coord = create_mock_coordinator(data)
     sensor = SyrConnectSensor(coord, "d1", "D", "getALA")
 
-    assert sensor.native_value == "alarm_max_flow_rate_reached"
+    assert sensor.native_value == "A5"
 
 
 async def test_sensor_getbat_zero_value(hass: HomeAssistant) -> None:
@@ -3805,8 +3805,9 @@ def test_sensor_getnet_non_str_int_float_type(
 def test_sensor_getnot_mapped_value_returned(
     create_mock_coordinator: Callable[..., MagicMock],
 ) -> None:
-    """getNOT: known code '01' returns mapped translation key."""
-    data = {"devices": [{"id": "d1", "status": {"getNOT": "01"}}]}
+    """getNOT: known code '01' of the NeoSoft returns the mapped translation key."""
+    status = {"getNOT": "01", "getSRN": "200AAA12345", "getVER": "NSS.V.2.028"}
+    data = {"devices": [{"id": "d1", "status": status}]}
     coord = create_mock_coordinator(data)
     sensor = SyrConnectSensor(coord, "d1", "D1", "getNOT")
 
@@ -3843,8 +3844,9 @@ def test_sensor_leak_flag_float_nan_returns_false(
 def test_sensor_getwrn_mapped_value_returned(
     create_mock_coordinator: Callable[..., MagicMock],
 ) -> None:
-    """getWRN: known code '01' returns mapped translation key."""
-    data = {"devices": [{"id": "d1", "status": {"getWRN": "01"}}]}
+    """getWRN: known code '01' of the NeoSoft returns the mapped translation key."""
+    status = {"getWRN": "01", "getSRN": "200AAA12345", "getVER": "NSS.V.2.028"}
+    data = {"devices": [{"id": "d1", "status": status}]}
     coord = create_mock_coordinator(data)
     sensor = SyrConnectSensor(coord, "d1", "D1", "getWRN")
 

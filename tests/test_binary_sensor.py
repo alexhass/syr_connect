@@ -283,9 +283,9 @@ def test_device_files_pair_buzzer_switch_with_binary_sensor() -> None:
         profile = signature.device_profile
         if profile is None:
             continue
-        assert ("getBUZ" in profile.switch) == ("getBUZ" in profile.binary_sensor), (
-            signature.name
-        )
+        switch = profile.switch or set()
+        binary_sensor = profile.binary_sensor or set()
+        assert ("getBUZ" in switch) == ("getBUZ" in binary_sensor), signature.name
 
 
 async def test_binary_sensor_unavailable_coordinator(hass: HomeAssistant) -> None:

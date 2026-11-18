@@ -54,16 +54,19 @@ def _signature(name: str) -> SyrConnectModel:
 
 def test_get_sensor_maps_and_visibility_additional() -> None:
     """Test get sensor maps and visibility additional."""
-    # NOT/WRN mapping
-    assert get_sensor_not_map(UNKNOWN_MODEL, "01")[0] == "new_software_available"
-    assert get_sensor_wrn_map(UNKNOWN_MODEL, "01")[0] == "power_outage"
+    # NOT/WRN mapping with the common codes
+    model = _signature("neosoft2500")
+    assert get_sensor_not_map(model, "01")[0] == "new_software_available"
+    assert get_sensor_wrn_map(model, "01")[0] == "power_outage"
+    assert get_sensor_not_map(UNKNOWN_MODEL, "01") == (None, "01")
+    assert get_sensor_wrn_map(UNKNOWN_MODEL, "01") == (None, "01")
 
     # ALA mapping with detected model
     status: SyrConnectStatus = {"getCNA": "LEXplus10"}
     assert get_sensor_ala_map(detect_model(status), "0")[0] == "no_alarm"
 
-    # Unknown model falls back to the generic alarm codes
-    assert get_sensor_ala_map(UNKNOWN_MODEL, "A5")[0] == "alarm_max_flow_rate_reached"
+    # Unknown model has no alarm codes: the raw code is kept
+    assert get_sensor_ala_map(UNKNOWN_MODEL, "A5") == (None, "A5")
 
     # Visibility rules
     status = {"getPA1": "true", "getPV1": "5"}
@@ -91,18 +94,19 @@ def test_sensor_code_mappings_and_unknown_model() -> None:
     mapped3, raw3 = get_sensor_ala_map(detect_model(status_safet), "A1")
     assert mapped3 == "alarm_safet_valve_cannot_be_operated" and raw3 == "A1"
 
-    # ALA: unknown model -> generic codes
+    # ALA: unknown model -> no mapping
     mapped4, raw4 = get_sensor_ala_map(UNKNOWN_MODEL, "A5")
-    assert mapped4 == "alarm_max_flow_rate_reached" and raw4 == "A5"
+    assert mapped4 is None and raw4 == "A5"
 
     # NOT mapping
-    mapped_not, raw_not = get_sensor_not_map(UNKNOWN_MODEL, "01")
+    model = _signature("triols")
+    mapped_not, raw_not = get_sensor_not_map(model, "01")
     assert mapped_not == "new_software_available" and raw_not == "01"
-    mapped_not2, raw_not2 = get_sensor_not_map(UNKNOWN_MODEL, "")
+    mapped_not2, raw_not2 = get_sensor_not_map(model, "")
     assert mapped_not2 == "no_notification" and raw_not2 == ""
 
     # WRN mapping
-    mapped_wrn, raw_wrn = get_sensor_wrn_map(UNKNOWN_MODEL, "02")
+    mapped_wrn, raw_wrn = get_sensor_wrn_map(model, "02")
     assert mapped_wrn == "salt_supply_low" and raw_wrn == "02"
     mapped_wrn2, raw_wrn2 = get_sensor_wrn_map(UNKNOWN_MODEL, None)
     assert mapped_wrn2 is None and raw_wrn2 == ""
@@ -169,11 +173,74 @@ def test_get_sensor_ala_map_covers_all_signatures_of_known_families() -> None:
     assert checked > 40
 
 
-def test_get_sensor_ala_map_models_without_device_profile() -> None:
-    """Models without a device profile use the generic alarm codes."""
-    for name in ("hva", "controlicmini"):
-        model = _signature(name)
-        assert get_sensor_ala_map(model, "A1")[0] == "alarm_end_switch", name
+@pytest.mark.parametrize(
+    ("name", "code", "expected"),
+    [
+        ("neosoft2500", "11", "regeneration_required"),
+        ("neosoft2500", "1A", "system_time_lost"),
+        ("syrac3228connect", "09", "initial_filling"),
+        ("safetechplus", "A6", "microleakage_suspected"),
+        ("safetech", "FF", "no_warning"),
+        ("safetech", "01", None),
+        ("safetechpluswifi", "01", None),
+        ("hva", "ff", "no_warning"),
+    ],
+)
+def test_get_sensor_wrn_map_family_codes(
+    name: str, code: str, expected: str | None
+) -> None:
+    """The warning codes follow the table of the device family."""
+    assert get_sensor_wrn_map(_signature(name), code) == (expected, code)
+
+
+@pytest.mark.parametrize(
+    ("name", "code", "expected"),
+    [
+        ("optimabackwash", "09", "backwash_reminder_pressure"),
+        ("lex10", "FF", "no_notification"),
+        ("lex10", "01", None),
+        ("safetech", "04", None),
+        ("controlicmini", "FF", None),
+    ],
+)
+def test_get_sensor_not_map_family_codes(
+    name: str, code: str, expected: str | None
+) -> None:
+    """The notification codes follow the table of the device family."""
+    assert get_sensor_not_map(_signature(name), code) == (expected, code)
+
+
+def test_get_sensor_ala_map_every_device_profile_has_alarm_codes() -> None:
+    """Every device file names the alarm codes of its family."""
+    for name, profile in _DEVICE_PROFILES.items():
+        assert profile.ala_codes is not None, name
+
+
+@pytest.mark.parametrize(
+    ("name", "code", "expected"),
+    [
+        ("neosoft2500", "AC", "alarm_increased_water_hardness"),
+        ("neosoft2500", "AD", "alarm_conductivity_sensor_2_faulty"),
+        ("neosoft2500", "AE", "alarm_valve_no_movement"),
+        ("neosoft2500", "AF", "alarm_pressure_sensor_2_faulty"),
+        ("neosoft2500", "01", "alarm_pressure_too_low"),
+        ("neosoft2500", "96", "alarm_leakage_volume_no_shutoff"),
+        ("triols", "9F", "alarm_end_switch"),
+        ("syrsafetechlockconnect", "A0", "alarm_leak_protection_connection"),
+        ("safetechplus", "AC", "alarm_increased_water_hardness"),
+        ("safetechpluswifi", "AC", "alarm_conductivity_too_high"),
+        ("safetechpluswifi", "A2", "alarm_no_network_connection"),
+        ("hva", "A1", "alarm_safet_valve_cannot_be_operated"),
+        ("hva", "A4", "alarm_heating_fill_flow_leak"),
+        ("hva", "AC", "alarm_pressure_sensor_faulty"),
+        ("inlinerhwa3300", "A8", "alarm_safet_48h_leakage"),
+        ("controlicmini", "BA", "alarm_battery_low"),
+        ("safetplus", "A7", "alarm_external_sensor_leakage_in2"),
+    ],
+)
+def test_get_sensor_ala_map_family_codes(name: str, code: str, expected: str) -> None:
+    """The alarm codes follow the table of the device family."""
+    assert get_sensor_ala_map(_signature(name), code) == (expected, code)
 
 
 def test_get_sensor_not_and_wrn_map_unmapped_and_none() -> None:
@@ -191,11 +258,9 @@ def test_get_sensor_not_and_wrn_map_unmapped_and_none() -> None:
 
 
 def test_get_sensor_ala_map_unrecognized_known_model() -> None:
-    """A model without its own alarm code family uses the generic codes."""
+    """A model without alarm codes of its family keeps the raw code."""
     model = replace(UNKNOWN_MODEL, name="futuredevice2100")
-    mapped, raw = get_sensor_ala_map(model, "FF")
-    assert mapped == "no_alarm"
-    assert raw == "FF"
+    assert get_sensor_ala_map(model, "FF") == (None, "FF")
 
 
 def test_get_model_supported_keys_falls_back_without_device_profile() -> None:
@@ -283,8 +348,9 @@ def test_get_model_supported_keys_safetech_device_override() -> None:
         "safetechrwc",
         "safetech141",
         "safetech145",
+        "safetechpluswifi",
     }
-    safetechplus_names = {"safetechpluswifi", "safetechplus"}
+    safetechplus_names = {"safetechplus"}
     model_names = safetech_names | safetechplus_names
     signatures = {
         signature.name: signature
@@ -304,7 +370,6 @@ def test_get_model_supported_keys_safetech_device_override() -> None:
     ):
         for name in names:
             signature = signatures[name]
-            assert signature.device_profile is module.PROFILE
             assert (
                 get_model_supported_keys(signature, "sensor", global_keys)
                 == module.SENSOR_SUPPORTED_KEYS

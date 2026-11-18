@@ -1,15 +1,21 @@
-"""Entity allowlists for SafeTech+ (dkv=39 and dkv=112).
+"""Entity allowlists for SafeTech+ (dk=1112, dkv=112).
 
 Based on the SafeTech+ JSON and XML fixtures and checked against the
 Per-model validity matrix. The official matrix swaps BAR and BAR2 for SafeTech+:
 the devices report getBAR and leave getBAR2 empty, so getBAR is used here (see
 issue 9 in docs/known_issues_json_api.md).
-The base SafeTech family keeps its separate devices/safetech.py allowlist.
+The base SafeTech family, including the SafeTech+ with dk=142 (dkv=39), keeps its
+separate devices/safetech.py allowlist.
 The self-learning phase is included: the official API documentation lists it
 for SafeTech+, although the captures report no self-learning results.
 """
 
-from . import SyrConnectDeviceProfile
+from . import (
+    ALA_CODES_COMMON,
+    NOT_CODES_COMMON,
+    WRN_CODES_COMMON,
+    SyrConnectDeviceProfile,
+)
 
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
@@ -191,10 +197,13 @@ VALVE_SUPPORTED_KEYS = {
 
 
 PROFILE = SyrConnectDeviceProfile(
+    ala_codes=ALA_CODES_COMMON,
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
+    not_codes=NOT_CODES_COMMON,
     select=SELECT_SUPPORTED_KEYS,
     sensor=SENSOR_SUPPORTED_KEYS,
     switch=SWITCH_SUPPORTED_KEYS,
     valve=VALVE_SUPPORTED_KEYS,
+    wrn_codes=WRN_CODES_COMMON,
 )
