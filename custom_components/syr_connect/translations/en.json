@@ -829,11 +829,11 @@
       "getbar": {
         "name": "Inlet pressure"
       },
-      "getbar2": {
-        "name": "Outlet pressure"
-      },
       "getbar_system": {
         "name": "System pressure"
+      },
+      "getbar2": {
+        "name": "Outlet pressure"
       },
       "getbat": {
         "name": "Battery voltage"

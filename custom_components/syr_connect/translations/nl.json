@@ -829,11 +829,11 @@
       "getbar": {
         "name": "Inlaatdruk"
       },
-      "getbar2": {
-        "name": "Uitlaatdruk"
-      },
       "getbar_system": {
         "name": "Installatiedruk"
+      },
+      "getbar2": {
+        "name": "Uitlaatdruk"
       },
       "getbat": {
         "name": "Batterijspanning"

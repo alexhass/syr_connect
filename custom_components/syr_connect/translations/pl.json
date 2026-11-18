@@ -829,11 +829,11 @@
       "getbar": {
         "name": "Ciśnienie wejściowe"
       },
-      "getbar2": {
-        "name": "Ciśnienie wyjściowe"
-      },
       "getbar_system": {
         "name": "Ciśnienie instalacji"
+      },
+      "getbar2": {
+        "name": "Ciśnienie wyjściowe"
       },
       "getbat": {
         "name": "Napięcie baterii"

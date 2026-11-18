@@ -829,11 +829,11 @@
       "getbar": {
         "name": "Presión de entrada"
       },
-      "getbar2": {
-        "name": "Presión de salida"
-      },
       "getbar_system": {
         "name": "Presión de la instalación"
+      },
+      "getbar2": {
+        "name": "Presión de salida"
       },
       "getbat": {
         "name": "Tensión de batería"
