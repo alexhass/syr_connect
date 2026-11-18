@@ -1,7 +1,9 @@
 {
   "config": {
     "abort": {
-      "already_configured": "Deze hub is al geconfigureerd"
+      "already_configured": "Deze hub is al geconfigureerd",
+      "wrong_account": "De aanmeldingsgegevens horen bij een ander account. Voor dit account moet een nieuw item worden toegevoegd.",
+      "wrong_device": "Op dit adres antwoordt een ander apparaat. Voor dit apparaat moet een nieuw item worden toegevoegd."
     },
     "error": {
       "cannot_connect": "Kan geen verbinding maken met de service. De internetverbinding moet worden gecontroleerd.",

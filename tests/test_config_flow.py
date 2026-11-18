@@ -82,16 +82,20 @@ async def test_form_api_xml(hass: HomeAssistant) -> None:
         result3 = await hass.config_entries.flow.async_configure(
             result2["flow_id"],
             {
-                CONF_USERNAME: "test@example.com",
-                CONF_PASSWORD: "test_password",
+                # Whitespace around the username (copy & paste) is removed
+                CONF_USERNAME: " Test@Example.com\t",
+                CONF_PASSWORD: " test_password",
             },
         )
         await hass.async_block_till_done()
 
     assert result3["type"] == FlowResultType.CREATE_ENTRY
-    assert result3["title"] == "SYR Connect (test@example.com)"
-    assert result3["data"][CONF_USERNAME] == "test@example.com"
+    assert result3["title"] == "SYR Connect (Test@Example.com)"
+    assert result3["data"][CONF_USERNAME] == "Test@Example.com"
+    # The password is kept as entered
+    assert result3["data"][CONF_PASSWORD] == " test_password"
     assert result3["data"][CONF_API_TYPE] == API_TYPE_XML
+    assert result3["result"].unique_id == "xml_de.consoft.syr.connect_test@example.com"
 
 
 async def test_form_api_xml_invalid_auth(hass: HomeAssistant) -> None:
@@ -154,7 +158,7 @@ async def test_reauth_confirm_update_entry_exception(hass: HomeAssistant) -> Non
             result2 = await hass.config_entries.flow.async_configure(
                 result["flow_id"],
                 {
-                    CONF_USERNAME: "new_user@example.com",
+                    CONF_USERNAME: "test@example.com",
                     CONF_PASSWORD: "new_password",
                 },
             )
@@ -189,8 +193,13 @@ async def test_form_api_xml_cannot_connect(hass: HomeAssistant) -> None:
 
 
 @pytest.mark.usefixtures("mock_syr_api")
-async def test_form_api_xml_already_configured(hass: HomeAssistant) -> None:
-    """Test we handle already configured for cloud/XML API."""
+@pytest.mark.parametrize(
+    "username", ["test@example.com", "Test@Example.COM", " test@example.com\t"]
+)
+async def test_form_api_xml_already_configured(
+    hass: HomeAssistant, username: str
+) -> None:
+    """The same account is set up once; letter case and whitespace do not matter."""
     entry = MockConfigEntry(
         domain=DOMAIN,
         unique_id="xml_de.consoft.syr.connect_test@example.com",
@@ -218,7 +227,7 @@ async def test_form_api_xml_already_configured(hass: HomeAssistant) -> None:
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {
-                CONF_USERNAME: "test@example.com",
+                CONF_USERNAME: username,
                 CONF_PASSWORD: "test_password",
             },
         )
@@ -355,7 +364,8 @@ async def test_form_api_json_strips_host_whitespace(hass: HomeAssistant) -> None
 
     assert result3["type"] == FlowResultType.CREATE_ENTRY
     assert result3["data"][CONF_HOST] == "192.168.1.100"
-    assert result3["result"].unique_id == f"{API_TYPE_JSON}_192.168.1.100"
+    # The unique_id is the serial number of the device, not the host
+    assert result3["result"].unique_id == f"{API_TYPE_JSON}_12345"
 
 
 @pytest.mark.parametrize(
@@ -367,15 +377,16 @@ async def test_form_api_json_strips_host_whitespace(hass: HomeAssistant) -> None
         ),
         ({CONF_HOST: "192.168.1.100"}, {CONF_HOST: "192.168.1.100"}),
         (
-            {CONF_USERNAME: " user ", CONF_PASSWORD: " pw "},
-            {CONF_USERNAME: " user ", CONF_PASSWORD: " pw "},
+            {CONF_USERNAME: " user\t", CONF_PASSWORD: " pw "},
+            {CONF_USERNAME: "user", CONF_PASSWORD: " pw "},
         ),
+        ({CONF_MODEL: "m"}, {CONF_MODEL: "m"}),
     ],
 )
-def test_strip_host(user_input: Any, expected: Any) -> None:
-    """Only the host is stripped; input without a host (XML credentials) is unchanged."""
+def test_strip_whitespace(user_input: Any, expected: Any) -> None:
+    """Host and username are stripped; the password is kept as entered."""
 
-    assert ConfigFlow._strip_host(user_input) == expected
+    assert ConfigFlow._strip_whitespace(user_input) == expected
 
 
 async def test_reauth_confirm_json_initial_form(hass: HomeAssistant) -> None:
@@ -406,7 +417,8 @@ async def test_reauth_confirm_json_success(hass: HomeAssistant) -> None:
     """Successful JSON reauth should update and abort with reauth_successful."""
     entry = MockConfigEntry(
         domain=DOMAIN,
-        unique_id="json_reauth_success@example.com",
+        version=ConfigFlow.VERSION,
+        unique_id="json_SN1",
         data={
             CONF_API_TYPE: API_TYPE_JSON,
             CONF_HOST: "192.0.2.5",
@@ -428,6 +440,7 @@ async def test_reauth_confirm_json_success(hass: HomeAssistant) -> None:
             return_value={
                 "title": "SYR Connect Local (192.0.2.5)",
                 "login_required": False,
+                "serial": "SN1",
             },
         ),
         patch(
@@ -443,9 +456,10 @@ async def test_reauth_confirm_json_success(hass: HomeAssistant) -> None:
 
     assert result2["type"] == FlowResultType.ABORT
     assert result2["reason"] == "reauth_successful"
-    # The new host changes the data and the title, as at setup
+    # The new host changes the data and the title, as at setup; the device is the same
     assert entry.data[CONF_HOST] == "192.0.2.6"
     assert entry.title == "SYR Connect Local (192.0.2.6)"
+    assert entry.unique_id == "json_SN1"
 
 
 async def test_validate_input_json_empty_status_raises(hass: HomeAssistant) -> None:
@@ -568,13 +582,23 @@ async def test_form_api_json_cannot_connect(hass: HomeAssistant) -> None:
     assert result2["errors"] == {"base": "cannot_connect_local"}
 
 
-async def test_form_api_json_already_configured(hass: HomeAssistant) -> None:
-    """Test local/JSON API already configured."""
+@pytest.mark.parametrize(
+    ("unique_id", "host"),
+    [
+        ("json_12345", "syr.local"),
+        ("json_192.168.1.100", "192.168.1.100"),
+    ],
+    ids=["same_serial", "same_host_of_older_version"],
+)
+async def test_form_api_json_already_configured(
+    hass: HomeAssistant, unique_id: str, host: str
+) -> None:
+    """The device is set up once: by its serial number, or by the host of an older entry."""
     entry = MockConfigEntry(
         domain=DOMAIN,
-        unique_id="json_192.168.1.100",
+        unique_id=unique_id,
         data={
-            CONF_HOST: "192.168.1.100",
+            CONF_HOST: host,
             CONF_MODEL: "neosoft5000",
             CONF_API_TYPE: API_TYPE_JSON,
         },
@@ -874,28 +898,33 @@ async def test_reconfigure_flow(hass: HomeAssistant) -> None:
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             {
-                CONF_USERNAME: "new_user@example.com",
+                CONF_USERNAME: "Test@Example.com",
                 CONF_PASSWORD: "new_password",
             },
         )
 
     assert result2["type"] == FlowResultType.ABORT
     assert result2["reason"] == "reconfigure_successful"
-    # The changed username (e.g. a new e-mail address of the account) also changes the unique_id
-    assert entry.unique_id == "xml_de.consoft.syr.connect_new_user@example.com"
-    assert entry.data[CONF_USERNAME] == "new_user@example.com"
+    assert entry.data[CONF_PASSWORD] == "new_password"
+    # Only the letter case of the username changed: the same account, saved as entered;
+    # the unique_id has the username in lowercase
+    assert entry.unique_id == "xml_de.consoft.syr.connect_test@example.com"
+    assert entry.data[CONF_USERNAME] == "Test@Example.com"
     # The title is built again, as at setup
-    assert entry.title == "SYR Connect (new_user@example.com)"
+    assert entry.title == "SYR Connect (Test@Example.com)"
 
 
 @pytest.mark.usefixtures("mock_syr_api")
 @pytest.mark.parametrize(
     "source", [config_entries.SOURCE_REAUTH, config_entries.SOURCE_RECONFIGURE]
 )
-async def test_reauth_reconfigure_abort_if_username_used_by_other_entry(
-    hass: HomeAssistant, source: str
+@pytest.mark.parametrize(
+    "username", ["bob@example.com", "carol@example.com"], ids=["used", "unused"]
+)
+async def test_reauth_reconfigure_abort_if_username_changes(
+    hass: HomeAssistant, source: str, username: str
 ) -> None:
-    """Switching to a username that another entry already uses would poll the same account twice."""
+    """Another username is another account: its devices are not those of the entry."""
     entry = MockConfigEntry(
         domain=DOMAIN,
         unique_id="xml_de.consoft.syr.connect_alice@example.com",
@@ -931,14 +960,100 @@ async def test_reauth_reconfigure_abort_if_username_used_by_other_entry(
     ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
-            {CONF_USERNAME: "bob@example.com", CONF_PASSWORD: "new_password"},
+            {CONF_USERNAME: username, CONF_PASSWORD: "new_password"},
         )
 
     assert result2["type"] == FlowResultType.ABORT
-    assert result2["reason"] == "already_configured"
+    assert result2["reason"] == "wrong_account"
     # The entry is left unchanged
     assert entry.unique_id == "xml_de.consoft.syr.connect_alice@example.com"
     assert entry.data[CONF_USERNAME] == "alice@example.com"
+    assert entry.data[CONF_PASSWORD] == "pw"
+
+
+@pytest.mark.parametrize(
+    "source", [config_entries.SOURCE_REAUTH, config_entries.SOURCE_RECONFIGURE]
+)
+@pytest.mark.parametrize(
+    ("unique_id", "serial", "reason", "expected_unique_id"),
+    [
+        # The same device at a new address: the unique_id stays
+        ("json_SN1", "SN1", f"{config_entries.SOURCE_REAUTH}_successful", "json_SN1"),
+        # Another device answers at the address
+        ("json_SN1", "SN3", "wrong_device", "json_SN1"),
+        # An entry of an older version reaches the device of the other entry
+        ("json_192.168.1.20", "SN2", "already_configured", "json_192.168.1.20"),
+        # An entry of an older version gets the serial number of its device
+        (
+            "json_192.168.1.20",
+            "SN1",
+            f"{config_entries.SOURCE_REAUTH}_successful",
+            "json_SN1",
+        ),
+    ],
+    ids=["same_device", "other_device", "device_of_other_entry", "older_version"],
+)
+async def test_reauth_reconfigure_local_device(
+    hass: HomeAssistant,
+    source: str,
+    unique_id: str,
+    serial: str,
+    reason: str,
+    expected_unique_id: str,
+) -> None:
+    """A local entry stays with its device: the host may change, the device may not."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        version=ConfigFlow.VERSION,
+        unique_id=unique_id,
+        data={
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_MODEL: "safetechplus",
+            CONF_HOST: "192.168.1.20",
+        },
+    )
+    entry.add_to_hass(hass)
+    MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="json_SN2",
+        data={
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_MODEL: "safetechplus",
+            CONF_HOST: "192.168.1.30",
+        },
+    ).add_to_hass(hass)
+
+    data = entry.data if source == config_entries.SOURCE_REAUTH else None
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": source, "entry_id": entry.entry_id}, data=data
+    )
+    assert result["type"] == FlowResultType.FORM
+    with (
+        patch(
+            "custom_components.syr_connect.config_flow.validate_input_json",
+            new_callable=AsyncMock,
+            return_value={
+                "title": "SYR Connect Local (192.168.1.40)",
+                "serial": serial,
+            },
+        ),
+        patch(
+            "custom_components.syr_connect.async_setup_entry",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {CONF_MODEL: "safetechplus", CONF_HOST: "192.168.1.40"},
+        )
+
+    assert result2["type"] == FlowResultType.ABORT
+    assert result2["reason"] == reason.replace(config_entries.SOURCE_REAUTH, source)
+    assert entry.unique_id == expected_unique_id
+    # Only a successful flow saves the new host
+    expected_host = "192.168.1.40" if reason.endswith("_successful") else "192.168.1.20"
+    assert entry.data[CONF_HOST] == expected_host
 
 
 @pytest.mark.parametrize(
@@ -958,6 +1073,14 @@ async def test_reauth_reconfigure_abort_if_username_used_by_other_entry(
 def test_entry_unique_id(api_type: str, data: dict, expected: str) -> None:
     """Reauth/reconfigure build the same unique_id as the user steps."""
     assert build_entry_unique_id(api_type, data) == expected
+
+
+def test_entry_unique_id_local_serial() -> None:
+    """A local entry with the serial number of its device does not depend on the host."""
+    assert (
+        build_entry_unique_id(API_TYPE_JSON, {CONF_HOST: "192.168.1.20"}, "SN1")
+        == "json_SN1"
+    )
 
 
 async def test_reconfigure_flow_invalid_auth(hass: HomeAssistant) -> None:
@@ -1289,7 +1412,7 @@ async def test_reconfigure_flow_update_entry_exception(hass: HomeAssistant) -> N
             result2 = await hass.config_entries.flow.async_configure(
                 result["flow_id"],
                 {
-                    CONF_USERNAME: "new_user@example.com",
+                    CONF_USERNAME: "test@example.com",
                     CONF_PASSWORD: "new_password",
                 },
             )
@@ -1705,7 +1828,8 @@ async def test_reconfigure_flow_json_api(hass: HomeAssistant) -> None:
             CONF_MODEL: "safetechplus",
             CONF_HOST: "192.168.1.100",
         },
-        unique_id="test_unique_id",
+        version=ConfigFlow.VERSION,
+        unique_id="json_12345",
     )
     entry.add_to_hass(hass)
 
@@ -1740,8 +1864,9 @@ async def test_reconfigure_flow_json_api(hass: HomeAssistant) -> None:
 
     assert result2["type"] == FlowResultType.ABORT
     assert result2["reason"] == "reconfigure_successful"
-    # Verify the entry was updated
+    # Verify the entry was updated; the device and its unique_id stay the same
     assert entry.data[CONF_HOST] == "192.168.1.200"
+    assert entry.unique_id == "json_12345"
 
 
 @pytest.mark.parametrize(
@@ -1781,7 +1906,11 @@ async def test_reconfigure_flow_json_api_stores_login_required(
     with (
         patch(
             "custom_components.syr_connect.config_flow.validate_input_json",
-            return_value={"title": "SYR Connect Local", "login_required": detected},
+            return_value={
+                "title": "SYR Connect Local",
+                "login_required": detected,
+                "serial": "SN1",
+            },
         ),
         patch.object(hass.config_entries, "async_reload", return_value=True),
     ):
@@ -1813,6 +1942,7 @@ async def test_form_api_json_persists_login_required_from_validation(
             return_value={
                 "title": "SYR Connect Local (192.168.1.100)",
                 "login_required": True,
+                "serial": "SN1",
             },
         ),
         patch(

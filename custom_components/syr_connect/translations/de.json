@@ -1,7 +1,9 @@
 {
   "config": {
     "abort": {
-      "already_configured": "Dieser Hub ist bereits konfiguriert"
+      "already_configured": "Dieser Hub ist bereits konfiguriert",
+      "wrong_account": "Die Anmeldedaten gehören zu einem anderen Konto. Für dieses Konto muss ein neuer Eintrag hinzugefügt werden.",
+      "wrong_device": "Unter dieser Adresse ist ein anderes Gerät erreichbar. Für dieses Gerät muss ein neuer Eintrag hinzugefügt werden."
     },
     "error": {
       "cannot_connect": "Verbindung zum Dienst nicht möglich. Die Internetverbindung muss geprüft werden.",

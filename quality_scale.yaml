@@ -90,7 +90,7 @@ rules:
   
   unique-config-entry:
     status: done
-    comment: _abort_if_unique_id_configured() prevents duplicates; unique_id "xml_<cf_bundle_identifier>_<username>" or "json_<host>"
+    comment: _abort_if_unique_id_configured() prevents duplicates; unique_id "json_<serial number>" for local entries (read from the device at setup; older entries get it at their next setup) and "xml_<cf_bundle_identifier>_<username in lowercase>" for cloud entries, as the cloud has no account ID and ignores the letter case of the username
 
   # SILVER TIER
   action-exceptions:
@@ -127,11 +127,11 @@ rules:
   
   reauthentication-flow:
     status: done
-    comment: ConfigEntryAuthFailed starts the reauth flow; cloud entries ask for new credentials (reauth_confirm), local entries for model and host (reauth_confirm_local)
+    comment: ConfigEntryAuthFailed starts the reauth flow; cloud entries ask for new credentials (reauth_confirm), local entries for model and host (reauth_confirm_local). Another username aborts with wrong_account, as the account of an entry must not change
   
   test-coverage:
     status: done
-    comment: 2904 tests; 100 % line coverage of custom_components/syr_connect is required (pytest-cov) and reported to codecov
+    comment: 2935 tests; 100 % line coverage of custom_components/syr_connect is required (pytest-cov) and reported to codecov
 
   # GOLD TIER
   devices:
@@ -208,7 +208,7 @@ rules:
   
   reconfiguration-flow:
     status: done
-    comment: Reconfigure flow implemented with async_step_reconfigure
+    comment: Reconfigure flow implemented with async_step_reconfigure; cloud entries keep their account (another username aborts with wrong_account), local entries may change model and host, but not the device (another serial number aborts with wrong_device)
   
   repair-issues:
     status: exempt

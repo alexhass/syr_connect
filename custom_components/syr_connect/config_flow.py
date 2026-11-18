@@ -38,6 +38,7 @@ from .const import (
     CONF_SERVICE,
     DOMAIN,
 )
+from .helpers.device import get_local_serial
 from .helpers.integration import (
     build_user_agent,
     get_api_locale,
@@ -201,11 +202,14 @@ async def validate_input_xml(
     return {"title": _entry_title(API_TYPE_XML, data)}
 
 
-async def _async_validate_json_device(api: SyrConnectJsonAPI) -> None:
+async def _async_validate_json_device(api: SyrConnectJsonAPI) -> str:
     """Log in to the local device and check that it answers like a SYR device.
 
     Args:
         api: JSON API client for the device
+
+    Returns:
+        The serial number of the device
 
     Raises:
         CannotConnectError: If the device returns no usable data
@@ -225,8 +229,8 @@ async def _async_validate_json_device(api: SyrConnectJsonAPI) -> None:
         raise CannotConnectError
 
     # Verify this is a SYR device by checking for serial number fields and extract serial
-    serial = data_result.get("getSRN") or data_result.get("getFRN")
-    if not serial:
+    serial = get_local_serial(data_result)
+    if serial is None:
         _LOGGER.debug("JSON API: response missing getSRN/getFRN - not a SYR device?")
         raise CannotConnectError
 
@@ -235,6 +239,7 @@ async def _async_validate_json_device(api: SyrConnectJsonAPI) -> None:
         serial,
         len(data_result),
     )
+    return serial
 
 
 async def validate_input_json(
@@ -247,7 +252,8 @@ async def validate_input_json(
         data: User input data with host, model, and device_name
 
     Returns:
-        Dictionary with title for the config entry
+        Dictionary with the title of the config entry, whether the device needs the
+        ADM login and the serial number of the device
 
     Raises:
         CannotConnectError: If connection to API fails
@@ -292,7 +298,7 @@ async def validate_input_json(
     # Failures are logged at debug level only: the form shows them.
     _LOGGER.debug("Testing JSON API connection...")
     try:
-        await _async_validate_json_device(api)
+        serial = await _async_validate_json_device(api)
     except SyrConnectAuthError as err:
         _LOGGER.debug("JSON API: authentication failed: %s", err)
         raise InvalidAuthError from err
@@ -303,10 +309,12 @@ async def validate_input_json(
 
     _LOGGER.info("JSON API: connection successful to host: %s", host)
 
-    # Return whether the device required login so the config flow can persist it
+    # Return whether the device required login so the config flow can persist it,
+    # and the serial number for the unique_id of the entry
     return {
         "title": _entry_title(API_TYPE_JSON, data),
         "login_required": api.login_required,
+        "serial": serial,
     }
 
 
@@ -368,7 +376,7 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlowWithReload):
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for SYR Connect."""
 
-    VERSION = 10
+    VERSION = 11
 
     @staticmethod
     @callback
@@ -387,17 +395,21 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return SyrConnectOptionsFlow()
 
     @staticmethod
-    def _strip_host(user_input: dict[str, Any]) -> dict[str, Any]:
-        """Return the user input with leading/trailing whitespace removed from the host.
+    def _strip_whitespace(user_input: dict[str, Any]) -> dict[str, Any]:
+        """Return the user input with leading/trailing whitespace removed from host and username.
 
-        Such whitespace usually comes from copy & paste; it is removed instead of
-        rejecting the host, and the cleaned host is what gets validated and saved
-        (also in the unique_id). Input without a host field is returned unchanged.
+        Such whitespace usually comes from copy & paste, and neither a host nor a
+        username of the cloud can contain it; it is removed instead of rejecting the
+        input, and the cleaned value is what gets validated and saved (also in the
+        unique_id). The password is kept as entered: whitespace can be part of it.
+        Input without these fields is returned unchanged.
         """
-        host = user_input.get(CONF_HOST)
-        if isinstance(host, str):
-            return {**user_input, CONF_HOST: host.strip()}
-        return user_input
+        stripped = {
+            key: value.strip()
+            for key in (CONF_HOST, CONF_USERNAME)
+            if isinstance(value := user_input.get(key), str)
+        }
+        return {**user_input, **stripped}
 
     def _unique_id_used_by_other_entry(
         self, entry: ConfigEntry, unique_id: str
@@ -418,23 +430,41 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         entry: ConfigEntry,
         api_type: str,
         new_data: dict[str, Any],
+        serial: str | None,
     ) -> ConfigFlowResult:
         """Save the new connection data of an existing entry, reload it and finish the flow.
 
-        Shared by reauth and reconfigure. A changed username/host also changes the entry's
-        unique_id (e.g. a new e-mail address of the same SYR account, or a new device IP);
-        the flow aborts with "already_configured" if another entry already uses it. The
-        title is built again from the new data, as at setup.
+        Shared by reauth and reconfigure. A cloud entry stays with its account: the
+        cloud has no account ID, so another username means another account, whose
+        devices are not the devices of this entry; the flow aborts with "wrong_account"
+        and the account is added as a new entry. Only the letter case of the username
+        and whitespace around it (of older entries) may change. A local entry stays with its device: the host and the model may
+        change, another serial number aborts with "wrong_device". An entry with the
+        host-based unique_id of older versions gets the serial number of the device.
+        The flow aborts with "already_configured" if another entry already uses the
+        new unique_id. The title is built again from the new data, as at setup.
 
         Args:
             entry: The config entry to update
             api_type: API type of the entry
             new_data: Complete new entry data
+            serial: Serial number of the local device, None for a cloud entry
 
         Returns:
             The abort result that ends the flow
         """
-        new_unique_id = build_entry_unique_id(api_type, new_data)
+        if (
+            api_type == API_TYPE_XML
+            and str(new_data[CONF_USERNAME]).lower()
+            != str(entry.data[CONF_USERNAME]).strip().lower()
+        ):
+            return self.async_abort(reason="wrong_account")
+        new_unique_id = build_entry_unique_id(api_type, new_data, serial)
+        if api_type == API_TYPE_JSON and entry.unique_id not in (
+            new_unique_id,
+            build_entry_unique_id(API_TYPE_JSON, entry.data),
+        ):
+            return self.async_abort(reason="wrong_device")
         if self._unique_id_used_by_other_entry(entry, new_unique_id):
             return self.async_abort(reason="already_configured")
         return self.async_update_reload_and_abort(
@@ -474,7 +504,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML)
 
         if user_input is not None:
-            user_input = self._strip_host(user_input)
+            user_input = self._strip_whitespace(user_input)
             try:
                 # Validate and update based on API type
                 if api_type == API_TYPE_JSON:
@@ -489,6 +519,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     }
                     if "login_required" in info and info["login_required"] is not None:
                         new_data[CONF_LOGIN_REQUIRED] = bool(info["login_required"])
+                    serial = info["serial"]
 
                 else:
                     # Default/XML flow — pass existing conf_service so the correct endpoint is tested
@@ -505,8 +536,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_USERNAME: user_input[CONF_USERNAME],
                         CONF_PASSWORD: user_input[CONF_PASSWORD],
                     }
+                    serial = None
 
-                return self._async_update_reload_and_abort(entry, api_type, new_data)
+                return self._async_update_reload_and_abort(
+                    entry, api_type, new_data, serial
+                )
 
             except CannotConnectError:
                 errors["base"] = (
@@ -576,7 +610,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         api_type = entry.data.get(CONF_API_TYPE, API_TYPE_XML)
 
         if user_input is not None:
-            user_input = self._strip_host(user_input)
+            user_input = self._strip_whitespace(user_input)
             try:
                 # Validate based on API type
                 if api_type == API_TYPE_JSON:
@@ -593,6 +627,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     # not kept: the new host may be another device.
                     if info.get("login_required") is not None:
                         new_data[CONF_LOGIN_REQUIRED] = bool(info["login_required"])
+                    serial = info["serial"]
                 else:
                     # Use the existing configured service; do not allow changing it here.
                     service = entry.data[CONF_SERVICE]
@@ -605,8 +640,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_USERNAME: user_input[CONF_USERNAME],
                         CONF_PASSWORD: user_input[CONF_PASSWORD],
                     }
+                    serial = None
 
-                return self._async_update_reload_and_abort(entry, api_type, new_data)
+                return self._async_update_reload_and_abort(
+                    entry, api_type, new_data, serial
+                )
 
             except CannotConnectError:
                 errors["base"] = (
@@ -695,6 +733,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
+            user_input = self._strip_whitespace(user_input)
             _LOGGER.debug(
                 "Processing Cloud/XML API config flow for user: %s",
                 user_input[CONF_USERNAME],
@@ -747,11 +786,16 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            user_input = self._strip_host(user_input)
+            user_input = self._strip_whitespace(user_input)
             _LOGGER.debug(
                 "Processing Local/JSON API config flow for host: %s, model: %s",
                 user_input[CONF_HOST],
                 user_input[CONF_MODEL],
+            )
+            # An entry of an older version that was not set up since still has the
+            # host-based unique_id, so the serial number would not find it
+            self._async_abort_entries_match(
+                {CONF_API_TYPE: API_TYPE_JSON, CONF_HOST: user_input[CONF_HOST]}
             )
             try:
                 info = await validate_input_json(self.hass, user_input)
@@ -768,8 +812,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _LOGGER.exception("Unexpected error during Local/JSON API config flow")
                 errors["base"] = "unknown"
             else:
-                # Set unique ID based on host and API type
-                unique_id = build_entry_unique_id(API_TYPE_JSON, user_input)
+                # Set unique ID based on the serial number of the device and API type
+                unique_id = build_entry_unique_id(
+                    API_TYPE_JSON, user_input, info["serial"]
+                )
                 _LOGGER.debug("Setting unique ID: %s", unique_id)
                 await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()
