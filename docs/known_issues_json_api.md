@@ -20,7 +20,7 @@ repository.
 - **Response key and URL path casing inconsistencies:** `set` response keys and `/set` path segment casing vary between devices and firmwares.
 - **Data-type inconsistencies:** Identical fields may appear as numbers, strings, or booleans depending on firmware/version.
 - **API error-code case-sensitivity:** Error codes `NSC`, `MIMA` and `ADM` are always uppercase, as documented by SYR; a value in another case (such as a Wi-Fi name `adm`) is an ordinary value.
-- **Time values are local time:** `getLAR` counts the local wall time of the device, not UTC; see issue 5 in [known_issues_xml_api.md](known_issues_xml_api.md).
+- **`getLAR` is UTC on the devices checked:** see issue 5 in [known_issues_xml_api.md](known_issues_xml_api.md).
 - **Canonical response format (compact status-key):** Devices commonly return compact status-key responses (e.g. {"setABtrue":"OK"}) instead of the typed JSON shown in the official documentation; the integration operates on the compact device format at runtime and treats it as the canonical representation.
 - **SafeTech+ pressure key:** The official documentation lists `getBAR2` for the SafeTech+; the devices report the pressure in `getBAR`.
 - **All-in-One+ filling volumes:** The official documentation gives the filling volumes `getCFV` and `getLFV` and the last tapped volume `getLTV` in liters; the All-in-One+ reports them in milliliters. The cumulative refilled volume `getTRV` is in liters.
@@ -161,11 +161,11 @@ Actual (expected) device response:
 - Mitigation in this project: The integration requires and expects the actual device response format — the compact status-key representation (e.g. {"setABtrue":"OK"}). The API documentation should be regarded as incorrect.
 - Official incorrect documentation: [SYR JSON API documentation](https://iotsyrpublicapi.z1.web.core.windows.net/)
 
-### 8. Time values are local time, not UTC
+### 8. `getLAR` is a UNIX timestamp in UTC on the devices checked
 
-- Description: `getLAR` (last regeneration) counts the local wall time of the device in seconds since 1970, not UTC, as in the XML API. The value comes from the device, so both APIs report the same number.
+- Description: In the local API captures `tests/fixtures/json/SyrNeoSoft2500_get_all.json` and `tests/fixtures/json/SanibelSoftwaterUNOA25_get_all.json`, `getLAR` (last regeneration) read as a UNIX timestamp in UTC matches the configured regeneration time (`getRTM`). See issue 5 in [known_issues_xml_api.md](known_issues_xml_api.md).
 - Impact: see issue 5 in [known_issues_xml_api.md](known_issues_xml_api.md).
-- Mitigation in this project: The local API reports no UTC offset (the cloud's `tzo`), so `_value_lar()` in `custom_components/syr_connect/sensor.py` reads the value as wall time in the time zone of Home Assistant.
+- Mitigation in this project: `_value_lar()` in `custom_components/syr_connect/sensor.py` reads the value as UTC; the time zone of Home Assistant is not used.
 
 ### 9. SafeTech+ reports the pressure in `getBAR`, not `getBAR2`
 

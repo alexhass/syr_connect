@@ -354,12 +354,13 @@ def _value_net(
 def _value_lar(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
-    """Last regeneration (getLAR): local time in seconds since 1970 -> aware datetime.
+    """Last regeneration (getLAR): UNIX timestamp (UTC) -> aware datetime.
 
-    The device counts its local wall time, not UTC (see docs/known_issues_xml_api.md,
-    issue 5): 1792718160 is 23 October 2026 01:16 local time, not 01:16 UTC. The cloud
-    reports the current UTC offset of the project (tzo), which is subtracted. The local
-    JSON API reports no offset; there the time zone of Home Assistant is used.
+    On the devices listed in docs/known_issues_xml_api.md, issue 5, the value is a UNIX
+    timestamp in UTC.
+
+    Formats:
+    - Clear Pro Soft (getRTM "02:00"): "1794877201" -> 2026-11-17 01:00:01 UTC
     """
     if value is None or value == "":
         return None
@@ -368,12 +369,7 @@ def _value_lar(
         # 0 means that no regeneration has happened yet.
         if timestamp == 0:
             return None
-        utc_offset = sensor.device_utc_offset
-        if utc_offset is not None:
-            return datetime.fromtimestamp(timestamp - utc_offset, UTC)
-        return datetime.fromtimestamp(timestamp, UTC).replace(
-            tzinfo=dt_util.get_default_time_zone()
-        )
+        return datetime.fromtimestamp(timestamp, UTC)
     except ValueError, TypeError, OverflowError:
         return None
 
