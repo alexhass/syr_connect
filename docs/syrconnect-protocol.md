@@ -814,7 +814,7 @@ The sensor settings `getTSD`, `getPSD` and `getCSD` are read with `get` and chan
 | setDEF | "" | | SERVICE | | Resets all parameters to their factory defaults (write-only) |
 | getERE | "19" | | | | Expected regenerations remaining (NeoSoft 2500/5000) |
 | getINR | "2" | | | | Number of incomplete regeneration cycles |
-| getLAR | "1694501839" | | | | Last regeneration as local time in seconds since 1.1.1970, not UTC (see `docs/known_issues_xml_api.md`, issue 5) |
+| getLAR | "1694501839" | | | | Last regeneration as UNIX timestamp (seconds since 1.1.1970); UTC on the devices listed in `docs/known_issues_xml_api.md`, issue 5 |
 | getNOR | "427" | | | | Number of regeneration cycles in normal mode |
 | getNRE | "3" | | | | Number of remaining regenerations (NeoSoft 2500/5000) |
 | getRG1<br>getRG2<br>getRG3 | "0"<br>"0"<br>"0" | | | | "1" if regeneration is running for tank 1, 2 or 3. NeoSoft (getRG1 only): 0 = no regeneration, 1 = bottle 1 regenerates, 2 = bottle 2 regenerates |

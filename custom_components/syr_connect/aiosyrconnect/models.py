@@ -28,9 +28,6 @@ class SyrConnectApiDevice(TypedDict):
     dk: NotRequired[int]
     dkv: NotRequired[int]
     sbt: NotRequired[int]
-    # Current UTC offset of the project's time zone in seconds, from `tzo` of the device
-    # list ("02:00:00" in summer time). Only reported by the XML API
-    utc_offset: NotRequired[int]
 
 
 @dataclass(frozen=True, kw_only=True)

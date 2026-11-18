@@ -3,7 +3,6 @@
 from datetime import UTC, datetime
 import logging
 import math
-import re
 from typing import Any, NoReturn
 from urllib.parse import unquote_plus
 
@@ -48,24 +47,6 @@ def is_device_offline(dst: Any) -> bool:
         True if the device is not reachable via the cloud
     """
     return str(dst if dst is not None else "").strip() in ("0", "1")
-
-
-def _parse_utc_offset(value: Any) -> int | None:
-    """Return a UTC offset (tzo) in seconds, or None if it is missing or invalid.
-
-    Formats:
-    - Summer time in Germany: "02:00:00" -> 7200
-    - Negative offset: "-05:30:00" -> -19800
-    """
-    if not isinstance(value, str):
-        return None
-    match = re.fullmatch(r"(-)?(\d{1,2}):(\d{2})(?::(\d{2}))?", value.strip())
-    if match is None:
-        return None
-    seconds = (
-        int(match.group(2)) * 3600 + int(match.group(3)) * 60 + int(match.group(4) or 0)
-    )
-    return -seconds if match.group(1) else seconds
 
 
 class ResponseParser:
@@ -318,14 +299,6 @@ class ResponseParser:
         if not self.validate_structure(parsed, ["sc", "prs", "pr"]):
             raise ValueError("Device list response contains no project.")
 
-        # Device time values are local time (docs/known_issues_xml_api.md, issue 5). The
-        # project reports the current UTC offset of its time zone, which the cloud
-        # switches with daylight saving time.
-        project = parsed["sc"]["prs"]["pr"]
-        if isinstance(project, list):
-            project = project[0]
-        utc_offset = _parse_utc_offset(project.get("@tzo"))
-
         device_aliases, device_kind_versions = self._parse_device_collections(parsed)
 
         # Extract devices
@@ -351,9 +324,7 @@ class ResponseParser:
         for device in device_list:
             if "@dclg" in device:
                 devices.append(
-                    self._build_device(
-                        device, device_aliases, device_kind_versions, utc_offset
-                    )
+                    self._build_device(device, device_aliases, device_kind_versions)
                 )
             else:
                 _LOGGER.debug("Skipping device without @dclg: %s", device)
@@ -397,7 +368,6 @@ class ResponseParser:
         device: dict[str, Any],
         device_aliases: dict[str, str],
         device_kind_versions: dict[str, int],
-        utc_offset: int | None,
     ) -> SyrConnectApiDevice:
         """Return a device of the device list from its <d> element.
 
@@ -405,7 +375,6 @@ class ResponseParser:
             device: The <d> element, with @dclg
             device_aliases: Alias by dclg, see _parse_device_collections
             device_kind_versions: dkv by dclg, see _parse_device_collections
-            utc_offset: UTC offset of the project in seconds, if known
         """
         dclg_id = device["@dclg"]
         serial_number = device.get("@sn", "Unknown")
@@ -424,7 +393,7 @@ class ResponseParser:
             sbt,
         )
 
-        entry: SyrConnectApiDevice = {
+        return {
             "id": serial_number,  # Use serial number as device ID
             "dclg": dclg_id,
             "serial_number": serial_number,
@@ -433,9 +402,6 @@ class ResponseParser:
             "dkv": dkv,
             "sbt": sbt,
         }
-        if utc_offset is not None:
-            entry["utc_offset"] = utc_offset
-        return entry
 
     def parse_device_status_response(
         self, xml_response: str

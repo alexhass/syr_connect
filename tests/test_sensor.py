@@ -217,19 +217,17 @@ async def test_sensor_native_value_numeric(
 
 
 @pytest.mark.parametrize(
-    ("raw", "expected_utc"),
+    "time_zone",
     [
-        # Summer time (CEST, UTC+2): the device reports 01:16 local time
-        ("1792718160", datetime(2026, 10, 22, 23, 16, tzinfo=UTC)),
-        # Winter time (CET, UTC+1): the device reports 00:00 local time
-        ("1704067200", datetime(2023, 12, 31, 23, 0, tzinfo=UTC)),
+        "Europe/Berlin",
+        "America/New_York",
     ],
 )
-async def test_sensor_native_value_timestamp_is_local_time(
-    hass: HomeAssistant, raw: str, expected_utc: datetime
+async def test_sensor_native_value_timestamp_is_utc(
+    hass: HomeAssistant, time_zone: str
 ) -> None:
-    """Test getLAR without a UTC offset (local JSON API) uses the Home Assistant time zone."""
-    await hass.config.async_set_time_zone("Europe/Berlin")
+    """Test getLAR is read as a UNIX timestamp in UTC (docs/known_issues_xml_api.md, issue 5)."""
+    await hass.config.async_set_time_zone(time_zone)
     data = {
         "devices": [
             {
@@ -237,7 +235,8 @@ async def test_sensor_native_value_timestamp_is_local_time(
                 "name": "Device 1",
                 "project_id": "project1",
                 "status": {
-                    "getLAR": raw,
+                    # Clear Pro Soft (NSS.V.2.52), getRTM "02:00"
+                    "getLAR": "1794877201",
                 },
             }
         ]
@@ -245,42 +244,7 @@ async def test_sensor_native_value_timestamp_is_local_time(
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLAR")
 
-    value = sensor.native_value
-    assert isinstance(value, datetime)
-    assert value == expected_utc
-
-
-@pytest.mark.parametrize(
-    ("utc_offset", "expected_utc"),
-    [
-        # Summer time: the cloud reports tzo="02:00:00"
-        (7200, datetime(2026, 10, 22, 23, 16, tzinfo=UTC)),
-        # Winter time: the cloud reports tzo="01:00:00"
-        (3600, datetime(2026, 10, 23, 0, 16, tzinfo=UTC)),
-    ],
-)
-async def test_sensor_native_value_timestamp_uses_cloud_utc_offset(
-    hass: HomeAssistant, utc_offset: int, expected_utc: datetime
-) -> None:
-    """Test getLAR uses the UTC offset (tzo) of the project, not the Home Assistant time zone."""
-    await hass.config.async_set_time_zone("America/New_York")
-    data = {
-        "devices": [
-            {
-                "id": "device1",
-                "name": "Device 1",
-                "project_id": "project1",
-                "utc_offset": utc_offset,
-                "status": {
-                    "getLAR": "1792718160",  # 23 October 2026 01:16 local time
-                },
-            }
-        ]
-    }
-    coordinator = _build_coordinator(hass, data)
-    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLAR")
-
-    assert sensor.native_value == expected_utc
+    assert sensor.native_value == datetime(2026, 11, 17, 1, 0, 1, tzinfo=UTC)
 
 
 async def test_sensor_native_value_string(hass: HomeAssistant) -> None:
