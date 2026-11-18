@@ -91,7 +91,7 @@ Für neuere Geräte mit lokaler JSON-API, zum Beispiel die NeoSoft- und Trio-Ger
 
 **Hinweis**: Die IP-Adresse des Geräts steht in der DHCP-Client-Liste des Routers oder im Display-Menü des Geräts.
 
-**Wichtig**: Für einen stabilen Betrieb muss das Gerät eine **statische IP-Adresse** oder eine **reservierte DHCP-Adresse** (DHCP-Reservierung) haben. Ändert sich die IP-Adresse des Geräts, verliert die Integration die Verbindung. Die neue Adresse wird über „Neu konfigurieren“ im Drei-Punkte-Menü (⋮) des Eintrags eingegeben. Alternativ kann ein Hostname verwendet werden, wenn das Netzwerk lokale DNS-Auflösung unterstützt.
+**Wichtig**: Für einen stabilen Betrieb muss das Gerät eine **statische IP-Adresse** oder eine **reservierte DHCP-Adresse** (DHCP-Reservierung) haben. Ändert sich die IP-Adresse des Geräts, verliert die Integration die Verbindung. Die neue Adresse wird über „Neu konfigurieren“ im Drei-Punkte-Menü (⋮) des Eintrags eingegeben. Der Eintrag bleibt über die Seriennummer an sein Gerät gebunden: Ein anderes Gerät unter der neuen Adresse wird abgelehnt und muss als neuer Eintrag hinzugefügt werden. Alternativ kann ein Hostname verwendet werden, wenn das Netzwerk lokale DNS-Auflösung unterstützt.
 
 ## Funktionen
 
@@ -601,6 +601,8 @@ Bei der Meldung „Authentication failed“:
 3. Einstellungen > Geräte & Dienste öffnen.
 4. Bei der SYR Connect-Integration „Authentifizieren“ auswählen.
 5. Die Zugangsdaten erneut eingeben.
+
+Die erneute Authentifizierung und „Neu konfigurieren“ ändern nur das Passwort des Kontos. Ein anderer Benutzername ist ein anderes Konto: Er wird dort abgelehnt und muss als neuer Eintrag hinzugefügt werden.
 
 ### Keine Geräte gefunden
 

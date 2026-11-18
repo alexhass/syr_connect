@@ -1,5 +1,6 @@
 """Tests for migration helpers in migrations.py."""
 
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -19,6 +20,7 @@ from custom_components.syr_connect.const import (
     CONF_SERVICE,
 )
 from custom_components.syr_connect.migrations import (
+    local_unique_id_by_serial,
     v1_to_v2_update_kwargs,
     v2_to_v3_fix_flo_unit,
     v3_to_v4_add_service,
@@ -27,6 +29,7 @@ from custom_components.syr_connect.migrations import (
     v6_to_v7_scope_unique_id_by_entry,
     v7_to_v8_rename_local_model,
     v8_to_v9_detect_local_model,
+    v10_to_v11_lowercase_cloud_unique_id,
 )
 from homeassistant.const import UnitOfVolumeFlowRate
 from homeassistant.core import HomeAssistant
@@ -949,3 +952,140 @@ async def test_v8_to_v9_keeps_current_local_model_and_cloud_entries(
 
     assert await v8_to_v9_detect_local_model(hass, local) is None
     assert await v8_to_v9_detect_local_model(hass, cloud) is None
+
+
+def _local_entry(hass: HomeAssistant, unique_id: str, entry_id: str) -> MockConfigEntry:
+    """Return a local entry at 192.0.2.5, added to hass."""
+    entry = MockConfigEntry(
+        domain="syr_connect",
+        title="SYR Connect Local (192.0.2.5)",
+        data={CONF_API_TYPE: API_TYPE_JSON, CONF_HOST: "192.0.2.5"},
+        entry_id=entry_id,
+        unique_id=unique_id,
+    )
+    entry.add_to_hass(hass)
+    return entry
+
+
+def _data(status: dict) -> Any:
+    """Return coordinator data with one local device of the given status."""
+    return {"devices": [{"id": "SN1", "status": status}]}
+
+
+@pytest.mark.parametrize("key", ["getSRN", "getFRN"])
+async def test_local_unique_id_by_serial(hass: HomeAssistant, key: str) -> None:
+    """A local entry with the host-based unique_id gets the serial number of its device."""
+    entry = _local_entry(hass, "json_192.0.2.5", "LOCAL")
+
+    assert local_unique_id_by_serial(hass, entry, _data({key: "SN1"})) == {
+        "unique_id": "json_SN1"
+    }
+
+
+@pytest.mark.parametrize(
+    ("api_type", "unique_id", "data"),
+    [
+        # A cloud entry keeps its unique_id
+        (API_TYPE_XML, "json_192.0.2.5", _data({"getSRN": "SN1"})),
+        # The entry already has the serial number
+        (API_TYPE_JSON, "json_SN1", _data({"getSRN": "SN1"})),
+        # No device or no serial number: nothing to change it to
+        (API_TYPE_JSON, "json_192.0.2.5", None),
+        (API_TYPE_JSON, "json_192.0.2.5", {"devices": []}),
+        (API_TYPE_JSON, "json_192.0.2.5", {"devices": [{"id": "SN1"}]}),
+        (API_TYPE_JSON, "json_192.0.2.5", _data({"getSRN": ""})),
+    ],
+    ids=["cloud", "serial", "no_data", "no_device", "no_status", "empty_serial"],
+)
+async def test_local_unique_id_by_serial_keeps_unique_id(
+    hass: HomeAssistant, api_type: str, unique_id: str, data: Any
+) -> None:
+    """Only a local entry with the host-based unique_id and a known serial number changes."""
+    entry = MockConfigEntry(
+        domain="syr_connect",
+        data={CONF_API_TYPE: api_type, CONF_HOST: "192.0.2.5"},
+        unique_id=unique_id,
+    )
+    entry.add_to_hass(hass)
+
+    assert local_unique_id_by_serial(hass, entry, data) is None
+
+
+async def test_local_unique_id_by_serial_keeps_unique_id_of_device_set_up_twice(
+    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
+) -> None:
+    """If another entry has the device, the entry keeps its unique_id and it is logged."""
+    _local_entry(hass, "json_SN1", "OTHER")
+    entry = _local_entry(hass, "json_192.0.2.5", "LOCAL")
+
+    assert local_unique_id_by_serial(hass, entry, _data({"getSRN": "SN1"})) is None
+    assert "The device SN1 of SYR Connect Local (192.0.2.5)" in caplog.text
+
+
+def _cloud_entry(
+    hass: HomeAssistant, username: str, unique_id: str, entry_id: str
+) -> MockConfigEntry:
+    """Return a cloud entry of the SYR Connect service, added to hass."""
+    entry = MockConfigEntry(
+        version=10,
+        domain="syr_connect",
+        title=f"SYR Connect ({username})",
+        data={
+            CONF_API_TYPE: API_TYPE_XML,
+            CONF_SERVICE: "de.consoft.syr.connect",
+            "username": username,
+        },
+        entry_id=entry_id,
+        unique_id=unique_id,
+    )
+    entry.add_to_hass(hass)
+    return entry
+
+
+@pytest.mark.parametrize("username", ["Me@Example.com", " Me@Example.com "])
+async def test_v10_to_v11_lowercases_username_in_unique_id(
+    hass: HomeAssistant, username: str
+) -> None:
+    """The unique_id of a cloud entry gets the username in lowercase, without whitespace."""
+    entry = _cloud_entry(
+        hass, username, f"xml_de.consoft.syr.connect_{username}", "CLOUD"
+    )
+
+    assert v10_to_v11_lowercase_cloud_unique_id(hass, entry) == {
+        "unique_id": "xml_de.consoft.syr.connect_me@example.com",
+        "version": 11,
+    }
+
+
+async def test_v10_to_v11_keeps_lowercase_and_local_unique_id(
+    hass: HomeAssistant,
+) -> None:
+    """A lowercase cloud unique_id and a local entry need no update."""
+    cloud = _cloud_entry(
+        hass, "me@example.com", "xml_de.consoft.syr.connect_me@example.com", "CLOUD"
+    )
+    local = MockConfigEntry(
+        version=10,
+        domain="syr_connect",
+        data={CONF_API_TYPE: API_TYPE_JSON, CONF_HOST: "192.0.2.5"},
+        unique_id="json_SN1",
+    )
+    local.add_to_hass(hass)
+
+    assert v10_to_v11_lowercase_cloud_unique_id(hass, cloud) is None
+    assert v10_to_v11_lowercase_cloud_unique_id(hass, local) is None
+
+
+async def test_v10_to_v11_keeps_unique_id_of_account_set_up_twice(
+    hass: HomeAssistant, caplog: pytest.LogCaptureFixture
+) -> None:
+    """If another entry has the account, the entry keeps its unique_id and it is logged."""
+    _cloud_entry(
+        hass, "me@example.com", "xml_de.consoft.syr.connect_me@example.com", "OTHER"
+    )
+    entry = _cloud_entry(
+        hass, "Me@Example.com", "xml_de.consoft.syr.connect_Me@Example.com", "CLOUD"
+    )
+
+    assert v10_to_v11_lowercase_cloud_unique_id(hass, entry) is None
+    assert "The account of SYR Connect (Me@Example.com)" in caplog.text

@@ -91,7 +91,7 @@ For newer devices with a local JSON API, for example the NeoSoft and Trio device
 
 **Note**: The IP address of the device is shown in the DHCP client list of the router or in the display menu of the device.
 
-**Important**: For stable operation, the device must have a **static IP address** or a **reserved DHCP lease** (DHCP reservation). If the IP address of the device changes, the integration loses the connection. The new address is entered with "Reconfigure" in the three dots menu (⋮) of the entry. Alternatively, a hostname can be used if the network supports local DNS resolution.
+**Important**: For stable operation, the device must have a **static IP address** or a **reserved DHCP lease** (DHCP reservation). If the IP address of the device changes, the integration loses the connection. The new address is entered with "Reconfigure" in the three dots menu (⋮) of the entry. The entry stays bound to its device by the serial number: another device at the new address is rejected and must be added as a new entry. Alternatively, a hostname can be used if the network supports local DNS resolution.
 
 ## Features
 
@@ -601,6 +601,8 @@ For "Authentication failed" errors:
 3. Go to Settings > Devices & Services.
 4. Click "Authenticate" on the SYR Connect integration.
 5. Enter the credentials again.
+
+Reauthentication and "Reconfigure" only change the password of the account. Another username is another account: it is rejected there and must be added as a new entry.
 
 ### No devices found
 

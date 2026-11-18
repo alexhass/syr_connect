@@ -61,25 +61,35 @@ def build_unique_id(entry_id: str | None, device_id: str, key: str) -> str:
     return f"{device_id}_{key}"
 
 
-def build_entry_unique_id(api_type: str, data: Mapping[str, Any]) -> str:
+def build_entry_unique_id(
+    api_type: str, data: Mapping[str, Any], serial: str | None = None
+) -> str:
     """Return the unique_id of a config entry for its connection data.
 
-    A local entry is identified by its host. A cloud account belongs to its cloud
-    service (CONF_SERVICE, the cf_bundle_identifier of the app): the login only works
-    with the app name of the service, also where several services share one server.
-    The same e-mail address can therefore be a different account in every service.
+    A local entry is identified by the serial number of its device, so a new IP
+    address keeps it and the same device cannot be set up twice (by IP address and
+    by hostname). Without a serial number it is the host: the unique_id of the local
+    entries set up before the serial number was used, until their next setup.
+
+    A cloud account belongs to its cloud service (CONF_SERVICE, the
+    cf_bundle_identifier of the app): the login only works with the app name of the
+    service, also where several services share one server. The same e-mail address
+    can therefore be a different account in every service. The username is a name
+    or an e-mail address; the cloud ignores its letter case, so it is lowercased,
+    and it cannot start or end with whitespace, which older entries may still have.
 
     Args:
         api_type: API type of the entry (API_TYPE_XML or API_TYPE_JSON).
         data: Entry data with the host (local) or the service and username (cloud).
+        serial: Serial number of the local device, None for the host-based unique_id.
 
     Returns:
-        "json_<host>" or "xml_<cf_bundle_identifier>_<username>", e.g.
-        "xml_de.consoft.syr.connect_me@example.com".
+        "json_<serial>", "json_<host>" or "xml_<cf_bundle_identifier>_<username>"
+        with the username in lowercase, e.g. "xml_de.consoft.syr.connect_me@example.com".
     """
     if api_type == API_TYPE_JSON:
-        return f"{API_TYPE_JSON}_{data[CONF_HOST]}"
-    return f"{API_TYPE_XML}_{data[CONF_SERVICE]}_{data[CONF_USERNAME]}"
+        return f"{API_TYPE_JSON}_{data[CONF_HOST] if serial is None else serial}"
+    return f"{API_TYPE_XML}_{data[CONF_SERVICE]}_{str(data[CONF_USERNAME]).strip().lower()}"
 
 
 def build_statistic_id(device_id: str, key: str) -> str:

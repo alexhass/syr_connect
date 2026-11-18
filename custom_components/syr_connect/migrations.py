@@ -6,6 +6,8 @@ passing to `hass.config_entries.async_update_entry(entry, **update_kwargs)`
 or `None` if no update is required.
 """
 
+import logging
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_USERNAME, UnitOfVolumeFlowRate
 from homeassistant.core import HomeAssistant
@@ -22,10 +24,15 @@ from .const import (
     CONF_LOGIN_REQUIRED,
     CONF_MODEL,
     CONF_SERVICE,
+    DOMAIN,
 )
+from .data import SyrConnectCoordinatorData
+from .helpers.device import get_local_serial
 from .helpers.integration import build_user_agent, get_integration_version
 from .helpers.registry import build_entry_unique_id
 from .models import detect_model
+
+_LOGGER = logging.getLogger(__name__)
 
 # Renamed local JSON API models (CONF_MODEL) -> their new name
 _SYR_CONNECT_MIGRATIONS_LOCAL_MODEL_RENAMES = {
@@ -276,3 +283,78 @@ async def _async_detect_local_model(
             f"No model with local access matches the device ({model.display_name})"
         )
     return model.name
+
+
+def local_unique_id_by_serial(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    coordinator_data: SyrConnectCoordinatorData | None,
+) -> dict | None:
+    """Compute update kwargs that give a local entry the serial number as unique_id.
+
+    Local entries were identified by their host ("json_<host>"), so a new IP address
+    changed the unique_id and the same device could be set up twice (by IP address
+    and by hostname). New entries get the serial number of their device at the
+    setup. An older entry gets it from the first refresh of its next setup, without
+    asking the device once more, so it cannot fail like a version migration while
+    the device is not reachable. If another entry already uses the unique_id (the
+    same device set up twice), the entry keeps its host-based unique_id.
+
+    Args:
+        hass: Home Assistant instance
+        entry: The config entry being set up
+        coordinator_data: Data of the first refresh of the entry
+
+    Returns:
+        The update kwargs, or None if the unique_id stays
+    """
+    if entry.data.get(CONF_API_TYPE) != API_TYPE_JSON or (
+        entry.unique_id != build_entry_unique_id(API_TYPE_JSON, entry.data)
+    ):
+        return None
+    devices = coordinator_data["devices"] if coordinator_data else []
+    serial = get_local_serial(devices[0].get("status", {})) if devices else None
+    if serial is None:
+        return None
+    unique_id = build_entry_unique_id(API_TYPE_JSON, entry.data, serial)
+    if any(
+        other.entry_id != entry.entry_id and other.unique_id == unique_id
+        for other in hass.config_entries.async_entries(DOMAIN)
+    ):
+        _LOGGER.warning(
+            "The device %s of %s is also set up by another entry; one of the two "
+            "entries can be deleted",
+            serial,
+            entry.title,
+        )
+        return None
+    return {"unique_id": unique_id}
+
+
+def v10_to_v11_lowercase_cloud_unique_id(
+    hass: HomeAssistant, entry: ConfigEntry
+) -> dict | None:
+    """Compute update kwargs for migrating v10 -> v11.
+
+    The unique_id of a cloud entry contained the username as entered, so the same
+    account could be set up twice with another letter case: the cloud ignores it.
+    The username is now lowercased (see helpers.build_entry_unique_id). If another
+    entry already has the lowercased unique_id (the same account set up twice), the
+    entry keeps its unique_id.
+    """
+    if entry.data.get(CONF_API_TYPE) != API_TYPE_XML:
+        return None
+    unique_id = build_entry_unique_id(API_TYPE_XML, entry.data)
+    if unique_id == entry.unique_id:
+        return None
+    if any(
+        other.entry_id != entry.entry_id and other.unique_id == unique_id
+        for other in hass.config_entries.async_entries(DOMAIN)
+    ):
+        _LOGGER.warning(
+            "The account of %s is also set up by another entry; one of the two "
+            "entries can be deleted",
+            entry.title,
+        )
+        return None
+    return {"unique_id": unique_id, "version": 11}

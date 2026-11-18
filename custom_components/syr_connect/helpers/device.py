@@ -171,6 +171,19 @@ def build_device_info(
     )
 
 
+def get_local_serial(status: SyrConnectStatus) -> str | None:
+    """Return the serial number (getSRN, else getFRN) of a device of the local API.
+
+    Args:
+        status: Status of the device from /get/all
+
+    Returns:
+        The serial number, or None if the device reports neither key
+    """
+    serial = status.get("getSRN") or status.get("getFRN")
+    return str(serial) if serial else None
+
+
 def get_current_mac(status: SyrConnectStatus) -> str | None:
     """Return the MAC address of the active network connection.
 

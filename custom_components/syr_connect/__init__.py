@@ -32,6 +32,7 @@ from .coordinator import (
 from .helpers.integration import get_default_scan_interval_for_entry
 from .helpers.registry import cleanup_removed_devices, clear_device_statistics
 from .migrations import (
+    local_unique_id_by_serial,
     v1_to_v2_update_kwargs,
     v2_to_v3_fix_flo_unit,
     v3_to_v4_add_service,
@@ -41,6 +42,7 @@ from .migrations import (
     v7_to_v8_rename_local_model,
     v8_to_v9_detect_local_model,
     v9_to_v10_entry_unique_id_by_service,
+    v10_to_v11_lowercase_cloud_unique_id,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -180,6 +182,14 @@ _SYR_CONNECT_MIGRATION_STEPS: tuple[_SyrConnectMigrationStep, ...] = (
         "same e-mail address can be set up for two services",
         update_kwargs=lambda hass, entry: v9_to_v10_entry_unique_id_by_service(entry),
     ),
+    _SyrConnectMigrationStep(
+        from_version=10,
+        description="lowercase the username in the unique_id of cloud entries, so the "
+        "same account cannot be set up twice with another letter case",
+        update_kwargs=lambda hass, entry: v10_to_v11_lowercase_cloud_unique_id(
+            hass, entry
+        ),
+    ),
 )
 
 
@@ -287,6 +297,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: SyrConnectConfigEntry) -
     await coordinator.async_config_entry_first_refresh()
 
     entry.runtime_data = coordinator
+
+    if update_kwargs := local_unique_id_by_serial(hass, entry, coordinator.data):
+        hass.config_entries.async_update_entry(entry, **update_kwargs)
 
     @callback
     def _async_remove_deleted_devices() -> None:

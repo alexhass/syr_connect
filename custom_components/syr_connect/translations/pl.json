@@ -1,7 +1,9 @@
 {
   "config": {
     "abort": {
-      "already_configured": "To centrum jest już skonfigurowane"
+      "already_configured": "To centrum jest już skonfigurowane",
+      "wrong_account": "Dane logowania należą do innego konta. Dla tego konta należy dodać nowy wpis.",
+      "wrong_device": "Pod tym adresem odpowiada inne urządzenie. Dla tego urządzenia należy dodać nowy wpis."
     },
     "error": {
       "cannot_connect": "Nie można połączyć się z usługą. Należy sprawdzić połączenie internetowe.",

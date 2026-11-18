@@ -119,6 +119,38 @@ async def test_async_setup_entry_removes_stale_devices_only_with_complete_list(
             )
 
 
+async def test_async_setup_entry_sets_serial_unique_id_of_local_entry(
+    hass: HomeAssistant,
+) -> None:
+    """A local entry of an older version gets the serial number as unique_id at setup."""
+    config_entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={CONF_API_TYPE: API_TYPE_JSON, CONF_HOST: "192.0.2.5"},
+        unique_id="json_192.0.2.5",
+    )
+    config_entry.add_to_hass(hass)
+
+    with (
+        patch(
+            "custom_components.syr_connect.SyrConnectDataUpdateCoordinator"
+        ) as mock_coordinator_class,
+        patch.object(
+            hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock
+        ),
+    ):
+        mock_coordinator = MagicMock()
+        mock_coordinator.async_config_entry_first_refresh = AsyncMock()
+        mock_coordinator.device_list_complete = False
+        mock_coordinator.data = {
+            "devices": [{"id": "SN1", "status": {"getSRN": "SN1"}}]
+        }
+        mock_coordinator_class.return_value = mock_coordinator
+
+        assert await async_setup_entry(hass, config_entry) is True
+
+    assert config_entry.unique_id == "json_SN1"
+
+
 async def test_async_migrate_entry_v1_missing_username(hass: HomeAssistant) -> None:
     """Test v1->v2 migration bumps version even when username is missing."""
 
@@ -432,7 +464,7 @@ async def test_async_migrate_entry_v3_to_v4_adds_service(hass: HomeAssistant) ->
 
     assert await async_migrate_entry(hass, config_entry) is True
 
-    assert config_entry.version == 10
+    assert config_entry.version == ConfigFlow.VERSION
     assert config_entry.data[CONF_SERVICE] == "de.consoft.syr.connect"
 
 
@@ -462,9 +494,9 @@ async def test_async_migrate_entry_v7_to_v8(hass: HomeAssistant) -> None:
     assert await async_migrate_entry(hass, local_entry) is True
     assert await async_migrate_entry(hass, cloud_entry) is True
 
-    assert local_entry.version == 10
+    assert local_entry.version == ConfigFlow.VERSION
     assert local_entry.data[CONF_MODEL] == "optimat2duo"
-    assert cloud_entry.version == 10
+    assert cloud_entry.version == ConfigFlow.VERSION
     assert cloud_entry.data == {
         "username": "v7user@example.com",
         "password": "password",
@@ -496,7 +528,7 @@ async def test_async_migrate_entry_v8_to_v9(hass: HomeAssistant) -> None:
     ):
         assert await async_migrate_entry(hass, entry) is True
 
-    assert entry.version == 10
+    assert entry.version == ConfigFlow.VERSION
     assert entry.data[CONF_MODEL] == "syrtriolockconnect"
 
 
@@ -529,7 +561,7 @@ async def test_async_migrate_entry_v9_to_v10(
 
     assert await async_migrate_entry(hass, entry) is True
 
-    assert entry.version == 10
+    assert entry.version == ConfigFlow.VERSION
     assert entry.unique_id == expected
 
 
