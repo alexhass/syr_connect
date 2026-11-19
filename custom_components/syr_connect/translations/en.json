@@ -2030,6 +2030,10 @@
     "unreachable": {
       "description": "No data could be fetched from {entry} for more than {minutes} minutes. The affected devices are shown as unavailable. This message disappears as soon as data is fetched again.",
       "title": "{entry} not reachable"
+    },
+    "unreachable_network": {
+      "description": "For more than {minutes} minutes, no connection to {entry} could be established: the host name could not be resolved, or no connection could be opened. The network connection and the DNS settings of Home Assistant must be checked. The affected devices are shown as unavailable. This message disappears as soon as data is fetched again.",
+      "title": "{entry} not reachable (network)"
     }
   },
   "options": {

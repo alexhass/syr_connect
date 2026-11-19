@@ -11,6 +11,7 @@ from types import SimpleNamespace
 from typing import Any, cast
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import aiohttp
 import pytest
 from pytest_homeassistant.common import MockConfigEntry
 from pytest_homeassistant.components.recorder.common import async_wait_recording_done
@@ -2432,3 +2433,40 @@ async def test_failing_device_keeps_update_interval(hass: HomeAssistant) -> None
     await coordinator.async_refresh()
     await coordinator.async_refresh()
     assert coordinator.update_interval == timedelta(seconds=60)
+
+
+async def test_network_error_failing_too_long_names_the_network(
+    hass: HomeAssistant,
+) -> None:
+    """A device that can not be reached because of DNS or the network gets the network issue."""
+    mock_api = _unreachable_api(set(), set())
+    coordinator = _unreachable_coordinator(hass, mock_api)
+
+    async def _get_device_status(device_id: Any) -> Any:
+        if device_id == "d_p2":
+            try:
+                raise aiohttp.ClientConnectorDNSError(
+                    MagicMock(), OSError(-2, "Name or service not known")
+                )
+            except aiohttp.ClientError as err:
+                raise SyrConnectConnectionError("Failed to get device status") from err
+        return {"getSRN": device_id, "getFLO": "5"}
+
+    with patch(
+        "custom_components.syr_connect.coordinator.dt_util.utcnow"
+    ) as mock_utcnow:
+        mock_utcnow.return_value = _UNREACHABLE_START
+        await coordinator.async_refresh()
+
+        mock_api.get_device_status = _get_device_status
+        await coordinator.async_refresh()
+        mock_utcnow.return_value = _UNREACHABLE_START + timedelta(hours=1)
+        await coordinator.async_refresh()
+
+        issue = _unreachable_issue(hass)
+        assert issue is not None
+        assert issue.translation_key == "unreachable_network"
+        assert issue.translation_placeholders == {
+            "entry": "SYR Connect (user)",
+            "minutes": "60",
+        }

@@ -2030,6 +2030,10 @@
     "unreachable": {
       "description": "Aucune donnée n'a pu être récupérée de {entry} depuis plus de {minutes} minutes. Les appareils concernés sont affichés comme indisponibles. Ce message disparaît dès que des données sont de nouveau récupérées.",
       "title": "{entry} injoignable"
+    },
+    "unreachable_network": {
+      "description": "Depuis plus de {minutes} minutes, aucune connexion à {entry} n'a pu être établie : le nom d'hôte n'a pas pu être résolu ou aucune connexion n'a pu être ouverte. La connexion réseau et les paramètres DNS de Home Assistant doivent être vérifiés. Les appareils concernés sont affichés comme indisponibles. Ce message disparaît dès que des données sont de nouveau récupérées.",
+      "title": "{entry} injoignable (réseau)"
     }
   },
   "options": {

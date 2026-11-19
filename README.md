@@ -622,6 +622,7 @@ Reauthentication and "Reconfigure" only change the password of the account. Anot
 - **Back online**: The entities become available again as soon as the device sends a complete status.
 
 - **No connection for more than 1 hour**: No data could be fetched from the cloud or the device for more than 1 hour. A message is shown under **Settings** → **Repairs**. The internet connection and the status of the SYR Connect cloud must be checked.
+- **Network problem**: If the host name could not be resolved or no connection could be opened, the message names the network as the cause. The network connection and the DNS settings of Home Assistant must be checked, for a local device also its IP address.
 
 Temporary problems with the connection or the cloud service do not make entities unavailable. The entities keep their last values, and the error is written to the log.
 

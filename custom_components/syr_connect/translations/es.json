@@ -2030,6 +2030,10 @@
     "unreachable": {
       "description": "No se han podido obtener datos de {entry} durante más de {minutes} minutos. Los dispositivos afectados se muestran como no disponibles. Este mensaje desaparece en cuanto se vuelven a obtener datos.",
       "title": "{entry} no accesible"
+    },
+    "unreachable_network": {
+      "description": "Desde hace más de {minutes} minutos no se ha podido establecer ninguna conexión con {entry}: no se ha podido resolver el nombre de host o no se ha podido abrir ninguna conexión. Deben comprobarse la conexión de red y la configuración DNS de Home Assistant. Los dispositivos afectados se muestran como no disponibles. Este mensaje desaparece en cuanto se vuelven a obtener datos.",
+      "title": "{entry} no accesible (red)"
     }
   },
   "options": {

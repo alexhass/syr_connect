@@ -28,6 +28,7 @@ from .exceptions import (
     SyrConnectInvalidResponseError,
     SyrConnectLoginFailedError,
     SyrConnectSessionExpiredError,
+    is_network_error,
 )
 from .http_client import mask_ug_value
 from .json_api import SyrConnectJsonAPI
@@ -59,5 +60,6 @@ __all__ = [
     "SyrConnectStatusValue",
     "SyrConnectXmlAPI",
     "is_device_offline",
+    "is_network_error",
     "mask_ug_value",
 ]

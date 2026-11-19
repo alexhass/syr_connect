@@ -622,6 +622,7 @@ Die erneute Authentifizierung und „Neu konfigurieren“ ändern nur das Passwo
 - **Wieder online**: Die Entitäten werden wieder verfügbar, sobald das Gerät einen vollständigen Status sendet.
 
 - **Länger als 1 Stunde keine Verbindung**: Länger als 1 Stunde konnten keine Daten von der Cloud oder vom Gerät abgerufen werden. Unter **Einstellungen** → **Reparaturen** erscheint eine Meldung. Die Internetverbindung und der Status der SYR Connect-Cloud müssen geprüft werden.
+- **Netzwerkproblem**: Konnte der Hostname nicht aufgelöst oder keine Verbindung geöffnet werden, nennt die Meldung das Netzwerk als Ursache. Netzwerkverbindung und DNS-Einstellungen von Home Assistant müssen geprüft werden, bei einem lokalen Gerät auch dessen IP-Adresse.
 
 Vorübergehende Probleme mit der Verbindung oder dem Cloud-Dienst machen Entitäten nicht unverfügbar. Die Entitäten behalten ihre letzten Werte, und der Fehler wird ins Protokoll geschrieben.
 
