@@ -370,7 +370,9 @@ The local API is faster and doesn't depend on internet connectivity, making it m
 
 If an update fails temporarily (e.g., timeout, cloud maintenance or an incomplete answer), the entities keep their last values and the error is written to the log. Entities only become unavailable when the cloud reports the device as offline. They stay unavailable until the device sends a complete status again.
 
-If no data can be fetched for more than 6 hours, the failure is no longer treated as temporary: the affected entities become unavailable, and a message is shown under **Settings** → **Repairs**. Both disappear as soon as data is fetched again.
+While no data can be fetched at all, the integration polls less often: the interval doubles after every failed update, up to 15 minutes. The first successful update restores the configured interval.
+
+If no data can be fetched for more than 1 hour, the failure is no longer treated as temporary: the affected entities become unavailable, and a message is shown under **Settings** → **Repairs**. Both disappear as soon as data is fetched again.
 
 ### SafeFloor measurement history
 
@@ -619,7 +621,7 @@ Reauthentication and "Reconfigure" only change the password of the account. Anot
 - **SYR Connect App**: The device must be shown as online in the SYR Connect App.
 - **Back online**: The entities become available again as soon as the device sends a complete status.
 
-- **No connection for more than 6 hours**: No data could be fetched from the cloud or the device for more than 6 hours. A message is shown under **Settings** → **Repairs**. The internet connection and the status of the SYR Connect cloud must be checked.
+- **No connection for more than 1 hour**: No data could be fetched from the cloud or the device for more than 1 hour. A message is shown under **Settings** → **Repairs**. The internet connection and the status of the SYR Connect cloud must be checked.
 
 Temporary problems with the connection or the cloud service do not make entities unavailable. The entities keep their last values, and the error is written to the log.
 

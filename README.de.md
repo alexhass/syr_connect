@@ -370,7 +370,9 @@ Die lokale API ist schneller und benötigt keine Internetverbindung, was sie zuv
 
 Schlägt eine Aktualisierung vorübergehend fehl (z. B. Zeitüberschreitung, Wartung der Cloud oder eine unvollständige Antwort), behalten die Entitäten ihre letzten Werte, und der Fehler wird ins Protokoll geschrieben. Nicht verfügbar werden die Entitäten nur, wenn die Cloud das Gerät als offline meldet. Sie bleiben nicht verfügbar, bis das Gerät wieder einen vollständigen Status sendet.
 
-Können länger als 6 Stunden keine Daten abgerufen werden, gilt der Fehler nicht mehr als vorübergehend: Die betroffenen Entitäten werden nicht verfügbar, und unter **Einstellungen** → **Reparaturen** erscheint eine Meldung. Beides verschwindet, sobald wieder Daten abgerufen werden.
+Solange überhaupt keine Daten abgerufen werden können, fragt die Integration seltener ab: Das Intervall verdoppelt sich nach jeder fehlgeschlagenen Aktualisierung, bis höchstens 15 Minuten. Mit der ersten erfolgreichen Aktualisierung gilt wieder das eingestellte Intervall.
+
+Können länger als 1 Stunde keine Daten abgerufen werden, gilt der Fehler nicht mehr als vorübergehend: Die betroffenen Entitäten werden nicht verfügbar, und unter **Einstellungen** → **Reparaturen** erscheint eine Meldung. Beides verschwindet, sobald wieder Daten abgerufen werden.
 
 ### SafeFloor-Messverlauf
 
@@ -619,7 +621,7 @@ Die erneute Authentifizierung und „Neu konfigurieren“ ändern nur das Passwo
 - **SYR Connect-App**: Das Gerät muss in der SYR Connect-App als online angezeigt werden.
 - **Wieder online**: Die Entitäten werden wieder verfügbar, sobald das Gerät einen vollständigen Status sendet.
 
-- **Länger als 6 Stunden keine Verbindung**: Länger als 6 Stunden konnten keine Daten von der Cloud oder vom Gerät abgerufen werden. Unter **Einstellungen** → **Reparaturen** erscheint eine Meldung. Die Internetverbindung und der Status der SYR Connect-Cloud müssen geprüft werden.
+- **Länger als 1 Stunde keine Verbindung**: Länger als 1 Stunde konnten keine Daten von der Cloud oder vom Gerät abgerufen werden. Unter **Einstellungen** → **Reparaturen** erscheint eine Meldung. Die Internetverbindung und der Status der SYR Connect-Cloud müssen geprüft werden.
 
 Vorübergehende Probleme mit der Verbindung oder dem Cloud-Dienst machen Entitäten nicht unverfügbar. Die Entitäten behalten ihre letzten Werte, und der Fehler wird ins Protokoll geschrieben.
 

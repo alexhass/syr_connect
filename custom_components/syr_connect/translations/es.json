@@ -2028,7 +2028,7 @@
   },
   "issues": {
     "unreachable": {
-      "description": "No se han podido obtener datos de {entry} durante más de {hours} horas. Los dispositivos afectados se muestran como no disponibles. Este mensaje desaparece en cuanto se vuelven a obtener datos.",
+      "description": "No se han podido obtener datos de {entry} durante más de {minutes} minutos. Los dispositivos afectados se muestran como no disponibles. Este mensaje desaparece en cuanto se vuelven a obtener datos.",
       "title": "{entry} no accesible"
     }
   },

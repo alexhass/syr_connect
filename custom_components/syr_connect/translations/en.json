@@ -2028,7 +2028,7 @@
   },
   "issues": {
     "unreachable": {
-      "description": "No data could be fetched from {entry} for more than {hours} hours. The affected devices are shown as unavailable. This message disappears as soon as data is fetched again.",
+      "description": "No data could be fetched from {entry} for more than {minutes} minutes. The affected devices are shown as unavailable. This message disappears as soon as data is fetched again.",
       "title": "{entry} not reachable"
     }
   },

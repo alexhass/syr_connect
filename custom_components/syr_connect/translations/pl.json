@@ -2028,7 +2028,7 @@
   },
   "issues": {
     "unreachable": {
-      "description": "Od ponad {hours} godzin nie udało się pobrać danych z {entry}. Urządzenia, których to dotyczy, są wyświetlane jako niedostępne. Ten komunikat zniknie, gdy tylko dane zostaną ponownie pobrane.",
+      "description": "Od ponad {minutes} minut nie udało się pobrać danych z {entry}. Urządzenia, których to dotyczy, są wyświetlane jako niedostępne. Ten komunikat zniknie, gdy tylko dane zostaną ponownie pobrane.",
       "title": "{entry} jest nieosiągalny"
     }
   },

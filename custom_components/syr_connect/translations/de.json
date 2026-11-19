@@ -2028,7 +2028,7 @@
   },
   "issues": {
     "unreachable": {
-      "description": "Seit mehr als {hours} Stunden konnten keine Daten von {entry} abgerufen werden. Die betroffenen Geräte werden als nicht verfügbar angezeigt. Die Meldung verschwindet, sobald wieder Daten abgerufen werden.",
+      "description": "Seit mehr als {minutes} Minuten konnten keine Daten von {entry} abgerufen werden. Die betroffenen Geräte werden als nicht verfügbar angezeigt. Die Meldung verschwindet, sobald wieder Daten abgerufen werden.",
       "title": "{entry} nicht erreichbar"
     }
   },

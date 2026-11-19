@@ -74,10 +74,15 @@ type SyrConnectConfigEntry = ConfigEntry[SyrConnectDataUpdateCoordinator]
 # updates in between only fetch the status of the devices.
 _SYR_CONNECT_COORDINATOR_DEVICE_LIST_INTERVAL_SECONDS = 1800
 
+# While the whole update fails, the update interval doubles after every failed update,
+# up to this maximum, so a lasting outage is not polled at the normal interval. The first
+# successful update restores the configured interval.
+_SYR_CONNECT_COORDINATOR_BACKOFF_MAXIMUM = timedelta(minutes=15)
+
 # Temporary failures keep the data of the last update. When a failure lasts this long,
 # it is no longer temporary: the affected devices become unavailable and a repair issue
 # tells the user, until data is fetched again.
-_SYR_CONNECT_COORDINATOR_UNREACHABLE_TIMEOUT = timedelta(hours=6)
+_SYR_CONNECT_COORDINATOR_UNREACHABLE_TIMEOUT = timedelta(hours=1)
 
 
 def _coordinator_devices(devices: list[SyrConnectApiDevice]) -> list[SyrConnectDevice]:
@@ -145,6 +150,8 @@ class SyrConnectDataUpdateCoordinator(
         )
         if config_entry is not None:
             self.entry_id = config_entry.entry_id
+        # Configured update interval, restored after the backoff of a failed update
+        self._scan_interval = timedelta(seconds=scan_interval)
 
         # Determine API type and create appropriate API client
         api_type = config_data.get(CONF_API_TYPE, API_TYPE_XML)
@@ -269,6 +276,7 @@ class SyrConnectDataUpdateCoordinator(
                     err,
                 )
                 self.device_list_complete = False
+                self._back_off()
                 if self._is_failing_too_long("update"):
                     # Not temporary anymore: all entities become unavailable
                     raise UpdateFailed(
@@ -294,6 +302,7 @@ class SyrConnectDataUpdateCoordinator(
             ) from err
         else:
             self._log_recovery("update", "Connection restored")
+            self.update_interval = self._scan_interval
             return {
                 "configuration_url": self._configuration_url,
                 "devices": all_devices,
@@ -486,6 +495,17 @@ class SyrConnectDataUpdateCoordinator(
             del self._failures[key]
             _LOGGER.info(message, *args)
 
+    def _back_off(self) -> None:
+        """Double the update interval after a failed update, up to the maximum.
+
+        A configured interval above _SYR_CONNECT_COORDINATOR_BACKOFF_MAXIMUM is kept.
+        """
+        current = self.update_interval or self._scan_interval
+        self.update_interval = min(
+            current * 2,
+            max(_SYR_CONNECT_COORDINATOR_BACKOFF_MAXIMUM, self._scan_interval),
+        )
+
     def _is_failing_too_long(self, key: str) -> bool:
         """Return whether a failure logged by _log_failure lasts longer than the timeout.
 
@@ -527,9 +547,9 @@ class SyrConnectDataUpdateCoordinator(
             "unreachable",
             {
                 "entry": self.config_entry.title,
-                "hours": str(
+                "minutes": str(
                     int(_SYR_CONNECT_COORDINATOR_UNREACHABLE_TIMEOUT.total_seconds())
-                    // 3600
+                    // 60
                 ),
             },
         )

@@ -2028,7 +2028,7 @@
   },
   "issues": {
     "unreachable": {
-      "description": "Al meer dan {hours} uur konden geen gegevens van {entry} worden opgehaald. De betreffende apparaten worden als niet beschikbaar weergegeven. Deze melding verdwijnt zodra er weer gegevens worden opgehaald.",
+      "description": "Al meer dan {minutes} minuten konden geen gegevens van {entry} worden opgehaald. De betreffende apparaten worden als niet beschikbaar weergegeven. Deze melding verdwijnt zodra er weer gegevens worden opgehaald.",
       "title": "{entry} niet bereikbaar"
     }
   },

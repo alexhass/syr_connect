@@ -212,7 +212,7 @@ rules:
   
   repair-issues:
     status: done
-    comment: Temporary errors are only logged (see AGENTS.md); a failure that lasts longer than 6 hours creates an informing repair issue, which is deleted with the first successful update. The device_offline issues of older versions are deleted
+    comment: Temporary errors are only logged (see AGENTS.md); a failure that lasts longer than 1 hour creates an informing repair issue, which is deleted with the first successful update. The device_offline issues of older versions are deleted
   
   stale-devices:
     status: done

@@ -2028,7 +2028,7 @@
   },
   "issues": {
     "unreachable": {
-      "description": "Aucune donnée n'a pu être récupérée de {entry} depuis plus de {hours} heures. Les appareils concernés sont affichés comme indisponibles. Ce message disparaît dès que des données sont de nouveau récupérées.",
+      "description": "Aucune donnée n'a pu être récupérée de {entry} depuis plus de {minutes} minutes. Les appareils concernés sont affichés comme indisponibles. Ce message disparaît dès que des données sont de nouveau récupérées.",
       "title": "{entry} injoignable"
     }
   },

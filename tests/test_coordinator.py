@@ -2228,7 +2228,7 @@ def _unreachable_issue(hass: HomeAssistant) -> ir.IssueEntry | None:
 async def test_update_failing_too_long_makes_entities_unavailable(
     hass: HomeAssistant,
 ) -> None:
-    """A connection failure of the whole update keeps the data for 6 hours, then fails the update and creates the issue."""
+    """A connection failure of the whole update keeps the data for 1 hour, then fails the update and creates the issue."""
     mock_api = _unreachable_api(set(), set())
     coordinator = _unreachable_coordinator(hass, mock_api)
     with patch(
@@ -2245,12 +2245,12 @@ async def test_update_failing_too_long_makes_entities_unavailable(
         )
         mock_utcnow.return_value = _UNREACHABLE_START + timedelta(minutes=1)
         await coordinator.async_refresh()
-        mock_utcnow.return_value = _UNREACHABLE_START + timedelta(hours=6)
+        mock_utcnow.return_value = _UNREACHABLE_START + timedelta(hours=1)
         await coordinator.async_refresh()
         assert coordinator.last_update_success is True
         assert _unreachable_issue(hass) is None
 
-        mock_utcnow.return_value = _UNREACHABLE_START + timedelta(hours=6, minutes=1)
+        mock_utcnow.return_value = _UNREACHABLE_START + timedelta(hours=1, minutes=1)
         await coordinator.async_refresh()
         assert coordinator.last_update_success is False
         issue = _unreachable_issue(hass)
@@ -2258,7 +2258,7 @@ async def test_update_failing_too_long_makes_entities_unavailable(
         assert issue.translation_key == "unreachable"
         assert issue.translation_placeholders == {
             "entry": "SYR Connect (user)",
-            "hours": "6",
+            "minutes": "60",
         }
         assert issue.severity == ir.IssueSeverity.WARNING
         assert issue.is_fixable is False
@@ -2275,7 +2275,7 @@ async def test_update_failing_too_long_makes_entities_unavailable(
 async def test_project_failing_too_long_marks_its_devices_unavailable(
     hass: HomeAssistant,
 ) -> None:
-    """The devices of a project that fails for more than 6 hours become unavailable until it is fetched again."""
+    """The devices of a project that fails for more than 1 hour become unavailable until it is fetched again."""
     failing: set[str] = set()
     mock_api = _unreachable_api(failing, set())
     coordinator = _unreachable_coordinator(hass, mock_api)
@@ -2296,7 +2296,7 @@ async def test_project_failing_too_long_marks_its_devices_unavailable(
         assert _unreachable_issue(hass) is None
 
         mock_api.projects = list(mock_api.projects)
-        mock_utcnow.return_value = _UNREACHABLE_START + timedelta(hours=6, minutes=2)
+        mock_utcnow.return_value = _UNREACHABLE_START + timedelta(hours=1, minutes=2)
         await coordinator.async_refresh()
         assert coordinator.last_update_success is True
         assert [d["available"] for d in coordinator.data["devices"]] == [True, False]
@@ -2313,7 +2313,7 @@ async def test_project_failing_too_long_marks_its_devices_unavailable(
 async def test_device_failing_too_long_becomes_unavailable(
     hass: HomeAssistant,
 ) -> None:
-    """A device whose status fails for more than 6 hours becomes unavailable; a short failure of the whole update keeps the issue."""
+    """A device whose status fails for more than 1 hour becomes unavailable; a short failure of the whole update keeps the issue."""
     failing_devices: set[str] = set()
     mock_api = _unreachable_api(set(), failing_devices)
     coordinator = _unreachable_coordinator(hass, mock_api)
@@ -2330,7 +2330,7 @@ async def test_device_failing_too_long_becomes_unavailable(
         assert coordinator.data["devices"][1]["available"] is True
         assert _unreachable_issue(hass) is None
 
-        mock_utcnow.return_value = _UNREACHABLE_START + timedelta(hours=6, minutes=2)
+        mock_utcnow.return_value = _UNREACHABLE_START + timedelta(hours=1, minutes=2)
         await coordinator.async_refresh()
         assert [d["available"] for d in coordinator.data["devices"]] == [True, False]
         assert coordinator.data["devices"][1]["status"] == {
@@ -2356,7 +2356,7 @@ async def test_device_failing_too_long_becomes_unavailable(
 async def test_device_without_status_failing_too_long_is_unavailable(
     hass: HomeAssistant,
 ) -> None:
-    """A device that never returned a status within 6 hours is unavailable with an empty status."""
+    """A device that never returned a status within 1 hour is unavailable with an empty status."""
     mock_api = _unreachable_api(set(), {"d_p2"})
     coordinator = _unreachable_coordinator(hass, mock_api)
     with patch(
@@ -2372,10 +2372,63 @@ async def test_device_without_status_failing_too_long_is_unavailable(
             "devices": coordinator.data["devices"][:1],
         }
 
-        mock_utcnow.return_value = _UNREACHABLE_START + timedelta(hours=6)
+        mock_utcnow.return_value = _UNREACHABLE_START + timedelta(hours=1)
         result = await coordinator._async_update_data()
 
         assert result is not None
         assert result["devices"][1]["status"] == {}
         assert result["devices"][1]["available"] is False
         assert _unreachable_issue(hass) is not None
+
+
+async def test_update_failure_backs_off_up_to_maximum(hass: HomeAssistant) -> None:
+    """While the whole update fails, the interval doubles up to 15 minutes; a success restores it."""
+    mock_api = _unreachable_api(set(), set())
+    coordinator = _unreachable_coordinator(hass, mock_api)
+    await coordinator.async_refresh()
+    assert coordinator.update_interval == timedelta(seconds=60)
+
+    mock_api.is_session_valid = lambda: False
+    mock_api.login = AsyncMock(side_effect=SyrConnectConnectionError("timeout"))
+    intervals = []
+    for _ in range(6):
+        await coordinator.async_refresh()
+        intervals.append(coordinator.update_interval)
+    assert intervals == [
+        timedelta(minutes=2),
+        timedelta(minutes=4),
+        timedelta(minutes=8),
+        timedelta(minutes=15),
+        timedelta(minutes=15),
+        timedelta(minutes=15),
+    ]
+
+    mock_api.login = AsyncMock(return_value=True)
+    mock_api.is_session_valid = lambda: True
+    await coordinator.async_refresh()
+    assert coordinator.update_interval == timedelta(seconds=60)
+
+
+async def test_update_failure_keeps_long_configured_interval(
+    hass: HomeAssistant,
+) -> None:
+    """A configured interval above the backoff maximum is not shortened."""
+    mock_api = _unreachable_api(set(), set())
+    coordinator = _unreachable_coordinator(hass, mock_api)
+    coordinator._scan_interval = timedelta(minutes=30)
+    coordinator.update_interval = timedelta(minutes=30)
+    await coordinator.async_refresh()
+
+    mock_api.is_session_valid = lambda: False
+    mock_api.login = AsyncMock(side_effect=SyrConnectConnectionError("timeout"))
+    await coordinator.async_refresh()
+    assert coordinator.update_interval == timedelta(minutes=30)
+
+
+async def test_failing_device_keeps_update_interval(hass: HomeAssistant) -> None:
+    """A failing device does not slow down the updates of the other devices."""
+    mock_api = _unreachable_api(set(), {"d_p2"})
+    coordinator = _unreachable_coordinator(hass, mock_api)
+    await coordinator.async_refresh()
+    await coordinator.async_refresh()
+    assert coordinator.update_interval == timedelta(seconds=60)
