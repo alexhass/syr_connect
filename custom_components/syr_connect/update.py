@@ -1,5 +1,6 @@
 """Update platform for SYR Connect integration."""
 
+from datetime import timedelta
 import logging
 from time import monotonic
 from typing import Any, override
@@ -30,7 +31,7 @@ _LOGGER = logging.getLogger(__name__)
 PARALLEL_UPDATES = 1
 
 # Give up showing progress if getNOT never switches to "04".
-_SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS = 600
+_SYR_CONNECT_UPDATE_INSTALL_TIMEOUT = timedelta(minutes=10)
 
 # Shown as "latest version" because the API never reports the real new version number.
 _SYR_CONNECT_UPDATE_NEW_VERSION_PLACEHOLDER = "New version available"
@@ -108,7 +109,7 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
     with an empty value (see docs/syrconnect-protocol.md).
 
     After install is triggered, `in_progress` stays True until getNOT switches to
-    "04" (new_software_installed) or _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS have passed.
+    "04" (new_software_installed) or _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT has passed.
     """
 
     _attr_supported_features = (
@@ -178,7 +179,7 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
         return (
             self._install_started is not None
             and monotonic() - self._install_started
-            >= _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS
+            >= _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT.total_seconds()
         )
 
     @property
@@ -206,9 +207,9 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
                 self._install_started = None
             elif self._install_timed_out():
                 _LOGGER.warning(
-                    "Firmware update for %s did not report completion (getNOT=04) within %d s",
+                    "Firmware update for %s did not report completion (getNOT=04) within %s",
                     self._device_id,
-                    _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS,
+                    _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT,
                 )
                 self._install_started = None
         super()._handle_coordinator_update()

@@ -1,15 +1,17 @@
 """Constants of the SYR Connect APIs: URLs, keys, client identity and cloud services."""
 
+from datetime import timedelta
+
 from .models import SyrConnectService
 
 # Largest response body the cloud or a device may send. Real answers stay far below it;
 # the limit keeps a broken or hostile server from filling the memory.
 RESPONSE_SIZE_MAXIMUM = 1024 * 1024  # bytes
 
-# Interval in minutes after which the local JSON API sends ADM again before /get/all, for
+# Interval after which the local JSON API sends ADM again before /get/all, for
 # devices that need it. Assumed; the device itself is not known to leave ADM mode. The XML
 # (cloud) API has no client-side timeout; it logs in again when the server rejects the token.
-JSON_SESSION_TIMEOUT_MINUTES = 30
+JSON_SESSION_TIMEOUT = timedelta(minutes=30)
 
 # Paths of the XML API, relative to the api_base_url of the service
 XML_LOGIN_URL = "WebServices/Api/SyrApiService.svc/REST/GetProjects"

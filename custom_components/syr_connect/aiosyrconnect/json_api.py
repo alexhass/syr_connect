@@ -13,7 +13,7 @@ The expected endpoints used here are:
 ADM is no login with credentials, the methods are only named like those of the XML
 client. The caller sends it once: a device that answers 404 does not need it, which
 the caller can store and pass as `login_required`, and ADM is never sent to it again.
-A device that needs it gets it again every JSON_SESSION_TIMEOUT_MINUTES before /get/all.
+A device that needs it gets it again every JSON_SESSION_TIMEOUT before /get/all.
 
 Known API error codes in responses:
 - "NSC": Command does not exist (No Such Command)
@@ -23,7 +23,7 @@ The client is intentionally small and mirrors the interface used by the
 XML API client, so a caller can use both alike.
 """
 
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 import ipaddress
 import json
 import logging
@@ -31,7 +31,7 @@ from typing import Any
 
 import aiohttp
 
-from .const import JSON_SESSION_TIMEOUT_MINUTES
+from .const import JSON_SESSION_TIMEOUT
 from .exceptions import (
     SyrConnectAuthError,
     SyrConnectConnectionError,
@@ -47,8 +47,8 @@ _LOGGER = logging.getLogger(__name__)
 _SCHEME = "http"
 _PORT = 5333
 
-# Default timeout for local JSON API requests (seconds)
-_DEFAULT_TIMEOUT = 10
+# Default timeout for local JSON API requests
+_DEFAULT_TIMEOUT_SECONDS = 10
 
 # JSON API endpoint paths
 _ENDPOINT_GET_ALL = "/get/all"
@@ -132,7 +132,7 @@ class SyrConnectJsonAPI:
 
         # Whether the device needs ADM, as the caller stored it (login_required):
         # - None: unknown (not checked yet)
-        # - True: needed, sent every JSON_SESSION_TIMEOUT_MINUTES
+        # - True: needed, sent every JSON_SESSION_TIMEOUT
         # - False: not needed (the device answered 404), never sent
         self._login_required: bool | None = login_required
 
@@ -197,15 +197,16 @@ class SyrConnectJsonAPI:
         """Return True if the last ADM request is less than the timeout ago.
 
         There is no session: the device is not known to leave ADM mode again. ADM is
-        repeated every JSON_SESSION_TIMEOUT_MINUTES instead of before every
+        repeated every JSON_SESSION_TIMEOUT instead of before every
         /get/all, which keeps the load on the device low.
 
         Returns:
             True if ADM was sent within the timeout, False otherwise
         """
-        return self._last_login is not None and datetime.now(
-            UTC
-        ) < self._last_login + timedelta(minutes=JSON_SESSION_TIMEOUT_MINUTES)
+        return (
+            self._last_login is not None
+            and datetime.now(UTC) < self._last_login + JSON_SESSION_TIMEOUT
+        )
 
     async def _ensure_session(self) -> None:
         """Ensure a valid session exists before making an API request.
@@ -311,7 +312,7 @@ class SyrConnectJsonAPI:
         self,
         url: str,
         *,
-        timeout: int = _DEFAULT_TIMEOUT,
+        timeout: int = _DEFAULT_TIMEOUT_SECONDS,
         operation: str = "request",
     ) -> dict[str, Any]:
         """Central method for all HTTP requests with unified error handling.
@@ -520,7 +521,7 @@ class SyrConnectJsonAPI:
         return True
 
     async def request_json_data(
-        self, path: str, timeout: int = _DEFAULT_TIMEOUT
+        self, path: str, timeout: int = _DEFAULT_TIMEOUT_SECONDS
     ) -> dict[str, Any]:
         """Fetch JSON data from a relative path.
 

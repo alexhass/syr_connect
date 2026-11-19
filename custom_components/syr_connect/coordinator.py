@@ -73,7 +73,7 @@ type SyrConnectConfigEntry = ConfigEntry[SyrConnectDataUpdateCoordinator]
 # The device list of a cloud project (devices, names, UTC offset) rarely changes. It is
 # fetched with the first update after a start or reload and then every 30 minutes, the
 # updates in between only fetch the status of the devices.
-_SYR_CONNECT_COORDINATOR_DEVICE_LIST_INTERVAL_SECONDS = 1800
+_SYR_CONNECT_COORDINATOR_DEVICE_LIST_INTERVAL = timedelta(minutes=30)
 
 # While the whole update fails, the update interval doubles after every failed update,
 # up to this maximum, so a lasting outage is not polled at the normal interval. The first
@@ -442,8 +442,9 @@ class SyrConnectDataUpdateCoordinator(
             self._device_lists_projects = self.api.projects
         cached = self._device_lists.get(project_id)
         now = dt_util.utcnow()
-        if cached is not None and now - cached[0] < timedelta(
-            seconds=_SYR_CONNECT_COORDINATOR_DEVICE_LIST_INTERVAL_SECONDS
+        if (
+            cached is not None
+            and now - cached[0] < _SYR_CONNECT_COORDINATOR_DEVICE_LIST_INTERVAL
         ):
             devices = cached[1]
         else:

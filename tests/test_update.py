@@ -12,7 +12,7 @@ import pytest
 from custom_components.syr_connect.aiosyrconnect import SyrConnectConnectionError
 from custom_components.syr_connect.const import DOMAIN
 from custom_components.syr_connect.update import (
-    _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS,
+    _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT,
     _SYR_CONNECT_UPDATE_NEW_VERSION_PLACEHOLDER,
     SyrConnectFirmwareUpdate,
     async_setup_entry,
@@ -209,7 +209,7 @@ async def test_update_entity_in_progress_until_getnot_04() -> None:
 
 
 async def test_update_entity_in_progress_times_out() -> None:
-    """in_progress ends after _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS even if getNOT never reaches '04'."""
+    """in_progress ends after _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT even if getNOT never reaches '04'."""
     mock_coordinator = MagicMock()
     mock_coordinator.data = {
         "devices": [{"id": "SN12", "name": "Dev12", "status": {"getNOT": "01"}}]
@@ -225,13 +225,13 @@ async def test_update_entity_in_progress_times_out() -> None:
 
     with patch(
         "custom_components.syr_connect.update.monotonic",
-        return_value=1000.0 + _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS - 1,
+        return_value=1000.0 + _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT.total_seconds() - 1,
     ):
         assert entity.in_progress is True
 
     with patch(
         "custom_components.syr_connect.update.monotonic",
-        return_value=1000.0 + _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT_SECONDS,
+        return_value=1000.0 + _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT.total_seconds(),
     ):
         assert entity.in_progress is False
         entity._handle_coordinator_update()

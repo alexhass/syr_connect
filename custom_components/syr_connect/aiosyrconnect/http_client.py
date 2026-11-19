@@ -10,8 +10,8 @@ from .const import CLIENT_OS_LANGUAGE, RESPONSE_SIZE_MAXIMUM
 
 _LOGGER = logging.getLogger(__name__)
 
-# Default timeout for HTTP requests (seconds)
-_DEFAULT_TIMEOUT = 30
+# Default timeout for HTTP requests
+_DEFAULT_TIMEOUT_SECONDS = 30
 
 # Number of bytes read at once from a response body
 _RESPONSE_CHUNK_SIZE = 64 * 1024
@@ -98,7 +98,7 @@ class HTTPClient:
         self,
         session: aiohttp.ClientSession,
         user_agent: str | None = None,
-        timeout: int = _DEFAULT_TIMEOUT,
+        timeout: int = _DEFAULT_TIMEOUT_SECONDS,
         language: str = CLIENT_OS_LANGUAGE,
     ) -> None:
         """Initialize HTTP client.
