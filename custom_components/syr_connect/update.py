@@ -1,8 +1,7 @@
 """Update platform for SYR Connect integration."""
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 import logging
-from time import monotonic
 from typing import Any, override
 
 from homeassistant.components.update import (
@@ -15,6 +14,7 @@ from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.util import dt as dt_util
 
 from .aiosyrconnect import SyrConnectError
 from .const import DOMAIN
@@ -133,7 +133,7 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
         )
 
         self.entity_description = _SYR_CONNECT_UPDATE_DESCRIPTIONS["getNOT"]
-        self._install_started: float | None = None
+        self._install_started: datetime | None = None
 
         # "_update" suffix keeps this apart from the existing getNOT sensor's
         # unique_id, mirroring switch.py's "_switch" suffix convention. Built in lowercase,
@@ -178,8 +178,8 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
     def _install_timed_out(self) -> bool:
         return (
             self._install_started is not None
-            and monotonic() - self._install_started
-            >= _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT.total_seconds()
+            and dt_util.utcnow() - self._install_started
+            >= _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT
         )
 
     @property
@@ -224,7 +224,7 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
             self._device_id,
             self._status.get("getNOT"),
         )
-        self._install_started = monotonic()
+        self._install_started = dt_util.utcnow()
         try:
             await self.coordinator.async_set_device_value(self._device_id, "setUPG", "")
         except SyrConnectError as err:

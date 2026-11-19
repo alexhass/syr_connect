@@ -3,7 +3,7 @@
 # The unit tests in this module check private helpers and attributes directly.
 # ruff: noqa: SLF001
 
-from time import monotonic
+from datetime import UTC, datetime, timedelta
 from types import MappingProxyType
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -22,6 +22,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.util import dt as dt_util
 
 
 def _build_entry(entry_id: str, coordinator: MagicMock) -> ConfigEntry:
@@ -219,19 +220,22 @@ async def test_update_entity_in_progress_times_out() -> None:
     entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN12", "Dev12")
     entity.async_write_ha_state = MagicMock()  # type: ignore[method-assign, misc]
 
-    with patch("custom_components.syr_connect.update.monotonic", return_value=1000.0):
+    start = datetime(2026, 1, 1, tzinfo=UTC)
+    with patch(
+        "custom_components.syr_connect.update.dt_util.utcnow", return_value=start
+    ):
         await entity.async_install(version=None, backup=False)
         assert entity.in_progress is True
 
     with patch(
-        "custom_components.syr_connect.update.monotonic",
-        return_value=1000.0 + _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT.total_seconds() - 1,
+        "custom_components.syr_connect.update.dt_util.utcnow",
+        return_value=start + _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT - timedelta(seconds=1),
     ):
         assert entity.in_progress is True
 
     with patch(
-        "custom_components.syr_connect.update.monotonic",
-        return_value=1000.0 + _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT.total_seconds(),
+        "custom_components.syr_connect.update.dt_util.utcnow",
+        return_value=start + _SYR_CONNECT_UPDATE_INSTALL_TIMEOUT,
     ):
         assert entity.in_progress is False
         entity._handle_coordinator_update()
@@ -268,7 +272,7 @@ def test_update_entity_available_while_installing_even_if_device_offline() -> No
     entity = SyrConnectFirmwareUpdate(mock_coordinator, "SN13", "Dev13")
     assert entity.available is False
 
-    entity._install_started = monotonic()
+    entity._install_started = dt_util.utcnow()
     assert entity.available is True
 
 
