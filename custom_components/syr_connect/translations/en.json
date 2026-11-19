@@ -2026,6 +2026,12 @@
       "message": "The valve of the device {device} cannot be switched because its state is unknown"
     }
   },
+  "issues": {
+    "unreachable": {
+      "description": "No data could be fetched from {entry} for more than {hours} hours. The affected devices are shown as unavailable. This message disappears as soon as data is fetched again.",
+      "title": "{entry} not reachable"
+    }
+  },
   "options": {
     "step": {
       "init": {

@@ -2026,6 +2026,12 @@
       "message": "La vanne de l'appareil {device} ne peut pas être commutée car son état est inconnu"
     }
   },
+  "issues": {
+    "unreachable": {
+      "description": "Aucune donnée n'a pu être récupérée de {entry} depuis plus de {hours} heures. Les appareils concernés sont affichés comme indisponibles. Ce message disparaît dès que des données sont de nouveau récupérées.",
+      "title": "{entry} injoignable"
+    }
+  },
   "options": {
     "step": {
       "init": {

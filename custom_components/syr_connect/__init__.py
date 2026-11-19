@@ -30,7 +30,12 @@ from .coordinator import (
     SyrConnectStatisticsCoordinator,
 )
 from .helpers.integration import get_default_scan_interval_for_entry
-from .helpers.registry import cleanup_removed_devices, clear_device_statistics
+from .helpers.registry import (
+    build_unreachable_issue_id,
+    cleanup_removed_devices,
+    clear_device_statistics,
+    delete_issue,
+)
 from .migrations import (
     local_unique_id_by_serial,
     v1_to_v2_update_kwargs,
@@ -347,7 +352,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: SyrConnectConfigEntry) 
 
 
 async def async_remove_entry(hass: HomeAssistant, entry: SyrConnectConfigEntry) -> None:
-    """Delete the measurement history statistics of the devices of a removed entry."""
+    """Delete the measurement history statistics and the repair issue of a removed entry."""
     device_ids = {
         identifier
         for device_entry in dr.async_entries_for_config_entry(
@@ -357,3 +362,4 @@ async def async_remove_entry(hass: HomeAssistant, entry: SyrConnectConfigEntry) 
         if domain == DOMAIN
     }
     clear_device_statistics(hass, entry.entry_id, device_ids)
+    delete_issue(hass, build_unreachable_issue_id(entry.entry_id))

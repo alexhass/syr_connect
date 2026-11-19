@@ -2026,6 +2026,12 @@
       "message": "La válvula del dispositivo {device} no se puede accionar porque su estado es desconocido"
     }
   },
+  "issues": {
+    "unreachable": {
+      "description": "No se han podido obtener datos de {entry} durante más de {hours} horas. Los dispositivos afectados se muestran como no disponibles. Este mensaje desaparece en cuanto se vuelven a obtener datos.",
+      "title": "{entry} no accesible"
+    }
+  },
   "options": {
     "step": {
       "init": {

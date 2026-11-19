@@ -2026,6 +2026,12 @@
       "message": "De klep van het apparaat {device} kan niet worden geschakeld omdat de status onbekend is"
     }
   },
+  "issues": {
+    "unreachable": {
+      "description": "Al meer dan {hours} uur konden geen gegevens van {entry} worden opgehaald. De betreffende apparaten worden als niet beschikbaar weergegeven. Deze melding verdwijnt zodra er weer gegevens worden opgehaald.",
+      "title": "{entry} niet bereikbaar"
+    }
+  },
   "options": {
     "step": {
       "init": {

@@ -40,7 +40,7 @@ from homeassistant.exceptions import (
     ConfigEntryNotReady,
     HomeAssistantError,
 )
-from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import device_registry as dr, issue_registry as ir
 
 _FIXTURE_DIR = Path(__file__).parent / "fixtures/xml"
 
@@ -797,6 +797,26 @@ async def test_async_remove_entry_clears_statistics_of_own_devices(
         await async_remove_entry(hass, entry)
 
     mock_clear.assert_called_once_with(hass, entry.entry_id, {"OWN_DEV"})
+
+
+async def test_async_remove_entry_deletes_unreachable_issue(
+    hass: HomeAssistant,
+) -> None:
+    """The repair issue about data that can not be fetched goes with the entry."""
+    entry = MockConfigEntry(domain=DOMAIN, entry_id="01JENTRYA")
+    entry.add_to_hass(hass)
+    ir.async_create_issue(
+        hass,
+        DOMAIN,
+        "unreachable_01JENTRYA",
+        is_fixable=False,
+        severity=ir.IssueSeverity.WARNING,
+        translation_key="unreachable",
+    )
+
+    await async_remove_entry(hass, entry)
+
+    assert ir.async_get(hass).async_get_issue(DOMAIN, "unreachable_01JENTRYA") is None
 
 
 def test_migration_steps_cover_every_version() -> None:

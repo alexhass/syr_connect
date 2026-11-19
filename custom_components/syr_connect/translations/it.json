@@ -2026,6 +2026,12 @@
       "message": "La valvola del dispositivo {device} non può essere azionata perché il suo stato è sconosciuto"
     }
   },
+  "issues": {
+    "unreachable": {
+      "description": "Da più di {hours} ore non è stato possibile recuperare dati da {entry}. I dispositivi interessati vengono mostrati come non disponibili. Questo messaggio scompare non appena i dati vengono recuperati di nuovo.",
+      "title": "{entry} non raggiungibile"
+    }
+  },
   "options": {
     "step": {
       "init": {
