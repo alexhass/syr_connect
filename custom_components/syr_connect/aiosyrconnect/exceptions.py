@@ -1,5 +1,7 @@
 """Errors raised by the SYR Connect API clients."""
 
+import aiohttp
+
 
 class SyrConnectError(Exception):
     """Base class of all errors raised by the SYR Connect clients."""
@@ -70,3 +72,29 @@ class SyrConnectInvalidResponseError(SyrConnectError):
     For example an empty answer of the JSON API, JSON that is no object, an error code
     (NSC, MIMA) for a set command, or a statistics answer that is no XML.
     """
+
+
+def is_network_error(err: BaseException) -> bool:
+    """Return whether an error means that no connection to the server could be opened.
+
+    The clients wrap the errors of aiohttp with `raise ... from err`, so the chain of
+    causes is searched. A network error is one the caller's own network may cause:
+    the host name could not be resolved (aiohttp.ClientConnectorDNSError) or no
+    connection could be opened (aiohttp.ClientConnectorError). TLS errors, timeouts
+    and every answer of the server are not network errors: the server can cause them
+    as well, and the SYR Connect cloud gives no reliable error answers.
+
+    Args:
+        err: Error raised by a client
+
+    Returns:
+        True if the error or one of its causes is a network error
+    """
+    cause: BaseException | None = err
+    while cause is not None:
+        if isinstance(cause, aiohttp.ClientConnectorError) and not isinstance(
+            cause, aiohttp.ClientSSLError
+        ):
+            return True
+        cause = cause.__cause__
+    return False

@@ -2026,6 +2026,16 @@
       "message": "Nie można przełączyć zaworu urządzenia {device}, ponieważ jego stan jest nieznany"
     }
   },
+  "issues": {
+    "unreachable": {
+      "description": "Od ponad {minutes} minut nie udało się pobrać danych z {entry}. Urządzenia, których to dotyczy, są wyświetlane jako niedostępne. Ten komunikat zniknie, gdy tylko dane zostaną ponownie pobrane.",
+      "title": "{entry} jest nieosiągalny"
+    },
+    "unreachable_network": {
+      "description": "Od ponad {minutes} minut nie udało się nawiązać połączenia z {entry}: nie udało się rozwiązać nazwy hosta lub otworzyć połączenia. Należy sprawdzić połączenie sieciowe i ustawienia DNS Home Assistant. Urządzenia, których to dotyczy, są wyświetlane jako niedostępne. Ten komunikat zniknie, gdy tylko dane zostaną ponownie pobrane.",
+      "title": "{entry} jest nieosiągalny (sieć)"
+    }
+  },
   "options": {
     "step": {
       "init": {

@@ -2026,6 +2026,16 @@
       "message": "A válvula do dispositivo {device} não pode ser acionada porque o seu estado é desconhecido"
     }
   },
+  "issues": {
+    "unreachable": {
+      "description": "Não foi possível obter dados de {entry} há mais de {minutes} minutos. Os dispositivos afetados são apresentados como indisponíveis. Esta mensagem desaparece assim que os dados voltarem a ser obtidos.",
+      "title": "{entry} inacessível"
+    },
+    "unreachable_network": {
+      "description": "Há mais de {minutes} minutos que não é possível estabelecer uma ligação a {entry}: não foi possível resolver o nome do anfitrião ou abrir uma ligação. A ligação de rede e as definições de DNS do Home Assistant devem ser verificadas. Os dispositivos afetados são apresentados como indisponíveis. Esta mensagem desaparece assim que os dados voltarem a ser obtidos.",
+      "title": "{entry} inacessível (rede)"
+    }
+  },
   "options": {
     "step": {
       "init": {

@@ -177,6 +177,47 @@ def find_entity_id(
     )
 
 
+def build_unreachable_issue_id(entry_id: str) -> str:
+    """Return the id of the repair issue about data of a config entry that can not be fetched.
+
+    Args:
+        entry_id: Owning config entry ID
+
+    Returns:
+        Issue id, one per config entry
+    """
+    return f"unreachable_{entry_id}"
+
+
+def create_issue(
+    hass: HomeAssistant,
+    issue_id: str,
+    translation_key: str,
+    translation_placeholders: dict[str, str],
+) -> None:
+    """Create or update a repair issue of this integration that only informs.
+
+    The issue can not be fixed by a repair flow and is not kept across restarts: the
+    integration creates it again while the problem lasts.
+
+    Args:
+        hass: Home Assistant instance
+        issue_id: Unique identifier for the issue
+        translation_key: Key of the issue in the `issues` section of the translations
+        translation_placeholders: Values of the placeholders of the translation
+    """
+    ir.async_create_issue(
+        hass,
+        DOMAIN,
+        issue_id,
+        is_fixable=False,
+        is_persistent=False,
+        severity=ir.IssueSeverity.WARNING,
+        translation_key=translation_key,
+        translation_placeholders=translation_placeholders,
+    )
+
+
 def delete_issue(hass: HomeAssistant, issue_id: str) -> None:
     """Delete a repair issue of this integration.
 

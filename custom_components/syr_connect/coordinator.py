@@ -36,6 +36,7 @@ from .aiosyrconnect import (
     SyrConnectStatus,
     SyrConnectXmlAPI,
     is_device_offline,
+    is_network_error,
 )
 from .const import (
     _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM,
@@ -56,7 +57,12 @@ from .helpers.integration import (
     get_default_scan_interval_for_entry,
     get_integration_version,
 )
-from .helpers.registry import build_statistic_id, delete_issue
+from .helpers.registry import (
+    build_statistic_id,
+    build_unreachable_issue_id,
+    create_issue,
+    delete_issue,
+)
 from .helpers.values import get_sensor_iwh_value
 from .models import MODEL_SIGNATURES
 
@@ -69,6 +75,16 @@ type SyrConnectConfigEntry = ConfigEntry[SyrConnectDataUpdateCoordinator]
 # updates in between only fetch the status of the devices.
 _SYR_CONNECT_COORDINATOR_DEVICE_LIST_INTERVAL_SECONDS = 1800
 
+# While the whole update fails, the update interval doubles after every failed update,
+# up to this maximum, so a lasting outage is not polled at the normal interval. The first
+# successful update restores the configured interval.
+_SYR_CONNECT_COORDINATOR_BACKOFF_MAXIMUM = timedelta(minutes=15)
+
+# Temporary failures keep the data of the last update. When a failure lasts this long,
+# it is no longer temporary: the affected devices become unavailable and a repair issue
+# tells the user, until data is fetched again.
+_SYR_CONNECT_COORDINATOR_UNREACHABLE_TIMEOUT = timedelta(hours=1)
+
 
 def _coordinator_devices(devices: list[SyrConnectApiDevice]) -> list[SyrConnectDevice]:
     """Return the devices of an API client as devices of the coordinator data.
@@ -77,6 +93,16 @@ def _coordinator_devices(devices: list[SyrConnectApiDevice]) -> list[SyrConnectD
     know; the dictionaries are not copied.
     """
     return cast(list[SyrConnectDevice], devices)
+
+
+def _unavailable_device(device: SyrConnectDevice) -> SyrConnectDevice:
+    """Return a copy of a device of the last update that is marked unavailable.
+
+    The device of the last update stays unchanged, it is part of the coordinator data.
+    """
+    unavailable = device.copy()
+    unavailable["available"] = False
+    return unavailable
 
 
 class SyrConnectDataUpdateCoordinator(
@@ -125,6 +151,8 @@ class SyrConnectDataUpdateCoordinator(
         )
         if config_entry is not None:
             self.entry_id = config_entry.entry_id
+        # Configured update interval, restored after the backoff of a failed update
+        self._scan_interval = timedelta(seconds=scan_interval)
 
         # Determine API type and create appropriate API client
         api_type = config_data.get(CONF_API_TYPE, API_TYPE_XML)
@@ -203,8 +231,15 @@ class SyrConnectDataUpdateCoordinator(
         self._device_lists_projects: list[dict[str, Any]] | None = None
 
         # Failures (of the whole update, a project or a device) already logged as a
-        # warning: repeats are logged at debug level, the recovery once at info level
-        self._failures: set[str] = set()
+        # warning, with the time of the first failure: repeats are logged at debug
+        # level, the recovery once at info level
+        self._failures: dict[str, datetime] = {}
+        # Whether the current update found a failure that lasts longer than
+        # _SYR_CONNECT_COORDINATOR_UNREACHABLE_TIMEOUT; None keeps the repair issue
+        # as it is
+        self._unreachable: bool | None = False
+        # Whether one of these failures is a network error (see is_network_error)
+        self._unreachable_network = False
 
     @override
     async def _async_update_data(self) -> SyrConnectCoordinatorData:
@@ -215,8 +250,11 @@ class SyrConnectDataUpdateCoordinator(
 
         Raises:
             ConfigEntryAuthFailed: If authentication fails
-            UpdateFailed: If API communication fails
+            UpdateFailed: If API communication fails, or the connection has failed for
+                longer than _SYR_CONNECT_COORDINATOR_UNREACHABLE_TIMEOUT
         """
+        self._unreachable = False
+        self._unreachable_network = False
         try:
             all_devices = await self._async_fetch_all_devices()
         except ConfigEntryAuthFailed:
@@ -231,7 +269,8 @@ class SyrConnectDataUpdateCoordinator(
         except SyrConnectConnectionError as err:
             # Temporary failures happen (cloud outage, maintenance page, device reboot), e.g. when
             # the re-login after a rejected session token fails. Keep the data of the last update
-            # instead of raising UpdateFailed, which would make every entity unavailable.
+            # instead of raising UpdateFailed, which would make every entity unavailable,
+            # unless the failure lasts longer than _SYR_CONNECT_COORDINATOR_UNREACHABLE_TIMEOUT.
             # The coordinator data is None until the first successful refresh
             previous: SyrConnectCoordinatorData | None = self.data
             if previous is not None:
@@ -241,6 +280,16 @@ class SyrConnectDataUpdateCoordinator(
                     err,
                 )
                 self.device_list_complete = False
+                self._back_off()
+                if self._is_failing_too_long("update", err):
+                    # Not temporary anymore: all entities become unavailable
+                    raise UpdateFailed(
+                        translation_domain=DOMAIN,
+                        translation_key="update_connection_error",
+                    ) from err
+                # The devices of the last update keep their state, and so does the
+                # repair issue
+                self._unreachable = None
                 return previous
             # First refresh: nothing to keep, setup is retried (ConfigEntryNotReady), which
             # Home Assistant logs itself
@@ -257,12 +306,15 @@ class SyrConnectDataUpdateCoordinator(
             ) from err
         else:
             self._log_recovery("update", "Connection restored")
+            self.update_interval = self._scan_interval
             return {
                 "configuration_url": self._configuration_url,
                 "devices": all_devices,
                 "projects": self.api.projects,
                 "service": self._service,
             }
+        finally:
+            self._update_unreachable_issue()
 
     async def _async_fetch_all_devices(self) -> list[SyrConnectDevice]:
         """Log in if needed and fetch the status of all devices of all projects.
@@ -307,6 +359,7 @@ class SyrConnectDataUpdateCoordinator(
                 # Temporary failures happen (routing, timeouts, maintenance). Keep the
                 # project's devices from the last update with their old values instead
                 # of dropping them or marking them unavailable; the next poll updates them.
+                # After _SYR_CONNECT_COORDINATOR_UNREACHABLE_TIMEOUT they become unavailable.
                 previous = self._previous_project_devices(project["id"])
                 self._log_failure(
                     f"project:{project['id']}",
@@ -315,6 +368,8 @@ class SyrConnectDataUpdateCoordinator(
                     len(previous),
                     result,
                 )
+                if self._is_failing_too_long(f"project:{project['id']}", result):
+                    previous = [_unavailable_device(d) for d in previous]
                 all_devices.extend(previous)
                 failed_projects += 1
                 continue
@@ -429,7 +484,7 @@ class SyrConnectDataUpdateCoordinator(
         if key in self._failures:
             _LOGGER.debug(message, *args)
             return
-        self._failures.add(key)
+        self._failures[key] = dt_util.utcnow()
         _LOGGER.warning(message, *args)
 
     def _log_recovery(self, key: str, message: str, *args: Any) -> None:
@@ -441,8 +496,72 @@ class SyrConnectDataUpdateCoordinator(
             *args: Arguments of the message
         """
         if key in self._failures:
-            self._failures.discard(key)
+            del self._failures[key]
             _LOGGER.info(message, *args)
+
+    def _back_off(self) -> None:
+        """Double the update interval after a failed update, up to the maximum.
+
+        A configured interval above _SYR_CONNECT_COORDINATOR_BACKOFF_MAXIMUM is kept.
+        """
+        current = self.update_interval or self._scan_interval
+        self.update_interval = min(
+            current * 2,
+            max(_SYR_CONNECT_COORDINATOR_BACKOFF_MAXIMUM, self._scan_interval),
+        )
+
+    def _is_failing_too_long(self, key: str, err: BaseException | None = None) -> bool:
+        """Return whether a failure logged by _log_failure lasts longer than the timeout.
+
+        A failure that lasts this long is remembered for the repair issue of the
+        current update, together with whether its error is a network error.
+
+        Args:
+            key: What failed, as passed to _log_failure
+            err: Error of the current attempt, or None for an unusable answer
+
+        Returns:
+            True if the failure started _SYR_CONNECT_COORDINATOR_UNREACHABLE_TIMEOUT
+            or longer ago
+        """
+        since = self._failures.get(key)
+        if (
+            since is None
+            or dt_util.utcnow() - since < _SYR_CONNECT_COORDINATOR_UNREACHABLE_TIMEOUT
+        ):
+            return False
+        self._unreachable = True
+        if err is not None and is_network_error(err):
+            self._unreachable_network = True
+        return True
+
+    def _update_unreachable_issue(self) -> None:
+        """Create or delete the repair issue about data that can not be fetched.
+
+        The issue exists while a failure of the whole update, a project or a device
+        lasts longer than _SYR_CONNECT_COORDINATOR_UNREACHABLE_TIMEOUT. It is
+        deleted with the first update without such a failure. When one of the
+        failures is a network error, the issue says so: the user's own network or
+        DNS is a likely cause that can be checked.
+        """
+        if self.config_entry is None or self._unreachable is None:
+            return
+        issue_id = build_unreachable_issue_id(self.config_entry.entry_id)
+        if not self._unreachable:
+            delete_issue(self.hass, issue_id)
+            return
+        create_issue(
+            self.hass,
+            issue_id,
+            "unreachable_network" if self._unreachable_network else "unreachable",
+            {
+                "entry": self.config_entry.title,
+                "minutes": str(
+                    int(_SYR_CONNECT_COORDINATOR_UNREACHABLE_TIMEOUT.total_seconds())
+                    // 60
+                ),
+            },
+        )
 
     def _previous_project_devices(self, project_id: str) -> list[SyrConnectDevice]:
         """Return the devices of a project from the last successful update."""
@@ -519,14 +638,15 @@ class SyrConnectDataUpdateCoordinator(
             raise
         except Exception as err:  # noqa: BLE001
             # Temporary failures happen (routing, timeouts). Only log them and keep the
-            # previous values; no unavailable state and no repair issue.
+            # previous values; no unavailable state and no repair issue unless the
+            # failure lasts longer than _SYR_CONNECT_COORDINATOR_UNREACHABLE_TIMEOUT.
             self._log_failure(
                 f"device:{device['id']}",
                 "Failed to get status for device %s, keeping previous status: %s",
                 device["id"],
                 err,
             )
-            return self._previous_device_or_empty(device)
+            return self._previous_device_or_empty(device, err)
         else:
             self._log_recovery(
                 f"device:{device['id']}",
@@ -535,24 +655,32 @@ class SyrConnectDataUpdateCoordinator(
             )
             return device
 
-    def _previous_device_or_empty(self, device: SyrConnectDevice) -> SyrConnectDevice:
+    def _previous_device_or_empty(
+        self, device: SyrConnectDevice, err: BaseException | None = None
+    ) -> SyrConnectDevice:
         """Return the device from the last update unchanged, or the device with an empty status.
 
         Used when the status could not be fetched, so the sensors keep their old values
         instead of being cleared. Without previous data the device stays available with
-        an empty status.
+        an empty status. When the status could not be fetched for longer than
+        _SYR_CONNECT_COORDINATOR_UNREACHABLE_TIMEOUT, the device is unavailable.
+
+        Args:
+            device: Device whose status could not be fetched
+            err: Error of the status request, or None for an unusable answer
         """
+        unreachable = self._is_failing_too_long(f"device:{device['id']}", err)
         prev = get_device(self.data, device["id"])
         if prev is not None:
             _LOGGER.debug("Reusing previous status for device %s", device.get("id"))
-            return prev
+            return _unavailable_device(prev) if unreachable else prev
         _LOGGER.debug(
             "No previous status for device %s; keeping device available with empty status",
             device.get("id"),
         )
         device["status"] = {}
         device["model"] = detect_device_model(device, self._service, self._model)
-        device["available"] = True
+        device["available"] = not unreachable
         return device
 
     async def async_set_device_value(

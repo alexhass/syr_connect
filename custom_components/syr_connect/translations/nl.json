@@ -2026,6 +2026,16 @@
       "message": "De klep van het apparaat {device} kan niet worden geschakeld omdat de status onbekend is"
     }
   },
+  "issues": {
+    "unreachable": {
+      "description": "Al meer dan {minutes} minuten konden geen gegevens van {entry} worden opgehaald. De betreffende apparaten worden als niet beschikbaar weergegeven. Deze melding verdwijnt zodra er weer gegevens worden opgehaald.",
+      "title": "{entry} niet bereikbaar"
+    },
+    "unreachable_network": {
+      "description": "Al meer dan {minutes} minuten kon geen verbinding met {entry} worden gemaakt: de hostnaam kon niet worden omgezet of er kon geen verbinding worden geopend. De netwerkverbinding en de DNS-instellingen van Home Assistant moeten worden gecontroleerd. De betreffende apparaten worden als niet beschikbaar weergegeven. Deze melding verdwijnt zodra er weer gegevens worden opgehaald.",
+      "title": "{entry} niet bereikbaar (netwerk)"
+    }
+  },
   "options": {
     "step": {
       "init": {

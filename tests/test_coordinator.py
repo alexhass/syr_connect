@@ -11,6 +11,7 @@ from types import SimpleNamespace
 from typing import Any, cast
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import aiohttp
 import pytest
 from pytest_homeassistant.common import MockConfigEntry
 from pytest_homeassistant.components.recorder.common import async_wait_recording_done
@@ -915,7 +916,7 @@ async def test_coordinator_delete_offline_issue_on_recovery(
         await coordinator.async_config_entry_first_refresh()
 
         # Verify delete_issue was called when device status was successfully fetched
-        mock_delete_issue.assert_called_once_with(hass, "device_offline_device1")
+        mock_delete_issue.assert_any_call(hass, "device_offline_device1")
 
 
 async def test_coordinator_gather_returns_exception(
@@ -2177,3 +2178,295 @@ async def test_device_failure_is_logged_once_and_its_recovery(
         if record.getMessage() == "Status of device 123456789 fetched again"
     ]
     assert recoveries == [logging.INFO]
+
+
+_UNREACHABLE_START = datetime(2026, 1, 1, tzinfo=UTC)
+
+
+def _unreachable_api(failing_projects: set[str], failing_devices: set[str]) -> Any:
+    """Return an XML API stub like _two_project_api whose devices in `failing_devices` time out."""
+    mock_api = _two_project_api(failing_projects)
+
+    async def _get_device_status(device_id: Any) -> Any:
+        if device_id in failing_devices:
+            raise SyrConnectConnectionError("timeout")
+        return {"getSRN": device_id, "getFLO": "5"}
+
+    mock_api.get_device_status = _get_device_status
+    return mock_api
+
+
+def _unreachable_coordinator(
+    hass: HomeAssistant, mock_api: Any
+) -> SyrConnectDataUpdateCoordinator:
+    """Return a coordinator of a config entry titled "SYR Connect (user)" for the stub."""
+    entry = MockConfigEntry(
+        domain=DOMAIN, entry_id="01JUNREACHABLE", title="SYR Connect (user)"
+    )
+    entry.add_to_hass(hass)
+    with patch(
+        "custom_components.syr_connect.coordinator.SyrConnectXmlAPI",
+        new=lambda *_a, **_kw: mock_api,
+    ):
+        return SyrConnectDataUpdateCoordinator(
+            hass,
+            cast(Any, SimpleNamespace()),
+            {
+                CONF_SERVICE: "de.consoft.syr.connect",
+                CONF_USERNAME: "user",
+                CONF_PASSWORD: "password",
+            },
+            60,
+            config_entry=cast(Any, entry),
+        )
+
+
+def _unreachable_issue(hass: HomeAssistant) -> ir.IssueEntry | None:
+    """Return the repair issue of the config entry of _unreachable_coordinator."""
+    return ir.async_get(hass).async_get_issue(DOMAIN, "unreachable_01JUNREACHABLE")
+
+
+async def test_update_failing_too_long_makes_entities_unavailable(
+    hass: HomeAssistant,
+) -> None:
+    """A connection failure of the whole update keeps the data for 1 hour, then fails the update and creates the issue."""
+    mock_api = _unreachable_api(set(), set())
+    coordinator = _unreachable_coordinator(hass, mock_api)
+    with patch(
+        "custom_components.syr_connect.coordinator.dt_util.utcnow"
+    ) as mock_utcnow:
+        mock_utcnow.return_value = _UNREACHABLE_START
+        await coordinator.async_refresh()
+        assert coordinator.last_update_success is True
+
+        # The cloud is down: the re-login fails at every update
+        mock_api.is_session_valid = lambda: False
+        mock_api.login = AsyncMock(
+            side_effect=SyrConnectConnectionError("maintenance page")
+        )
+        mock_utcnow.return_value = _UNREACHABLE_START + timedelta(minutes=1)
+        await coordinator.async_refresh()
+        mock_utcnow.return_value = _UNREACHABLE_START + timedelta(hours=1)
+        await coordinator.async_refresh()
+        assert coordinator.last_update_success is True
+        assert _unreachable_issue(hass) is None
+
+        mock_utcnow.return_value = _UNREACHABLE_START + timedelta(hours=1, minutes=1)
+        await coordinator.async_refresh()
+        assert coordinator.last_update_success is False
+        issue = _unreachable_issue(hass)
+        assert issue is not None
+        assert issue.translation_key == "unreachable"
+        assert issue.translation_placeholders == {
+            "entry": "SYR Connect (user)",
+            "minutes": "60",
+        }
+        assert issue.severity == ir.IssueSeverity.WARNING
+        assert issue.is_fixable is False
+        assert issue.is_persistent is False
+
+        # The cloud is back
+        mock_api.login = AsyncMock(return_value=True)
+        mock_api.is_session_valid = lambda: True
+        await coordinator.async_refresh()
+        assert coordinator.last_update_success is True
+        assert _unreachable_issue(hass) is None
+
+
+async def test_project_failing_too_long_marks_its_devices_unavailable(
+    hass: HomeAssistant,
+) -> None:
+    """The devices of a project that fails for more than 1 hour become unavailable until it is fetched again."""
+    failing: set[str] = set()
+    mock_api = _unreachable_api(failing, set())
+    coordinator = _unreachable_coordinator(hass, mock_api)
+    with patch(
+        "custom_components.syr_connect.coordinator.dt_util.utcnow"
+    ) as mock_utcnow:
+        mock_utcnow.return_value = _UNREACHABLE_START
+        await coordinator.async_refresh()
+        assert coordinator.data is not None
+        previous_p2 = coordinator.data["devices"][1]
+
+        failing.add("p2")
+        # A login replaces the project list, so the device lists are fetched again
+        mock_api.projects = list(mock_api.projects)
+        mock_utcnow.return_value = _UNREACHABLE_START + timedelta(minutes=1)
+        await coordinator.async_refresh()
+        assert coordinator.data["devices"][1]["available"] is True
+        assert _unreachable_issue(hass) is None
+
+        mock_api.projects = list(mock_api.projects)
+        mock_utcnow.return_value = _UNREACHABLE_START + timedelta(hours=1, minutes=2)
+        await coordinator.async_refresh()
+        assert coordinator.last_update_success is True
+        assert [d["available"] for d in coordinator.data["devices"]] == [True, False]
+        assert previous_p2["available"] is True  # the last data stays unchanged
+        assert _unreachable_issue(hass) is not None
+
+        failing.clear()
+        mock_api.projects = list(mock_api.projects)
+        await coordinator.async_refresh()
+        assert [d["available"] for d in coordinator.data["devices"]] == [True, True]
+        assert _unreachable_issue(hass) is None
+
+
+async def test_device_failing_too_long_becomes_unavailable(
+    hass: HomeAssistant,
+) -> None:
+    """A device whose status fails for more than 1 hour becomes unavailable; a short failure of the whole update keeps the issue."""
+    failing_devices: set[str] = set()
+    mock_api = _unreachable_api(set(), failing_devices)
+    coordinator = _unreachable_coordinator(hass, mock_api)
+    with patch(
+        "custom_components.syr_connect.coordinator.dt_util.utcnow"
+    ) as mock_utcnow:
+        mock_utcnow.return_value = _UNREACHABLE_START
+        await coordinator.async_refresh()
+
+        failing_devices.add("d_p2")
+        mock_utcnow.return_value = _UNREACHABLE_START + timedelta(minutes=1)
+        await coordinator.async_refresh()
+        assert coordinator.data is not None
+        assert coordinator.data["devices"][1]["available"] is True
+        assert _unreachable_issue(hass) is None
+
+        mock_utcnow.return_value = _UNREACHABLE_START + timedelta(hours=1, minutes=2)
+        await coordinator.async_refresh()
+        assert [d["available"] for d in coordinator.data["devices"]] == [True, False]
+        assert coordinator.data["devices"][1]["status"] == {
+            "getSRN": "d_p2",
+            "getFLO": "5",
+        }
+        assert _unreachable_issue(hass) is not None
+
+        # A short failure of the whole update keeps the last data and the issue
+        mock_api.is_session_valid = lambda: False
+        mock_api.login = AsyncMock(side_effect=SyrConnectConnectionError("timeout"))
+        await coordinator.async_refresh()
+        assert coordinator.last_update_success is True
+        assert _unreachable_issue(hass) is not None
+
+        mock_api.is_session_valid = lambda: True
+        failing_devices.clear()
+        await coordinator.async_refresh()
+        assert [d["available"] for d in coordinator.data["devices"]] == [True, True]
+        assert _unreachable_issue(hass) is None
+
+
+async def test_device_without_status_failing_too_long_is_unavailable(
+    hass: HomeAssistant,
+) -> None:
+    """A device that never returned a status within 1 hour is unavailable with an empty status."""
+    mock_api = _unreachable_api(set(), {"d_p2"})
+    coordinator = _unreachable_coordinator(hass, mock_api)
+    with patch(
+        "custom_components.syr_connect.coordinator.dt_util.utcnow"
+    ) as mock_utcnow:
+        mock_utcnow.return_value = _UNREACHABLE_START
+        coordinator.data = await coordinator._async_update_data()
+        assert coordinator.data is not None
+        assert coordinator.data["devices"][1]["available"] is True
+        # Without a last status, there is nothing to keep
+        coordinator.data = {
+            **coordinator.data,
+            "devices": coordinator.data["devices"][:1],
+        }
+
+        mock_utcnow.return_value = _UNREACHABLE_START + timedelta(hours=1)
+        result = await coordinator._async_update_data()
+
+        assert result is not None
+        assert result["devices"][1]["status"] == {}
+        assert result["devices"][1]["available"] is False
+        assert _unreachable_issue(hass) is not None
+
+
+async def test_update_failure_backs_off_up_to_maximum(hass: HomeAssistant) -> None:
+    """While the whole update fails, the interval doubles up to 15 minutes; a success restores it."""
+    mock_api = _unreachable_api(set(), set())
+    coordinator = _unreachable_coordinator(hass, mock_api)
+    await coordinator.async_refresh()
+    assert coordinator.update_interval == timedelta(seconds=60)
+
+    mock_api.is_session_valid = lambda: False
+    mock_api.login = AsyncMock(side_effect=SyrConnectConnectionError("timeout"))
+    intervals = []
+    for _ in range(6):
+        await coordinator.async_refresh()
+        intervals.append(coordinator.update_interval)
+    assert intervals == [
+        timedelta(minutes=2),
+        timedelta(minutes=4),
+        timedelta(minutes=8),
+        timedelta(minutes=15),
+        timedelta(minutes=15),
+        timedelta(minutes=15),
+    ]
+
+    mock_api.login = AsyncMock(return_value=True)
+    mock_api.is_session_valid = lambda: True
+    await coordinator.async_refresh()
+    assert coordinator.update_interval == timedelta(seconds=60)
+
+
+async def test_update_failure_keeps_long_configured_interval(
+    hass: HomeAssistant,
+) -> None:
+    """A configured interval above the backoff maximum is not shortened."""
+    mock_api = _unreachable_api(set(), set())
+    coordinator = _unreachable_coordinator(hass, mock_api)
+    coordinator._scan_interval = timedelta(minutes=30)
+    coordinator.update_interval = timedelta(minutes=30)
+    await coordinator.async_refresh()
+
+    mock_api.is_session_valid = lambda: False
+    mock_api.login = AsyncMock(side_effect=SyrConnectConnectionError("timeout"))
+    await coordinator.async_refresh()
+    assert coordinator.update_interval == timedelta(minutes=30)
+
+
+async def test_failing_device_keeps_update_interval(hass: HomeAssistant) -> None:
+    """A failing device does not slow down the updates of the other devices."""
+    mock_api = _unreachable_api(set(), {"d_p2"})
+    coordinator = _unreachable_coordinator(hass, mock_api)
+    await coordinator.async_refresh()
+    await coordinator.async_refresh()
+    assert coordinator.update_interval == timedelta(seconds=60)
+
+
+async def test_network_error_failing_too_long_names_the_network(
+    hass: HomeAssistant,
+) -> None:
+    """A device that can not be reached because of DNS or the network gets the network issue."""
+    mock_api = _unreachable_api(set(), set())
+    coordinator = _unreachable_coordinator(hass, mock_api)
+
+    async def _get_device_status(device_id: Any) -> Any:
+        if device_id == "d_p2":
+            try:
+                raise aiohttp.ClientConnectorDNSError(
+                    MagicMock(), OSError(-2, "Name or service not known")
+                )
+            except aiohttp.ClientError as err:
+                raise SyrConnectConnectionError("Failed to get device status") from err
+        return {"getSRN": device_id, "getFLO": "5"}
+
+    with patch(
+        "custom_components.syr_connect.coordinator.dt_util.utcnow"
+    ) as mock_utcnow:
+        mock_utcnow.return_value = _UNREACHABLE_START
+        await coordinator.async_refresh()
+
+        mock_api.get_device_status = _get_device_status
+        await coordinator.async_refresh()
+        mock_utcnow.return_value = _UNREACHABLE_START + timedelta(hours=1)
+        await coordinator.async_refresh()
+
+        issue = _unreachable_issue(hass)
+        assert issue is not None
+        assert issue.translation_key == "unreachable_network"
+        assert issue.translation_placeholders == {
+            "entry": "SYR Connect (user)",
+            "minutes": "60",
+        }

@@ -211,8 +211,8 @@ rules:
     comment: Reconfigure flow implemented with async_step_reconfigure; cloud entries keep their account (another username aborts with wrong_account), local entries may change model and host, but not the device (another serial number aborts with wrong_device)
   
   repair-issues:
-    status: exempt
-    comment: No repair issues by design (temporary errors are only logged, see AGENTS.md); the device_offline issues of older versions are deleted
+    status: done
+    comment: Temporary errors are only logged (see AGENTS.md); a failure that lasts longer than 1 hour creates an informing repair issue, which is deleted with the first successful update. The device_offline issues of older versions are deleted
   
   stale-devices:
     status: done
