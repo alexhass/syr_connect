@@ -130,7 +130,6 @@ test fixtures, and in the parsing/encryption layers implemented here.
 - Whether a device knows its time zone does not decide it: the Trio DFR/LS fixture `tests/fixtures/json/SyrTrioDFRLS_get_all.json` has neither `getTMZ` nor `getIDS`, but the LEX Plus 10 SL has `getTMZ` and keeps local time as well (issue 5). The device generation decides it: the older devices (LEX Plus, Trio DFR/LS) keep their clock in local time, the current devices (NeoSoft, Sanibel, Clear Pro Soft, Floorsensor and the MultiController family with the Muco devices and the Trio Lock) in UTC.
 - Impact: None. The integration has no timestamp entity for the Trio DFR/LS.
 - Mitigation in this project: None needed.
-- Not verified: other devices, for example the SafeTech+.
 
 ## References
 
