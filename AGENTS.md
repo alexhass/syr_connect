@@ -15,6 +15,7 @@ All of these files apply. Read the matching ones before changing code.
 | `.github/instructions/logging.instructions.md` | Logging and masking |
 | `.github/instructions/markdown.instructions.md` | All Markdown files |
 | `.github/instructions/migrations.instructions.md` | `migrations.py`, migration steps in `__init__.py`, `VERSION` in `config_flow.py` |
+| `.github/instructions/releases.instructions.md` | Version in `manifest.json`, minimum Home Assistant version in `hacs.json` |
 | `.github/instructions/tests.instructions.md` | `tests/` |
 | `.github/instructions/translations.instructions.md` | New keys, `const.py`, `translations/*.json` |
 

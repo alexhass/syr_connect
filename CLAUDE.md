@@ -8,5 +8,6 @@
 @.github/instructions/logging.instructions.md
 @.github/instructions/markdown.instructions.md
 @.github/instructions/migrations.instructions.md
+@.github/instructions/releases.instructions.md
 @.github/instructions/tests.instructions.md
 @.github/instructions/translations.instructions.md
