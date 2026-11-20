@@ -21,6 +21,7 @@ repository.
 - **Data-type inconsistencies:** Identical fields may appear as numbers, strings, or booleans depending on firmware/version.
 - **API error-code case-sensitivity:** Error codes `NSC`, `MIMA` and `ADM` are always uppercase, as documented by SYR; a value in another case (such as a Wi-Fi name `adm`) is an ordinary value.
 - **`getLAR` is UTC on the devices checked:** see issue 5 in [known_issues_xml_api.md](known_issues_xml_api.md).
+- **`getRTC` of the Trio DFR/LS is local time:** the Trio DFR/LS encodes local wall time as a UNIX timestamp; see issue 6 in [known_issues_xml_api.md](known_issues_xml_api.md).
 - **Canonical response format (compact status-key):** Devices commonly return compact status-key responses (e.g. {"setABtrue":"OK"}) instead of the typed JSON shown in the official documentation; the integration operates on the compact device format at runtime and treats it as the canonical representation.
 - **SafeTech+ pressure key:** The official documentation lists `getBAR2` for the SafeTech+; the devices report the pressure in `getBAR`.
 - **All-in-One+ filling volumes:** The official documentation gives the filling volumes `getCFV` and `getLFV` and the last tapped volume `getLTV` in liters; the All-in-One+ reports them in milliliters. The cumulative refilled volume `getTRV` is in liters.

@@ -117,6 +117,19 @@ test fixtures, and in the parsing/encryption layers implemented here.
   - Tests: `test_sensor_native_value_timestamp_is_utc` in `tests/test_sensor.py`, `test_device_list_has_no_utc_offset` in `tests/aiosyrconnect/test_xml_parser.py`.
 - Not verified: devices and firmwares not listed above, for example the LEX with firmware `SLPS`.
 
+### 6. `getRTC` of the Trio DFR/LS is local time encoded as a UNIX timestamp
+
+- Description: The Trio DFR/LS reports its clock (`getRTC`) as local wall time encoded as a UNIX timestamp, not as UTC. Read as UTC, the value is ahead of the real time by the UTC offset. A NeoSoft 2500 in the same account reports real UTC, see issue 5. Observations in [issue #98](https://github.com/alexhass/syr_connect/issues/98) (project `tzo` = "01:00:00", CET):
+  - 18 November 2026, captured at about 11:29 UTC: Trio DFR/LS `getRTC` = `1795004928` is 12:28:48 UTC (+1 hour); NeoSoft 2500 (`NSS.V.2.52`, `getTMZ` = "4") `getRTC` = `1795001324` is 11:28:44 UTC.
+  - 19 November 2026, captured at about 18:18 UTC: Trio DFR/LS `getRTC` = `1795115851` is 19:17:31 UTC (+1 hour); NeoSoft 2500 `getRTC` = `1795112277` is 18:17:57 UTC.
+- Hypothesis, not confirmed by SYR: the devices that know their time zone (`getTMZ`, with `getIDS` for daylight saving time) keep their clock in UTC, the devices without these keys keep it in local time. The Trio DFR/LS fixture `tests/fixtures/json/SyrTrioDFRLS_get_all.json` has `getRTC`, but neither `getTMZ` nor `getIDS`; the NeoSoft 2500, the Sanibel and the Trio Lock fixtures have `getTMZ`.
+- Impact: None at the moment. The integration has no timestamp entity for the Trio DFR/LS. A future timestamp entity based on `getRTC` or another time value of the Trio DFR/LS needs the UTC offset subtracted, the values of the devices in issue 5 must not get it.
+- Mitigation in this project: None needed.
+- Not verified:
+  - The behavior across the change between summer and winter time: whether the clock of the Trio DFR/LS jumps by one hour, and who sets it (cloud, app or the device itself).
+  - Other time values of the Trio DFR/LS.
+  - Other devices without `getTMZ`, for example SafeTech+ and LEX with firmware `SLPS`, and the Trio Lock, which has `getTMZ`.
+
 ## References
 
 - Parser: [custom_components/syr_connect/aiosyrconnect/xml_parser.py](custom_components/syr_connect/aiosyrconnect/xml_parser.py)
