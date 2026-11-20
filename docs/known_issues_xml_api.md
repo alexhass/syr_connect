@@ -120,9 +120,7 @@ test fixtures, and in the parsing/encryption layers implemented here.
   - `_value_lar()` in `custom_components/syr_connect/sensor.py` reads the value as UTC (`datetime.fromtimestamp(value, UTC)`), for the XML and the JSON API.
   - The device profiles of the LEX Plus families (`devices/lexplus10s.py`, `devices/lexplus10sl.py`) set `local_time_timestamps`. For them, `_value_lar()` reads the value as local time in the time zone of Home Assistant, which gives the offset of that day, also across the change between summer and winter time. A LEX in another time zone than Home Assistant is shown off by the difference.
   - Tests: `test_sensor_native_value_timestamp_is_utc`, `test_sensor_native_value_timestamp_in_local_time` and `test_lex_profiles_report_local_time_timestamps` in `tests/test_sensor.py`, `test_device_list_has_no_utc_offset` in `tests/aiosyrconnect/test_xml_parser.py`.
-- Not verified:
-  - Which moment of the regeneration the LEX stores: on the LEX Plus 10 S above it is about 14 minutes after the start, neither the start nor the end.
-  - Devices and firmwares not listed above.
+- Not verified: devices and firmwares not listed above.
 
 ### 6. `getRTC` of the Trio DFR/LS is local time encoded as a UNIX timestamp
 
@@ -132,10 +130,7 @@ test fixtures, and in the parsing/encryption layers implemented here.
 - Whether a device knows its time zone does not decide it: the Trio DFR/LS fixture `tests/fixtures/json/SyrTrioDFRLS_get_all.json` has neither `getTMZ` nor `getIDS`, but the LEX Plus 10 SL has `getTMZ` and keeps local time as well (issue 5). The device generation decides it: the older devices (LEX Plus, Trio DFR/LS) keep their clock in local time, the current devices (NeoSoft, Sanibel, Clear Pro Soft, Floorsensor and the MultiController family with the Muco devices and the Trio Lock) in UTC.
 - Impact: None. The integration has no timestamp entity for the Trio DFR/LS.
 - Mitigation in this project: None needed.
-- Not verified:
-  - The behavior across the change between summer and winter time: whether the clock of the Trio DFR/LS jumps by one hour, and who sets it (cloud, app or the device itself).
-  - Other time values of the Trio DFR/LS.
-  - Other devices, for example the SafeTech+.
+- Not verified: other devices, for example the SafeTech+.
 
 ## References
 
