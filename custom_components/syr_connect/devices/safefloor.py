@@ -12,9 +12,11 @@ temperature/leak sensor with no valve, no flow, no buzzer, and no
 leak-protection-profile family.
 
 Deliberately NOT included:
-- getALI, getAOA, getBDE, getBMP, getDEF, getECP, getEMR, getISN, getRTC,
-  getSFV, getWAR, getWTD: present in the fixture but not in the global
-  sensor.py allowlist at all (undocumented/unclear keys).
+- getALI, getAOA, getBDE, getBMP, getDEF, getECP, getEMR, getISN, getSFV,
+  getWAR, getWTD: present in the fixture but not in the global sensor.py
+  allowlist at all (undocumented/unclear keys).
+- getRTC: the clock of the device (see docs/syrconnect-protocol.md). It
+  changes with every poll and is not shown as an entity on any device.
 
 If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_SUPPORTED_KEYS below (after adding them to the

@@ -506,7 +506,7 @@ Some further data about the device
 | getIDS / setIDS | "1"<br>"True" | | USER / SERVICE | 1 | Automatic daylight saving time: 0/False = disabled, 1/True = enabled |
 | getLAN | "1" | | | | Language of the UI (0=English, 1=German, 3=Spanish) |
 | getMAN | "Syr" | | | | Manufacturer |
-| getRTC / setRTC | "1775055037" | | USER / SERVICE | | Device RTC as UNIX timestamp (NeoSoft, Sanibel, SafeTech). UTC or local time depending on the device: UTC on NeoSoft and Floorsensor, local time on Trio DFR/LS, see issues 5 and 6 in [known_issues_xml_api.md](known_issues_xml_api.md). See also getDAT |
+| getRTC / setRTC | "1775055037" | | USER / SERVICE | | Device RTC as UNIX timestamp (NeoSoft, Sanibel, SafeTech). UTC or local time depending on the device: UTC on NeoSoft and Floorsensor, local time on Trio DFR/LS, see issues 5 and 6 in [known_issues_xml_api.md](known_issues_xml_api.md). Not shown as an entity: the value changes with every poll. See also getDAT |
 | getRURL | `"https://storageiotsyr.blob..."` | | | | Firmware update resource URL (NeoSoft, Sanibel) |
 | getSFV | "0"<br>"False" | | USER | | Firmware check, done at startup and every 6 hours. dk < 1100: 0 = no new firmware, 1 = new firmware available. dk ≥ 1100: False = no new firmware, True = new firmware available |
 | getSRH | "23.08.2025" | | | | Next semi-annual maintenance date, format dd.mm.yyyy (NeoSoft) |
