@@ -88,5 +88,5 @@ The code that talks to the cloud and to the devices is the library `aiosyrconnec
 
 - Every behavior change comes with a test. Bug fixes get a test that fails without the fix.
 - Line coverage of `custom_components/syr_connect` must stay at 100 %: no line without test coverage is accepted. Check it after every change (see `AGENTS.md`, Commands) and add tests for every uncovered line. Do not add `# pragma: no cover` to reach it.
-- Fixtures live in `tests/fixtures/xml/` and `tests/fixtures/json/`. They are anonymised copies of real answers; keep their checksums valid (`tests/aiosyrconnect/test_xml_checksum.py` checks them).
+- Fixtures live in `tests/fixtures/xml/` and `tests/fixtures/json/`. They are anonymized copies of real answers; what is replaced and how is described in `.github/instructions/tests.instructions.md`, New Fixtures. Keep their checksums valid (`tests/aiosyrconnect/test_xml_checksum.py` checks them).
 - Further test rules are in `.github/instructions/tests.instructions.md`.

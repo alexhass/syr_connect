@@ -1,6 +1,6 @@
 ---
-description: Adding sensor keys, constants and translations
-applyTo: "custom_components/syr_connect/{const.py,sensor.py,select.py,switch.py,translations/*.json}"
+description: Adding sensor keys, constants, translations, translated exceptions and repair issues
+applyTo: "custom_components/syr_connect/{*.py,helpers/*.py,translations/*.json}"
 ---
 
 # New keys and translations
@@ -15,6 +15,11 @@ applyTo: "custom_components/syr_connect/{const.py,sensor.py,select.py,switch.py,
 - Every exception that Home Assistant shows to the user (`HomeAssistantError`, `ServiceValidationError`, `ConfigEntryNotReady`, `ConfigEntryAuthFailed`, `UpdateFailed`) is raised with `translation_domain=DOMAIN`, `translation_key` and `translation_placeholders`, never with a message string. Add the key to `exceptions` in all files in `translations/*.json`. `tests/test_translations.py` checks keys and placeholders.
 - Exception messages name the device by its name (`{device}`: `self._device_name`) and the entity by its translated name (`{entity}`: `self._entity_name`). They never contain the serial number, protocol keys (`getALM`) or the technical error text; log the error with `_LOGGER.error` before raising instead. Use separate keys for different situations (alarm, notification, warning) rather than a placeholder for the kind.
 - Placeholders in messages stand without quotes, as in Home Assistant core (`The device {device} has no active alarm to reset`).
+- A repair issue is created with `helpers.registry.create_issue()`: it only informs, cannot be fixed by a repair flow and is not kept across restarts. Its id is built by a helper in `helpers/registry.py` (`build_unreachable_issue_id`), so that `async_remove_entry` deletes the issues of a removed entry.
+- An issue needs `issues.<key>` with `title` and `description` in all files in `translations/*.json`, keys sorted alphabetically. The placeholders of both texts are exactly the keys of `translation_placeholders`. `tests/test_translations.py` checks only exceptions, so the placeholders of issues are checked by hand.
+- An issue names the config entry by its title (`{entry}`: `config_entry.title`), never by its `entry_id`, the username or a serial number.
+- The `title` of an issue is a name with a state, without a period: `{entry} not reachable`, `{entry} nicht erreichbar`. A qualifier goes in parentheses: `{entry} not reachable (network)`.
+- The `description` of an issue consists of complete sentences, each ending with a period, in this order: what happened, what follows for the devices, what must be checked (only if the user can do something), when the message disappears.
 - Verify with `python scripts/find_missing_translations.py`.
 
 ## Wording
