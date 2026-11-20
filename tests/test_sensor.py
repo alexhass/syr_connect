@@ -20,7 +20,11 @@ from custom_components.syr_connect.aiosyrconnect import SyrConnectStatus
 from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
 from custom_components.syr_connect.const import CONF_SERVICE, DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
-from custom_components.syr_connect.devices import SyrConnectDeviceProfile
+from custom_components.syr_connect.devices import (
+    SyrConnectDeviceProfile,
+    lexplus10s,
+    lexplus10sl,
+)
 from custom_components.syr_connect.models import (
     MODEL_SIGNATURES,
     UNKNOWN_MODEL,
@@ -245,6 +249,81 @@ async def test_sensor_native_value_timestamp_is_utc(
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLAR")
 
     assert sensor.native_value == datetime(2026, 11, 17, 1, 0, 1, tzinfo=UTC)
+
+
+@pytest.mark.parametrize(
+    ("time_zone", "raw", "expected"),
+    [
+        # LEX Plus 10 S (SLPS 2.3), regeneration active from 03:45 to 04:13 CET
+        (
+            "Europe/Berlin",
+            "1795147162",
+            datetime(2026, 11, 20, 2, 59, 22, tzinfo=UTC),
+        ),
+        # 1 July 2026 03:00:00 local time, in summer time
+        (
+            "Europe/Berlin",
+            "1782874800",
+            datetime(2026, 7, 1, 1, 0, 0, tzinfo=UTC),
+        ),
+        (
+            "America/New_York",
+            "1795147162",
+            datetime(2026, 11, 20, 8, 59, 22, tzinfo=UTC),
+        ),
+    ],
+)
+async def test_sensor_native_value_timestamp_in_local_time(
+    hass: HomeAssistant, time_zone: str, raw: str, expected: datetime
+) -> None:
+    """Test getLAR is read as local time on a profile with local_time_timestamps (issue 5)."""
+    await hass.config.async_set_time_zone(time_zone)
+    model = replace(
+        UNKNOWN_MODEL,
+        name="testml",
+        device_profile=SyrConnectDeviceProfile(
+            binary_sensor=set(),
+            button=set(),
+            local_time_timestamps=True,
+            select=set(),
+            sensor={
+                "getLAR",
+            },
+            switch=set(),
+            valve=set(),
+        ),
+    )
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "model": model,
+                "project_id": "project1",
+                "status": {
+                    "getLAR": raw,
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLAR")
+
+    assert sensor.native_value == expected
+
+
+def test_lex_profiles_report_local_time_timestamps() -> None:
+    """The LEX Plus families report getLAR in local time (docs/known_issues_xml_api.md, issue 5)."""
+    lex_profiles = [
+        lexplus10s.PROFILE,
+        lexplus10sl.PROFILE,
+    ]
+    for signature in MODEL_SIGNATURES:
+        profile = signature.device_profile
+        if profile is None:
+            continue
+        is_lex = any(profile is lex_profile for lex_profile in lex_profiles)
+        assert profile.local_time_timestamps is is_lex, signature.name
 
 
 async def test_sensor_native_value_string(hass: HomeAssistant) -> None:

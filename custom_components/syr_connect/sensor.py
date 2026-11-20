@@ -353,13 +353,17 @@ def _value_net(
 def _value_lar(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
-    """Last regeneration (getLAR): UNIX timestamp (UTC) -> aware datetime.
+    """Last regeneration (getLAR): UNIX timestamp -> aware datetime.
 
-    On the devices listed in docs/known_issues_xml_api.md, issue 5, the value is a UNIX
-    timestamp in UTC.
+    The value is a UNIX timestamp in UTC on most devices. The devices whose profile
+    sets `local_time_timestamps` (LEX Plus) encode their local wall time instead, see
+    docs/known_issues_xml_api.md, issue 5. Their value is read in the time zone of
+    Home Assistant, which gives the offset that applied on that day, also across the
+    change between summer and winter time.
 
     Formats:
     - Clear Pro Soft (getRTM "02:00"): "1794877201" -> 2026-11-17 01:00:01 UTC
+    - LEX Plus 10 S (SLPS 2.3, Europe/Berlin): "1795147162" -> 2026-11-20 03:59:22 CET
     """
     if value is None or value == "":
         return None
@@ -368,9 +372,13 @@ def _value_lar(
         # 0 means that no regeneration has happened yet.
         if timestamp == 0:
             return None
-        return datetime.fromtimestamp(timestamp, UTC)
+        utc_time = datetime.fromtimestamp(timestamp, UTC)
     except ValueError, TypeError, OverflowError:
         return None
+    profile = sensor.device_model.device_profile
+    if profile is not None and profile.local_time_timestamps:
+        return utc_time.replace(tzinfo=dt_util.get_default_time_zone())
+    return utc_time
 
 
 def _map_int(value_map: dict[int, Any], value: Any, default: int) -> Any:

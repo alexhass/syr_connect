@@ -103,32 +103,39 @@ test fixtures, and in the parsing/encryption layers implemented here.
   - There is no client-side session expiry: a new login only happens when the server rejects the token.
   - Fixtures: `tests/fixtures/xml/SyrTestDevice_InvalidSessionResponse.xml` and `tests/fixtures/xml/SyrSafeFloor_GetSafeFloorStatistics_InvalidUnit.xml`. Tests: `test_invalid_token_response_raises_session_expired` and `test_cloud_error_response_raises_session_expired` in `tests/aiosyrconnect/test_xml_parser.py`, `test_rejected_token_relogs_in_and_retries_once`, `test_rejected_token_twice_raises_session_expired` and `test_parallel_requests_share_a_failed_login` in `tests/aiosyrconnect/test_xml_api.py`.
 
-### 5. `getLAR` is a UNIX timestamp in UTC on the devices checked
+### 5. `getLAR` is UTC on most devices, local time on the LEX
 
-- Description: On the devices below, `getLAR` (last regeneration) read as a UNIX timestamp in UTC gives the real time of the regeneration. Read as local wall time, it is off by the UTC offset. Observations:
+- Description: Most devices report `getLAR` (last regeneration) as a UNIX timestamp in UTC. The LEX Plus encodes its local wall time as a UNIX timestamp instead. Read the wrong way, the value is off by the UTC offset. Observations of UTC:
   - Clear Pro Soft (`NSS.V.2.52`, `getRTM` = "02:00"): `getLAR` = `1794877201` is 17 November 2026 01:00:01 UTC = 02:00:01 CET.
   - `tests/fixtures/json/SyrNeoSoft2500_get_all.json` (`getRTM` = "01:00"): `getLAR` = `1774998000` is 31 March 2026 23:00:00 UTC = 01:00:00 CEST.
   - `tests/fixtures/xml/SyrNeoSoft2500_GetDeviceCollectionStatus.xml` (`getRTM` = "01:00"): `getLAR` = `1771200000` is 16 February 2026 00:00:00 UTC = 01:00:00 CET.
   - `tests/fixtures/json/SanibelSoftwaterUNOA25_get_all.json` (`getRTM` = "02:00"): `getLAR` = `1772672401` is 5 March 2026 01:00:01 UTC = 02:00:01 CET.
   - `getRTC` of three floor sensors (firmware `Syr Floorsensor 2.23`) matches the UTC `dt` of the same cloud report within 3 seconds.
-- Impact: Up to this change, `_value_lar()` read the value as local wall time: with the cloud it subtracted the project's `tzo`, with the local API it used the time zone of Home Assistant. On the devices above, the last regeneration was shown one hour too early in winter time and two hours too early in summer time.
+- Observations of local time on the LEX:
+  - LEX Plus 10 S (firmware `SLPS`, `getVER` = "2.3", `getRTH` = "3", `getRTM` = "15"), 20 November 2026: `getLAR` = `1795147162`. The regeneration status (`getRG1`) and the remaining time of the regeneration cycle in Home Assistant showed the regeneration from about 03:45 to 04:13 CET. Read as local time, `getLAR` is 03:59:22 CET, within the regeneration; read as UTC, it is 04:59:22 CET, 46 minutes after its end.
+  - `tests/fixtures/xml/SyrLEXplus10SL_GetDeviceCollectionStatus.xml` (LEX Plus 10 SL, `getTMZ` = "4"): the device time `getDAT` = `1767663335` is 6 January 2026 01:35:35 if read as UTC, one hour ahead of the UTC `dt` "06.01.2026 00:35:39" of the same answer.
+  - The `dt` of the status values is UTC: an answer fetched at about 06:46 CET has `dt` "20.11.2026 05:46:02".
+- Impact: From the change to UTC up to this change, `_value_lar()` read the value as UTC for all devices, and the LEX showed the last regeneration one hour too late in winter time and two hours too late in summer time. Before, it read the value as local time for all devices, and the other devices showed it one or two hours too early.
 - Mitigation in this project:
-  - `_value_lar()` in `custom_components/syr_connect/sensor.py` reads the value with `datetime.fromtimestamp(value, UTC)` for all devices, for the XML and the JSON API.
-  - Tests: `test_sensor_native_value_timestamp_is_utc` in `tests/test_sensor.py`, `test_device_list_has_no_utc_offset` in `tests/aiosyrconnect/test_xml_parser.py`.
-- Not verified: devices and firmwares not listed above, for example the LEX with firmware `SLPS`.
+  - `_value_lar()` in `custom_components/syr_connect/sensor.py` reads the value as UTC (`datetime.fromtimestamp(value, UTC)`), for the XML and the JSON API.
+  - The device profiles of the LEX Plus families (`devices/lexplus10s.py`, `devices/lexplus10sl.py`) set `local_time_timestamps`. For them, `_value_lar()` reads the value as local time in the time zone of Home Assistant, which gives the offset of that day, also across the change between summer and winter time. A LEX in another time zone than Home Assistant is shown off by the difference.
+  - Tests: `test_sensor_native_value_timestamp_is_utc`, `test_sensor_native_value_timestamp_in_local_time` and `test_lex_profiles_report_local_time_timestamps` in `tests/test_sensor.py`, `test_device_list_has_no_utc_offset` in `tests/aiosyrconnect/test_xml_parser.py`.
+- Not verified:
+  - Which moment of the regeneration the LEX stores: on the LEX Plus 10 S above it is about 14 minutes after the start, neither the start nor the end.
+  - Devices and firmwares not listed above.
 
 ### 6. `getRTC` of the Trio DFR/LS is local time encoded as a UNIX timestamp
 
 - Description: The Trio DFR/LS reports its clock (`getRTC`) as local wall time encoded as a UNIX timestamp, not as UTC. Read as UTC, the value is ahead of the real time by the UTC offset. A NeoSoft 2500 in the same account reports real UTC, see issue 5. Observations in [issue #98](https://github.com/alexhass/syr_connect/issues/98) (project `tzo` = "01:00:00", CET):
   - 18 November 2026, captured at about 11:29 UTC: Trio DFR/LS `getRTC` = `1795004928` is 12:28:48 UTC (+1 hour); NeoSoft 2500 (`NSS.V.2.52`, `getTMZ` = "4") `getRTC` = `1795001324` is 11:28:44 UTC.
   - 19 November 2026, captured at about 18:18 UTC: Trio DFR/LS `getRTC` = `1795115851` is 19:17:31 UTC (+1 hour); NeoSoft 2500 `getRTC` = `1795112277` is 18:17:57 UTC.
-- Hypothesis, not confirmed by SYR: the devices that know their time zone (`getTMZ`, with `getIDS` for daylight saving time) keep their clock in UTC, the devices without these keys keep it in local time. The Trio DFR/LS fixture `tests/fixtures/json/SyrTrioDFRLS_get_all.json` has `getRTC`, but neither `getTMZ` nor `getIDS`; the NeoSoft 2500, the Sanibel and the Trio Lock fixtures have `getTMZ`.
-- Impact: None at the moment. The integration has no timestamp entity for the Trio DFR/LS. A future timestamp entity based on `getRTC` or another time value of the Trio DFR/LS needs the UTC offset subtracted, the values of the devices in issue 5 must not get it.
+- Whether a device knows its time zone does not decide it: the Trio DFR/LS fixture `tests/fixtures/json/SyrTrioDFRLS_get_all.json` has neither `getTMZ` nor `getIDS`, but the LEX Plus 10 SL has `getTMZ` and keeps local time as well (issue 5). The device generation decides it: the older devices (LEX Plus, Trio DFR/LS) keep their clock in local time, the current devices (NeoSoft, Sanibel, Clear Pro Soft, Floorsensor and the MultiController family with the Muco devices and the Trio Lock) in UTC.
+- Impact: None. The integration has no timestamp entity for the Trio DFR/LS.
 - Mitigation in this project: None needed.
 - Not verified:
   - The behavior across the change between summer and winter time: whether the clock of the Trio DFR/LS jumps by one hour, and who sets it (cloud, app or the device itself).
   - Other time values of the Trio DFR/LS.
-  - Other devices without `getTMZ`, for example SafeTech+ and LEX with firmware `SLPS`, and the Trio Lock, which has `getTMZ`.
+  - Other devices, for example the SafeTech+.
 
 ## References
 
