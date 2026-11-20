@@ -195,6 +195,9 @@ class SyrConnectDeviceProfile:
     # Switch keys the device reports inverted to the other devices: the reported
     # value means the opposite of the switch state
     inverted_switches: AbstractSet[str] = field(default_factory=frozenset)
+    # The device reports its timestamps (getLAR) as local wall time encoded as a UNIX
+    # timestamp instead of UTC, see docs/known_issues_xml_api.md, issue 5
+    local_time_timestamps: bool = False
     select: AbstractSet[str] | None
     # Select keys with an "off" option: key -> raw value written for "off"; a reported
     # value below the lowest other option is shown as "off"

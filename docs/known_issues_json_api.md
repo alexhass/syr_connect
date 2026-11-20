@@ -20,7 +20,7 @@ repository.
 - **Response key and URL path casing inconsistencies:** `set` response keys and `/set` path segment casing vary between devices and firmwares.
 - **Data-type inconsistencies:** Identical fields may appear as numbers, strings, or booleans depending on firmware/version.
 - **API error-code case-sensitivity:** Error codes `NSC`, `MIMA` and `ADM` are always uppercase, as documented by SYR; a value in another case (such as a Wi-Fi name `adm`) is an ordinary value.
-- **`getLAR` is UTC on the devices checked:** see issue 5 in [known_issues_xml_api.md](known_issues_xml_api.md).
+- **`getLAR` is UTC on most devices, local time on the LEX:** see issue 5 in [known_issues_xml_api.md](known_issues_xml_api.md).
 - **`getRTC` of the Trio DFR/LS is local time:** the Trio DFR/LS encodes local wall time as a UNIX timestamp; see issue 6 in [known_issues_xml_api.md](known_issues_xml_api.md).
 - **Canonical response format (compact status-key):** Devices commonly return compact status-key responses (e.g. {"setABtrue":"OK"}) instead of the typed JSON shown in the official documentation; the integration operates on the compact device format at runtime and treats it as the canonical representation.
 - **SafeTech+ pressure key:** The official documentation lists `getBAR2` for the SafeTech+; the devices report the pressure in `getBAR`.
@@ -162,11 +162,11 @@ Actual (expected) device response:
 - Mitigation in this project: The integration requires and expects the actual device response format — the compact status-key representation (e.g. {"setABtrue":"OK"}). The API documentation should be regarded as incorrect.
 - Official incorrect documentation: [SYR JSON API documentation](https://iotsyrpublicapi.z1.web.core.windows.net/)
 
-### 8. `getLAR` is a UNIX timestamp in UTC on the devices checked
+### 8. `getLAR` is UTC on most devices, local time on the LEX
 
 - Description: In the local API captures `tests/fixtures/json/SyrNeoSoft2500_get_all.json` and `tests/fixtures/json/SanibelSoftwaterUNOA25_get_all.json`, `getLAR` (last regeneration) read as a UNIX timestamp in UTC matches the configured regeneration time (`getRTM`). See issue 5 in [known_issues_xml_api.md](known_issues_xml_api.md).
 - Impact: see issue 5 in [known_issues_xml_api.md](known_issues_xml_api.md).
-- Mitigation in this project: `_value_lar()` in `custom_components/syr_connect/sensor.py` reads the value as UTC; the time zone of Home Assistant is not used.
+- Mitigation in this project: `_value_lar()` in `custom_components/syr_connect/sensor.py` reads the value as UTC, and as local time in the time zone of Home Assistant for the LEX Plus families, whose profiles set `local_time_timestamps`.
 
 ### 9. SafeTech+ reports the pressure in `getBAR`, not `getBAR2`
 
