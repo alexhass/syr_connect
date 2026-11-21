@@ -718,14 +718,12 @@ async def test_button_reset_ala_lexplus10s_calls_clr_alm(hass: HomeAssistant) ->
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
-    coordinator.async_clear_device_alarm = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device1", "Device 1", "setALA")
 
     await button.async_press()
 
-    coordinator.async_clear_device_alarm.assert_called_once_with("device1", "alm")
-    coordinator.async_set_device_value.assert_not_called()
+    coordinator.async_set_device_value.assert_called_once_with("device1", "clrALM", "")
 
 
 async def test_button_reset_ala_unknown_model_calls_clr_ala(
@@ -744,14 +742,12 @@ async def test_button_reset_ala_unknown_model_calls_clr_ala(
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
-    coordinator.async_clear_device_alarm = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device2", "Device 2", "setALA")
 
     await button.async_press()
 
-    coordinator.async_clear_device_alarm.assert_called_once_with("device2", "ala")
-    coordinator.async_set_device_value.assert_not_called()
+    coordinator.async_set_device_value.assert_called_once_with("device2", "clrALA", "")
 
 
 async def test_button_reset_ala_clr_endpoint_pontosbase(hass: HomeAssistant) -> None:
@@ -768,13 +764,13 @@ async def test_button_reset_ala_clr_endpoint_pontosbase(hass: HomeAssistant) -> 
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
-    coordinator.async_clear_device_alarm = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device_pontos", "Device Pontos", "setALA")
     await button.async_press()
 
-    coordinator.async_clear_device_alarm.assert_called_once_with("device_pontos", "ala")
-    coordinator.async_set_device_value.assert_not_called()
+    coordinator.async_set_device_value.assert_called_once_with(
+        "device_pontos", "clrALA", ""
+    )
 
 
 async def test_button_reset_ala_clr_endpoint_safetechv4(hass: HomeAssistant) -> None:
@@ -791,17 +787,17 @@ async def test_button_reset_ala_clr_endpoint_safetechv4(hass: HomeAssistant) -> 
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
-    coordinator.async_clear_device_alarm = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device_stv4", "Device STv4", "setALA")
     await button.async_press()
 
-    coordinator.async_clear_device_alarm.assert_called_once_with("device_stv4", "ala")
-    coordinator.async_set_device_value.assert_not_called()
+    coordinator.async_set_device_value.assert_called_once_with(
+        "device_stv4", "clrALA", ""
+    )
 
 
 async def test_button_reset_ala_clr_error_propagates(hass: HomeAssistant) -> None:
-    """Errors from async_clear_device_alarm propagate and are not swallowed."""
+    """Errors of the alarm reset propagate and are not swallowed."""
     data = {
         "devices": [
             {
@@ -813,8 +809,7 @@ async def test_button_reset_ala_clr_error_propagates(hass: HomeAssistant) -> Non
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
-    coordinator.async_clear_device_alarm = AsyncMock(  # type: ignore[method-assign]
+    coordinator.async_set_device_value = AsyncMock(  # type: ignore[method-assign]
         side_effect=HomeAssistantError("Connection failed")
     )
 
@@ -822,8 +817,9 @@ async def test_button_reset_ala_clr_error_propagates(hass: HomeAssistant) -> Non
     with pytest.raises(HomeAssistantError):
         await button.async_press()
 
-    coordinator.async_clear_device_alarm.assert_called_once_with("device_pontos", "ala")
-    coordinator.async_set_device_value.assert_not_called()
+    coordinator.async_set_device_value.assert_called_once_with(
+        "device_pontos", "clrALA", ""
+    )
 
 
 async def test_button_reset_not_no_reset_required(hass: HomeAssistant) -> None:
@@ -931,7 +927,6 @@ async def test_button_reset_ala_alarm_clear_via_set_sends_ff(
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
-    coordinator.async_clear_device_alarm = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device_trio", "Device Trio", "setALA")
 
@@ -940,7 +935,6 @@ async def test_button_reset_ala_alarm_clear_via_set_sends_ff(
     coordinator.async_set_device_value.assert_called_once_with(
         "device_trio", "setALA", "FF"
     )
-    coordinator.async_clear_device_alarm.assert_not_called()
 
 
 async def test_button_reset_not_sends_255_via_json_api(hass: HomeAssistant) -> None:
@@ -1016,7 +1010,6 @@ async def test_button_reset_ala_sentinel_values_no_reset(
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
-    coordinator.async_clear_device_alarm = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(
         coordinator, "device_sentinel", "Device Sentinel", "setALA"
@@ -1026,7 +1019,6 @@ async def test_button_reset_ala_sentinel_values_no_reset(
         await button.async_press()
 
     coordinator.async_set_device_value.assert_not_called()
-    coordinator.async_clear_device_alarm.assert_not_called()
 
 
 # ---------------------------------------------------------------------------

@@ -677,6 +677,35 @@ async def test_set_device_status_strips_set_prefix(
     assert result is True
 
 
+@pytest.mark.parametrize(
+    ("command", "path"), [("clrALA", "/clr/ala"), ("clrALM", "/clr/alm")]
+)
+async def test_set_device_status_sends_clr_command_to_clr_endpoint(
+    user_agent: str, set_response_body: Callable[..., None], command: str, path: str
+) -> None:
+    """A clr command clears the alarm via the /clr/ endpoint, before the next command."""
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.raise_for_status = MagicMock()
+    set_response_body(mock_response, json.dumps({"setAB1": "OK"}))
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(
+        sess,
+        base_url="http://test:5333/trio/",
+        user_agent=user_agent,
+    )
+
+    result = await client.set_device_status("device1", [(command, ""), ("setAB", 1)])
+
+    called_urls = [urlsplit(str(c.args[0])).path for c in sess.get.call_args_list]
+    assert called_urls == [f"/trio{path}", "/trio/set/ab/1"]
+    assert result is True
+
+
 async def test_set_device_status_success(
     user_agent: str, set_response_body: Callable[..., None]
 ) -> None:

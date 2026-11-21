@@ -651,7 +651,8 @@ class SyrConnectJsonAPI:
             serial_number: Serial number of the device (for logging; the client serves one device)
             commands: Sequence of (command, value) pairs, executed in order.
                 Each command is a string such as "setRTM" or "RTM" and
-                each value is the new value to set.
+                each value is the new value to set. A clr command such as
+                "clrALA" clears an alarm via the /clr/ endpoint.
 
         Returns:
             True if all requests succeed
@@ -668,7 +669,15 @@ class SyrConnectJsonAPI:
     async def _set_device_status_single(
         self, serial_number: str, command: str, value: Any
     ) -> None:
-        """Send a single set command to the JSON API."""
+        """Send a single set command to the JSON API.
+
+        A clr command (clrALA, clrALM) goes to the /clr/ endpoint and has no value.
+        """
+        if command.lower().startswith("clr"):
+            field = command[3:].lower()
+            await self.request_json_data(f"clr/{field}")
+            _LOGGER.info("JSON API: Cleared %s for device %s", field, serial_number)
+            return
         # --- Normalize Command Name ---
         # Some callers send "setAB", others send "AB" - normalize to base
         # command and build the correct URL form via helpers.

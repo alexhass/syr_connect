@@ -1160,7 +1160,11 @@ async def test_async_open_valve_active_alarm_xml_sends_multi_command(
 async def test_async_open_valve_active_alarm_json_calls_clr_then_set(
     hass: HomeAssistant,
 ) -> None:
-    """Active alarm with JSON API: /clr/ala then /set/ab/1 as two sequential requests."""
+    """Active alarm with JSON API: clrALA and setAB go to the client together.
+
+    The JSON API sends them one after another, clrALA via its /clr/ endpoint
+    (tests/aiosyrconnect/test_json_api.py).
+    """
 
     data = {
         "devices": [
@@ -1175,14 +1179,13 @@ async def test_async_open_valve_active_alarm_json_calls_clr_then_set(
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.api.__class__ = SyrConnectJsonAPI
-    api: Any = coordinator.api
-    api.request_json_data = AsyncMock(return_value={})
     coordinator.api.set_device_status = AsyncMock(return_value=True)
 
     await coordinator.async_open_valve("dev4", "setAB", 1)
 
-    api.request_json_data.assert_awaited_once_with("clr/ala")
-    coordinator.api.set_device_status.assert_awaited_once_with("dev4", [("setAB", 1)])
+    coordinator.api.set_device_status.assert_awaited_once_with(
+        "dev4", [("clrALA", ""), ("setAB", 1)]
+    )
 
 
 async def test_async_open_valve_alarm_style_alm_uses_clr_alm(

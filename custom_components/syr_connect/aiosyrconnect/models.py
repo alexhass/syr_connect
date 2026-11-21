@@ -116,3 +116,24 @@ class SyrConnectModelSignature:
     ver_contains: str | None = None
     # Prefix that `getVER` must start with
     ver_prefix: str | None = None
+
+    @property
+    def alarm_status_key(self) -> str:
+        """Status key of the current alarm (getALM or getALA, see `alarm_style_alm`)."""
+        return "getALM" if self.alarm_style_alm else "getALA"
+
+    @property
+    def alarm_reset_command(self) -> tuple[str, str]:
+        """Command and value that reset an active alarm of the model.
+
+        Formats:
+        - alarm_clear_via_set: ("setALA", "FF") or ("setALM", "FF")
+        - otherwise: ("clrALA", "") or ("clrALM", "")
+
+        Both clients send it with `set_device_status`; the JSON API sends a clr
+        command to its /clr/ endpoint.
+        """
+        field = self.alarm_status_key[3:]
+        if self.alarm_clear_via_set:
+            return f"set{field}", "FF"
+        return f"clr{field}", ""

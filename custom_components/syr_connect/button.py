@@ -8,14 +8,14 @@ and will suppress the reset command (case-insensitive):
 
     "", "0", "00", "ff", "a0x0000", "255"
 
-For setALA, both the alarm field and the reset method depend on the
-model signature:
+For setALA, both the alarm field and the reset command come from the model
+signature of the library (`alarm_status_key`, `alarm_reset_command`):
 
     alarm_style_alm: True  → field = ALM  (getALM / setALM / clrALM)
     alarm_style_alm: False → field = ALA  (getALA / setALA / clrALA)
 
     alarm_clear_via_set: True  → send setALA/setALM with value "FF"
-    alarm_clear_via_set: False → call dedicated clrALA/clrALM endpoint
+    alarm_clear_via_set: False → send clrALA/clrALM (the JSON API via /clr/)
 
 setNOT and setWRN send "FF" (XML API) or 255 (JSON API) via the standard set
 command.
@@ -136,13 +136,8 @@ async def _async_press_ala(press: _SyrConnectButtonPress) -> None:
             translation_key="no_alarm_to_reset",
             translation_placeholders={"device": press.device_name},
         )
-    field = _reset_get_key(press.command, press.model)[3:].lower()
-    if press.model.alarm_clear_via_set:
-        await press.coordinator.async_set_device_value(
-            press.device_id, f"set{field.upper()}", "FF"
-        )
-    else:
-        await press.coordinator.async_clear_device_alarm(press.device_id, field)
+    command, value = press.model.alarm_reset_command
+    await press.coordinator.async_set_device_value(press.device_id, command, value)
 
 
 async def _async_press_not_wrn(press: _SyrConnectButtonPress) -> None:
@@ -240,7 +235,7 @@ def _reset_get_key(command: str, model: SyrConnectModel) -> str:
     For setALA the key depends on the model: getALM with alarm_style_alm, otherwise getALA.
     """
     if command == "setALA":
-        return "getALM" if model.alarm_style_alm else "getALA"
+        return model.alarm_status_key
     return "get" + command[3:]
 
 

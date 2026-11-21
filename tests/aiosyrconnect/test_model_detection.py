@@ -107,3 +107,29 @@ def test_signatures_of_the_caller_are_returned() -> None:
     model = _Model(base_path=None, dk=2, dkv=3, name="own", label="Own model")
 
     assert detect_model_signature({}, [model], dk=2, dkv=3) is model
+
+
+@pytest.mark.parametrize(
+    ("alarm_style_alm", "alarm_clear_via_set", "key", "command"),
+    [
+        (False, False, "getALA", ("clrALA", "")),
+        (True, False, "getALM", ("clrALM", "")),
+        (False, True, "getALA", ("setALA", "FF")),
+        (True, True, "getALM", ("setALM", "FF")),
+    ],
+)
+def test_alarm_status_key_and_reset_command(
+    alarm_style_alm: bool,
+    alarm_clear_via_set: bool,
+    key: str,
+    command: tuple[str, str],
+) -> None:
+    """The alarm style gives the status key, the clear method the reset command."""
+    signature = _signature(
+        "alarm",
+        alarm_style_alm=alarm_style_alm,
+        alarm_clear_via_set=alarm_clear_via_set,
+    )
+
+    assert signature.alarm_status_key == key
+    assert signature.alarm_reset_command == command
