@@ -221,21 +221,26 @@ def test_signatures_of_the_caller_are_returned() -> None:
 
 
 @pytest.mark.parametrize(
-    ("alarm_style_alm", "alarm_clear_via_set", "key", "command"),
+    ("alarm_style_alm", "alarm_clear_via_set", "key", "cloud", "device"),
     [
-        (False, False, "getALA", ("clrALA", "")),
-        (True, False, "getALM", ("clrALM", "")),
-        (False, True, "getALA", ("setALA", "FF")),
-        (True, True, "getALM", ("setALM", "FF")),
+        (False, False, "getALA", ("clrALA", ""), ("clrALA", "")),
+        (True, False, "getALM", ("clrALM", ""), ("clrALM", "")),
+        (False, True, "getALA", ("setALA", "FF"), ("setALA", 255)),
+        (True, True, "getALM", ("setALM", "FF"), ("setALM", 255)),
     ],
 )
 def test_alarm_status_key_and_reset_command(
     alarm_style_alm: bool,
     alarm_clear_via_set: bool,
     key: str,
-    command: tuple[str, str],
+    cloud: tuple[str, str | int],
+    device: tuple[str, str | int],
 ) -> None:
-    """The alarm style gives the status key, the clear method the reset command."""
+    """The alarm style gives the status key, the clear method the reset command.
+
+    A set command takes the acknowledge value of the client: "FF" for the cloud,
+    255 for the device. A clr command has no value.
+    """
     signature = _signature(
         "alarm",
         alarm_style_alm=alarm_style_alm,
@@ -243,4 +248,5 @@ def test_alarm_status_key_and_reset_command(
     )
 
     assert signature.alarm_status_key == key
-    assert signature.alarm_reset_command == command
+    assert signature.alarm_reset_command("FF") == cloud
+    assert signature.alarm_reset_command(255) == device

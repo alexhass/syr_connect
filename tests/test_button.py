@@ -910,10 +910,15 @@ async def test_button_reset_wrn_sends_ff_via_xml_api(hass: HomeAssistant) -> Non
     )
 
 
-async def test_button_reset_ala_alarm_clear_via_set_sends_ff(
-    hass: HomeAssistant,
+@pytest.mark.parametrize(("json_api", "value"), [(False, "FF"), (True, 255)])
+async def test_button_reset_ala_alarm_clear_via_set_sends_acknowledge_value(
+    hass: HomeAssistant, json_api: bool, value: str | int
 ) -> None:
-    """When alarm_clear_via_set=True (Trio LS), reset sends setALA 'FF' instead of calling clrALA."""
+    """When alarm_clear_via_set=True (Trio LS), reset sends setALA instead of clrALA.
+
+    The value is the acknowledge value of the client: "FF" for the cloud, 255 for
+    the JSON API (/set/ala/255).
+    """
     data = {
         "devices": [
             {
@@ -927,13 +932,15 @@ async def test_button_reset_ala_alarm_clear_via_set_sends_ff(
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
+    if json_api:
+        coordinator.api.__class__ = SyrConnectJsonAPI
 
     button = SyrConnectButton(coordinator, "device_trio", "Device Trio", "setALA")
 
     await button.async_press()
 
     coordinator.async_set_device_value.assert_called_once_with(
-        "device_trio", "setALA", "FF"
+        "device_trio", "setALA", value
     )
 
 

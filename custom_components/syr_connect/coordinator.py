@@ -836,7 +836,7 @@ class SyrConnectDataUpdateCoordinator(
             raw is not None
             and str(raw).strip().upper() not in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM
         ):
-            clear_prefix = model_info.alarm_reset_command
+            clear_prefix = model_info.alarm_reset_command(self.api.acknowledge_value)
             _LOGGER.info(
                 "Valve open: active alarm %s=%r on device %s; prepending %s",
                 get_key,

@@ -150,10 +150,11 @@ class SyrConnectJsonAPI:
 
     @property
     def acknowledge_value(self) -> int:
-        """Value of setNOT and setWRN that acknowledges the current notification or warning.
+        """Value of setALA, setNOT and setWRN that acknowledges the current code.
 
-        The device takes the code as a decimal number: 255, sent as /set/not/255 or
-        /set/wrn/255 (see setNOT and setWRN in docs/syrconnect-protocol.md).
+        The device takes the code as a decimal number: 255, sent as /set/ala/255,
+        /set/not/255 or /set/wrn/255 (see setALA, setNOT and setWRN in
+        docs/syrconnect-protocol.md).
         """
         return 255
 

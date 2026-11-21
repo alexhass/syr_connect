@@ -82,8 +82,9 @@ What the caller passes:
 `MODEL_SIGNATURES` lists the known models: how a model is detected (`dk`, `dkv`, `sbt`
 and `dfm` of the cloud, checks of the serial number, `getCNA` and `getVER`) and how it is
 addressed: `base_path` of the local JSON API, the status key of the alarm
-(`alarm_status_key`) and the command that resets it (`alarm_reset_command`, which both
-clients send with `set_device_status`).
+(`alarm_status_key`) and the command that resets it (`alarm_reset_command()`). The value
+of a set command comes from the client that sends it (`acknowledge_value`: "FF" for the
+cloud, 255 for the device); both clients send the command with `set_device_status`.
 `detect_model_signature()` returns the signature of a device, or None for an unknown
 model:
 

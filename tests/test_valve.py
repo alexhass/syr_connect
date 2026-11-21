@@ -1322,7 +1322,10 @@ async def test_async_open_valve_unknown_device_raises(hass: HomeAssistant) -> No
 async def test_async_open_valve_alarm_clear_via_set_json_api_sends_set_then_open(
     hass: HomeAssistant,
 ) -> None:
-    """alarm_clear_via_set=True with JSON API: uses set_device_status for clear (not request_json_data)."""
+    """alarm_clear_via_set=True with JSON API: setALA with 255, then the open command.
+
+    The device takes the acknowledge value as the documented decimal 255.
+    """
 
     data = {
         "devices": [
@@ -1342,15 +1345,16 @@ async def test_async_open_valve_alarm_clear_via_set_json_api_sends_set_then_open
 
     await coordinator.async_open_valve("dev_z", "setAB", 1)
 
-    # Clear (setALA=FF) and open in one call; the JSON API sends the commands one after another
+    # Clear (setALA=255) and open in one call; the JSON API sends the commands one
+    # after another
     coordinator.api.set_device_status.assert_awaited_once_with(
-        "dev_z", [("setALA", "FF"), ("setAB", 1)]
+        "dev_z", [("setALA", 255), ("setAB", 1)]
     )
-    # Both values are shown optimistically: valve open, alarm cleared
+    # Both values are shown optimistically: valve open, alarm acknowledged
     assert coordinator.data is not None
     status = coordinator.data["devices"][0]["status"]
     assert status["getAB"] == "1"
-    assert status["getALA"] == "FF"
+    assert status["getALA"] == "255"
 
 
 # ---------------------------------------------------------------------------

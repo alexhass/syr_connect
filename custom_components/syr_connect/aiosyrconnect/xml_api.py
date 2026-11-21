@@ -172,7 +172,7 @@ class SyrConnectXmlAPI:
 
     @property
     def acknowledge_value(self) -> str:
-        """Value of setNOT and setWRN that acknowledges the current notification or warning.
+        """Value of setALA, setNOT and setWRN that acknowledges the current code.
 
         The cloud takes the code as hexadecimal text: "FF".
         """

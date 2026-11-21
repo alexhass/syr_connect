@@ -8,18 +8,19 @@ and will suppress the reset command (case-insensitive):
 
     "", "0", "00", "ff", "a0x0000", "255"
 
+The value that acknowledges a code comes from the client (`acknowledge_value`):
+"FF" for the XML API, 255 for the JSON API.
+
 For setALA, both the alarm field and the reset command come from the model
-signature of the library (`alarm_status_key`, `alarm_reset_command`):
+signature of the library (`alarm_status_key`, `alarm_reset_command()`):
 
     alarm_style_alm: True  → field = ALM  (getALM / setALM / clrALM)
     alarm_style_alm: False → field = ALA  (getALA / setALA / clrALA)
 
-    alarm_clear_via_set: True  → send setALA/setALM with value "FF"
+    alarm_clear_via_set: True  → send setALA/setALM with the acknowledge value
     alarm_clear_via_set: False → send clrALA/clrALM (the JSON API via /clr/)
 
-setNOT and setWRN send the value that the client takes as acknowledgment
-(`acknowledge_value`: "FF" for the XML API, 255 for the JSON API) via the standard
-set command.
+setNOT and setWRN send the acknowledge value via the standard set command.
 """
 
 from collections.abc import Awaitable, Callable
@@ -137,7 +138,9 @@ async def _async_press_ala(press: _SyrConnectButtonPress) -> None:
             translation_key="no_alarm_to_reset",
             translation_placeholders={"device": press.device_name},
         )
-    command, value = press.model.alarm_reset_command
+    command, value = press.model.alarm_reset_command(
+        press.coordinator.api.acknowledge_value
+    )
     await press.coordinator.async_set_device_value(press.device_id, command, value)
 
 

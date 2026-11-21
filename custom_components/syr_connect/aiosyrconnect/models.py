@@ -122,18 +122,29 @@ class SyrConnectModelSignature:
         """Status key of the current alarm (getALM or getALA, see `alarm_style_alm`)."""
         return "getALM" if self.alarm_style_alm else "getALA"
 
-    @property
-    def alarm_reset_command(self) -> tuple[str, str]:
-        """Command and value that reset an active alarm of the model.
+    def alarm_reset_command(
+        self, acknowledge_value: str | int
+    ) -> tuple[str, str | int]:
+        """Return the command and value that reset an active alarm of the model.
+
+        The signature decides between a set and a clr command; the value of a set
+        command is the acknowledge value of the client, which encodes it:
 
         Formats:
-        - alarm_clear_via_set: ("setALA", "FF") or ("setALM", "FF")
+        - alarm_clear_via_set, cloud: ("setALA", "FF") or ("setALM", "FF")
+        - alarm_clear_via_set, device: ("setALA", 255) or ("setALM", 255)
         - otherwise: ("clrALA", "") or ("clrALM", "")
 
         Both clients send it with `set_device_status`; the JSON API sends a clr
         command to its /clr/ endpoint.
+
+        Args:
+            acknowledge_value: `acknowledge_value` of the client that sends it
+
+        Returns:
+            The command and its value
         """
         field = self.alarm_status_key[3:]
         if self.alarm_clear_via_set:
-            return f"set{field}", "FF"
+            return f"set{field}", acknowledge_value
         return f"clr{field}", ""
