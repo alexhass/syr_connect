@@ -29,16 +29,6 @@ _SYR_CONNECT_API_SCAN_INTERVAL_MAXIMUM = 600  # seconds
 # by the setting with the number appended: getPA1-getPA8, getPN1-getPN8, ...
 _SYR_CONNECT_LEAK_PROTECTION_PROFILES = range(1, 9)
 
-# Values that mean "no alarm present" (compared after strip().upper()).
-_SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM = {
-    "",
-    "0",
-    "00",
-    "FF",
-    "A0X0000",
-    "255",
-}
-
 # Mapping for getLE sensor values (Leakage protection - Present level)
 # Maps raw API value (integer) -> display value in liters
 _SYR_CONNECT_SENSOR_LE_VALUE_MAP = {

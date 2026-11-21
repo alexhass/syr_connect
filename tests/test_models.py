@@ -1,13 +1,16 @@
 """Tests for the model detection."""
 
-from dataclasses import replace
+from dataclasses import fields, replace
 import json
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 
-from custom_components.syr_connect.aiosyrconnect import MODEL_SIGNATURES
+from custom_components.syr_connect.aiosyrconnect import (
+    MODEL_SIGNATURES,
+    UNKNOWN_MODEL_SIGNATURE,
+)
 from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
 from custom_components.syr_connect.devices import muco_triolock
 from custom_components.syr_connect.models import (
@@ -828,3 +831,12 @@ def test_detect_model_logs_the_branded_name(
     assert result.name == "safefloor"
     assert "detected model CLEAR PRO Floor Sensor" in caplog.text
     assert "SafeFloor Connect" not in caplog.text
+
+
+def test_unknown_model_is_the_unknown_signature_of_the_library() -> None:
+    """UNKNOWN_MODEL has every field of the library's unknown signature and no profile."""
+    for field in fields(UNKNOWN_MODEL_SIGNATURE):
+        assert getattr(UNKNOWN_MODEL, field.name) == getattr(
+            UNKNOWN_MODEL_SIGNATURE, field.name
+        ), field.name
+    assert UNKNOWN_MODEL.device_profile is None

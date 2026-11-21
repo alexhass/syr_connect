@@ -3,7 +3,8 @@
 A signature tells how a model is detected (device kind of the cloud, status checks)
 and how it is addressed (local path of the JSON API, alarm commands).
 `detect_model_signature()` selects the signature of a device from the cloud device
-kind and its status. The caller may pass signatures of its own that extend
+kind and its status, or None for an unknown model; `UNKNOWN_MODEL_SIGNATURE` names
+such a model. The caller may pass signatures of its own that extend
 `SyrConnectModelSignature`, in the order of `MODEL_SIGNATURES`.
 """
 
@@ -13,6 +14,17 @@ import logging
 from .models import SyrConnectModelSignature
 
 _LOGGER = logging.getLogger(__name__)
+
+# Signature of a model that no signature matches: no device kind, no local path of the
+# JSON API, generic names. It is not part of `MODEL_SIGNATURES`, so it is never detected.
+UNKNOWN_MODEL_SIGNATURE = SyrConnectModelSignature(
+    base_path=None,
+    display_name="Unknown model",
+    dk=None,
+    dkv=None,
+    manufacturer="Unknown",
+    name="unknown",
+)
 
 # Signatures of the known models, derived from fixtures and the dkv table in
 # docs/syrconnect-protocol.md. Each signature may include explicit checks (exact

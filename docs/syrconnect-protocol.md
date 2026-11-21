@@ -543,7 +543,7 @@ The rule follows the official SYR API documentation (see [Further information](#
 - A set command that resets a code (`setALA`, `setALM`, `setNOT`, `setWRN`) takes a decimal value in the local JSON API: `255`, e.g. `/set/ala/255`, `/set/not/255`, `/set/wrn/255`. The cloud (XML API) takes the same code as hexadecimal text: `FF`.
 - A clear command (`clrALA`, `clrALM`) has no value: the local JSON API calls `/clr/ala` or `/clr/alm`, the cloud gets `clrALA` or `clrALM` with an empty value.
 - `alarm_clear_via_set` (alarmClearViaSet) of the device kind (see [deviceKinds (dk)](#devicekinds-dk)) only chooses the command that resets an alarm: `setALA`/`setALM` with the value above, otherwise `clrALA`/`clrALM`. It does not change the value. `alarm_style_alm` (alarmStyleAlm) chooses ALM instead of ALA.
-- After a reset the device reports `FF` (no code). Until the next poll, the optimistic status of the integration keeps the value it sent, e.g. `255`. The integration treats `""`, `0`, `00`, `FF`, `A0X0000` and `255` as no code (`_SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM`), so the sensors show no code at once.
+- After a reset the device reports `FF` (no code). Until the next poll, the optimistic status of the integration keeps the value it sent, e.g. `255`. The library treats `""`, `0`, `00`, `FF`, `A0X0000` and `255` as no code (`NO_CODE_VALUES`, `is_code_active()` in `aiosyrconnect/codes.py`), so the sensors show no code at once.
 
 #### Alarm codes (getALA) — common table
 

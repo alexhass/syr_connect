@@ -35,11 +35,11 @@ from .aiosyrconnect import (
     SyrConnectStatistic,
     SyrConnectStatus,
     SyrConnectXmlAPI,
+    is_code_active,
     is_device_offline,
     is_network_error,
 )
 from .const import (
-    _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM,
     API_TYPE_JSON,
     API_TYPE_XML,
     CONF_API_TYPE,
@@ -832,10 +832,7 @@ class SyrConnectDataUpdateCoordinator(
         model_info = get_device_model(device)
         get_key = model_info.alarm_status_key
         raw = status.get(get_key)
-        if (
-            raw is not None
-            and str(raw).strip().upper() not in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM
-        ):
+        if is_code_active(raw):
             clear_prefix = model_info.alarm_reset_command(self.api.clear_value)
             _LOGGER.info(
                 "Valve open: active alarm %s=%r on device %s; prepending %s",

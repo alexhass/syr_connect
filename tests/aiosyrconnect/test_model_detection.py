@@ -9,6 +9,7 @@ import pytest
 
 from custom_components.syr_connect.aiosyrconnect.model_detection import (
     MODEL_SIGNATURES,
+    UNKNOWN_MODEL_SIGNATURE,
     detect_model_signature,
 )
 from custom_components.syr_connect.aiosyrconnect.models import SyrConnectModelSignature
@@ -297,3 +298,12 @@ def test_safefloor_is_branded_per_cloud_service() -> None:
         "CLEAR PRO Floor Sensor",
     )
     assert safefloor.branded("de.consoft.syr.connect") == ("SYR", "SafeFloor Connect")
+
+
+def test_unknown_model_signature_is_never_detected() -> None:
+    """The unknown signature names an unknown model and is not one of the signatures."""
+    assert UNKNOWN_MODEL_SIGNATURE.name == "unknown"
+    assert UNKNOWN_MODEL_SIGNATURE.base_path is None
+    assert UNKNOWN_MODEL_SIGNATURE.branded(None) == ("Unknown", "Unknown model")
+    assert UNKNOWN_MODEL_SIGNATURE not in MODEL_SIGNATURES
+    assert all(sig.name != "unknown" for sig in MODEL_SIGNATURES)
