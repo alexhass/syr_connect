@@ -5,7 +5,7 @@ import logging
 from typing import Any
 
 from homeassistant.components.recorder import get_instance
-from homeassistant.const import CONF_HOST, CONF_USERNAME
+from homeassistant.const import CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import (
     device_registry as dr,
@@ -68,8 +68,7 @@ def build_entry_unique_id(
 
     A local entry is identified by the serial number of its device, so a new IP
     address keeps it and the same device cannot be set up twice (by IP address and
-    by hostname). Without a serial number it is the host: the unique_id of the local
-    entries set up before the serial number was used, until their next setup.
+    by hostname).
 
     A cloud account belongs to its cloud service (CONF_SERVICE, the
     cf_bundle_identifier of the app): the login only works with the app name of the
@@ -80,15 +79,15 @@ def build_entry_unique_id(
 
     Args:
         api_type: API type of the entry (API_TYPE_XML or API_TYPE_JSON).
-        data: Entry data with the host (local) or the service and username (cloud).
-        serial: Serial number of the local device, None for the host-based unique_id.
+        data: Entry data with the service and username (cloud).
+        serial: Serial number of the device (local).
 
     Returns:
-        "json_<serial>", "json_<host>" or "xml_<cf_bundle_identifier>_<username>"
-        with the username in lowercase, e.g. "xml_de.consoft.syr.connect_me@example.com".
+        "json_<serial>" or "xml_<cf_bundle_identifier>_<username>" with the username
+        in lowercase, e.g. "xml_de.consoft.syr.connect_me@example.com".
     """
     if api_type == API_TYPE_JSON:
-        return f"{API_TYPE_JSON}_{data[CONF_HOST] if serial is None else serial}"
+        return f"{API_TYPE_JSON}_{serial}"
     return f"{API_TYPE_XML}_{data[CONF_SERVICE]}_{str(data[CONF_USERNAME]).strip().lower()}"
 
 

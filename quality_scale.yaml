@@ -90,7 +90,7 @@ rules:
   
   unique-config-entry:
     status: done
-    comment: _abort_if_unique_id_configured() prevents duplicates; unique_id "json_<serial number>" for local entries (read from the device at setup; older entries get it at their next setup) and "xml_<cf_bundle_identifier>_<username in lowercase>" for cloud entries, as the cloud has no account ID and ignores the letter case of the username
+    comment: _abort_if_unique_id_configured() prevents duplicates; unique_id "json_<serial number>" for local entries (read from the device at setup; older entries get it from the migration to version 12) and "xml_<cf_bundle_identifier>_<username in lowercase>" for cloud entries, as the cloud has no account ID and ignores the letter case of the username
 
   # SILVER TIER
   action-exceptions:

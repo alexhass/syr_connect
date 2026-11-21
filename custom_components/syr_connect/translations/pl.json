@@ -1995,6 +1995,12 @@
     "migration_model_not_detected": {
       "message": "Nie można wykryć modelu urządzenia {device}. Wpis należy usunąć i ponownie skonfigurować urządzenie"
     },
+    "migration_serial_cannot_connect": {
+      "message": "Urządzenie {device} jest nieosiągalne, nie można odczytać jego numeru seryjnego"
+    },
+    "migration_serial_not_read": {
+      "message": "Nie można odczytać numeru seryjnego urządzenia {device}. Wpis należy usunąć i ponownie skonfigurować urządzenie"
+    },
     "no_alarm_to_reset": {
       "message": "Urządzenie {device} nie ma aktywnego alarmu do zresetowania"
     },

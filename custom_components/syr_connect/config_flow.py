@@ -52,6 +52,10 @@ from .models import MODEL_SIGNATURES
 
 _LOGGER = logging.getLogger(__name__)
 
+# Version whose migration identifies local entries by the serial number of their
+# device; an older local entry is still identified by its host
+_SYR_CONNECT_CONFIG_FLOW_LOCAL_SERIAL_VERSION = 12
+
 
 class CannotConnectError(HomeAssistantError):
     """Error to indicate we cannot connect."""
@@ -376,7 +380,7 @@ class SyrConnectOptionsFlow(config_entries.OptionsFlowWithReload):
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for SYR Connect."""
 
-    VERSION = 11
+    VERSION = 12
 
     @staticmethod
     @callback
@@ -439,8 +443,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         devices are not the devices of this entry; the flow aborts with "wrong_account"
         and the account is added as a new entry. Only the letter case of the username
         and whitespace around it (of older entries) may change. A local entry stays with its device: the host and the model may
-        change, another serial number aborts with "wrong_device". An entry with the
-        host-based unique_id of older versions gets the serial number of the device.
+        change, another serial number aborts with "wrong_device". A local entry of an
+        older version, whose migration could not reach its device yet, gets the serial
+        number of the device.
         The flow aborts with "already_configured" if another entry already uses the
         new unique_id. The title is built again from the new data, as at setup.
 
@@ -460,9 +465,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         ):
             return self.async_abort(reason="wrong_account")
         new_unique_id = build_entry_unique_id(api_type, new_data, serial)
-        if api_type == API_TYPE_JSON and entry.unique_id not in (
-            new_unique_id,
-            build_entry_unique_id(API_TYPE_JSON, entry.data),
+        if (
+            api_type == API_TYPE_JSON
+            and entry.version >= _SYR_CONNECT_CONFIG_FLOW_LOCAL_SERIAL_VERSION
+            and entry.unique_id != new_unique_id
         ):
             return self.async_abort(reason="wrong_device")
         if self._unique_id_used_by_other_entry(entry, new_unique_id):
@@ -791,11 +797,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 "Processing Local/JSON API config flow for host: %s, model: %s",
                 user_input[CONF_HOST],
                 user_input[CONF_MODEL],
-            )
-            # An entry of an older version that was not set up since still has the
-            # host-based unique_id, so the serial number would not find it
-            self._async_abort_entries_match(
-                {CONF_API_TYPE: API_TYPE_JSON, CONF_HOST: user_input[CONF_HOST]}
             )
             try:
                 info = await validate_input_json(self.hass, user_input)

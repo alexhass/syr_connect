@@ -1995,6 +1995,12 @@
     "migration_model_not_detected": {
       "message": "Het model van het apparaat {device} kan niet worden gedetecteerd. De vermelding moet worden verwijderd en het apparaat opnieuw worden ingesteld"
     },
+    "migration_serial_cannot_connect": {
+      "message": "Het apparaat {device} is niet bereikbaar om het serienummer te lezen"
+    },
+    "migration_serial_not_read": {
+      "message": "Het serienummer van het apparaat {device} kan niet worden gelezen. De vermelding moet worden verwijderd en het apparaat opnieuw worden ingesteld"
+    },
     "no_alarm_to_reset": {
       "message": "Het apparaat {device} heeft geen actief alarm dat kan worden gereset"
     },

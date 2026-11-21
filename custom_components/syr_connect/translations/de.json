@@ -1995,6 +1995,12 @@
     "migration_model_not_detected": {
       "message": "Das Modell des Geräts {device} kann nicht erkannt werden. Der Eintrag muss gelöscht und das Gerät neu eingerichtet werden"
     },
+    "migration_serial_cannot_connect": {
+      "message": "Das Gerät {device} ist nicht erreichbar, um seine Seriennummer zu lesen"
+    },
+    "migration_serial_not_read": {
+      "message": "Die Seriennummer des Geräts {device} kann nicht gelesen werden. Der Eintrag muss gelöscht und das Gerät neu eingerichtet werden"
+    },
     "no_alarm_to_reset": {
       "message": "Das Gerät {device} hat keinen aktiven Alarm, der zurückgesetzt werden kann"
     },

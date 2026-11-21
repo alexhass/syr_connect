@@ -1995,6 +1995,12 @@
     "migration_model_not_detected": {
       "message": "Le modèle de l'appareil {device} ne peut pas être détecté. L'entrée doit être supprimée et l'appareil configuré à nouveau"
     },
+    "migration_serial_cannot_connect": {
+      "message": "L'appareil {device} est injoignable, son numéro de série ne peut pas être lu"
+    },
+    "migration_serial_not_read": {
+      "message": "Le numéro de série de l'appareil {device} ne peut pas être lu. L'entrée doit être supprimée et l'appareil configuré à nouveau"
+    },
     "no_alarm_to_reset": {
       "message": "L'appareil {device} n'a aucune alarme active à réinitialiser"
     },

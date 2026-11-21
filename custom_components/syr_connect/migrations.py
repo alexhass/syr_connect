@@ -26,7 +26,6 @@ from .const import (
     CONF_SERVICE,
     DOMAIN,
 )
-from .data import SyrConnectCoordinatorData
 from .helpers.device import get_local_serial
 from .helpers.integration import build_user_agent, get_integration_version
 from .helpers.registry import build_entry_unique_id
@@ -285,52 +284,6 @@ async def _async_detect_local_model(
     return model.name
 
 
-def local_unique_id_by_serial(
-    hass: HomeAssistant,
-    entry: ConfigEntry,
-    coordinator_data: SyrConnectCoordinatorData | None,
-) -> dict | None:
-    """Compute update kwargs that give a local entry the serial number as unique_id.
-
-    Local entries were identified by their host ("json_<host>"), so a new IP address
-    changed the unique_id and the same device could be set up twice (by IP address
-    and by hostname). New entries get the serial number of their device at the
-    setup. An older entry gets it from the first refresh of its next setup, without
-    asking the device once more, so it cannot fail like a version migration while
-    the device is not reachable. If another entry already uses the unique_id (the
-    same device set up twice), the entry keeps its host-based unique_id.
-
-    Args:
-        hass: Home Assistant instance
-        entry: The config entry being set up
-        coordinator_data: Data of the first refresh of the entry
-
-    Returns:
-        The update kwargs, or None if the unique_id stays
-    """
-    if entry.data.get(CONF_API_TYPE) != API_TYPE_JSON or (
-        entry.unique_id != build_entry_unique_id(API_TYPE_JSON, entry.data)
-    ):
-        return None
-    devices = coordinator_data["devices"] if coordinator_data else []
-    serial = get_local_serial(devices[0].get("status", {})) if devices else None
-    if serial is None:
-        return None
-    unique_id = build_entry_unique_id(API_TYPE_JSON, entry.data, serial)
-    if any(
-        other.entry_id != entry.entry_id and other.unique_id == unique_id
-        for other in hass.config_entries.async_entries(DOMAIN)
-    ):
-        _LOGGER.warning(
-            "The device %s of %s is also set up by another entry; one of the two "
-            "entries can be deleted",
-            serial,
-            entry.title,
-        )
-        return None
-    return {"unique_id": unique_id}
-
-
 def v10_to_v11_lowercase_cloud_unique_id(
     hass: HomeAssistant, entry: ConfigEntry
 ) -> dict | None:
@@ -358,3 +311,61 @@ def v10_to_v11_lowercase_cloud_unique_id(
         )
         return None
     return {"unique_id": unique_id, "version": 11}
+
+
+async def v11_to_v12_local_unique_id_by_serial(
+    hass: HomeAssistant, entry: ConfigEntry
+) -> dict | None:
+    """Compute update kwargs for migrating v11 -> v12.
+
+    Local entries were identified by their host ("json_<host>"), so a new IP address
+    changed the unique_id and the same device could be set up twice (by IP address
+    and by hostname). They are now identified by the serial number of their device
+    (see helpers.build_entry_unique_id), which is read from the device. If another
+    entry already has the device (the same device set up twice), the entry keeps its
+    unique_id.
+
+    Raises:
+        SyrConnectConnectionError: If the device cannot be reached
+        SyrConnectError: If the serial number of the device cannot be read
+    """
+    if entry.data.get(CONF_API_TYPE) != API_TYPE_JSON:
+        return None
+    serial = await _async_read_local_serial(hass, entry)
+    unique_id = build_entry_unique_id(API_TYPE_JSON, entry.data, serial)
+    if unique_id == entry.unique_id:
+        return None
+    if any(
+        other.entry_id != entry.entry_id and other.unique_id == unique_id
+        for other in hass.config_entries.async_entries(DOMAIN)
+    ):
+        _LOGGER.warning(
+            "The device %s of %s is also set up by another entry; one of the two "
+            "entries can be deleted",
+            serial,
+            entry.title,
+        )
+        return None
+    return {"unique_id": unique_id, "version": 12}
+
+
+async def _async_read_local_serial(hass: HomeAssistant, entry: ConfigEntry) -> str:
+    """Read the serial number of the device of a local entry.
+
+    Raises:
+        SyrConnectConnectionError: If the device cannot be reached
+        SyrConnectInvalidResponseError: If the device reports no serial number
+    """
+    api = SyrConnectJsonAPI(
+        async_get_clientsession(hass),
+        host=entry.data[CONF_HOST],
+        base_path=detect_model({}, model=entry.data[CONF_MODEL]).base_path,
+        login_required=entry.data.get(CONF_LOGIN_REQUIRED),
+        user_agent=build_user_agent(get_integration_version(hass)),
+    )
+    devices = await api.get_devices("local")
+    status = await api.get_device_status(devices[0]["id"])
+    serial = get_local_serial(status) if status else None
+    if serial is None:
+        raise SyrConnectInvalidResponseError("The device reports no serial number")
+    return serial

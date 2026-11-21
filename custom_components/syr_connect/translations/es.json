@@ -1995,6 +1995,12 @@
     "migration_model_not_detected": {
       "message": "No se puede detectar el modelo del dispositivo {device}. Se debe eliminar la entrada y volver a configurar el dispositivo"
     },
+    "migration_serial_cannot_connect": {
+      "message": "No se puede acceder al dispositivo {device} para leer su número de serie"
+    },
+    "migration_serial_not_read": {
+      "message": "No se puede leer el número de serie del dispositivo {device}. Se debe eliminar la entrada y volver a configurar el dispositivo"
+    },
     "no_alarm_to_reset": {
       "message": "El dispositivo {device} no tiene ninguna alarma activa que restablecer"
     },

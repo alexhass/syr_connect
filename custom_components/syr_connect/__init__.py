@@ -37,7 +37,6 @@ from .helpers.registry import (
     delete_issue,
 )
 from .migrations import (
-    local_unique_id_by_serial,
     v1_to_v2_update_kwargs,
     v2_to_v3_fix_flo_unit,
     v3_to_v4_add_service,
@@ -48,6 +47,7 @@ from .migrations import (
     v8_to_v9_detect_local_model,
     v9_to_v10_entry_unique_id_by_service,
     v10_to_v11_lowercase_cloud_unique_id,
+    v11_to_v12_local_unique_id_by_serial,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -111,6 +111,45 @@ async def _async_v8_to_v9_detect_local_model(
         raise ConfigEntryError(
             translation_domain=DOMAIN,
             translation_key="migration_model_not_detected",
+            translation_placeholders={"device": entry.title},
+        ) from err
+
+
+async def _async_v11_to_v12_local_unique_id_by_serial(
+    hass: HomeAssistant, entry: ConfigEntry
+) -> dict | None:
+    """Identify a local entry by the serial number of its device (v11 -> v12).
+
+    Raises:
+        ConfigEntryNotReady: If the device cannot be reached to read its serial
+            number; Home Assistant retries the migration later.
+        ConfigEntryError: If the serial number of the device cannot be read.
+    """
+    try:
+        return await v11_to_v12_local_unique_id_by_serial(hass, entry)
+    except SyrConnectConnectionError as err:
+        # Leaves the entry at version 11; Home Assistant retries the migration
+        _LOGGER.error(
+            "Cannot migrate %s: the device is not reachable to read its serial "
+            "number, the migration is retried: %s",
+            entry.title,
+            err,
+        )
+        raise ConfigEntryNotReady(
+            translation_domain=DOMAIN,
+            translation_key="migration_serial_cannot_connect",
+            translation_placeholders={"device": entry.title},
+        ) from err
+    except SyrConnectError as err:
+        _LOGGER.error(
+            "Cannot migrate %s: the serial number of the device cannot be read, "
+            "remove the entry and set up the device again: %s",
+            entry.title,
+            err,
+        )
+        raise ConfigEntryError(
+            translation_domain=DOMAIN,
+            translation_key="migration_serial_not_read",
             translation_placeholders={"device": entry.title},
         ) from err
 
@@ -195,6 +234,12 @@ _SYR_CONNECT_MIGRATION_STEPS: tuple[_SyrConnectMigrationStep, ...] = (
             hass, entry
         ),
     ),
+    _SyrConnectMigrationStep(
+        from_version=11,
+        description="identify local entries by the serial number of their device "
+        "instead of their host",
+        update_kwargs=_async_v11_to_v12_local_unique_id_by_serial,
+    ),
 )
 
 
@@ -206,9 +251,10 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     Raises:
         ConfigEntryNotReady: If the local device cannot be reached to detect its
-            model (v8 -> v9); Home Assistant retries the migration later.
+            model (v8 -> v9) or to read its serial number (v11 -> v12); Home
+            Assistant retries the migration later.
         ConfigEntryError: If the model of the local device cannot be detected
-            (v8 -> v9).
+            (v8 -> v9) or its serial number cannot be read (v11 -> v12).
     """
     # If the config entry version is from the future, we must not attempt
     # to migrate it — Home Assistant expects us to return False so the
@@ -302,9 +348,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: SyrConnectConfigEntry) -
     await coordinator.async_config_entry_first_refresh()
 
     entry.runtime_data = coordinator
-
-    if update_kwargs := local_unique_id_by_serial(hass, entry, coordinator.data):
-        hass.config_entries.async_update_entry(entry, **update_kwargs)
 
     @callback
     def _async_remove_deleted_devices() -> None:

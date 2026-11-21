@@ -119,38 +119,6 @@ async def test_async_setup_entry_removes_stale_devices_only_with_complete_list(
             )
 
 
-async def test_async_setup_entry_sets_serial_unique_id_of_local_entry(
-    hass: HomeAssistant,
-) -> None:
-    """A local entry of an older version gets the serial number as unique_id at setup."""
-    config_entry = MockConfigEntry(
-        domain=DOMAIN,
-        data={CONF_API_TYPE: API_TYPE_JSON, CONF_HOST: "192.0.2.5"},
-        unique_id="json_192.0.2.5",
-    )
-    config_entry.add_to_hass(hass)
-
-    with (
-        patch(
-            "custom_components.syr_connect.SyrConnectDataUpdateCoordinator"
-        ) as mock_coordinator_class,
-        patch.object(
-            hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock
-        ),
-    ):
-        mock_coordinator = MagicMock()
-        mock_coordinator.async_config_entry_first_refresh = AsyncMock()
-        mock_coordinator.device_list_complete = False
-        mock_coordinator.data = {
-            "devices": [{"id": "SN1", "status": {"getSRN": "SN1"}}]
-        }
-        mock_coordinator_class.return_value = mock_coordinator
-
-        assert await async_setup_entry(hass, config_entry) is True
-
-    assert config_entry.unique_id == "json_SN1"
-
-
 async def test_async_migrate_entry_v1_missing_username(hass: HomeAssistant) -> None:
     """Test v1->v2 migration bumps version even when username is missing."""
 
@@ -491,8 +459,12 @@ async def test_async_migrate_entry_v7_to_v8(hass: HomeAssistant) -> None:
     local_entry.add_to_hass(hass)
     cloud_entry.add_to_hass(hass)
 
-    assert await async_migrate_entry(hass, local_entry) is True
-    assert await async_migrate_entry(hass, cloud_entry) is True
+    with patch(
+        "custom_components.syr_connect.v11_to_v12_local_unique_id_by_serial",
+        return_value=None,
+    ):
+        assert await async_migrate_entry(hass, local_entry) is True
+        assert await async_migrate_entry(hass, cloud_entry) is True
 
     assert local_entry.version == ConfigFlow.VERSION
     assert local_entry.data[CONF_MODEL] == "optimat2duo"
@@ -522,9 +494,15 @@ async def test_async_migrate_entry_v8_to_v9(hass: HomeAssistant) -> None:
         "version": 9,
     }
 
-    with patch(
-        "custom_components.syr_connect.v8_to_v9_detect_local_model",
-        return_value=update,
+    with (
+        patch(
+            "custom_components.syr_connect.v8_to_v9_detect_local_model",
+            return_value=update,
+        ),
+        patch(
+            "custom_components.syr_connect.v11_to_v12_local_unique_id_by_serial",
+            return_value=None,
+        ),
     ):
         assert await async_migrate_entry(hass, entry) is True
 
@@ -559,7 +537,11 @@ async def test_async_migrate_entry_v9_to_v10(
     entry = MockConfigEntry(version=9, domain=DOMAIN, data=data, unique_id=unique_id)
     entry.add_to_hass(hass)
 
-    assert await async_migrate_entry(hass, entry) is True
+    with patch(
+        "custom_components.syr_connect.v11_to_v12_local_unique_id_by_serial",
+        return_value=None,
+    ):
+        assert await async_migrate_entry(hass, entry) is True
 
     assert entry.version == ConfigFlow.VERSION
     assert entry.unique_id == expected
@@ -654,6 +636,83 @@ async def test_failed_v8_to_v9_migration_state(
 
     assert entry.state is state
     assert entry.version == 8
+
+
+def _v11_local_entry(hass: HomeAssistant) -> MockConfigEntry:
+    """Return a local entry of version 11 with the host as unique_id, added to hass."""
+    entry = MockConfigEntry(
+        version=11,
+        domain=DOMAIN,
+        title="Local",
+        data={
+            CONF_API_TYPE: API_TYPE_JSON,
+            CONF_HOST: "10.0.0.2",
+            CONF_MODEL: "safetechv4",
+        },
+        unique_id="json_10.0.0.2",
+    )
+    entry.add_to_hass(hass)
+    return entry
+
+
+async def test_async_migrate_entry_v11_to_v12(hass: HomeAssistant) -> None:
+    """Test v11->v12 migration gives a local entry the serial number of its device."""
+    entry = _v11_local_entry(hass)
+
+    with patch(
+        "custom_components.syr_connect.v11_to_v12_local_unique_id_by_serial",
+        return_value={"unique_id": "json_SN1", "version": 12},
+    ):
+        assert await async_migrate_entry(hass, entry) is True
+
+    assert entry.version == ConfigFlow.VERSION
+    assert entry.unique_id == "json_SN1"
+
+
+@pytest.mark.parametrize(
+    ("error", "expected", "translation_key", "message"),
+    [
+        (
+            SyrConnectConnectionError("timeout"),
+            ConfigEntryNotReady,
+            "migration_serial_cannot_connect",
+            "the migration is retried",
+        ),
+        (
+            SyrConnectInvalidResponseError("no serial number"),
+            ConfigEntryError,
+            "migration_serial_not_read",
+            "set up the device again",
+        ),
+    ],
+)
+async def test_async_migrate_entry_v11_to_v12_fails(
+    hass: HomeAssistant,
+    caplog: pytest.LogCaptureFixture,
+    error: Exception,
+    expected: type[Exception],
+    translation_key: str,
+    message: str,
+) -> None:
+    """Test a failed v11->v12 migration keeps version 11 and raises a translated error."""
+    entry = _v11_local_entry(hass)
+
+    with (
+        patch(
+            "custom_components.syr_connect.v11_to_v12_local_unique_id_by_serial",
+            side_effect=error,
+        ),
+        pytest.raises(expected) as exc_info,
+    ):
+        await async_migrate_entry(hass, entry)
+
+    assert cast(HomeAssistantError, exc_info.value).translation_key == translation_key
+    assert cast(HomeAssistantError, exc_info.value).translation_placeholders == {
+        "device": "Local"
+    }
+    assert entry.version == 11
+    assert entry.unique_id == "json_10.0.0.2"
+    assert message in caplog.text
 
 
 async def test_async_setup_entry_does_not_migrate(hass: HomeAssistant) -> None:

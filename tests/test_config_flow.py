@@ -582,23 +582,13 @@ async def test_form_api_json_cannot_connect(hass: HomeAssistant) -> None:
     assert result2["errors"] == {"base": "cannot_connect_local"}
 
 
-@pytest.mark.parametrize(
-    ("unique_id", "host"),
-    [
-        ("json_12345", "syr.local"),
-        ("json_192.168.1.100", "192.168.1.100"),
-    ],
-    ids=["same_serial", "same_host_of_older_version"],
-)
-async def test_form_api_json_already_configured(
-    hass: HomeAssistant, unique_id: str, host: str
-) -> None:
-    """The device is set up once: by its serial number, or by the host of an older entry."""
+async def test_form_api_json_already_configured(hass: HomeAssistant) -> None:
+    """The device is set up once: its serial number is found at another host as well."""
     entry = MockConfigEntry(
         domain=DOMAIN,
-        unique_id=unique_id,
+        unique_id="json_12345",
         data={
-            CONF_HOST: host,
+            CONF_HOST: "syr.local",
             CONF_MODEL: "neosoft5000",
             CONF_API_TYPE: API_TYPE_JSON,
         },
@@ -975,16 +965,24 @@ async def test_reauth_reconfigure_abort_if_username_changes(
     "source", [config_entries.SOURCE_REAUTH, config_entries.SOURCE_RECONFIGURE]
 )
 @pytest.mark.parametrize(
-    ("unique_id", "serial", "reason", "expected_unique_id"),
+    ("version", "unique_id", "serial", "reason", "expected_unique_id"),
     [
         # The same device at a new address: the unique_id stays
-        ("json_SN1", "SN1", f"{config_entries.SOURCE_REAUTH}_successful", "json_SN1"),
-        # Another device answers at the address
-        ("json_SN1", "SN3", "wrong_device", "json_SN1"),
-        # An entry of an older version reaches the device of the other entry
-        ("json_192.168.1.20", "SN2", "already_configured", "json_192.168.1.20"),
-        # An entry of an older version gets the serial number of its device
         (
+            ConfigFlow.VERSION,
+            "json_SN1",
+            "SN1",
+            f"{config_entries.SOURCE_REAUTH}_successful",
+            "json_SN1",
+        ),
+        # Another device answers at the address
+        (ConfigFlow.VERSION, "json_SN1", "SN3", "wrong_device", "json_SN1"),
+        # An entry of an older version reaches the device of the other entry
+        (11, "json_192.168.1.20", "SN2", "already_configured", "json_192.168.1.20"),
+        # An entry of an older version, whose migration could not reach the device,
+        # gets the serial number of its device
+        (
+            11,
             "json_192.168.1.20",
             "SN1",
             f"{config_entries.SOURCE_REAUTH}_successful",
@@ -996,6 +994,7 @@ async def test_reauth_reconfigure_abort_if_username_changes(
 async def test_reauth_reconfigure_local_device(
     hass: HomeAssistant,
     source: str,
+    version: int,
     unique_id: str,
     serial: str,
     reason: str,
@@ -1004,7 +1003,7 @@ async def test_reauth_reconfigure_local_device(
     """A local entry stays with its device: the host may change, the device may not."""
     entry = MockConfigEntry(
         domain=DOMAIN,
-        version=ConfigFlow.VERSION,
+        version=version,
         unique_id=unique_id,
         data={
             CONF_API_TYPE: API_TYPE_JSON,
@@ -1042,6 +1041,11 @@ async def test_reauth_reconfigure_local_device(
             new_callable=AsyncMock,
             return_value=True,
         ),
+        # The reload migrates an entry of an older version
+        patch(
+            "custom_components.syr_connect.v11_to_v12_local_unique_id_by_serial",
+            return_value=None,
+        ),
     ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
@@ -1067,7 +1071,6 @@ async def test_reauth_reconfigure_local_device(
             },
             "xml_de.consoft.gc.conel.connect_user@example.com",
         ),
-        (API_TYPE_JSON, {CONF_HOST: "192.168.1.20"}, "json_192.168.1.20"),
     ],
 )
 def test_entry_unique_id(api_type: str, data: dict, expected: str) -> None:
