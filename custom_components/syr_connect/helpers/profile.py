@@ -18,7 +18,7 @@ def get_model_supported_keys(
     """Return the supported-keys allowlist for a platform, scoped to the detected model.
 
     If the detected model has a `device_profile` (from a `devices/<name>.py` file,
-    see `models.MODEL_SIGNATURES`), its allowlist for the platform is used as a
+    see `models.MODELS`), its allowlist for the platform is used as a
     POSITIVE, device-specific allowlist instead of `global_supported_keys`.
     Rebranded variants of the same hardware share one profile.
     This is deliberately an allowlist, not an exclusion list — the global

@@ -13,7 +13,7 @@ import pytest
 from custom_components.syr_connect.aiosyrconnect import SyrConnectConnectionError
 from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
 from custom_components.syr_connect.const import DOMAIN
-from custom_components.syr_connect.models import MODEL_SIGNATURES
+from custom_components.syr_connect.models import MODELS
 from custom_components.syr_connect.switch import (
     SyrConnectBooleanSwitch,
     async_setup_entry,
@@ -26,7 +26,7 @@ from homeassistant.helpers.entity import EntityCategory
 
 # SafeTech: leak protection profiles, rotation, buzzer, valve
 _SYR_CONNECT_TEST_SAFETECH_MODEL = next(
-    model for model in MODEL_SIGNATURES if model.name == "safetech"
+    model for model in MODELS if model.name == "safetech"
 )
 
 

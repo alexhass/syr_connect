@@ -1,4 +1,4 @@
-"""Data models of the SYR Connect APIs: devices, status values, services and statistics."""
+"""Data models of the SYR Connect APIs: devices, status values, services, statistics and models."""
 
 from dataclasses import dataclass
 from typing import Any, NotRequired, TypedDict
@@ -71,3 +71,80 @@ class SyrConnectStatistic:
     t: int
     # Unit of the measurement; the cloud answers with an empty <col /> without it
     unit: str
+
+
+@dataclass(frozen=True, kw_only=True)
+class SyrConnectModelSignature:
+    """Signature of a device model: how it is detected and how it is addressed.
+
+    `dk`, `dkv`, `sbt` and `dfm` identify the model in `detect_model_signature()`; the
+    `cna_equals`, `srn_*` and `ver_*` fields are its status checks. `base_path`,
+    `alarm_style_alm` and `alarm_clear_via_set` describe how the model is addressed.
+    """
+
+    # If True, the alarm/error state is cleared by sending a setter command (setALM)
+    # rather than by a clrALM command
+    alarm_clear_via_set: bool = False
+    # If True, alarm commands use ALM variants (getALM/setALM/clrALM) instead of ALA
+    # variants (getALA/setALA/clrALA)
+    alarm_style_alm: bool = False
+    # JSON API local access base path for the model, or None if not applicable
+    base_path: str | None
+    # Exact match against the `getCNA` value
+    cna_equals: str | None = None
+    # MultiController role (getDFM), the subtype of dk=1500-1506. Like `sbt`, None
+    # matches every device.
+    dfm: int | None = None
+    # Cloud API deviceKind: the integer `dk` attribute in GetProjectDeviceCollections XML
+    dk: int | None
+    # Cloud API deviceKindVersion: the integer `dkv` attribute in
+    # GetProjectDeviceCollections XML; for Azure-connected devices this also equals the
+    # numeric SRN prefix of newer production units
+    dkv: int | None
+    # Stable machine-readable model identifier (e.g. "lexplus10s")
+    name: str
+    # Cloud API device subtype: the integer `sbt` attribute in GetProjectDeviceCollections
+    # XML; only set when the subtype uniquely identifies this model within its dk/dkv family
+    sbt: int | None = None
+    # String that must immediately follow `srn_prefix`: "AAA" is the factory batch code
+    # used by all current SYR/Hansgrohe/Sanibel devices; override it if a future
+    # production run changes the pattern
+    srn_infix: str = "AAA"
+    # Prefix that `getSRN` must start with
+    srn_prefix: str | None = None
+    # String that `getVER` must contain
+    ver_contains: str | None = None
+    # Prefix that `getVER` must start with
+    ver_prefix: str | None = None
+
+    @property
+    def alarm_status_key(self) -> str:
+        """Status key of the current alarm (getALM or getALA, see `alarm_style_alm`)."""
+        return "getALM" if self.alarm_style_alm else "getALA"
+
+    def alarm_reset_command(
+        self, acknowledge_value: str | int
+    ) -> tuple[str, str | int]:
+        """Return the command and value that reset an active alarm of the model.
+
+        The signature decides between a set and a clr command; the value of a set
+        command is the acknowledge value of the client, which encodes it:
+
+        Formats:
+        - alarm_clear_via_set, cloud: ("setALA", "FF") or ("setALM", "FF")
+        - alarm_clear_via_set, device: ("setALA", 255) or ("setALM", 255)
+        - otherwise: ("clrALA", "") or ("clrALM", "")
+
+        Both clients send it with `set_device_status`; the JSON API sends a clr
+        command to its /clr/ endpoint.
+
+        Args:
+            acknowledge_value: `acknowledge_value` of the client that sends it
+
+        Returns:
+            The command and its value
+        """
+        field = self.alarm_status_key[3:]
+        if self.alarm_clear_via_set:
+            return f"set{field}", acknowledge_value
+        return f"clr{field}", ""

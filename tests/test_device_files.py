@@ -17,7 +17,7 @@ from custom_components.syr_connect import (
     update,
     valve,
 )
-from custom_components.syr_connect.models import MODEL_SIGNATURES
+from custom_components.syr_connect.models import MODELS
 
 # The profiles of all device files, keyed by module name.
 _DEVICE_PROFILES = {
@@ -62,7 +62,7 @@ def test_every_device_profile_is_used_by_a_signature() -> None:
     """Every devices/<name>.py profile is referenced by at least one model signature."""
     used = {
         id(signature.device_profile)
-        for signature in MODEL_SIGNATURES
+        for signature in MODELS
         if signature.device_profile is not None
     }
     assert used == {id(profile) for profile in _DEVICE_PROFILES.values()}

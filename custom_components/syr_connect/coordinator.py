@@ -64,7 +64,7 @@ from .helpers.registry import (
     delete_issue,
 )
 from .helpers.values import get_sensor_iwh_value
-from .models import MODEL_SIGNATURES
+from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -163,20 +163,15 @@ class SyrConnectDataUpdateCoordinator(
             host = config_data[CONF_HOST]
             model = config_data[CONF_MODEL]
 
-            # Get base_path for the selected model
-            base_path = None
-            for sig in MODEL_SIGNATURES:
-                if sig.name == model:
-                    base_path = sig.base_path
-                    break
-
-            if base_path is None:
+            # The model gives the local path of the JSON API
+            model_info = detect_model({}, model=model)
+            if model_info.base_path is None:
                 raise ValueError(f"Model {model} does not support local JSON API")
 
             self.api = SyrConnectJsonAPI(
                 session,
                 host=host,
-                base_path=base_path,
+                model=model_info,
                 login_required=config_data.get(CONF_LOGIN_REQUIRED),
                 user_agent=build_user_agent(get_integration_version(hass)),
             )
@@ -789,31 +784,6 @@ class SyrConnectDataUpdateCoordinator(
         if optimistic_data is not None and self.data is optimistic_data:
             self.async_set_updated_data(previous_data)
 
-    async def async_clear_device_alarm(
-        self, device_id: str, field: str = "ala"
-    ) -> None:
-        """Clear active alarm via the /clr/{field} endpoint (JSON API) or clr command (XML API).
-
-        Args:
-            device_id: The device ID (serial number)
-            field: Alarm field to clear — "ala" (default) or "alm"
-
-        Raises:
-            HomeAssistantError: If the request fails
-        """
-        if isinstance(self.api, SyrConnectJsonAPI):
-            await self.api.request_json_data(f"clr/{field}")
-            _LOGGER.info(
-                "Coordinator: Cleared alarm via /clr/%s for device %s", field, device_id
-            )
-        else:
-            await self.api.set_device_status(device_id, [(f"clr{field.upper()}", "")])
-            _LOGGER.info(
-                "Coordinator: Cleared alarm via clr%s for device %s",
-                field.upper(),
-                device_id,
-            )
-
     async def async_open_valve(
         self, device_id: str, set_key: str, set_val: Any
     ) -> None:
@@ -856,21 +826,17 @@ class SyrConnectDataUpdateCoordinator(
 
         status: SyrConnectStatus = device.get("status") or {}
 
-        # --- Detect active alarm and compute clear command ---
-        # Returns (command, value) when an alarm must be cleared first, or None.
+        # --- Detect active alarm and take the reset command of the model ---
+        # (command, value) when an alarm must be cleared first, or None.
         clear_prefix: tuple[str, Any] | None = None
         model_info = get_device_model(device)
-        field = "alm" if model_info.alarm_style_alm else "ala"
-        get_key = f"get{field.upper()}"
+        get_key = model_info.alarm_status_key
         raw = status.get(get_key)
         if (
             raw is not None
             and str(raw).strip().upper() not in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM
         ):
-            if model_info.alarm_clear_via_set:
-                clear_prefix = (f"set{field.upper()}", "FF")
-            else:
-                clear_prefix = (f"clr{field.upper()}", "")
+            clear_prefix = model_info.alarm_reset_command(self.api.acknowledge_value)
             _LOGGER.info(
                 "Valve open: active alarm %s=%r on device %s; prepending %s",
                 get_key,
@@ -885,17 +851,11 @@ class SyrConnectDataUpdateCoordinator(
             return
 
         # --- Active alarm: send clear + open together (optimistic update and rollback included) ---
-        if isinstance(self.api, SyrConnectJsonAPI) and clear_prefix[0].startswith(
-            "clr"
-        ):
-            # The JSON API clears alarms via its own /clr/<field> endpoint, not via set
-            await self.api.request_json_data(f"clr/{clear_prefix[0][3:].lower()}")
-            await self.async_set_device_values(device_id, [(set_key, set_val)])
-        else:
-            # XML API: clear + open in a single request. JSON API (setALA=FF): sent one after another.
-            await self.async_set_device_values(
-                device_id, [clear_prefix, (set_key, set_val)]
-            )
+        # XML API: clear + open in a single request. JSON API: one after another, a
+        # clr command via its /clr/ endpoint.
+        await self.async_set_device_values(
+            device_id, [clear_prefix, (set_key, set_val)]
+        )
         _LOGGER.info(
             "Valve open with alarm clear: sent %s and %s=%s for device %s",
             clear_prefix[0],

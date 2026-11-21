@@ -7,10 +7,12 @@ from unittest.mock import patch
 
 import pytest
 
+from custom_components.syr_connect.aiosyrconnect import MODEL_SIGNATURES
 from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
 from custom_components.syr_connect.devices import muco_triolock
 from custom_components.syr_connect.models import (
-    MODEL_SIGNATURES,
+    _SYR_CONNECT_MODEL_DETAILS,
+    MODELS,
     UNKNOWN_MODEL,
     detect_model,
 )
@@ -363,7 +365,7 @@ def test_ver_contains_signature_matches_and_skips() -> None:
             ver_contains="MAGIC",
         )
     ]
-    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
+    with patch("custom_components.syr_connect.models.MODELS", test_sig):
         assert detect_model({"getVER": "prefixMAGICsuffix"}).name == "testver"
         assert detect_model({"getVER": "nope"}).name == "unknown"
 
@@ -385,7 +387,7 @@ def test_chosen_model_is_used_without_detection() -> None:
             cna_equals="DETECTED",
         ),
     ]
-    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
+    with patch("custom_components.syr_connect.models.MODELS", test_sig):
         flat = {"getCNA": "DETECTED"}
         assert detect_model(flat, model="testchosen").name == "testchosen"
         assert detect_model(flat, model="removed") is UNKNOWN_MODEL
@@ -771,10 +773,14 @@ def test_detect_model_multicontroller_without_role_is_unknown() -> None:
     assert detect_model({}, dk=1505, dkv=505) is UNKNOWN_MODEL
 
 
-def test_model_signature_names_are_unique() -> None:
-    """Every signature has its own name; a duplicate would never be detected."""
-    names = [signature.name for signature in MODEL_SIGNATURES]
-    assert sorted(name for name in set(names) if names.count(name) > 1) == []
+def test_models_follow_the_signatures_of_the_library() -> None:
+    """Every signature of the library has details, in its order, and no details are left."""
+    assert [model.name for model in MODELS] == [
+        signature.name for signature in MODEL_SIGNATURES
+    ]
+    assert set(_SYR_CONNECT_MODEL_DETAILS) == {
+        signature.name for signature in MODEL_SIGNATURES
+    }
 
 
 def test_detect_model_neosoft_device_kinds() -> None:

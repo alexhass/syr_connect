@@ -32,6 +32,7 @@ from custom_components.syr_connect.diagnostics import (
     mask_srn_value,
 )
 from custom_components.syr_connect.helpers.integration import build_user_agent
+from custom_components.syr_connect.models import SyrConnectModel, detect_model
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
@@ -54,6 +55,7 @@ _SYR_CONNECT_TEST_REDACTED_STATUS_XML = (
     "</d></dvs></sc>"
 )
 # NeoSoft 2500: its model offers the local JSON API at "/neosoft"
+_SYR_CONNECT_TEST_NEOSOFT_MODEL = detect_model({}, model="neosoft2500")
 _SYR_CONNECT_TEST_NEOSOFT_DEVICE: Any = {
     "id": "dev1",
     "name": "Device 1",
@@ -519,14 +521,17 @@ async def test_fetch_local_device_json(integration_version: str) -> None:
         )
 
         result = await diag._fetch_local_device_json(
-            session, _SYR_CONNECT_TEST_NEOSOFT_DEVICE, "/neosoft", integration_version
+            session,
+            _SYR_CONNECT_TEST_NEOSOFT_DEVICE,
+            _SYR_CONNECT_TEST_NEOSOFT_MODEL,
+            integration_version,
         )
 
     assert result == ("dev1", {"getSRN": "**REDACTED**", "getFLO": "5"})
     mock_api_class.assert_called_once_with(
         session,
         host="192.168.1.100",
-        base_path="/neosoft",
+        model=_SYR_CONNECT_TEST_NEOSOFT_MODEL,
         user_agent=build_user_agent(integration_version),
     )
     api.get_device_status.assert_awaited_once_with("dev1")
@@ -559,7 +564,7 @@ async def test_fetch_local_device_json_address(
         await diag._fetch_local_device_json(
             MagicMock(),
             cast(Any, {"id": "dev1", "status": status}),
-            "/trio",
+            _SYR_CONNECT_TEST_NEOSOFT_MODEL,
             integration_version,
         )
 
@@ -593,7 +598,7 @@ async def test_fetch_local_device_json_skips_other_addresses(
         result = await diag._fetch_local_device_json(
             MagicMock(),
             cast(Any, {"id": "dev1", "status": {"getWIP": ip}}),
-            "/trio",
+            _SYR_CONNECT_TEST_NEOSOFT_MODEL,
             integration_version,
         )
 
@@ -619,7 +624,10 @@ async def test_fetch_local_device_json_failed_login_still_fetches(
         api.get_device_status = AsyncMock(return_value={"getFLO": "5"})
 
         result = await diag._fetch_local_device_json(
-            MagicMock(), _SYR_CONNECT_TEST_NEOSOFT_DEVICE, "/trio", integration_version
+            MagicMock(),
+            _SYR_CONNECT_TEST_NEOSOFT_DEVICE,
+            _SYR_CONNECT_TEST_NEOSOFT_MODEL,
+            integration_version,
         )
 
     assert result == ("dev1", {"getFLO": "5"})
@@ -639,7 +647,10 @@ async def test_fetch_local_device_json_not_reachable(
         api.get_device_status = AsyncMock()
 
         result = await diag._fetch_local_device_json(
-            MagicMock(), _SYR_CONNECT_TEST_NEOSOFT_DEVICE, "/trio", integration_version
+            MagicMock(),
+            _SYR_CONNECT_TEST_NEOSOFT_DEVICE,
+            _SYR_CONNECT_TEST_NEOSOFT_MODEL,
+            integration_version,
         )
 
     assert result == ("dev1", None)
@@ -674,7 +685,10 @@ async def test_fetch_local_device_json_failure_gives_no_data(
         )
 
         result = await diag._fetch_local_device_json(
-            MagicMock(), _SYR_CONNECT_TEST_NEOSOFT_DEVICE, "/trio", integration_version
+            MagicMock(),
+            _SYR_CONNECT_TEST_NEOSOFT_DEVICE,
+            _SYR_CONNECT_TEST_NEOSOFT_MODEL,
+            integration_version,
         )
 
     assert result == ("dev1", None)
@@ -700,7 +714,7 @@ async def test_collect_raw_json_cloud_devices(
     }
 
     async def _fetch(
-        _session: Any, device: dict[str, Any], _base_path: str, _version: str
+        _session: Any, device: dict[str, Any], _model: SyrConnectModel, _version: str
     ) -> tuple[str, Any]:
         return device["id"], {"getFLO": "5"} if device["id"] == "dev1" else None
 
@@ -712,9 +726,12 @@ async def test_collect_raw_json_cloud_devices(
     assert result == {"dev1": {"getFLO": "5"}}
     assert fetch.await_args_list == [
         call(
-            session, _SYR_CONNECT_TEST_NEOSOFT_DEVICE, "/neosoft", integration_version
+            session,
+            _SYR_CONNECT_TEST_NEOSOFT_DEVICE,
+            _SYR_CONNECT_TEST_NEOSOFT_MODEL,
+            integration_version,
         ),
-        call(session, silent, "/neosoft", integration_version),
+        call(session, silent, _SYR_CONNECT_TEST_NEOSOFT_MODEL, integration_version),
     ]
 
 
@@ -1016,6 +1033,6 @@ async def test_diagnostics_cloud_device_with_local_api(
     assert result["raw_json"] == {"dev1": {"getSRN": "**REDACTED**", "getFLO": "5"}}
     assert mock_api_class.call_args.kwargs == {
         "host": "192.168.1.100",
-        "base_path": "/neosoft",
+        "model": _SYR_CONNECT_TEST_NEOSOFT_MODEL,
         "user_agent": build_user_agent(integration_version),
     }

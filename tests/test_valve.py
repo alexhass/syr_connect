@@ -18,7 +18,7 @@ from custom_components.syr_connect.aiosyrconnect import (
 from custom_components.syr_connect.const import CONF_SERVICE
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.helpers.values import build_set_ab_command
-from custom_components.syr_connect.models import MODEL_SIGNATURES
+from custom_components.syr_connect.models import MODELS
 from custom_components.syr_connect.valve import SyrConnectValve, async_setup_entry
 from homeassistant.components.valve import ValveDeviceClass, ValveEntityFeature
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
@@ -27,7 +27,7 @@ from homeassistant.exceptions import HomeAssistantError
 
 # SafeTech: leak protection profiles, rotation, buzzer, valve
 _SYR_CONNECT_TEST_SAFETECH_MODEL = next(
-    model for model in MODEL_SIGNATURES if model.name == "safetech"
+    model for model in MODELS if model.name == "safetech"
 )
 
 
@@ -1160,7 +1160,11 @@ async def test_async_open_valve_active_alarm_xml_sends_multi_command(
 async def test_async_open_valve_active_alarm_json_calls_clr_then_set(
     hass: HomeAssistant,
 ) -> None:
-    """Active alarm with JSON API: /clr/ala then /set/ab/1 as two sequential requests."""
+    """Active alarm with JSON API: clrALA and setAB go to the client together.
+
+    The JSON API sends them one after another, clrALA via its /clr/ endpoint
+    (tests/aiosyrconnect/test_json_api.py).
+    """
 
     data = {
         "devices": [
@@ -1175,14 +1179,13 @@ async def test_async_open_valve_active_alarm_json_calls_clr_then_set(
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.api.__class__ = SyrConnectJsonAPI
-    api: Any = coordinator.api
-    api.request_json_data = AsyncMock(return_value={})
     coordinator.api.set_device_status = AsyncMock(return_value=True)
 
     await coordinator.async_open_valve("dev4", "setAB", 1)
 
-    api.request_json_data.assert_awaited_once_with("clr/ala")
-    coordinator.api.set_device_status.assert_awaited_once_with("dev4", [("setAB", 1)])
+    coordinator.api.set_device_status.assert_awaited_once_with(
+        "dev4", [("clrALA", ""), ("setAB", 1)]
+    )
 
 
 async def test_async_open_valve_alarm_style_alm_uses_clr_alm(
@@ -1319,7 +1322,10 @@ async def test_async_open_valve_unknown_device_raises(hass: HomeAssistant) -> No
 async def test_async_open_valve_alarm_clear_via_set_json_api_sends_set_then_open(
     hass: HomeAssistant,
 ) -> None:
-    """alarm_clear_via_set=True with JSON API: uses set_device_status for clear (not request_json_data)."""
+    """alarm_clear_via_set=True with JSON API: setALA with 255, then the open command.
+
+    The device takes the acknowledge value as the documented decimal 255.
+    """
 
     data = {
         "devices": [
@@ -1339,15 +1345,16 @@ async def test_async_open_valve_alarm_clear_via_set_json_api_sends_set_then_open
 
     await coordinator.async_open_valve("dev_z", "setAB", 1)
 
-    # Clear (setALA=FF) and open in one call; the JSON API sends the commands one after another
+    # Clear (setALA=255) and open in one call; the JSON API sends the commands one
+    # after another
     coordinator.api.set_device_status.assert_awaited_once_with(
-        "dev_z", [("setALA", "FF"), ("setAB", 1)]
+        "dev_z", [("setALA", 255), ("setAB", 1)]
     )
-    # Both values are shown optimistically: valve open, alarm cleared
+    # Both values are shown optimistically: valve open, alarm acknowledged
     assert coordinator.data is not None
     status = coordinator.data["devices"][0]["status"]
     assert status["getAB"] == "1"
-    assert status["getALA"] == "FF"
+    assert status["getALA"] == "255"
 
 
 # ---------------------------------------------------------------------------

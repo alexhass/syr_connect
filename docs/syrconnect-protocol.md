@@ -520,7 +520,7 @@ Some further data about the device
 | Property | Example | Unit | Access level | Default | Description |
 | --- | --- | --- | --- | --- | --- |
 | getALA | "" | | USER | | Current alarm code. Each device family has its own codes, see [Alarm codes (getALA) — common table](#alarm-codes-getala--common-table) and the tables of the families below. FF = no alarm |
-| setALA | "255"<br>"161" | | SERVICE | | 255 = acknowledges the current alarm (official API; the value is decimal, getALA returns hexadecimal). SafeTech: 161–172 = sets alarm A1–AC (write-only) |
+| setALA | "255"<br>"161" | | SERVICE | | 255 = acknowledges the current alarm (official API; the value is decimal, getALA returns hexadecimal). The cloud (XML API) takes the acknowledgment as hexadecimal "FF". SafeTech: 161–172 = sets alarm A1–AC (write-only) |
 | clrALA | "" | | SERVICE | | Clears the current alarm and opens the valve (write-only) |
 | getALH | "2026-02-07 17:41:10:A0..." | | USER | 10 | Alarm history log — multiline, one timestamped entry per line (NeoSoft, Sanibel). SafeTech: the last 0–100 entries as CSV; the number of entries is passed as value |
 | setALH | "1" | | USER | | Requests sending the alarm history, starting at the given UNIX timestamp; 1 = the whole history (write-only) |
@@ -528,10 +528,10 @@ Some further data about the device
 | clrALM | "" | | SERVICE | | Clears the alarm memory (eight alarms) (write-only) |
 | getDEN | "1" | | | | Device enabled/disabled flag (1 = enabled, 0 = disabled) |
 | getLOCK | "False" | | | | Shut-off lock during a filter change: True = a filter change of a replaceable filter is running, and the shut-off is locked so that it cannot be moved. Read it for display only, never set it (issue #23). Reported by Trio DFR/LS and SafeTech |
-| setNOT | "255" | | | | 255 = acknowledges the current notification (write-only) |
+| setNOT | "255" | | | | 255 = acknowledges the current notification; the cloud (XML API) takes "FF" (write-only) |
 | getNOT | "" | | | | Current notification code, see [Notification codes (getNOT) — common table](#notification-codes-getnot--common-table) |
 | getSTA | "Bitte Salz nachfüllen"<br>"Płukanie wsteczne"<br>"Płukanie regenerantem"<br>"Płukanie wolne"<br>"Płukanie szybkie"<br>"Napełnianie" | | | | Status messages of the regeneration, in this case in German: "Please refill salt". Polish strings are not localized.<br>Newer models (Syr AC 3200, AC 3228 / SYR MultiController) report this as an integer instead: 0 = Standby, 1 = Initial filling, 2 = Automatic filling, 3 = Manual filling. |
-| setWRN | "255" | | | | 255 = acknowledges the current warning (write-only) |
+| setWRN | "255" | | | | 255 = acknowledges the current warning; the cloud (XML API) takes "FF" (write-only) |
 | getWRN | "" | | | | Current warning code (non-critical), see [Warning codes (getWRN) — common table](#warning-codes-getwrn--common-table) |
 
 #### Alarm codes (getALA) — common table

@@ -39,7 +39,7 @@ from .exceptions import (
     SyrConnectInvalidResponseError,
 )
 from .http_client import check_user_agent, read_response_text
-from .models import SyrConnectApiDevice, SyrConnectStatus
+from .models import SyrConnectApiDevice, SyrConnectModelSignature, SyrConnectStatus
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -95,20 +95,25 @@ class SyrConnectJsonAPI:
         base_url: str | None = None,
         login_required: bool | None = None,
         *,
+        model: SyrConnectModelSignature | None = None,
         user_agent: str | None = None,
     ) -> None:
         """Initialize the JSON API client.
 
         The URL is either built from host and base_path as http://host:5333/base_path,
-        or given as base_url (e.g. for tests), which overrides both.
+        or given as base_url (e.g. for tests), which overrides both. The base path is
+        normally taken from the model (`MODEL_SIGNATURES`); base_path is only needed
+        for a device family without a signature of its own.
 
         Args:
             session: aiohttp ClientSession of the caller
             host: IP address or hostname of the device
-            base_path: Path of the device family, e.g. "/neosoft"
+            base_path: Path of the device family, e.g. "/neosoft"; ignored with model
             base_url: Explicit base URL; no ADM is sent to it
             login_required: Whether the device needs ADM, as the caller stored it from
                 an earlier `login_required`; None if unknown
+            model: Signature of the device model; its base_path is used. A model
+                without local API has none, like a client without base_path.
             user_agent: HTTP User-Agent of the requests; names the caller
 
         Raises:
@@ -122,7 +127,7 @@ class SyrConnectJsonAPI:
 
         # URL construction parameters (option 1: host + base_path)
         self._host = host
-        self._base_path = base_path
+        self._base_path = model.base_path if model is not None else base_path
 
         # URL construction parameters (option 2: explicit base_url, overrides host/base_path)
         self._base_url = base_url
@@ -142,6 +147,16 @@ class SyrConnectJsonAPI:
         # Cache /get/all response to avoid duplicate API calls when get_devices()
         # is followed immediately by get_device_status()
         self._cached_get_all: dict[str, Any] | None = None
+
+    @property
+    def acknowledge_value(self) -> int:
+        """Value of setALA, setNOT and setWRN that acknowledges the current code.
+
+        The device takes the code as a decimal number: 255, sent as /set/ala/255,
+        /set/not/255 or /set/wrn/255 (see setALA, setNOT and setWRN in
+        docs/syrconnect-protocol.md).
+        """
+        return 255
 
     @property
     def login_required(self) -> bool | None:
@@ -646,7 +661,8 @@ class SyrConnectJsonAPI:
             serial_number: Serial number of the device (for logging; the client serves one device)
             commands: Sequence of (command, value) pairs, executed in order.
                 Each command is a string such as "setRTM" or "RTM" and
-                each value is the new value to set.
+                each value is the new value to set. A clr command such as
+                "clrALA" clears an alarm via the /clr/ endpoint.
 
         Returns:
             True if all requests succeed
@@ -663,7 +679,15 @@ class SyrConnectJsonAPI:
     async def _set_device_status_single(
         self, serial_number: str, command: str, value: Any
     ) -> None:
-        """Send a single set command to the JSON API."""
+        """Send a single set command to the JSON API.
+
+        A clr command (clrALA, clrALM) goes to the /clr/ endpoint and has no value.
+        """
+        if command.lower().startswith("clr"):
+            field = command[3:].lower()
+            await self.request_json_data(f"clr/{field}")
+            _LOGGER.info("JSON API: Cleared %s for device %s", field, serial_number)
+            return
         # --- Normalize Command Name ---
         # Some callers send "setAB", others send "AB" - normalize to base
         # command and build the correct URL form via helpers.

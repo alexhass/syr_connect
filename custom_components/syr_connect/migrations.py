@@ -359,7 +359,7 @@ async def _async_read_local_serial(hass: HomeAssistant, entry: ConfigEntry) -> s
     api = SyrConnectJsonAPI(
         async_get_clientsession(hass),
         host=entry.data[CONF_HOST],
-        base_path=detect_model({}, model=entry.data[CONF_MODEL]).base_path,
+        model=detect_model({}, model=entry.data[CONF_MODEL]),
         login_required=entry.data.get(CONF_LOGIN_REQUIRED),
         user_agent=build_user_agent(get_integration_version(hass)),
     )
