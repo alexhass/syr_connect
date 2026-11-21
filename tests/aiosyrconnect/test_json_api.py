@@ -125,6 +125,21 @@ def test_acknowledge_value_is_decimal(user_agent: str) -> None:
     assert client.acknowledge_value == 255
 
 
+@pytest.mark.parametrize("login_required", [None, True, False])
+def test_login_required_is_the_stored_value(
+    login_required: bool | None, user_agent: str
+) -> None:
+    """Whether the device needs ADM is unknown until the caller passes a stored value."""
+    client = SyrConnectJsonAPI(
+        MagicMock(),
+        host="192.168.1.100",
+        login_required=login_required,
+        user_agent=user_agent,
+    )
+
+    assert client.login_required is login_required
+
+
 def test_build_base_url_with_explicit_base_url(user_agent: str) -> None:
     """Test _build_base_url returns explicit base_url when set."""
     sess = MagicMock()
