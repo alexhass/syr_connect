@@ -74,6 +74,30 @@ What the caller passes:
 | `local_now` | XML | Returns the current time in the caller's time zone, for the UTC offset of the login; default the time zone of the process |
 | `login_required` | JSON | Whether the device needs ADM, as stored from an earlier `login_required`; default unknown |
 
+## Device models
+
+`MODEL_SIGNATURES` lists the known models: how a model is detected (`dk`, `dkv`, `sbt`
+and `dfm` of the cloud, checks of the serial number, `getCNA` and `getVER`) and how it is
+addressed (`base_path` of the local JSON API, the alarm commands).
+`detect_model_signature()` returns the signature of a device, or None for an unknown
+model:
+
+```python
+from aiosyrconnect import MODEL_SIGNATURES, detect_model_signature
+
+signature = detect_model_signature(
+    status,
+    MODEL_SIGNATURES,
+    dk=device.get("dk"),
+    dkv=device.get("dkv"),
+    sbt=device.get("sbt"),
+)
+```
+
+A caller may extend `SyrConnectModelSignature` with fields of its own and pass its
+signatures instead, in the order of `MODEL_SIGNATURES`: the status checks return the
+first signature that matches.
+
 ## Errors
 
 All errors derive from `SyrConnectError`.

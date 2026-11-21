@@ -7,9 +7,13 @@ from unittest.mock import patch
 
 import pytest
 
+from custom_components.syr_connect.aiosyrconnect import (
+    MODEL_SIGNATURES as API_MODEL_SIGNATURES,
+)
 from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
 from custom_components.syr_connect.devices import muco_triolock
 from custom_components.syr_connect.models import (
+    _SYR_CONNECT_MODEL_DETAILS,
     MODEL_SIGNATURES,
     UNKNOWN_MODEL,
     detect_model,
@@ -771,10 +775,14 @@ def test_detect_model_multicontroller_without_role_is_unknown() -> None:
     assert detect_model({}, dk=1505, dkv=505) is UNKNOWN_MODEL
 
 
-def test_model_signature_names_are_unique() -> None:
-    """Every signature has its own name; a duplicate would never be detected."""
-    names = [signature.name for signature in MODEL_SIGNATURES]
-    assert sorted(name for name in set(names) if names.count(name) > 1) == []
+def test_models_follow_the_signatures_of_the_library() -> None:
+    """Every signature of the library has details, in its order, and no details are left."""
+    assert [model.name for model in MODEL_SIGNATURES] == [
+        signature.name for signature in API_MODEL_SIGNATURES
+    ]
+    assert set(_SYR_CONNECT_MODEL_DETAILS) == {
+        signature.name for signature in API_MODEL_SIGNATURES
+    }
 
 
 def test_detect_model_neosoft_device_kinds() -> None:
