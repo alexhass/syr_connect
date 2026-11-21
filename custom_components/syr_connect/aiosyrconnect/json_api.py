@@ -149,6 +149,15 @@ class SyrConnectJsonAPI:
         self._cached_get_all: dict[str, Any] | None = None
 
     @property
+    def acknowledge_value(self) -> int:
+        """Value of setNOT and setWRN that acknowledges the current notification or warning.
+
+        The device takes the code as a decimal number: 255, sent as /set/not/255 or
+        /set/wrn/255 (see setNOT and setWRN in docs/syrconnect-protocol.md).
+        """
+        return 255
+
+    @property
     def login_required(self) -> bool | None:
         """Return whether the device needs ADM; None if not determined yet.
 

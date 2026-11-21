@@ -170,6 +170,14 @@ class SyrConnectXmlAPI:
         # HTTP client; the User-Agent identifies the caller
         self.http_client = HTTPClient(session, user_agent, language=language)
 
+    @property
+    def acknowledge_value(self) -> str:
+        """Value of setNOT and setWRN that acknowledges the current notification or warning.
+
+        The cloud takes the code as hexadecimal text: "FF".
+        """
+        return "FF"
+
     def is_session_valid(self) -> bool:
         """Return True if a session token from a previous login is available.
 

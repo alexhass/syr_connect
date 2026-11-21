@@ -118,6 +118,13 @@ def test_init_with_model_takes_its_base_path(
     assert client._base_path == base_path
 
 
+def test_acknowledge_value_is_decimal(user_agent: str) -> None:
+    """The device acknowledges a notification or warning (setNOT, setWRN) with 255."""
+    client = SyrConnectJsonAPI(MagicMock(), host="192.168.1.100", user_agent=user_agent)
+
+    assert client.acknowledge_value == 255
+
+
 def test_build_base_url_with_explicit_base_url(user_agent: str) -> None:
     """Test _build_base_url returns explicit base_url when set."""
     sess = MagicMock()

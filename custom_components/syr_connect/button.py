@@ -17,8 +17,9 @@ signature of the library (`alarm_status_key`, `alarm_reset_command`):
     alarm_clear_via_set: True  → send setALA/setALM with value "FF"
     alarm_clear_via_set: False → send clrALA/clrALM (the JSON API via /clr/)
 
-setNOT and setWRN send "FF" (XML API) or 255 (JSON API) via the standard set
-command.
+setNOT and setWRN send the value that the client takes as acknowledgment
+(`acknowledge_value`: "FF" for the XML API, 255 for the JSON API) via the standard
+set command.
 """
 
 from collections.abc import Awaitable, Callable
@@ -143,7 +144,7 @@ async def _async_press_ala(press: _SyrConnectButtonPress) -> None:
 async def _async_press_not_wrn(press: _SyrConnectButtonPress) -> None:
     """Notification or warning reset (setNOT, setWRN): send the "nothing active" code.
 
-    Values:
+    The value comes from the client (`acknowledge_value`):
     - JSON API: 255, sent as /set/not/255 or /set/wrn/255
     - XML API: "FF"
     """
@@ -157,11 +158,8 @@ async def _async_press_not_wrn(press: _SyrConnectButtonPress) -> None:
             ),
             translation_placeholders={"device": press.device_name},
         )
-    reset_value: int | str = (
-        255 if isinstance(press.coordinator.api, SyrConnectJsonAPI) else "FF"
-    )
     await press.coordinator.async_set_device_value(
-        press.device_id, press.command, reset_value
+        press.device_id, press.command, press.coordinator.api.acknowledge_value
     )
 
 
