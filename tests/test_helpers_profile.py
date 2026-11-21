@@ -33,7 +33,7 @@ from custom_components.syr_connect.helpers.profile import (
     round_hardness,
 )
 from custom_components.syr_connect.models import (
-    MODEL_SIGNATURES,
+    MODELS,
     UNKNOWN_MODEL,
     SyrConnectModel,
     detect_model,
@@ -49,7 +49,7 @@ _DEVICE_PROFILES = {
 
 def _signature(name: str) -> SyrConnectModel:
     """Return the model signature with the given name."""
-    return next(signature for signature in MODEL_SIGNATURES if signature.name == name)
+    return next(signature for signature in MODELS if signature.name == name)
 
 
 def test_get_sensor_maps_and_visibility_additional() -> None:
@@ -155,7 +155,7 @@ def test_get_sensor_ala_map_covers_all_signatures_of_known_families() -> None:
 
     families = ("muco_", "neosoft_", "safetech", "trio", "lex", "safetplus")
     checked = 0
-    for signature in MODEL_SIGNATURES:
+    for signature in MODELS:
         device_file = next(
             (
                 name
@@ -354,7 +354,7 @@ def test_get_model_supported_keys_safetech_device_override() -> None:
     model_names = safetech_names | safetechplus_names
     signatures = {
         signature.name: signature
-        for signature in MODEL_SIGNATURES
+        for signature in MODELS
         if signature.name in model_names
     }
 

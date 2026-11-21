@@ -21,11 +21,7 @@ from custom_components.syr_connect import (
 from custom_components.syr_connect.aiosyrconnect import SyrConnectStatus
 from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
 from custom_components.syr_connect.const import DOMAIN
-from custom_components.syr_connect.models import (
-    MODEL_SIGNATURES,
-    SyrConnectModel,
-    detect_model,
-)
+from custom_components.syr_connect.models import MODELS, SyrConnectModel, detect_model
 from custom_components.syr_connect.select import (
     SyrConnectHardnessSelect,
     SyrConnectRangedHardnessSelect,
@@ -44,13 +40,13 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
 
 _SYR_CONNECT_TEST_ALLINONEPLUS_MODEL = next(
-    model for model in MODEL_SIGNATURES if model.name == "allinoneplus"
+    model for model in MODELS if model.name == "allinoneplus"
 )
 
 
 def _signature(name: str) -> SyrConnectModel:
     """Return the model signature with the given name."""
-    return next(model for model in MODEL_SIGNATURES if model.name == name)
+    return next(model for model in MODELS if model.name == name)
 
 
 @pytest.mark.parametrize(
@@ -566,7 +562,7 @@ async def test_async_setup_entry_creates_allinoneplus_manual_filling(
         options={},
         subentries_data={},
     )
-    model = next(model for model in MODEL_SIGNATURES if model.name == "allinoneplus")
+    model = next(model for model in MODELS if model.name == "allinoneplus")
     device = {
         "id": "SN401",
         "name": "AllInOnePlus",

@@ -1,5 +1,6 @@
-"""Data models of the SYR Connect APIs: devices, status values, services and statistics."""
+"""Data models of the SYR Connect APIs: devices, status values, services, statistics and models."""
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any, NotRequired, TypedDict
 
@@ -71,3 +72,111 @@ class SyrConnectStatistic:
     t: int
     # Unit of the measurement; the cloud answers with an empty <col /> without it
     unit: str
+
+
+@dataclass(frozen=True, kw_only=True)
+class SyrConnectModelSignature:
+    """Signature of a device model: how it is detected, addressed and named.
+
+    `dk`, `dkv`, `sbt` and `dfm` identify the model in `detect_model_signature()`; the
+    `cna_equals`, `srn_*` and `ver_*` fields are its status checks. `base_path`,
+    `alarm_style_alm` and `alarm_clear_via_set` describe how the model is addressed.
+    `display_name`, `manufacturer` and `service_branding` name it, and the
+    `maximum_*` fields are limits of its settings.
+    """
+
+    # If True, the alarm/error state is cleared by sending a setter command (setALM)
+    # rather than by a clrALM command. It only chooses the command: the value of the
+    # set command comes from the client (`clear_value`), a clr command has none.
+    alarm_clear_via_set: bool = False
+    # If True, alarm commands use ALM variants (getALM/setALM/clrALM) instead of ALA
+    # variants (getALA/setALA/clrALA)
+    alarm_style_alm: bool = False
+    # JSON API local access base path for the model, or None if not applicable
+    base_path: str | None
+    # Exact match against the `getCNA` value
+    cna_equals: str | None = None
+    # MultiController role (getDFM), the subtype of dk=1500-1506. Like `sbt`, None
+    # matches every device.
+    dfm: int | None = None
+    # Human-readable model name, e.g. for the device info and the local model selector
+    display_name: str
+    # Cloud API deviceKind: the integer `dk` attribute in GetProjectDeviceCollections XML
+    dk: int | None
+    # Cloud API deviceKindVersion: the integer `dkv` attribute in
+    # GetProjectDeviceCollections XML; for Azure-connected devices this also equals the
+    # numeric SRN prefix of newer production units
+    dkv: int | None
+    # Human-readable name of the device manufacturer
+    manufacturer: str
+    # Maximum number of days between regenerations; None means no regeneration interval
+    maximum_regeneration_interval: int | None = None
+    # Maximum salt tank volume that can be set; only set for models whose salt amount
+    # can be set
+    maximum_salt_volume: int | None = None
+    # Stable machine-readable model identifier (e.g. "lexplus10s")
+    name: str
+    # Cloud API device subtype: the integer `sbt` attribute in GetProjectDeviceCollections
+    # XML; only set when the subtype uniquely identifies this model within its dk/dkv family
+    sbt: int | None = None
+    # Per-service branding: cf_bundle_identifier of `API_SERVICES` -> (manufacturer,
+    # display name). Used when the same dk/dkv hardware is sold under different names
+    # by different vendors; detection and addressing stay the same.
+    service_branding: Mapping[str, tuple[str, str]] | None = None
+    # String that must immediately follow `srn_prefix`: "AAA" is the factory batch code
+    # used by all current SYR/Hansgrohe/Sanibel devices; override it if a future
+    # production run changes the pattern
+    srn_infix: str = "AAA"
+    # Prefix that `getSRN` must start with
+    srn_prefix: str | None = None
+    # String that `getVER` must contain
+    ver_contains: str | None = None
+    # Prefix that `getVER` must start with
+    ver_prefix: str | None = None
+
+    def branded(self, service: str | None) -> tuple[str, str]:
+        """Return the manufacturer and display name of the model for a cloud service.
+
+        Args:
+            service: The cf_bundle_identifier of the cloud service, or None for the
+                local JSON API
+
+        Returns:
+            The (manufacturer, display_name) pair from `service_branding`, or the
+            default one if the service has no branding of its own
+        """
+        if service is not None and self.service_branding is not None:
+            branding = self.service_branding.get(service)
+            if branding is not None:
+                return branding
+        return self.manufacturer, self.display_name
+
+    @property
+    def alarm_status_key(self) -> str:
+        """Status key of the current alarm (getALM or getALA, see `alarm_style_alm`)."""
+        return "getALM" if self.alarm_style_alm else "getALA"
+
+    def alarm_reset_command(self, clear_value: str | int) -> tuple[str, str | int]:
+        """Return the command and value that reset an active alarm of the model.
+
+        The signature decides between a set and a clr command; the value of a set
+        command is the clear value of the client, which encodes it:
+
+        Formats:
+        - alarm_clear_via_set, cloud: ("setALA", "FF") or ("setALM", "FF")
+        - alarm_clear_via_set, device: ("setALA", 255) or ("setALM", 255)
+        - otherwise: ("clrALA", "") or ("clrALM", "")
+
+        Both clients send it with `set_device_status`; the JSON API sends a clr
+        command to its /clr/ endpoint.
+
+        Args:
+            clear_value: `clear_value` of the client that sends it
+
+        Returns:
+            The command and its value
+        """
+        field = self.alarm_status_key[3:]
+        if self.alarm_clear_via_set:
+            return f"set{field}", clear_value
+        return f"clr{field}", ""

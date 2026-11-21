@@ -1052,7 +1052,7 @@ async def test_v11_to_v12_gives_local_entry_serial_unique_id(
         update = await v11_to_v12_local_unique_id_by_serial(hass, entry)
 
     assert api.call_args.kwargs["host"] == "192.0.2.5"
-    assert api.call_args.kwargs["base_path"] == "/safe-tec"
+    assert api.call_args.kwargs["model"].base_path == "/safe-tec"
     assert update == {"unique_id": "json_SN1", "version": 12}
 
 

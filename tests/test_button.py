@@ -17,7 +17,8 @@ from custom_components.syr_connect.aiosyrconnect import (
 from custom_components.syr_connect.button import SyrConnectButton, async_setup_entry
 from custom_components.syr_connect.const import CONF_SERVICE, DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
-from custom_components.syr_connect.models import MODEL_SIGNATURES
+from custom_components.syr_connect.models import MODELS
+from custom_components.syr_connect.sensor import SyrConnectSensor
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
@@ -25,11 +26,11 @@ from homeassistant.helpers import entity_registry as er
 
 # NeoSoft 2500: regeneration mode, no water hardness selects
 _SYR_CONNECT_TEST_NEOSOFT_MODEL = next(
-    model for model in MODEL_SIGNATURES if model.name == "neosoft2500"
+    model for model in MODELS if model.name == "neosoft2500"
 )
 # SafeTech: leak protection profiles, rotation, buzzer, valve
 _SYR_CONNECT_TEST_SAFETECH_MODEL = next(
-    model for model in MODEL_SIGNATURES if model.name == "safetech"
+    model for model in MODELS if model.name == "safetech"
 )
 
 
@@ -718,14 +719,12 @@ async def test_button_reset_ala_lexplus10s_calls_clr_alm(hass: HomeAssistant) ->
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
-    coordinator.async_clear_device_alarm = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device1", "Device 1", "setALA")
 
     await button.async_press()
 
-    coordinator.async_clear_device_alarm.assert_called_once_with("device1", "alm")
-    coordinator.async_set_device_value.assert_not_called()
+    coordinator.async_set_device_value.assert_called_once_with("device1", "clrALM", "")
 
 
 async def test_button_reset_ala_unknown_model_calls_clr_ala(
@@ -744,14 +743,12 @@ async def test_button_reset_ala_unknown_model_calls_clr_ala(
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
-    coordinator.async_clear_device_alarm = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device2", "Device 2", "setALA")
 
     await button.async_press()
 
-    coordinator.async_clear_device_alarm.assert_called_once_with("device2", "ala")
-    coordinator.async_set_device_value.assert_not_called()
+    coordinator.async_set_device_value.assert_called_once_with("device2", "clrALA", "")
 
 
 async def test_button_reset_ala_clr_endpoint_pontosbase(hass: HomeAssistant) -> None:
@@ -768,13 +765,13 @@ async def test_button_reset_ala_clr_endpoint_pontosbase(hass: HomeAssistant) -> 
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
-    coordinator.async_clear_device_alarm = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device_pontos", "Device Pontos", "setALA")
     await button.async_press()
 
-    coordinator.async_clear_device_alarm.assert_called_once_with("device_pontos", "ala")
-    coordinator.async_set_device_value.assert_not_called()
+    coordinator.async_set_device_value.assert_called_once_with(
+        "device_pontos", "clrALA", ""
+    )
 
 
 async def test_button_reset_ala_clr_endpoint_safetechv4(hass: HomeAssistant) -> None:
@@ -791,17 +788,17 @@ async def test_button_reset_ala_clr_endpoint_safetechv4(hass: HomeAssistant) -> 
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
-    coordinator.async_clear_device_alarm = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(coordinator, "device_stv4", "Device STv4", "setALA")
     await button.async_press()
 
-    coordinator.async_clear_device_alarm.assert_called_once_with("device_stv4", "ala")
-    coordinator.async_set_device_value.assert_not_called()
+    coordinator.async_set_device_value.assert_called_once_with(
+        "device_stv4", "clrALA", ""
+    )
 
 
 async def test_button_reset_ala_clr_error_propagates(hass: HomeAssistant) -> None:
-    """Errors from async_clear_device_alarm propagate and are not swallowed."""
+    """Errors of the alarm reset propagate and are not swallowed."""
     data = {
         "devices": [
             {
@@ -813,8 +810,7 @@ async def test_button_reset_ala_clr_error_propagates(hass: HomeAssistant) -> Non
         ]
     }
     coordinator = _build_coordinator(hass, data)
-    coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
-    coordinator.async_clear_device_alarm = AsyncMock(  # type: ignore[method-assign]
+    coordinator.async_set_device_value = AsyncMock(  # type: ignore[method-assign]
         side_effect=HomeAssistantError("Connection failed")
     )
 
@@ -822,8 +818,9 @@ async def test_button_reset_ala_clr_error_propagates(hass: HomeAssistant) -> Non
     with pytest.raises(HomeAssistantError):
         await button.async_press()
 
-    coordinator.async_clear_device_alarm.assert_called_once_with("device_pontos", "ala")
-    coordinator.async_set_device_value.assert_not_called()
+    coordinator.async_set_device_value.assert_called_once_with(
+        "device_pontos", "clrALA", ""
+    )
 
 
 async def test_button_reset_not_no_reset_required(hass: HomeAssistant) -> None:
@@ -914,10 +911,15 @@ async def test_button_reset_wrn_sends_ff_via_xml_api(hass: HomeAssistant) -> Non
     )
 
 
-async def test_button_reset_ala_alarm_clear_via_set_sends_ff(
-    hass: HomeAssistant,
+@pytest.mark.parametrize(("json_api", "value"), [(False, "FF"), (True, 255)])
+async def test_button_reset_ala_alarm_clear_via_set_sends_clear_value(
+    hass: HomeAssistant, json_api: bool, value: str | int
 ) -> None:
-    """When alarm_clear_via_set=True (Trio LS), reset sends setALA 'FF' instead of calling clrALA."""
+    """When alarm_clear_via_set=True (Trio LS), reset sends setALA instead of clrALA.
+
+    The value is the clear value of the client: "FF" for the cloud, 255 for
+    the JSON API (/set/ala/255).
+    """
     data = {
         "devices": [
             {
@@ -931,16 +933,16 @@ async def test_button_reset_ala_alarm_clear_via_set_sends_ff(
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
-    coordinator.async_clear_device_alarm = AsyncMock()  # type: ignore[method-assign]
+    if json_api:
+        coordinator.api.__class__ = SyrConnectJsonAPI
 
     button = SyrConnectButton(coordinator, "device_trio", "Device Trio", "setALA")
 
     await button.async_press()
 
     coordinator.async_set_device_value.assert_called_once_with(
-        "device_trio", "setALA", "FF"
+        "device_trio", "setALA", value
     )
-    coordinator.async_clear_device_alarm.assert_not_called()
 
 
 async def test_button_reset_not_sends_255_via_json_api(hass: HomeAssistant) -> None:
@@ -969,6 +971,44 @@ async def test_button_reset_not_sends_255_via_json_api(hass: HomeAssistant) -> N
     coordinator.async_set_device_value.assert_called_once_with(
         "device_not_json", "setNOT", 255
     )
+
+
+async def test_button_reset_not_via_json_api_shows_no_notification_at_once(
+    hass: HomeAssistant,
+) -> None:
+    """After the acknowledgment with 255, the sensor shows no notification at once.
+
+    The optimistic update keeps the sent 255 until the device reports "FF"; the
+    sensor shows it as no notification (_SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM).
+    """
+    data = {
+        "devices": [
+            {
+                "id": "device_not_json",
+                "name": "Device NOT JSON",
+                "project_id": "project1",
+                "status": {"getNOT": "01"},
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.api.__class__ = SyrConnectJsonAPI
+    coordinator.api.set_device_status = AsyncMock(return_value=True)  # type: ignore[method-assign]
+    sensor = SyrConnectSensor(
+        coordinator, "device_not_json", "Device NOT JSON", "getNOT"
+    )
+    button = SyrConnectButton(
+        coordinator, "device_not_json", "Device NOT JSON", "setNOT"
+    )
+
+    await button.async_press()
+
+    coordinator.api.set_device_status.assert_awaited_once_with(
+        "device_not_json", [("setNOT", 255)]
+    )
+    assert coordinator.data is not None
+    assert coordinator.data["devices"][0]["status"]["getNOT"] == "255"
+    assert sensor.native_value == "no_notification"
 
 
 async def test_button_reset_wrn_sends_255_via_json_api(hass: HomeAssistant) -> None:
@@ -1016,7 +1056,6 @@ async def test_button_reset_ala_sentinel_values_no_reset(
     }
     coordinator = _build_coordinator(hass, data)
     coordinator.async_set_device_value = AsyncMock()  # type: ignore[method-assign]
-    coordinator.async_clear_device_alarm = AsyncMock()  # type: ignore[method-assign]
 
     button = SyrConnectButton(
         coordinator, "device_sentinel", "Device Sentinel", "setALA"
@@ -1026,7 +1065,6 @@ async def test_button_reset_ala_sentinel_values_no_reset(
         await button.async_press()
 
     coordinator.async_set_device_value.assert_not_called()
-    coordinator.async_clear_device_alarm.assert_not_called()
 
 
 # ---------------------------------------------------------------------------

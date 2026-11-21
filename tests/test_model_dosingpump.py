@@ -12,13 +12,13 @@ import pytest
 from custom_components.syr_connect.button import SyrConnectButton, _build_device_buttons
 from custom_components.syr_connect.data import SyrConnectDevice
 from custom_components.syr_connect.helpers.profile import get_sensor_ala_map
-from custom_components.syr_connect.models import MODEL_SIGNATURES
+from custom_components.syr_connect.models import MODELS
 from custom_components.syr_connect.select import _build_device_selects
 from custom_components.syr_connect.sensor import SyrConnectSensor
 from homeassistant.core import HomeAssistant
 
 _SYR_CONNECT_TEST_DOSINGPUMP_MODEL = next(
-    model for model in MODEL_SIGNATURES if model.name == "dosingpump"
+    model for model in MODELS if model.name == "dosingpump"
 )
 
 _SYR_CONNECT_TEST_DOSINGPUMP_STATUS = {

@@ -1495,7 +1495,8 @@ async def test_coordinator_init_json_api(hass: HomeAssistant) -> None:
         mock_json_api_class.assert_called_once()
         call_args = mock_json_api_class.call_args
         assert call_args.kwargs["host"] == "192.168.1.100"
-        assert call_args.kwargs["base_path"] == "/trio"
+        # The model gives the local path of the JSON API
+        assert call_args.kwargs["model"].base_path == "/trio"
         assert coordinator._api_type == API_TYPE_JSON
         assert coordinator._username is None
         assert coordinator._service is None
@@ -1748,80 +1749,6 @@ async def test_coordinator_device_available_when_dst_is_2(
         assert coordinator.data is not None
         device = coordinator.data["devices"][0]
         assert device["available"] is True
-
-
-async def test_async_clear_device_alarm_xml_api_sends_clr_command(
-    hass: HomeAssistant, setup_in_progress_config_entry: MagicMock
-) -> None:
-    """async_clear_device_alarm sends clrALA via set_device_status for XML API."""
-    with patch(
-        "custom_components.syr_connect.coordinator.SyrConnectXmlAPI"
-    ) as mock_api_class:
-        mock_api = MagicMock()
-        mock_api.session_data = "test_session"
-        mock_api.projects = [{"id": "project1", "name": "Test Project"}]
-        mock_api.is_session_valid = MagicMock(return_value=True)
-        mock_api.get_devices = AsyncMock(
-            return_value=[
-                {"id": "device1", "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479"}
-            ]
-        )
-        mock_api.get_device_status = AsyncMock(return_value={})
-        mock_api_class.return_value = mock_api
-
-        config_data = {
-            CONF_SERVICE: "de.consoft.syr.connect",
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "password",
-        }
-        coordinator = SyrConnectDataUpdateCoordinator(
-            hass, MagicMock(), config_data, 60
-        )
-        coordinator.config_entry = setup_in_progress_config_entry
-        coordinator.data = {
-            "configuration_url": None,
-            "devices": [
-                {
-                    "id": "device1",
-                    "dclg": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-                    "name": "Device 1",
-                    "status": {},
-                }
-            ],
-            "projects": [],
-            "service": None,
-        }
-        mock_api.set_device_status = AsyncMock(return_value=True)
-        coordinator.api = mock_api
-
-        await coordinator.async_clear_device_alarm("device1")
-
-        mock_api.set_device_status.assert_awaited_once_with("device1", [("clrALA", "")])
-
-
-async def test_async_clear_device_alarm_json_api_success(hass: HomeAssistant) -> None:
-    """async_clear_device_alarm succeeds with JSON API."""
-    with patch(
-        "custom_components.syr_connect.coordinator.SyrConnectXmlAPI"
-    ) as mock_xml_api_class:
-        mock_xml_api_class.return_value = MagicMock()
-
-        config_data = {
-            CONF_SERVICE: "de.consoft.syr.connect",
-            CONF_USERNAME: "test@example.com",
-            CONF_PASSWORD: "password",
-        }
-        coordinator = SyrConnectDataUpdateCoordinator(
-            hass, MagicMock(), config_data, 60
-        )
-
-        mock_api = MagicMock(spec=SyrConnectJsonAPI)
-        mock_api.request_json_data = AsyncMock(return_value=None)
-        coordinator.api = mock_api
-
-        await coordinator.async_clear_device_alarm("device1")
-
-        mock_api.request_json_data.assert_called_once_with("clr/ala")
 
 
 async def test_coordinator_init_xml_api_with_conf_service(hass: HomeAssistant) -> None:

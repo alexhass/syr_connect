@@ -13,7 +13,7 @@ from custom_components.syr_connect.const import CONF_SERVICE
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.helpers.profile import get_sensor_ala_map
 from custom_components.syr_connect.models import (
-    MODEL_SIGNATURES,
+    MODELS,
     UNKNOWN_MODEL,
     SyrConnectModel,
     detect_model,
@@ -43,7 +43,7 @@ def _build_coordinator(
 
 def _signature(name: str) -> SyrConnectModel:
     """Return the model signature with the given name."""
-    return next(model for model in MODEL_SIGNATURES if model.name == name)
+    return next(model for model in MODELS if model.name == name)
 
 
 @pytest.mark.parametrize(

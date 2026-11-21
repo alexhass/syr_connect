@@ -17,18 +17,14 @@ from custom_components.syr_connect import (
 )
 from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
 from custom_components.syr_connect.helpers.profile import get_sensor_ala_map
-from custom_components.syr_connect.models import (
-    MODEL_SIGNATURES,
-    SyrConnectModel,
-    detect_model,
-)
+from custom_components.syr_connect.models import MODELS, SyrConnectModel, detect_model
 from custom_components.syr_connect.select import SyrConnectHardnessSelect
 from homeassistant.core import HomeAssistant
 
 
 def _signature(name: str) -> SyrConnectModel:
     """Return the model signature with the given name."""
-    return next(signature for signature in MODEL_SIGNATURES if signature.name == name)
+    return next(signature for signature in MODELS if signature.name == name)
 
 
 @pytest.mark.parametrize("name", ["l10", "lex100", "lexplus10", "lexplus10s"])
