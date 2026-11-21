@@ -25,6 +25,7 @@ import aiohttp
 
 from aiosyrconnect import (
     API_SERVICES,
+    MODEL_SIGNATURES,
     SyrConnectAuthError,
     SyrConnectConnectionError,
     SyrConnectJsonAPI,
@@ -53,10 +54,11 @@ async def main() -> None:
         except SyrConnectConnectionError:
             ...  # cloud not reachable or answer not usable: retry later
 
+        neosoft = next(sig for sig in MODEL_SIGNATURES if sig.name == "neosoft5000")
         local = SyrConnectJsonAPI(
             session,
             host="192.168.1.20",
-            base_path="/neosoft",
+            model=neosoft,
             user_agent="aiosyrconnect/1.0.0",
         )
         devices = await local.get_devices("local")
@@ -72,6 +74,7 @@ What the caller passes:
 | `service` | XML | Cloud service of the account, one of `API_SERVICES` |
 | `language` | XML | Locale like `de-DE` for the requests; default `en-US` |
 | `local_now` | XML | Returns the current time in the caller's time zone, for the UTC offset of the login; default the time zone of the process |
+| `model` | JSON | Signature of the device model (`MODEL_SIGNATURES`); gives the local path of the JSON API |
 | `login_required` | JSON | Whether the device needs ADM, as stored from an earlier `login_required`; default unknown |
 
 ## Device models

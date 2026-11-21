@@ -64,7 +64,7 @@ from .helpers.registry import (
     delete_issue,
 )
 from .helpers.values import get_sensor_iwh_value
-from .models import MODEL_SIGNATURES
+from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -163,20 +163,15 @@ class SyrConnectDataUpdateCoordinator(
             host = config_data[CONF_HOST]
             model = config_data[CONF_MODEL]
 
-            # Get base_path for the selected model
-            base_path = None
-            for sig in MODEL_SIGNATURES:
-                if sig.name == model:
-                    base_path = sig.base_path
-                    break
-
-            if base_path is None:
+            # The model gives the local path of the JSON API
+            model_info = detect_model({}, model=model)
+            if model_info.base_path is None:
                 raise ValueError(f"Model {model} does not support local JSON API")
 
             self.api = SyrConnectJsonAPI(
                 session,
                 host=host,
-                base_path=base_path,
+                model=model_info,
                 login_required=config_data.get(CONF_LOGIN_REQUIRED),
                 user_agent=build_user_agent(get_integration_version(hass)),
             )

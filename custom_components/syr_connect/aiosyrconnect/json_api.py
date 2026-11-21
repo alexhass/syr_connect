@@ -39,7 +39,7 @@ from .exceptions import (
     SyrConnectInvalidResponseError,
 )
 from .http_client import check_user_agent, read_response_text
-from .models import SyrConnectApiDevice, SyrConnectStatus
+from .models import SyrConnectApiDevice, SyrConnectModelSignature, SyrConnectStatus
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -95,20 +95,25 @@ class SyrConnectJsonAPI:
         base_url: str | None = None,
         login_required: bool | None = None,
         *,
+        model: SyrConnectModelSignature | None = None,
         user_agent: str | None = None,
     ) -> None:
         """Initialize the JSON API client.
 
         The URL is either built from host and base_path as http://host:5333/base_path,
-        or given as base_url (e.g. for tests), which overrides both.
+        or given as base_url (e.g. for tests), which overrides both. The base path is
+        normally taken from the model (`MODEL_SIGNATURES`); base_path is only needed
+        for a device family without a signature of its own.
 
         Args:
             session: aiohttp ClientSession of the caller
             host: IP address or hostname of the device
-            base_path: Path of the device family, e.g. "/neosoft"
+            base_path: Path of the device family, e.g. "/neosoft"; ignored with model
             base_url: Explicit base URL; no ADM is sent to it
             login_required: Whether the device needs ADM, as the caller stored it from
                 an earlier `login_required`; None if unknown
+            model: Signature of the device model; its base_path is used. A model
+                without local API has none, like a client without base_path.
             user_agent: HTTP User-Agent of the requests; names the caller
 
         Raises:
@@ -122,7 +127,7 @@ class SyrConnectJsonAPI:
 
         # URL construction parameters (option 1: host + base_path)
         self._host = host
-        self._base_path = base_path
+        self._base_path = model.base_path if model is not None else base_path
 
         # URL construction parameters (option 2: explicit base_url, overrides host/base_path)
         self._base_url = base_url

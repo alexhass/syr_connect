@@ -16,6 +16,7 @@ import aiohttp
 import pytest
 
 from custom_components.syr_connect.aiosyrconnect import (
+    MODEL_SIGNATURES,
     SyrConnectAuthError,
     SyrConnectConnectionError,
     SyrConnectHTTPError,
@@ -89,6 +90,32 @@ def test_init_without_base_url(user_agent: str) -> None:
     assert client._base_url is None
     assert client._host == "192.168.1.100"
     assert client._base_path == "/trio"
+
+
+@pytest.mark.parametrize(
+    ("name", "base_path"),
+    [
+        ("neosoft5000", "/neosoft"),
+        ("pontosbase", "/pontos-base"),
+        # A model without local API has no path, like a client without base_path
+        ("safetplus", None),
+    ],
+)
+def test_init_with_model_takes_its_base_path(
+    name: str, base_path: str | None, user_agent: str
+) -> None:
+    """The model gives the local path of the JSON API; base_path is ignored with it."""
+    model = next(signature for signature in MODEL_SIGNATURES if signature.name == name)
+
+    client = SyrConnectJsonAPI(
+        MagicMock(),
+        host="192.168.1.100",
+        base_path="/ignored",
+        model=model,
+        user_agent=user_agent,
+    )
+
+    assert client._base_path == base_path
 
 
 def test_build_base_url_with_explicit_base_url(user_agent: str) -> None:

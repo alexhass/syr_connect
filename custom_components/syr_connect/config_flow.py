@@ -48,7 +48,7 @@ from .helpers.integration import (
     is_valid_host,
 )
 from .helpers.registry import build_entry_unique_id
-from .models import MODEL_SIGNATURES
+from .models import MODEL_SIGNATURES, detect_model
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -275,26 +275,24 @@ async def validate_input_json(
         )
         raise HostInvalidError("Host must be a valid IP address or hostname.")
 
-    model = data[CONF_MODEL]
+    model = detect_model({}, model=data[CONF_MODEL])
 
-    _LOGGER.debug("Validating JSON API connection to host: %s, model: %s", host, model)
+    _LOGGER.debug(
+        "Validating JSON API connection to host: %s, model: %s", host, model.name
+    )
 
-    # Get base_path for the selected model
-    base_path = None
-    for sig in MODEL_SIGNATURES:
-        if sig.name == model:
-            base_path = sig.base_path
-            break
-
-    if base_path is None:
-        _LOGGER.debug("Selected model %s does not support local JSON API", model)
+    # The model gives the local path of the JSON API
+    if model.base_path is None:
+        _LOGGER.debug(
+            "Selected model %s does not support local JSON API", data[CONF_MODEL]
+        )
         raise CannotConnectError
 
     session = async_get_clientsession(hass)
     api = SyrConnectJsonAPI(
         session,
         host=host,
-        base_path=base_path,
+        model=model,
         user_agent=build_user_agent(get_integration_version(hass)),
     )
 

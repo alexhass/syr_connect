@@ -27,6 +27,7 @@ from .data import SyrConnectDevice
 from .helpers.device import get_device_model
 from .helpers.integration import build_user_agent, get_integration_version
 from .helpers.values import is_empty_ip
+from .models import SyrConnectModel
 from .sensor import sensor_keys_for_status
 
 _LOGGER = logging.getLogger(__name__)
@@ -67,16 +68,16 @@ _SYR_CONNECT_DIAGNOSTICS_PROJECT_PLACEHOLDERS = {
 }
 
 
-def _local_json_base_path(device: SyrConnectDevice) -> str | None:
-    """Return the local JSON API base path of the device's model, or None without local access.
+def _local_json_model(device: SyrConnectDevice) -> SyrConnectModel | None:
+    """Return the device's model if it has a local JSON API, else None.
 
-    The base path is not part of the coordinator's device dict; it comes from the model
-    signature (`MODEL_SIGNATURES`) detected from the device status. Adding a `base_path`
-    to a model is therefore enough to include its local `/get/all` data in diagnostics,
-    even when the device is set up via the cloud (XML) API.
+    The model is detected from the device status; its signature in the library gives
+    the local path of the JSON API (`base_path`). Adding a `base_path` to a model is
+    therefore enough to include its local `/get/all` data in diagnostics, even when the
+    device is set up via the cloud (XML) API.
     """
-    base_path = get_device_model(device).base_path
-    return base_path or None
+    model = get_device_model(device)
+    return model if model.base_path else None
 
 
 def mask_mac_value(val: str, last_char_replace: str | None = None) -> str:
@@ -472,7 +473,10 @@ async def _async_local_login(json_api: SyrConnectJsonAPI, dev_id: str, ip: str) 
 
 
 async def _fetch_local_device_json(
-    session: Any, dev: SyrConnectDevice, base_path: str, integration_version: str
+    session: Any,
+    dev: SyrConnectDevice,
+    model: SyrConnectModel,
+    integration_version: str,
 ) -> tuple[str, Any]:
     """Fetch the redacted local `/get/all` data of a cloud device.
 
@@ -487,7 +491,7 @@ async def _fetch_local_device_json(
     json_api = SyrConnectJsonAPI(
         session,
         host=ip,
-        base_path=base_path,
+        model=model,
         user_agent=build_user_agent(integration_version),
     )
     try:
@@ -519,7 +523,7 @@ async def _collect_raw_json_cloud_devices(
 ) -> dict[str, Any]:
     """Collect local `/get/all` data of cloud (XML API) devices whose model offers local access.
 
-    Only models with a `base_path` are queried (see `_local_json_base_path`), at the
+    Only models with a `base_path` are queried (see `_local_json_model`), at the
     device IP from the status. Result: `{device_id: data}` for the devices that
     answered, or `{"error": ...}`.
     """
@@ -535,16 +539,18 @@ async def _collect_raw_json_cloud_devices(
             semaphore = asyncio.Semaphore(_SYR_CONNECT_DIAGNOSTICS_CONCURRENT_API_CALLS)
             integration_version = get_integration_version(hass)
 
-            async def _wrap(dev: SyrConnectDevice, base_path: str) -> tuple[str, Any]:
+            async def _wrap(
+                dev: SyrConnectDevice, model: SyrConnectModel
+            ) -> tuple[str, Any]:
                 async with semaphore:
                     return await _fetch_local_device_json(
-                        session, dev, base_path, integration_version
+                        session, dev, model, integration_version
                     )
 
             tasks = [
-                _wrap(d, base_path)
+                _wrap(d, model)
                 for d in devices
-                if isinstance(d, dict) and (base_path := _local_json_base_path(d))
+                if isinstance(d, dict) and (model := _local_json_model(d)) is not None
             ]
             if tasks:
                 results = await asyncio.gather(*tasks, return_exceptions=True)
