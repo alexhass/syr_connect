@@ -1,6 +1,8 @@
 """Tests for the model signatures and their detection (model_detection.py)."""
 
 from dataclasses import dataclass
+import json
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -10,6 +12,9 @@ from custom_components.syr_connect.aiosyrconnect.model_detection import (
     detect_model_signature,
 )
 from custom_components.syr_connect.aiosyrconnect.models import SyrConnectModelSignature
+from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
+
+_FIXTURE_DIR = Path(__file__).parent.parent / "fixtures"
 
 
 def _signature(
@@ -23,6 +28,112 @@ def test_model_signature_names_are_unique() -> None:
     """Every signature has its own name; a duplicate would never be detected."""
     names = [signature.name for signature in MODEL_SIGNATURES]
     assert sorted(name for name in set(names) if names.count(name) > 1) == []
+
+
+@pytest.mark.parametrize(
+    ("fixture", "expected"),
+    [
+        ("ConelClearProFill_GetDeviceCollectionStatus.xml", "conelclearprofill"),
+        (
+            "ConelClearProLeakProtection_GetDeviceCollectionStatus.xml",
+            "conelclearproleakprotection",
+        ),
+        (
+            "SanibelLeakProtectionModuleA25_GetDeviceCollectionStatus.xml",
+            "sanibelleakprotect",
+        ),
+        ("SanibelSoftwaterUNOA25_GetDeviceCollectionStatus.xml", "sanibelsoftwateruno"),
+        ("SyrAllInOnePlus_GetDeviceCollectionStatus.xml", "allinoneplus"),
+        ("SyrL20_GetDeviceCollectionStatus.xml", "l20"),
+        ("SyrLEX30_GetDeviceCollectionStatus.xml", "lex30"),
+        ("SyrLEXplus10SL_GetDeviceCollectionStatus.xml", "lexplus10sl"),
+        ("SyrLEXplus10S_GetDeviceCollectionStatus.xml", "lexplus10s"),
+        ("SyrNeoSoft2500_GetDeviceCollectionStatus.xml", "neosoft2500"),
+        ("SyrNeoSoft5000_GetDeviceCollectionStatus.xml", "neosoft5000"),
+        ("SyrSafeFloor_GetDeviceCollectionStatus.xml", "safefloor"),
+        ("SyrSafeTPlus_GetDeviceCollectionStatus.xml", "safetplus"),
+        ("SyrSafeTechPlus_GetDeviceCollectionStatus.xml", "safetechplus"),
+        ("SyrSafeTechV4_GetDeviceCollectionStatus.xml", "safetechv4"),
+        ("SyrTrioDFRLS_GetDeviceCollectionStatus.xml", "trio"),
+        ("SyrTrioLock_GetDeviceCollectionStatus.xml", "syrtriolockconnect"),
+    ],
+)
+def test_cloud_fixture_is_detected_from_its_status(fixture: str, expected: str) -> None:
+    """The status of every cloud fixture alone detects its model."""
+    xml = (_FIXTURE_DIR / "xml" / fixture).read_text(encoding="utf-8")
+    status = ResponseParser().parse_device_status_response(xml)
+
+    signature = detect_model_signature(status, MODEL_SIGNATURES)
+
+    assert signature is not None
+    assert signature.name == expected
+
+
+@pytest.mark.parametrize(
+    ("fixture", "expected"),
+    [
+        ("ConelClearProFill_get_all.json", "conelclearprofill"),
+        ("ConelClearProLeakProtection.json", "conelclearproleakprotection"),
+        ("ConelClearProSoft_get_all.json", "conelclearprosoft"),
+        ("HansgrohePontosBase_get_all.json", "pontosbase"),
+        ("SanibelLeakProtectionModuleA25_get_all.json", "sanibelleakprotect"),
+        ("SanibelSoftwaterUNOA25_get_all.json", "sanibelsoftwateruno"),
+        ("SyrAllInOnePlus_get_all.json", "allinoneplus"),
+        ("SyrNeoSoft2500_get_all.json", "neosoft2500"),
+        ("SyrNeoSoft5000_get_all.json", "neosoft5000"),
+        ("SyrSafeTechPlus_get_all.json", "safetechplus"),
+        ("SyrSafeTechV3_get_all.json", "safetechv3"),
+        ("SyrSafeTechV4_get_all.json", "safetechv4"),
+        ("SyrSafeTechV4_old_get_all.json", "safetechv4"),
+        ("SyrSafeTech_get_all.json", "safetech"),
+        ("SyrTrioDFRLS_get_all.json", "trio"),
+        ("SyrTrioLock_get_all.json", "syrtriolockconnect"),
+    ],
+)
+def test_local_fixture_is_detected_from_its_status(fixture: str, expected: str) -> None:
+    """The local status (/get/all) of every JSON fixture detects its model."""
+    status = json.loads((_FIXTURE_DIR / "json" / fixture).read_text(encoding="utf-8"))
+
+    signature = detect_model_signature(status, MODEL_SIGNATURES)
+
+    assert signature is not None
+    assert signature.name == expected
+
+
+def test_device_kind_of_cloud_fixtures_detects_the_model_of_the_status() -> None:
+    """For every cloud fixture with a device list, the device kind detects the same model."""
+    parser = ResponseParser()
+    checked = 0
+    for list_file in sorted(
+        (_FIXTURE_DIR / "xml").glob("*_GetProjectDeviceCollections.xml")
+    ):
+        status_file = list_file.with_name(
+            list_file.name.replace(
+                "_GetProjectDeviceCollections.xml", "_GetDeviceCollectionStatus.xml"
+            )
+        )
+        if not status_file.exists():
+            continue
+        devices = parser.parse_device_list_response(
+            list_file.read_text(encoding="utf-8")
+        )
+        status = parser.parse_device_status_response(
+            status_file.read_text(encoding="utf-8")
+        )
+        by_status = detect_model_signature(status, MODEL_SIGNATURES)
+        assert by_status is not None, status_file.name
+        # The device list may hold other devices of the project, too
+        device = next(d for d in devices if d.get("dk") == by_status.dk)
+        by_kind = detect_model_signature(
+            status,
+            MODEL_SIGNATURES,
+            dk=device.get("dk"),
+            dkv=device.get("dkv"),
+            sbt=device.get("sbt"),
+        )
+        assert by_kind is by_status, list_file.name
+        checked += 1
+    assert checked >= 9
 
 
 def test_device_kind_family_of_one_is_the_result() -> None:
