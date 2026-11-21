@@ -7,7 +7,7 @@ import string
 from typing import Any, cast
 
 from custom_components.syr_connect.const import DOMAIN
-from custom_components.syr_connect.models import MODEL_SIGNATURES
+from custom_components.syr_connect.models import MODELS
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.translation import async_get_translations
@@ -73,7 +73,7 @@ def test_alarm_codes_are_translated() -> None:
     current alarm there); an empty getALM means no alarm.
     """
     ala_states: set[str] = set()
-    for model in MODEL_SIGNATURES:
+    for model in MODELS:
         profile = model.device_profile
         if profile is not None and profile.ala_codes is not None:
             ala_states.update(profile.ala_codes.values())
@@ -90,7 +90,7 @@ def test_notification_and_warning_codes_are_translated() -> None:
     """Every notification and warning code of every family has a state in all languages."""
     not_states: set[str] = set()
     wrn_states: set[str] = set()
-    for model in MODEL_SIGNATURES:
+    for model in MODELS:
         profile = model.device_profile
         if profile is not None and profile.not_codes is not None:
             not_states.update(profile.not_codes.values())

@@ -12,7 +12,7 @@ import pytest
 from custom_components.syr_connect.button import SyrConnectButton, _build_device_buttons
 from custom_components.syr_connect.data import SyrConnectDevice
 from custom_components.syr_connect.helpers.profile import get_sensor_ala_map
-from custom_components.syr_connect.models import MODEL_SIGNATURES, SyrConnectModel
+from custom_components.syr_connect.models import MODELS, SyrConnectModel
 from custom_components.syr_connect.select import (
     SyrConnectDiscreteSelect,
     SyrConnectFlushingTemperatureSelect,
@@ -26,7 +26,7 @@ from custom_components.syr_connect.switch import (
 from homeassistant.core import HomeAssistant
 
 _SYR_CONNECT_TEST_HYGBOX_MODEL = next(
-    model for model in MODEL_SIGNATURES if model.name == "hygbox"
+    model for model in MODELS if model.name == "hygbox"
 )
 # Default settings of a HygBox for cold water
 _SYR_CONNECT_TEST_HYGBOX_STATUS = {

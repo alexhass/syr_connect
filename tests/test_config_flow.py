@@ -37,7 +37,7 @@ from custom_components.syr_connect.const import (
     DOMAIN,
 )
 from custom_components.syr_connect.helpers.registry import build_entry_unique_id
-from custom_components.syr_connect.models import MODEL_SIGNATURES
+from custom_components.syr_connect.models import MODELS
 from homeassistant import config_entries
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
@@ -1314,9 +1314,9 @@ async def test_validate_input_json_rejects_invalid_host(
 
 
 def test_local_api_models_labels_prefixed_with_manufacturer() -> None:
-    """Every LOCAL_API_MODELS label must start with the manufacturer name from MODEL_SIGNATURES."""
+    """Every LOCAL_API_MODELS label must start with the manufacturer name from MODELS."""
 
-    sig_by_name = {sig.name: sig for sig in MODEL_SIGNATURES}
+    sig_by_name = {sig.name: sig for sig in MODELS}
 
     for model_name, label in LOCAL_API_MODELS:
         sig = sig_by_name[model_name]
@@ -1334,7 +1334,7 @@ def test_local_api_models_labels_prefixed_with_manufacturer() -> None:
 def test_local_api_models_only_includes_models_with_base_path() -> None:
     """LOCAL_API_MODELS must not contain models without a base_path."""
 
-    sig_by_name = {sig.name: sig for sig in MODEL_SIGNATURES}
+    sig_by_name = {sig.name: sig for sig in MODELS}
     for model_name, _label in LOCAL_API_MODELS:
         assert sig_by_name[model_name].base_path is not None, (
             f"Model {model_name!r} has no base_path but is in LOCAL_API_MODELS"

@@ -12,7 +12,7 @@ import logging
 from typing import NotRequired, Required, TypedDict
 
 from .aiosyrconnect import (
-    MODEL_SIGNATURES as API_MODEL_SIGNATURES,
+    MODEL_SIGNATURES,
     SyrConnectModelSignature,
     detect_model_signature,
 )
@@ -776,9 +776,7 @@ def _model(signature: SyrConnectModelSignature) -> SyrConnectModel:
 
 # The models, in the order of the signatures of the library: the status checks of the
 # detection return the first one that matches.
-MODEL_SIGNATURES: list[SyrConnectModel] = [
-    _model(signature) for signature in API_MODEL_SIGNATURES
-]
+MODELS: list[SyrConnectModel] = [_model(signature) for signature in MODEL_SIGNATURES]
 
 
 def detect_model(
@@ -805,15 +803,15 @@ def detect_model(
         model: The name of the model chosen at setup (CONF_MODEL), None to detect it
 
     Returns:
-        The chosen or matched MODEL_SIGNATURES entry, or ``UNKNOWN_MODEL`` if no
+        The chosen or matched MODELS entry, or ``UNKNOWN_MODEL`` if no
         signature matches.
     """
     if model is not None:
         return next(
-            (sig for sig in MODEL_SIGNATURES if sig.name == model),
+            (sig for sig in MODELS if sig.name == model),
             UNKNOWN_MODEL,
         )
-    detected = detect_model_signature(flat, MODEL_SIGNATURES, dk=dk, dkv=dkv, sbt=sbt)
+    detected = detect_model_signature(flat, MODELS, dk=dk, dkv=dkv, sbt=sbt)
     if detected is None:
         return UNKNOWN_MODEL
     _LOGGER.debug("detect_model: detected model %s", detected.branded(service)[1])

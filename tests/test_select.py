@@ -22,11 +22,7 @@ from custom_components.syr_connect.const import CONF_SERVICE, DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.devices import SyrConnectDeviceProfile
 from custom_components.syr_connect.helpers.registry import build_unique_id
-from custom_components.syr_connect.models import (
-    MODEL_SIGNATURES,
-    UNKNOWN_MODEL,
-    SyrConnectModel,
-)
+from custom_components.syr_connect.models import MODELS, UNKNOWN_MODEL, SyrConnectModel
 from custom_components.syr_connect.select import (
     SyrConnectDiscreteSelect,
     SyrConnectHardnessSelect,
@@ -45,11 +41,11 @@ from homeassistant.helpers import entity_registry as er
 
 # NeoSoft 2500: regeneration mode, no water hardness selects
 _SYR_CONNECT_TEST_NEOSOFT_MODEL = next(
-    model for model in MODEL_SIGNATURES if model.name == "neosoft2500"
+    model for model in MODELS if model.name == "neosoft2500"
 )
 # SafeTech: leak protection profiles, rotation, buzzer, valve
 _SYR_CONNECT_TEST_SAFETECH_MODEL = next(
-    model for model in MODEL_SIGNATURES if model.name == "safetech"
+    model for model in MODELS if model.name == "safetech"
 )
 
 
@@ -730,7 +726,7 @@ async def test_async_setup_entry_registry_exception(
 
 
 _SYR_CONNECT_TEST_MUCO_FILLING_MODEL = next(
-    model for model in MODEL_SIGNATURES if model.name == "conelclearprofill"
+    model for model in MODELS if model.name == "conelclearprofill"
 )
 
 
@@ -2345,7 +2341,7 @@ async def test_async_setup_entry_creates_sv_select_for_srn_detected_model(
     mock_config_entry, _mock_coordinator = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
 
-    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
+    with patch("custom_components.syr_connect.models.MODELS", test_sig):
         await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
     sv1_entities = [
@@ -2962,9 +2958,7 @@ async def test_hardness_select_sends_set_command(hass: HomeAssistant) -> None:
 
 
 # The hardness selects exist for the LEX family only, which numbers the getWHU units its own way
-_SYR_CONNECT_TEST_LEX_MODEL = next(
-    model for model in MODEL_SIGNATURES if model.name == "lex30"
-)
+_SYR_CONNECT_TEST_LEX_MODEL = next(model for model in MODELS if model.name == "lex30")
 
 
 @pytest.mark.parametrize(
@@ -3152,7 +3146,7 @@ async def test_async_setup_entry_skips_hardness_and_safefloor_selects_without_de
     mock_config_entry, _ = create_mock_entry_with_coordinator(data)
     entities, async_add_entities = mock_add_entities()
 
-    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
+    with patch("custom_components.syr_connect.models.MODELS", test_sig):
         await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
     keys = {getattr(e, "_sensor_key", None) for e in entities}
@@ -3235,7 +3229,7 @@ async def test_rmt_select_options_follow_profile(
     first_options: list[str],
 ) -> None:
     """The All-in-One+ offers other maximum filling durations (getRMT) than MuCo."""
-    model = next(model for model in MODEL_SIGNATURES if model.name == model_name)
+    model = next(model for model in MODELS if model.name == model_name)
     data = {
         "devices": [
             {
@@ -3275,7 +3269,7 @@ async def test_crs_select_custom_size_follows_profile(
     custom: bool,
 ) -> None:
     """Only a model with a custom cartridge size (getFCS) offers "custom" for getCRS."""
-    model = next(model for model in MODEL_SIGNATURES if model.name == model_name)
+    model = next(model for model in MODELS if model.name == model_name)
     data = {
         "devices": [
             {
@@ -3342,7 +3336,7 @@ async def test_ranged_hardness_select_lowers_soft_water_hardness(
     calls: list[tuple[str, int]],
 ) -> None:
     """A raw water hardness below the soft water hardness lowers that one too."""
-    model = next(model for model in MODEL_SIGNATURES if model.name == model_name)
+    model = next(model for model in MODELS if model.name == model_name)
     data = {
         "devices": [
             {"id": "device1", "name": "Device 1", "model": model, "status": status}

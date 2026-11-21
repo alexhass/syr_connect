@@ -19,17 +19,13 @@ from custom_components.syr_connect.helpers.device import (
     get_device,
     get_device_model,
 )
-from custom_components.syr_connect.models import (
-    MODEL_SIGNATURES,
-    UNKNOWN_MODEL,
-    SyrConnectModel,
-)
+from custom_components.syr_connect.models import MODELS, UNKNOWN_MODEL, SyrConnectModel
 from custom_components.syr_connect.sensor import is_sensor_visible
 
 
 def _signature(name: str) -> SyrConnectModel:
     """Return the model signature with the given name."""
-    return next(signature for signature in MODEL_SIGNATURES if signature.name == name)
+    return next(signature for signature in MODELS if signature.name == name)
 
 
 def _keys_hidden_when(rule: str) -> set[str]:

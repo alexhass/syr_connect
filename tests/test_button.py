@@ -17,7 +17,7 @@ from custom_components.syr_connect.aiosyrconnect import (
 from custom_components.syr_connect.button import SyrConnectButton, async_setup_entry
 from custom_components.syr_connect.const import CONF_SERVICE, DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
-from custom_components.syr_connect.models import MODEL_SIGNATURES
+from custom_components.syr_connect.models import MODELS
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
@@ -25,11 +25,11 @@ from homeassistant.helpers import entity_registry as er
 
 # NeoSoft 2500: regeneration mode, no water hardness selects
 _SYR_CONNECT_TEST_NEOSOFT_MODEL = next(
-    model for model in MODEL_SIGNATURES if model.name == "neosoft2500"
+    model for model in MODELS if model.name == "neosoft2500"
 )
 # SafeTech: leak protection profiles, rotation, buzzer, valve
 _SYR_CONNECT_TEST_SAFETECH_MODEL = next(
-    model for model in MODEL_SIGNATURES if model.name == "safetech"
+    model for model in MODELS if model.name == "safetech"
 )
 
 

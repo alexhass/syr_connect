@@ -7,14 +7,12 @@ from unittest.mock import patch
 
 import pytest
 
-from custom_components.syr_connect.aiosyrconnect import (
-    MODEL_SIGNATURES as API_MODEL_SIGNATURES,
-)
+from custom_components.syr_connect.aiosyrconnect import MODEL_SIGNATURES
 from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
 from custom_components.syr_connect.devices import muco_triolock
 from custom_components.syr_connect.models import (
     _SYR_CONNECT_MODEL_DETAILS,
-    MODEL_SIGNATURES,
+    MODELS,
     UNKNOWN_MODEL,
     detect_model,
 )
@@ -367,7 +365,7 @@ def test_ver_contains_signature_matches_and_skips() -> None:
             ver_contains="MAGIC",
         )
     ]
-    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
+    with patch("custom_components.syr_connect.models.MODELS", test_sig):
         assert detect_model({"getVER": "prefixMAGICsuffix"}).name == "testver"
         assert detect_model({"getVER": "nope"}).name == "unknown"
 
@@ -389,7 +387,7 @@ def test_chosen_model_is_used_without_detection() -> None:
             cna_equals="DETECTED",
         ),
     ]
-    with patch("custom_components.syr_connect.models.MODEL_SIGNATURES", test_sig):
+    with patch("custom_components.syr_connect.models.MODELS", test_sig):
         flat = {"getCNA": "DETECTED"}
         assert detect_model(flat, model="testchosen").name == "testchosen"
         assert detect_model(flat, model="removed") is UNKNOWN_MODEL
@@ -777,11 +775,11 @@ def test_detect_model_multicontroller_without_role_is_unknown() -> None:
 
 def test_models_follow_the_signatures_of_the_library() -> None:
     """Every signature of the library has details, in its order, and no details are left."""
-    assert [model.name for model in MODEL_SIGNATURES] == [
-        signature.name for signature in API_MODEL_SIGNATURES
+    assert [model.name for model in MODELS] == [
+        signature.name for signature in MODEL_SIGNATURES
     ]
     assert set(_SYR_CONNECT_MODEL_DETAILS) == {
-        signature.name for signature in API_MODEL_SIGNATURES
+        signature.name for signature in MODEL_SIGNATURES
     }
 
 

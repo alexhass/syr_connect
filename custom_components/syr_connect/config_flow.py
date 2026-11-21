@@ -48,7 +48,7 @@ from .helpers.integration import (
     is_valid_host,
 )
 from .helpers.registry import build_entry_unique_id
-from .models import MODEL_SIGNATURES, detect_model
+from .models import MODELS, detect_model
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -113,7 +113,7 @@ LOCAL_API_MODELS = sorted(
             sig.name,
             f"{sig.manufacturer} {sig.display_name}",
         )
-        for sig in MODEL_SIGNATURES
+        for sig in MODELS
         if sig.base_path is not None
     ],
     key=lambda x: x[1].casefold(),  # Sort by display_name (case-insensitive)

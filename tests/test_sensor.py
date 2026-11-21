@@ -26,7 +26,7 @@ from custom_components.syr_connect.devices import (
     lexplus10sl,
 )
 from custom_components.syr_connect.models import (
-    MODEL_SIGNATURES,
+    MODELS,
     UNKNOWN_MODEL,
     SyrConnectModel,
     detect_model,
@@ -318,7 +318,7 @@ def test_lex_profiles_report_local_time_timestamps() -> None:
         lexplus10s.PROFILE,
         lexplus10sl.PROFILE,
     ]
-    for signature in MODEL_SIGNATURES:
+    for signature in MODELS:
         profile = signature.device_profile
         if profile is None:
             continue
@@ -401,7 +401,7 @@ async def test_sensor_regeneration_time(hass: HomeAssistant) -> None:
 
 def _signature(name: str) -> SyrConnectModel:
     """Return the model signature with the given name."""
-    return next(model for model in MODEL_SIGNATURES if model.name == name)
+    return next(model for model in MODELS if model.name == name)
 
 
 @pytest.mark.parametrize(

@@ -18,7 +18,7 @@ from custom_components.syr_connect.aiosyrconnect import (
 from custom_components.syr_connect.const import CONF_SERVICE
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.helpers.values import build_set_ab_command
-from custom_components.syr_connect.models import MODEL_SIGNATURES
+from custom_components.syr_connect.models import MODELS
 from custom_components.syr_connect.valve import SyrConnectValve, async_setup_entry
 from homeassistant.components.valve import ValveDeviceClass, ValveEntityFeature
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
@@ -27,7 +27,7 @@ from homeassistant.exceptions import HomeAssistantError
 
 # SafeTech: leak protection profiles, rotation, buzzer, valve
 _SYR_CONNECT_TEST_SAFETECH_MODEL = next(
-    model for model in MODEL_SIGNATURES if model.name == "safetech"
+    model for model in MODELS if model.name == "safetech"
 )
 
 
