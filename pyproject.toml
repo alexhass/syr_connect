@@ -260,4 +260,4 @@ property-decorators = ["propcache.api.cached_property"]
 builtin = "clear,rare,informal,usage,code,names,en-GB_to_en-US"
 ignore-words-list = "ags,ba,centre,cna,falsy,hass,hve,ist,master,modell,nam,oder,periode,puls,sie,slave,te,temperatur,ws"
 check-hidden = true
-skip = "*/translations/*,*/fixtures/*,*.ambr,README.de.md,.git,.venv,.mypy_cache,.ruff_cache,.pytest_cache,.coverage,__pycache__"
+skip = "*/translations/*,*/fixtures/*,*.ambr,README.*.md,.git,.venv,.mypy_cache,.ruff_cache,.pytest_cache,.coverage,__pycache__"
