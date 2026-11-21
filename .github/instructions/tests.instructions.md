@@ -12,7 +12,7 @@ applyTo: "tests/**"
 - Hand-written coordinator stand-ins (`class Dummy*Coord`) need `entry_id = None`.
 - When adding a coordinator attribute used in registry removal, grep the tests for `async_remove.assert_called` and `.async_remove.called`.
 - Select entities for `getPRF` and `getSRO` have no `_sensor_key`. Identify them with `isinstance(e, SyrConnectPrfSelect)` / `SyrConnectRotationSelect`.
-- Do not tie generic detection tests to real `models.py` entries. Patch `models.MODEL_SIGNATURES` with a synthetic signature.
+- Do not tie generic detection tests to real `models.py` entries. Patch `models.MODELS` with a synthetic model; the tests of the library pass synthetic signatures to `detect_model_signature()`.
 - After editing production code or tests that a revert touched, read both the code and its tests again before changing either.
 
 ## New Fixtures

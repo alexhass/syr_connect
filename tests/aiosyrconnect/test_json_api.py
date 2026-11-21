@@ -16,6 +16,7 @@ import aiohttp
 import pytest
 
 from custom_components.syr_connect.aiosyrconnect import (
+    MODEL_SIGNATURES,
     SyrConnectAuthError,
     SyrConnectConnectionError,
     SyrConnectHTTPError,
@@ -89,6 +90,54 @@ def test_init_without_base_url(user_agent: str) -> None:
     assert client._base_url is None
     assert client._host == "192.168.1.100"
     assert client._base_path == "/trio"
+
+
+@pytest.mark.parametrize(
+    ("name", "base_path"),
+    [
+        ("neosoft5000", "/neosoft"),
+        ("pontosbase", "/pontos-base"),
+        # A model without local API has no path, like a client without base_path
+        ("safetplus", None),
+    ],
+)
+def test_init_with_model_takes_its_base_path(
+    name: str, base_path: str | None, user_agent: str
+) -> None:
+    """The model gives the local path of the JSON API; base_path is ignored with it."""
+    model = next(signature for signature in MODEL_SIGNATURES if signature.name == name)
+
+    client = SyrConnectJsonAPI(
+        MagicMock(),
+        host="192.168.1.100",
+        base_path="/ignored",
+        model=model,
+        user_agent=user_agent,
+    )
+
+    assert client._base_path == base_path
+
+
+def test_clear_value_is_decimal(user_agent: str) -> None:
+    """The device acknowledges a notification or warning (setNOT, setWRN) with 255."""
+    client = SyrConnectJsonAPI(MagicMock(), host="192.168.1.100", user_agent=user_agent)
+
+    assert client.clear_value == 255
+
+
+@pytest.mark.parametrize("login_required", [None, True, False])
+def test_login_required_is_the_stored_value(
+    login_required: bool | None, user_agent: str
+) -> None:
+    """Whether the device needs ADM is unknown until the caller passes a stored value."""
+    client = SyrConnectJsonAPI(
+        MagicMock(),
+        host="192.168.1.100",
+        login_required=login_required,
+        user_agent=user_agent,
+    )
+
+    assert client.login_required is login_required
 
 
 def test_build_base_url_with_explicit_base_url(user_agent: str) -> None:
@@ -647,6 +696,35 @@ async def test_set_device_status_strips_set_prefix(
     called_url = str(sess.get.call_args[0][0])
     assert "/set/ab/true" in called_url
     assert "/set/setAB/" not in called_url
+    assert result is True
+
+
+@pytest.mark.parametrize(
+    ("command", "path"), [("clrALA", "/clr/ala"), ("clrALM", "/clr/alm")]
+)
+async def test_set_device_status_sends_clr_command_to_clr_endpoint(
+    user_agent: str, set_response_body: Callable[..., None], command: str, path: str
+) -> None:
+    """A clr command clears the alarm via the /clr/ endpoint, before the next command."""
+    sess = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.raise_for_status = MagicMock()
+    set_response_body(mock_response, json.dumps({"setAB1": "OK"}))
+    mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+    mock_response.__aexit__ = AsyncMock(return_value=None)
+    sess.get = MagicMock(return_value=mock_response)
+
+    client = SyrConnectJsonAPI(
+        sess,
+        base_url="http://test:5333/trio/",
+        user_agent=user_agent,
+    )
+
+    result = await client.set_device_status("device1", [(command, ""), ("setAB", 1)])
+
+    called_urls = [urlsplit(str(c.args[0])).path for c in sess.get.call_args_list]
+    assert called_urls == [f"/trio{path}", "/trio/set/ab/1"]
     assert result is True
 
 

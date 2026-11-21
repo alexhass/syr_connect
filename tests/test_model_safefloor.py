@@ -11,7 +11,7 @@ from custom_components.syr_connect import select as select_module
 from custom_components.syr_connect.const import CONF_SERVICE
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.helpers.profile import get_sensor_ala_map
-from custom_components.syr_connect.models import MODEL_SIGNATURES, SyrConnectModel
+from custom_components.syr_connect.models import MODELS, SyrConnectModel
 from custom_components.syr_connect.sensor import SyrConnectSensor
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, UnitOfRatio
@@ -20,7 +20,7 @@ from homeassistant.core import HomeAssistant
 
 def _signature(name: str) -> SyrConnectModel:
     """Return the model signature with the given name."""
-    return next(signature for signature in MODEL_SIGNATURES if signature.name == name)
+    return next(signature for signature in MODELS if signature.name == name)
 
 
 _SAFEFLOOR_STATUS = {

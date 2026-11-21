@@ -9,7 +9,7 @@ from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.syr_connect.const import CONF_SERVICE
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
-from custom_components.syr_connect.models import MODEL_SIGNATURES
+from custom_components.syr_connect.models import MODELS
 from custom_components.syr_connect.select import (
     SyrConnectRangedHardnessSelect,
     async_setup_entry,
@@ -18,7 +18,7 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
 _SYR_CONNECT_TEST_MUCO_FILLING_MODEL = next(
-    model for model in MODEL_SIGNATURES if model.name == "conelclearprofill"
+    model for model in MODELS if model.name == "conelclearprofill"
 )
 
 

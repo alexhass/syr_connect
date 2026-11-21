@@ -273,6 +273,7 @@ Newer devices also offer a local HTTP API, documented officially by SYR (see [Fu
 - Requests: `http://{IP}:5333/{device name}/get/{command}` reads a value, `http://{IP}:5333/{device name}/set/{command}/{value}` writes one. The command is written in lowercase, e.g. `/get/vlv`.
 - Device name: `trio` for TRIO Lock, SafeTech Lock, AC 3200, AC 3228, RSA, Trio DFR/LS and SafeTech+; `neosoft` for NeoSoft 2500/5000. Older devices use other names, e.g. `safe-tec` for the SafeTech.
 - Responses are JSON and repeat the request, e.g. `{"getVLV": 10}` or `{"setPRF2": "OK"}`.
+- Clear commands have no value: `http://{IP}:5333/{device name}/clr/{command}`, e.g. `/clr/ala`. A set command that resets a code takes the decimal `255`, see [Resetting alarms, notifications and warnings](#resetting-alarms-notifications-and-warnings).
 - Errors are returned in the payload, not as HTTP status: `NSC` = the command does not exist (e.g. `{"setADM": "ERROR: NSC"}`), `MIMA` = the value is outside the allowed range.
 - SYR recommends at least 10 seconds between two requests.
 
@@ -281,6 +282,7 @@ Newer devices also offer a local HTTP API, documented officially by SYR (see [Fu
 ### deviceKinds (dk)
 
 - Subtype: "sbt" attribute is visible in XML
+- `alarm_clear_via_set` (alarmClearViaSet) and `alarm_style_alm` (alarmStyleAlm) choose the command that resets an alarm, see [Resetting alarms, notifications and warnings](#resetting-alarms-notifications-and-warnings)
 
 | dk | Device name | Subtype (sbt) | Notes |
 | --- | --- | --- | --- |
@@ -520,7 +522,7 @@ Some further data about the device
 | Property | Example | Unit | Access level | Default | Description |
 | --- | --- | --- | --- | --- | --- |
 | getALA | "" | | USER | | Current alarm code. Each device family has its own codes, see [Alarm codes (getALA) — common table](#alarm-codes-getala--common-table) and the tables of the families below. FF = no alarm |
-| setALA | "255"<br>"161" | | SERVICE | | 255 = acknowledges the current alarm (official API; the value is decimal, getALA returns hexadecimal). SafeTech: 161–172 = sets alarm A1–AC (write-only) |
+| setALA | "255"<br>"161" | | SERVICE | | 255 = acknowledges the current alarm (official API; the value is decimal, getALA returns hexadecimal). The cloud (XML API) takes the acknowledgment as hexadecimal "FF". SafeTech: 161–172 = sets alarm A1–AC (write-only) |
 | clrALA | "" | | SERVICE | | Clears the current alarm and opens the valve (write-only) |
 | getALH | "2026-02-07 17:41:10:A0..." | | USER | 10 | Alarm history log — multiline, one timestamped entry per line (NeoSoft, Sanibel). SafeTech: the last 0–100 entries as CSV; the number of entries is passed as value |
 | setALH | "1" | | USER | | Requests sending the alarm history, starting at the given UNIX timestamp; 1 = the whole history (write-only) |
@@ -528,11 +530,20 @@ Some further data about the device
 | clrALM | "" | | SERVICE | | Clears the alarm memory (eight alarms) (write-only) |
 | getDEN | "1" | | | | Device enabled/disabled flag (1 = enabled, 0 = disabled) |
 | getLOCK | "False" | | | | Shut-off lock during a filter change: True = a filter change of a replaceable filter is running, and the shut-off is locked so that it cannot be moved. Read it for display only, never set it (issue #23). Reported by Trio DFR/LS and SafeTech |
-| setNOT | "255" | | | | 255 = acknowledges the current notification (write-only) |
+| setNOT | "255" | | | | 255 = acknowledges the current notification; the cloud (XML API) takes "FF" (write-only) |
 | getNOT | "" | | | | Current notification code, see [Notification codes (getNOT) — common table](#notification-codes-getnot--common-table) |
 | getSTA | "Bitte Salz nachfüllen"<br>"Płukanie wsteczne"<br>"Płukanie regenerantem"<br>"Płukanie wolne"<br>"Płukanie szybkie"<br>"Napełnianie" | | | | Status messages of the regeneration, in this case in German: "Please refill salt". Polish strings are not localized.<br>Newer models (Syr AC 3200, AC 3228 / SYR MultiController) report this as an integer instead: 0 = Standby, 1 = Initial filling, 2 = Automatic filling, 3 = Manual filling. |
-| setWRN | "255" | | | | 255 = acknowledges the current warning (write-only) |
+| setWRN | "255" | | | | 255 = acknowledges the current warning; the cloud (XML API) takes "FF" (write-only) |
 | getWRN | "" | | | | Current warning code (non-critical), see [Warning codes (getWRN) — common table](#warning-codes-getwrn--common-table) |
+
+#### Resetting alarms, notifications and warnings
+
+The rule follows the official SYR API documentation (see [Further information](#further-information)):
+
+- A set command that resets a code (`setALA`, `setALM`, `setNOT`, `setWRN`) takes a decimal value in the local JSON API: `255`, e.g. `/set/ala/255`, `/set/not/255`, `/set/wrn/255`. The cloud (XML API) takes the same code as hexadecimal text: `FF`.
+- A clear command (`clrALA`, `clrALM`) has no value: the local JSON API calls `/clr/ala` or `/clr/alm`, the cloud gets `clrALA` or `clrALM` with an empty value.
+- `alarm_clear_via_set` (alarmClearViaSet) of the device kind (see [deviceKinds (dk)](#devicekinds-dk)) only chooses the command that resets an alarm: `setALA`/`setALM` with the value above, otherwise `clrALA`/`clrALM`. It does not change the value. `alarm_style_alm` (alarmStyleAlm) chooses ALM instead of ALA.
+- After a reset the device reports `FF` (no code). Until the next poll, the optimistic status of the integration keeps the value it sent, e.g. `255`. The integration treats `""`, `0`, `00`, `FF`, `A0X0000` and `255` as no code (`_SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM`), so the sensors show no code at once.
 
 #### Alarm codes (getALA) — common table
 

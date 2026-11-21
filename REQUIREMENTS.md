@@ -138,6 +138,7 @@ config/
       │  ├── exceptions.py
       │  ├── http_client.py
       │  ├── json_api.py
+      │  ├── model_detection.py
       │  ├── models.py
       │  ├── py.typed
       │  ├── xml_api.py

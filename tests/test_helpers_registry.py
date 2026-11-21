@@ -187,9 +187,7 @@ async def test_clear_device_statistics_without_series(
 ) -> None:
     """Without any profile with series there is nothing to clear."""
     hass.config.components.add("recorder")
-    monkeypatch.setattr(
-        "custom_components.syr_connect.helpers.registry.MODEL_SIGNATURES", []
-    )
+    monkeypatch.setattr("custom_components.syr_connect.helpers.registry.MODELS", [])
 
     with patch(
         "custom_components.syr_connect.helpers.registry.get_instance"

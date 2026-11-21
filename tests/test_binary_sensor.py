@@ -18,7 +18,7 @@ from custom_components.syr_connect.binary_sensor import (
 )
 from custom_components.syr_connect.const import CONF_SERVICE, DOMAIN
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
-from custom_components.syr_connect.models import MODEL_SIGNATURES
+from custom_components.syr_connect.models import MODELS
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
@@ -279,7 +279,7 @@ async def test_binary_sensor_floor_sensor_monitoring(
 
 def test_device_files_pair_buzzer_switch_with_binary_sensor() -> None:
     """Every device file that exposes getBUZ as a switch also lists it for the binary sensor, and vice versa."""
-    for signature in MODEL_SIGNATURES:
+    for signature in MODELS:
         profile = signature.device_profile
         if profile is None:
             continue

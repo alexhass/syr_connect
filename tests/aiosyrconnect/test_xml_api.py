@@ -74,6 +74,11 @@ def api_client(mock_session: MagicMock, user_agent: str) -> SyrConnectXmlAPI:
     return api
 
 
+def test_clear_value_is_hexadecimal_text(api_client: SyrConnectXmlAPI) -> None:
+    """The cloud acknowledges a notification or warning (setNOT, setWRN) with "FF"."""
+    assert api_client.clear_value == "FF"
+
+
 def test_request_urls_and_app_identity_come_from_the_service(
     mock_session: MagicMock,
     user_agent: str,

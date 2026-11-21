@@ -38,6 +38,7 @@ from .aiosyrconnect import SyrConnectStatus, SyrConnectStatusValue
 from .binary_sensor import _SYR_CONNECT_BINARY_SENSOR_SUPPORTED_KEYS
 from .const import (
     _SYR_CONNECT_LEAK_PROTECTION_PROFILES,
+    _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM,
     _SYR_CONNECT_SENSOR_CAS_VALUE_MAP,
     _SYR_CONNECT_SENSOR_CND_PER_DH,
     _SYR_CONNECT_SENSOR_CRS_VALUE_MAP,
@@ -91,13 +92,25 @@ PARALLEL_UPDATES = 1
 # and the raw value of the sensor key and returns the native value.
 
 
-def _map_code(model: SyrConnectModel, raw: Any, mapper: Any) -> str | None:
-    """Map an alarm/notification/warning code to its translation key, else the raw code."""
+def _map_code(
+    model: SyrConnectModel, raw: Any, mapper: Any, no_code: str
+) -> str | None:
+    """Map an alarm/notification/warning code to its translation key, else the raw code.
+
+    The codes of the device profile come first. A value they do not know that means
+    "no code" for the reset buttons (`_SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM`) is
+    shown as no_code, e.g. the 255 of an acknowledgment over the JSON API, which the
+    optimistic update shows until the device reports "FF". A blank value stays None.
+    """
     if raw is None:
         return None
     mapped, raw_code = mapper(model, raw)
     if mapped:
         return str(mapped)
+    code = str(raw).strip().upper()
+    # A blank value stays a missing value (None), as before
+    if code != "" and code in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM:
+        return no_code
     # Model unknown or no mapping found: return the raw value 1:1
     sval = str(raw_code)
     return sval if sval.strip() != "" else None
@@ -117,21 +130,21 @@ def _value_ala(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
     """Alarm code (getALA): translation key based on the device model."""
-    return _map_code(sensor.device_model, value, get_sensor_ala_map)
+    return _map_code(sensor.device_model, value, get_sensor_ala_map, "no_alarm")
 
 
 def _value_not(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
     """Notification code (getNOT): translation key."""
-    return _map_code(sensor.device_model, value, get_sensor_not_map)
+    return _map_code(sensor.device_model, value, get_sensor_not_map, "no_notification")
 
 
 def _value_wrn(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
     """Warning code (getWRN): translation key."""
-    return _map_code(sensor.device_model, value, get_sensor_wrn_map)
+    return _map_code(sensor.device_model, value, get_sensor_wrn_map, "no_warning")
 
 
 def _value_alm(

@@ -4,7 +4,7 @@ Each module here describes one device family and defines one POSITIVE allowlist
 constant per platform: `SENSOR_SUPPORTED_KEYS`, `SELECT_SUPPORTED_KEYS`,
 `SWITCH_SUPPORTED_KEYS`, `BINARY_SENSOR_SUPPORTED_KEYS`, `BUTTON_SUPPORTED_KEYS`,
 `VALVE_SUPPORTED_KEYS`. They are collected in the module's `PROFILE`, which the
-signatures of the family reference as `device_profile` in `models.MODEL_SIGNATURES`.
+models of the family reference in `_SYR_CONNECT_MODEL_PROFILES` of `models.py`.
 A profile also lists the measurement history series the cloud keeps for the family
 (`statistics`), see "Statistics web services" in docs/syrconnect-protocol.md.
 

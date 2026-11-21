@@ -17,7 +17,7 @@ from homeassistant.util import slugify
 from ..aiosyrconnect import SyrConnectStatus
 from ..const import API_TYPE_JSON, API_TYPE_XML, CONF_SERVICE, DOMAIN
 from ..data import SyrConnectCoordinatorData, SyrConnectDevice
-from ..models import MODEL_SIGNATURES, SyrConnectModel
+from ..models import MODELS, SyrConnectModel
 from .device import get_device_model
 from .profile import get_model_supported_keys
 
@@ -137,7 +137,7 @@ def clear_device_statistics(
     }
     keys = {
         statistic.key
-        for signature in MODEL_SIGNATURES
+        for signature in MODELS
         if signature.device_profile is not None
         for statistic in signature.device_profile.statistics
     }

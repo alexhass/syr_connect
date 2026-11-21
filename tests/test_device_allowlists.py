@@ -14,7 +14,7 @@ from custom_components.syr_connect.aiosyrconnect import SyrConnectJsonAPI
 from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
 from custom_components.syr_connect.button import SyrConnectButton, _build_device_buttons
 from custom_components.syr_connect.data import SyrConnectDevice
-from custom_components.syr_connect.models import MODEL_SIGNATURES, SyrConnectModel
+from custom_components.syr_connect.models import MODELS, SyrConnectModel
 from custom_components.syr_connect.select import (
     SyrConnectPrfSelect,
     SyrConnectRegenerationSelect,
@@ -82,7 +82,7 @@ def _allowlist(model: SyrConnectModel, platform: str) -> set[str]:
     return set(getattr(profile, platform) or set()) if profile is not None else set()
 
 
-@pytest.mark.parametrize("model", MODEL_SIGNATURES, ids=lambda model: model.name)
+@pytest.mark.parametrize("model", MODELS, ids=lambda model: model.name)
 async def test_write_entities_only_from_the_device_file(
     hass: HomeAssistant,
     create_mock_coordinator: Callable[..., MagicMock],
@@ -126,7 +126,7 @@ async def test_write_entities_only_from_the_device_file(
 
 @pytest.mark.parametrize(
     "model",
-    [model for model in MODEL_SIGNATURES if model.device_profile is not None],
+    [model for model in MODELS if model.device_profile is not None],
     ids=lambda model: model.name,
 )
 def test_regeneration_button_only_for_models_with_regeneration(

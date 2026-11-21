@@ -26,7 +26,7 @@ from custom_components.syr_connect.devices import (
     lexplus10sl,
 )
 from custom_components.syr_connect.models import (
-    MODEL_SIGNATURES,
+    MODELS,
     UNKNOWN_MODEL,
     SyrConnectModel,
     detect_model,
@@ -318,7 +318,7 @@ def test_lex_profiles_report_local_time_timestamps() -> None:
         lexplus10s.PROFILE,
         lexplus10sl.PROFILE,
     ]
-    for signature in MODEL_SIGNATURES:
+    for signature in MODELS:
         profile = signature.device_profile
         if profile is None:
             continue
@@ -401,7 +401,7 @@ async def test_sensor_regeneration_time(hass: HomeAssistant) -> None:
 
 def _signature(name: str) -> SyrConnectModel:
     """Return the model signature with the given name."""
-    return next(model for model in MODEL_SIGNATURES if model.name == name)
+    return next(model for model in MODELS if model.name == name)
 
 
 @pytest.mark.parametrize(
@@ -2966,6 +2966,34 @@ async def test_sensor_ala_not_wrn_exhaustive_variants(hass: HomeAssistant) -> No
                 assert isinstance(val, str), f"Key {key} raw={raw!r} -> got {val!r}"
                 if raw in unmapped:
                     assert val == str(raw), f"Key {key} raw={raw!r} -> got {val!r}"
+
+
+@pytest.mark.parametrize(
+    ("key", "no_code"),
+    [
+        ("getALA", "no_alarm"),
+        ("getNOT", "no_notification"),
+        ("getWRN", "no_warning"),
+    ],
+)
+@pytest.mark.parametrize("raw", ["FF", "ff", "255", 255, "0", "00", "A0X0000"])
+async def test_sensor_ala_not_wrn_shows_no_code(
+    hass: HomeAssistant, key: str, no_code: str, raw: str | int
+) -> None:
+    """A value that means "no code" for the reset buttons shows no code.
+
+    It includes the 255 that the optimistic update shows after an acknowledgment
+    over the JSON API, until the device reports "FF". The model is unknown, so no
+    code table of a device profile maps the value.
+    """
+    data = {
+        "devices": [
+            {"id": "d_nc", "name": "Device", "project_id": "p", "status": {key: raw}}
+        ]
+    }
+    sensor = SyrConnectSensor(_build_coordinator(hass, data), "d_nc", "Device", key)
+
+    assert sensor.native_value == no_code
 
 
 # Tests merged from test_getcof_water_consumption.py

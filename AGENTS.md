@@ -10,7 +10,7 @@ All of these files apply. Read the matching ones before changing code.
 | ------ | ------ |
 | `CODE_STYLE.md` | All Python code |
 | `.github/copilot-instructions.md` | Home Assistant integration rules (links the upstream rules) |
-| `.github/instructions/devices.instructions.md` | `devices/*.py`, `models.py`, `helpers/*.py` |
+| `.github/instructions/devices.instructions.md` | `devices/*.py`, `models.py`, `helpers/*.py`, `aiosyrconnect/model_detection.py` |
 | `.github/instructions/entities.instructions.md` | Platforms, `unique_id`, entity registry |
 | `.github/instructions/logging.instructions.md` | Logging and masking |
 | `.github/instructions/markdown.instructions.md` | All Markdown files |

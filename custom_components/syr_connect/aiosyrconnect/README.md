@@ -25,6 +25,7 @@ import aiohttp
 
 from aiosyrconnect import (
     API_SERVICES,
+    MODEL_SIGNATURES,
     SyrConnectAuthError,
     SyrConnectConnectionError,
     SyrConnectJsonAPI,
@@ -53,10 +54,11 @@ async def main() -> None:
         except SyrConnectConnectionError:
             ...  # cloud not reachable or answer not usable: retry later
 
+        neosoft = next(sig for sig in MODEL_SIGNATURES if sig.name == "neosoft5000")
         local = SyrConnectJsonAPI(
             session,
             host="192.168.1.20",
-            base_path="/neosoft",
+            model=neosoft,
             user_agent="aiosyrconnect/1.0.0",
         )
         devices = await local.get_devices("local")
@@ -72,7 +74,38 @@ What the caller passes:
 | `service` | XML | Cloud service of the account, one of `API_SERVICES` |
 | `language` | XML | Locale like `de-DE` for the requests; default `en-US` |
 | `local_now` | XML | Returns the current time in the caller's time zone, for the UTC offset of the login; default the time zone of the process |
+| `model` | JSON | Signature of the device model (`MODEL_SIGNATURES`); gives the local path of the JSON API |
 | `login_required` | JSON | Whether the device needs ADM, as stored from an earlier `login_required`; default unknown |
+
+## Device models
+
+`MODEL_SIGNATURES` lists the known models: how a model is detected (`dk`, `dkv`, `sbt`
+and `dfm` of the cloud, checks of the serial number, `getCNA` and `getVER`) and how it is
+addressed: `base_path` of the local JSON API, the status key of the alarm
+(`alarm_status_key`) and the command that resets it (`alarm_reset_command()`). The value
+of a set command comes from the client that sends it (`clear_value`: "FF" for the
+cloud, 255 for the device); both clients send the command with `set_device_status`.
+A signature also names the model (`display_name`, `manufacturer`, and per cloud service
+`service_branding`, see `branded()`) and gives the limits of its settings
+(`maximum_salt_volume`, `maximum_regeneration_interval`).
+`detect_model_signature()` returns the signature of a device, or None for an unknown
+model:
+
+```python
+from aiosyrconnect import MODEL_SIGNATURES, detect_model_signature
+
+signature = detect_model_signature(
+    status,
+    MODEL_SIGNATURES,
+    dk=device.get("dk"),
+    dkv=device.get("dkv"),
+    sbt=device.get("sbt"),
+)
+```
+
+A caller may extend `SyrConnectModelSignature` with fields of its own and pass its
+signatures instead, in the order of `MODEL_SIGNATURES`: the status checks return the
+first signature that matches.
 
 ## Errors
 
