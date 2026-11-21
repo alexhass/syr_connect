@@ -275,17 +275,16 @@ async def validate_input_json(
         )
         raise HostInvalidError("Host must be a valid IP address or hostname.")
 
-    model = detect_model({}, model=data[CONF_MODEL])
+    model_name = data[CONF_MODEL]
 
     _LOGGER.debug(
-        "Validating JSON API connection to host: %s, model: %s", host, model.name
+        "Validating JSON API connection to host: %s, model: %s", host, model_name
     )
 
     # The model gives the local path of the JSON API
+    model = detect_model({}, model=model_name)
     if model.base_path is None:
-        _LOGGER.debug(
-            "Selected model %s does not support local JSON API", data[CONF_MODEL]
-        )
+        _LOGGER.debug("Selected model %s does not support local JSON API", model_name)
         raise CannotConnectError
 
     session = async_get_clientsession(hass)

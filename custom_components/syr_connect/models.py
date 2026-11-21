@@ -9,7 +9,7 @@ manufacturer (per cloud service) and the limits of the entities.
 from collections.abc import Mapping
 from dataclasses import dataclass, fields
 import logging
-from typing import NotRequired, Required, TypedDict
+from typing import NotRequired, TypedDict
 
 from .aiosyrconnect import (
     MODEL_SIGNATURES,
@@ -59,7 +59,7 @@ class SyrConnectModel(SyrConnectModelSignature):
 
     # Profile from a `devices/<name>.py` file with the per-platform entity allowlists
     # and alarm codes of the model (see `helpers.profile.get_model_supported_keys()`). Several
-    # signatures share one profile when they are rebranded variants of the same
+    # models share one profile when they are rebranded variants of the same
     # hardware (e.g. the dk=1500-1506 MultiController family). None means the global
     # allowlists and the generic alarm codes.
     device_profile: SyrConnectDeviceProfile | None = None
@@ -99,8 +99,8 @@ class _SyrConnectModelDetails(TypedDict):
     """The fields of `SyrConnectModel` that the integration adds to a signature."""
 
     device_profile: NotRequired[SyrConnectDeviceProfile]
-    display_name: Required[str]
-    manufacturer: Required[str]
+    display_name: str
+    manufacturer: str
     maximum_regeneration_interval: NotRequired[int]
     maximum_salt_volume: NotRequired[int]
     service_branding: NotRequired[Mapping[str, tuple[str, str]]]
@@ -117,7 +117,8 @@ UNKNOWN_MODEL = SyrConnectModel(
 )
 
 # Details of every signature of the library, by the model name. Every signature needs
-# an entry; tests/test_models.py checks that there is none without a signature.
+# an entry (a missing one fails at import); tests/test_models.py checks that there is
+# none without a signature.
 _SYR_CONNECT_MODEL_DETAILS: dict[str, _SyrConnectModelDetails] = {
     # ── Safe-T+ (dk=1) ──────────────────────────────────────────────────────────
     "safetplus": {
