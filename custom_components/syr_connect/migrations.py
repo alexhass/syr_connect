@@ -17,7 +17,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .aiosyrconnect import (
     SyrConnectInvalidResponseError,
     SyrConnectJsonAPI,
-    get_local_serial,
+    get_serial_number,
 )
 from .const import (
     _SYR_CONNECT_SERVICE_DEFAULT,
@@ -368,7 +368,7 @@ async def _async_read_local_serial(hass: HomeAssistant, entry: ConfigEntry) -> s
     )
     devices = await api.get_devices("local")
     status = await api.get_device_status(devices[0]["id"])
-    serial = get_local_serial(status) if status else None
+    serial = get_serial_number(status) if status else None
     if serial is None:
         raise SyrConnectInvalidResponseError("The device reports no serial number")
     return serial

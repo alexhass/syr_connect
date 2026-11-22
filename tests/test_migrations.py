@@ -1040,15 +1040,14 @@ def _local_entry(hass: HomeAssistant, unique_id: str, entry_id: str) -> MockConf
     return entry
 
 
-@pytest.mark.parametrize("key", ["getSRN", "getFRN"])
 async def test_v11_to_v12_gives_local_entry_serial_unique_id(
-    hass: HomeAssistant, key: str
+    hass: HomeAssistant,
 ) -> None:
     """A local entry gets the serial number of its device as unique_id."""
     entry = _local_entry(hass, "json_192.0.2.5", "LOCAL")
 
     with patch("custom_components.syr_connect.migrations.SyrConnectJsonAPI") as api:
-        _mock_local_device(api, {key: "SN1"})
+        _mock_local_device(api, {"getSRN": "SN1"})
         update = await v11_to_v12_local_unique_id_by_serial(hass, entry)
 
     assert api.call_args.kwargs["host"] == "192.0.2.5"
@@ -1093,8 +1092,9 @@ async def test_v11_to_v12_keeps_unique_id_of_device_set_up_twice(
     [
         {},
         {"getSRN": ""},
+        {"getFRN": "A25032111217"},
     ],
-    ids=["empty_status", "empty_serial"],
+    ids=["empty_status", "empty_serial", "frn_only"],
 )
 async def test_v11_to_v12_device_without_serial_raises(
     hass: HomeAssistant, status: dict

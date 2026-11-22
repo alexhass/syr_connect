@@ -1010,16 +1010,19 @@ def parse_tmz_value(value: SyrConnectStatusValue) -> timedelta | None:
     return timedelta(minutes=quarters * 15)
 
 
-def get_local_serial(status: SyrConnectStatus) -> str | None:
-    """Return the serial number (getSRN, else getFRN) of a device of the local API.
+def get_serial_number(status: SyrConnectStatus) -> str | None:
+    """Return the serial number (getSRN) of a device.
+
+    A device of the cloud is identified by `sn` of the device list; the local API has
+    no device list, so its devices are identified by getSRN of the status.
 
     Args:
-        status: Status of the device from the local API (/get/all)
+        status: Status of the device, e.g. /get/all of the local API
 
     Returns:
-        The serial number, or None if the device reports neither key
+        The serial number, or None if the device reports no getSRN
     """
-    serial = status.get("getSRN") or status.get("getFRN")
+    serial = status.get("getSRN")
     return str(serial) if serial else None
 
 

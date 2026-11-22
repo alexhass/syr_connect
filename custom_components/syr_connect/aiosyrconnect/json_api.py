@@ -40,6 +40,7 @@ from .exceptions import (
 )
 from .http_client import check_user_agent, read_response_text
 from .models import SyrConnectApiDevice, SyrConnectModelSignature, SyrConnectStatus
+from .values import get_serial_number
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -556,7 +557,7 @@ class SyrConnectJsonAPI:
         The local JSON API is single-device focused (one device per base_path).
         This method:
         1. Fetches /get/all to get device information
-        2. Extracts the device serial number (getSRN or getFRN)
+        2. Extracts the device serial number (getSRN)
         3. Caches the response for immediate reuse by get_device_status()
         4. Returns a single-item list in the format of the XML client
 
@@ -565,13 +566,14 @@ class SyrConnectJsonAPI:
 
         Returns:
             List with single device dict containing:
-            - id: Device serial number (from getSRN or getFRN)
+            - id: Device serial number (getSRN)
             - name: The serial number (the local API reports no name)
             - project_id: The given project_id
 
         Raises:
             SyrConnectAuthError: On authentication errors
             SyrConnectConnectionError: On connection errors
+            SyrConnectInvalidResponseError: If the status has no serial number (getSRN)
         """
         # --- Ensure Valid Session ---
         await self._ensure_session()
@@ -584,13 +586,13 @@ class SyrConnectJsonAPI:
         # back-to-back for each device, but we only need one /get/all request
         self._cached_get_all = status
 
-        # Extract device identifier from response fields (priority order):
-        # 1. getSRN: Serial number (most common)
-        # 2. getFRN: Factory reference number (fallback for some devices)
-        # 3. "local_device": Last resort if neither is present
-        serial_number = str(
-            status.get("getSRN") or status.get("getFRN") or "local_device"
-        )
+        # The serial number identifies the device
+        serial_number = get_serial_number(status)
+        if serial_number is None:
+            _LOGGER.debug("JSON API: /get/all has no serial number (getSRN)")
+            raise SyrConnectInvalidResponseError(
+                "The device reports no serial number (getSRN)"
+            )
 
         # --- Return Device List ---
         # Same format as the device list of the XML API client. The local API has no

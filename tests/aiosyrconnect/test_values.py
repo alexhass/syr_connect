@@ -26,8 +26,8 @@ from custom_components.syr_connect.aiosyrconnect.values import (
     get_current_mac,
     get_hardness_class,
     get_iwh_value,
-    get_local_serial,
     get_rtm_value,
+    get_serial_number,
     is_empty_ip,
     is_measuring_sensor_active,
     is_spurious_bap,
@@ -987,12 +987,13 @@ def test_get_current_mac_wip_present_wfs_none() -> None:
     assert get_current_mac(status) is None
 
 
-def test_get_local_serial() -> None:
-    """The serial number of a local device is getSRN, else getFRN."""
-    assert get_local_serial({"getSRN": "123456789", "getFRN": "X"}) == "123456789"
-    assert get_local_serial({"getSRN": "", "getFRN": "500AAA12345"}) == "500AAA12345"
-    assert get_local_serial({"getFRN": 123}) == "123"
-    assert get_local_serial({}) is None
+def test_get_serial_number() -> None:
+    """The serial number is getSRN; getFRN is no serial number."""
+    assert get_serial_number({"getSRN": "123456789", "getFRN": "X"}) == "123456789"
+    assert get_serial_number({"getSRN": 123456789}) == "123456789"
+    assert get_serial_number({"getSRN": "", "getFRN": "A25032111217"}) is None
+    assert get_serial_number({"getFRN": "A25032111217"}) is None
+    assert get_serial_number({}) is None
 
 
 def test_active_leak_protection_profiles() -> None:
