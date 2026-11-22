@@ -266,6 +266,16 @@
       "getiwh": {
         "name": "Durezza acqua grezza"
       },
+      "getlng": {
+        "name": "Lingua del dispositivo",
+        "state": {
+          "0": "Tedesco",
+          "1": "Inglese",
+          "2": "Spagnolo",
+          "3": "Italiano",
+          "4": "Polacco"
+        }
+      },
       "getlot": {
         "name": "Conducibilità massima in uscita"
       },

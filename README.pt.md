@@ -310,6 +310,7 @@ A integração oferece uma monitorização completa dos dispositivos:
 - **Quantidade de sal no reservatório 1–3**: Definir a quantidade de sal por reservatório (conforme o modelo, até 3 reservatórios).
 - **Intervalo de regeneração**: Definir a frequência da regeneração (conforme o modelo: até 3, 4 ou 99 dias).
 - **Orientação do ecrã**: Definir a orientação do ecrã (0 / 90 / 180 / 270 graus, em dispositivos com ecrã).
+- **Idioma do dispositivo**: Definir o idioma do ecrã do dispositivo: alemão, inglês, espanhol, italiano ou polaco (SafeTech).
 - **Modo de regeneração**: Selecionar Padrão / ECO / Power / Automático (nos dispositivos que o suportam).
 - **Dureza da água bruta**, **Dureza da água amaciada**: Definir a dureza da água bruta e da água amaciada (família LEX, CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect e os seus dispositivos idênticos de outras marcas, All-in-One+). A unidade segue a unidade de dureza configurada no dispositivo (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l ou mval/l).
 - **Tratamento da água e enchimento** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect e os seus dispositivos idênticos de outras marcas, All-in-One+): Tamanho e tipo do cartucho, dureza da água amaciada ou condutividade máxima à saída (conforme o cartucho), período de enchimento, número de ciclos de enchimento, duração e quantidade máximas de enchimento, pressão alvo, limiar de aviso da capacidade restante, volume e duração máximos do enchimento inicial.

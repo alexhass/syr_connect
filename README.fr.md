@@ -310,6 +310,7 @@ L'intégration offre une surveillance complète des appareils :
 - **Quantité de sel dans le réservoir 1–3** : Régler la quantité de sel par réservoir (selon le modèle, jusqu'à 3 réservoirs).
 - **Intervalle de régénération** : Régler la fréquence de la régénération (selon le modèle : jusqu'à 3, 4 ou 99 jours).
 - **Orientation de l'affichage** : Régler l'orientation de l'écran (0 / 90 / 180 / 270 degrés, pour les appareils avec écran).
+- **Langue de l'appareil** : Régler la langue de l'écran de l'appareil : allemand, anglais, espagnol, italien ou polonais (SafeTech).
 - **Mode de régénération** : Sélectionner Standard / ECO / Power / Automatique (pour les appareils qui le prennent en charge).
 - **Dureté de l'eau brute**, **Dureté de l'eau adoucie** : Régler la dureté de l'eau brute et de l'eau adoucie (famille LEX, CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect et ses appareils identiques d'autres marques, All-in-One+). L'unité suit l'unité de dureté configurée sur l'appareil (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l ou mval/l).
 - **Traitement de l'eau et remplissage** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect et ses appareils identiques d'autres marques, All-in-One+) : Taille et type de cartouche, dureté de l'eau adoucie ou conductivité maximale en sortie (selon la cartouche), période de remplissage, nombre de cycles de remplissage, durée et quantité maximales de remplissage, pression cible, seuil d'avertissement de capacité restante, volume et durée maximaux du remplissage initial.

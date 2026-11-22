@@ -266,6 +266,16 @@
       "getiwh": {
         "name": "Dureza del agua cruda"
       },
+      "getlng": {
+        "name": "Idioma del dispositivo",
+        "state": {
+          "0": "Alemán",
+          "1": "Inglés",
+          "2": "Español",
+          "3": "Italiano",
+          "4": "Polaco"
+        }
+      },
       "getlot": {
         "name": "Conductividad máxima de salida"
       },

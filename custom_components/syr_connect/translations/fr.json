@@ -266,6 +266,16 @@
       "getiwh": {
         "name": "Dureté de l'eau brute"
       },
+      "getlng": {
+        "name": "Langue de l'appareil",
+        "state": {
+          "0": "Allemand",
+          "1": "Anglais",
+          "2": "Espagnol",
+          "3": "Italien",
+          "4": "Polonais"
+        }
+      },
       "getlot": {
         "name": "Conductivité de sortie maximale"
       },

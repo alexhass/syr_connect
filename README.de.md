@@ -310,6 +310,7 @@ Die Integration bietet eine umfangreiche Überwachung der Geräte:
 - **Salzmenge in Behälter 1–3**: Salzmenge je Behälter einstellen (je nach Modell, bis zu 3 Behälter).
 - **Regenerationsintervall**: Regenerationshäufigkeit einstellen (modellabhängig: bis zu 3, 4 oder 99 Tage).
 - **Display-Orientierung**: Ausrichtung des Displays einstellen (0 / 90 / 180 / 270 Grad, für Geräte mit Display).
+- **Gerätesprache**: Sprache des Gerätedisplays einstellen: Deutsch, Englisch, Spanisch, Italienisch oder Polnisch (SafeTech).
 - **Regenerationsmodus**: Standard / ECO / Power / Automatisch auswählen (für Geräte, die dies unterstützen).
 - **Rohwasserhärte**, **Weichwasserhärte**: Rohwasser- und Weichwasserhärte einstellen (LEX-Familie, CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect und baugleiche Geräte anderer Marken, All-in-One+). Die Einheit folgt der am Gerät eingestellten Härteeinheit (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l oder mval/l).
 - **Wasseraufbereitung und Befüllung** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect und baugleiche Geräte anderer Marken, All-in-One+): Kartuschengröße und -typ, Weichwasserhärte oder maximale Ausgangsleitfähigkeit (je nach Kartusche), Zeitraum der Füllungen, Anzahl der Füllzyklen, maximale Fülldauer und -menge, Solldruck, Warnschwelle der Restkapazität, maximale Füllmenge und -dauer der Erstbefüllung.

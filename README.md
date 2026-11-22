@@ -310,6 +310,7 @@ The integration provides comprehensive monitoring of the devices:
 - **Salt volume in container 1–3**: Set the salt volume per container (varies by model, up to 3 containers).
 - **Regeneration interval**: Set how often regeneration occurs (model dependent: up to 3, 4 or 99 days).
 - **Display orientation**: Set the display orientation (0 / 90 / 180 / 270 degrees, for devices with a display).
+- **Device language**: Set the language of the device display: German, English, Spanish, Italian or Polish (SafeTech).
 - **Regeneration mode**: Select Standard / ECO / Power / Automatic (for devices that support it).
 - **Raw water hardness**, **Soft water hardness**: Set the raw and softened water hardness (LEX family, CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect and its identical devices of other brands, All-in-One+). The unit follows the hardness unit configured on the device (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l or mval/l).
 - **Water treatment and filling** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect and its identical devices of other brands, All-in-One+): Cartridge size and type, soft water hardness or maximum output conductivity (depending on the cartridge), filling period, number of filling cycles, maximum filling duration and amount, target pressure, remaining capacity warning threshold, maximum volume and duration of the initial filling.

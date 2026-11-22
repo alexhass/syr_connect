@@ -838,7 +838,7 @@ These settings can be set by the user.
 | getFCM | "0" | | | | No longer supported and must not be used (issue #23). Reported by the JSON API of the SafeTech |
 | getFCO / setFCO | "0" | ppm | | | Iron content (always 0?) |
 | getIWH / setIWH | "14" | getWHU | | | Raw water hardness (of the untreated water), can be set from 1-100 °dH. NeoSoft: 1–85 °dH, read-only. Unit: see the water hardness unit codes below |
-| getLNG / setLNG | "0" | | USER | 0 | Language setting: 0 = German, 1 = English, 2 = Spanish, 3 = Italian, 4 = Polish |
+| getLNG / setLNG | "0" | | USER | 0 | Language setting: 0 = German, 1 = English, 2 = Spanish, 3 = Italian, 4 = Polish. Can be set on the SafeTech (dkv 35, 38, 39, 42). Some devices append the languages to the value, e.g. "0 (0=Deutsch 1=English)" |
 | getMIH / setMIH | "5" | % | | | Minimum huminity; Values: 0=Off, 0-95% (5% steps), below getMXH |
 | getMIT / setMIT | "-40" | 1/10 | | | Minimum temperature, Value "-40" = "-4 degree"; Values: Off="-400", -300 = "-30 degree" to 500 = "50 degree" (1 degree steps), below getMXT unless getMXT is off |
 | getMPR / setMPR | "40" | 1/10 bar | | | The set water pressure |

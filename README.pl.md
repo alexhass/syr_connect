@@ -310,6 +310,7 @@ Integracja zapewnia kompleksowe monitorowanie urządzeń:
 - **Ilość soli w pojemniku 1–3**: Ustawienie ilości soli na pojemnik (zależnie od modelu, do 3 pojemników).
 - **Interwał regeneracji**: Ustawienie częstotliwości regeneracji (zależnie od modelu: do 3, 4 lub 99 dni).
 - **Orientacja wyświetlacza**: Ustawienie orientacji wyświetlacza (0 / 90 / 180 / 270 stopni, w urządzeniach z wyświetlaczem).
+- **Język urządzenia**: Ustawienie języka wyświetlacza urządzenia: niemiecki, angielski, hiszpański, włoski lub polski (SafeTech).
 - **Tryb regeneracji**: Wybór Standard / ECO / Power / Automatyczny (w urządzeniach, które to obsługują).
 - **Twardość wody surowej**, **Twardość wody zmiękczonej**: Ustawienie twardości wody surowej i zmiękczonej (rodzina LEX, CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect i jego identyczne urządzenia innych marek, All-in-One+). Jednostka odpowiada jednostce twardości ustawionej w urządzeniu (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l lub mval/l).
 - **Uzdatnianie wody i napełnianie** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect i jego identyczne urządzenia innych marek, All-in-One+): Rozmiar i typ wkładu, twardość wody zmiękczonej lub maksymalna przewodność na wyjściu (zależnie od wkładu), okres napełniania, liczba cykli napełniania, maksymalny czas i ilość napełniania, ciśnienie docelowe, próg ostrzeżenia o pozostałej pojemności, maksymalna objętość i czas pierwszego napełnienia.

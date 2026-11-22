@@ -113,6 +113,9 @@
       "getiwh": {
         "default": "mdi:water-percent"
       },
+      "getlng": {
+        "default": "mdi:translate"
+      },
       "getlot": {
         "default": "mdi:flash"
       },

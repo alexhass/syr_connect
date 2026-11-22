@@ -266,6 +266,16 @@
       "getiwh": {
         "name": "Rohwasserhärte"
       },
+      "getlng": {
+        "name": "Gerätesprache",
+        "state": {
+          "0": "Deutsch",
+          "1": "Englisch",
+          "2": "Spanisch",
+          "3": "Italienisch",
+          "4": "Polnisch"
+        }
+      },
       "getlot": {
         "name": "Maximale Ausgangsleitfähigkeit"
       },

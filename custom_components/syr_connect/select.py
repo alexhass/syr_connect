@@ -25,6 +25,7 @@ from .aiosyrconnect import (
     get_current_leak_protection_profile,
     get_rtm_value,
     parse_hygiene_module_value,
+    parse_lng_value,
     round_hardness,
     set_command,
     to_float,
@@ -64,6 +65,10 @@ _SYR_CONNECT_SELECT_TYPES: tuple[SyrConnectSelectEntityDescription, ...] = (
     ),
     SyrConnectSelectEntityDescription(
         key="getSRO",  # Display rotation / orientation (0 / 90 / 180 / 270 degrees)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getLNG",  # Language of the device (0=German, 1=English, ...)
         entity_category=EntityCategory.CONFIG,
     ),
     SyrConnectSelectEntityDescription(
@@ -674,6 +679,19 @@ def _add_device_setting_selects(b: _SyrConnectSelectBuilder) -> None:
     if b.allowed("getSRO", _is_integer):
         b.entities.append(
             SyrConnectRotationSelect(b.coordinator, b.device_id, b.device_name)
+        )
+
+    # Language of the device (getLNG); some devices append the languages to the value,
+    # e.g. "0 (0=Deutsch 1=English)"
+    if b.allowed("getLNG", lambda v: _is_integer(parse_lng_value(v))):
+        b.entities.append(
+            SyrConnectLanguageSelect(
+                b.coordinator,
+                b.device_id,
+                b.device_name,
+                "getLNG",
+                _code_options(b.model_info, "getLNG"),
+            )
         )
 
 
@@ -1670,6 +1688,25 @@ class SyrConnectDiscreteSelect(SyrConnectEntity, SelectEntity):
                     "entity": self._entity_name,
                 },
             ) from err
+
+
+class SyrConnectLanguageSelect(SyrConnectDiscreteSelect):
+    """Language of the device (getLNG), also from a value with the languages appended.
+
+    Formats:
+    - "1" -> "1"
+    - "0 (0=Deutsch 1=English)" -> "0"
+    """
+
+    @property
+    @override
+    def current_option(self) -> str | None:
+        """Return the currently selected option, None without a known language."""
+        language = _to_int(parse_lng_value(self._status.get(self._sensor_key)))
+        for option, raw in self._options_map.items():
+            if raw == language:
+                return option
+        return None
 
 
 class SyrConnectLimitedSelect(SyrConnectDiscreteSelect):

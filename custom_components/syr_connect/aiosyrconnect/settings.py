@@ -102,6 +102,19 @@ SETTING_VALUES: Mapping[str, Sequence[int]] = {
     "getFVT": _FILLING_VOLUMES,
     # Raw water hardness (getIWH): 1-100 in steps of 1, in the unit of getWHU
     "getIWH": range(1, 101),
+    # Language of the device (getLNG, SafeTech):
+    # - 0=German
+    # - 1=English
+    # - 2=Spanish
+    # - 3=Italian
+    # - 4=Polish
+    "getLNG": [
+        0,
+        1,
+        2,
+        3,
+        4,
+    ],
     # Maximum output conductivity (getLOT, HVE/HVE+ cartridge): raw 0-20, in 10 µS/cm
     # (0-200 µS/cm, 0 = off)
     "getLOT": range(21),

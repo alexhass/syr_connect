@@ -310,6 +310,7 @@ La integración ofrece una supervisión completa de los dispositivos:
 - **Cantidad de sal en el depósito 1–3**: Ajustar la cantidad de sal por depósito (según el modelo, hasta 3 depósitos).
 - **Intervalo de regeneración**: Ajustar la frecuencia de la regeneración (según el modelo: hasta 3, 4 o 99 días).
 - **Orientación de la pantalla**: Ajustar la orientación de la pantalla (0 / 90 / 180 / 270 grados, en dispositivos con pantalla).
+- **Idioma del dispositivo**: Ajustar el idioma de la pantalla del dispositivo: alemán, inglés, español, italiano o polaco (SafeTech).
 - **Modo de regeneración**: Seleccionar Estándar / ECO / Power / Automático (en los dispositivos que lo admiten).
 - **Dureza del agua cruda**, **Dureza del agua blanda**: Ajustar la dureza del agua cruda y del agua descalcificada (familia LEX, CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect y sus dispositivos idénticos de otras marcas, All-in-One+). La unidad sigue la unidad de dureza configurada en el dispositivo (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l o mval/l).
 - **Tratamiento del agua y llenado** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect y sus dispositivos idénticos de otras marcas, All-in-One+): Tamaño y tipo de cartucho, dureza del agua blanda o conductividad máxima de salida (según el cartucho), periodo de llenado, número de ciclos de llenado, duración y cantidad máximas de llenado, presión objetivo, umbral de advertencia de capacidad restante, volumen y duración máximos del llenado inicial.

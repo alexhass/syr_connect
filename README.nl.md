@@ -310,6 +310,7 @@ De integratie biedt een uitgebreide bewaking van de apparaten:
 - **Zouthoeveelheid in container 1–3**: De zouthoeveelheid per container instellen (afhankelijk van het model, tot 3 containers).
 - **Regeneratie-interval**: Instellen hoe vaak de regeneratie plaatsvindt (afhankelijk van het model: tot 3, 4 of 99 dagen).
 - **Displayoriëntatie**: De oriëntatie van het display instellen (0 / 90 / 180 / 270 graden, bij apparaten met display).
+- **Apparaattaal**: De taal van het display van het apparaat instellen: Duits, Engels, Spaans, Italiaans of Pools (SafeTech).
 - **Regeneratiemodus**: Standaard / ECO / Power / Automatisch selecteren (bij apparaten die dit ondersteunen).
 - **Ruwwaterhardheid**, **Zachtwaterhardheid**: De hardheid van het ruwe en het onthard water instellen (LEX-familie, CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect en zijn identieke apparaten van andere merken, All-in-One+). De eenheid volgt de op het apparaat ingestelde hardheidseenheid (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l of mval/l).
 - **Waterbehandeling en vullen** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect en zijn identieke apparaten van andere merken, All-in-One+): Grootte en type van de patroon, zachtwaterhardheid of maximale uitgangsgeleidbaarheid (afhankelijk van de patroon), vulperiode, aantal vulcycli, maximale vulduur en -hoeveelheid, doeldruk, waarschuwingsdrempel resterende capaciteit, maximaal vulvolume en maximale vulduur van de eerste vulling.

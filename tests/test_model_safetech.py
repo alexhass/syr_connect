@@ -4,18 +4,23 @@
 # ruff: noqa: SLF001
 
 from typing import Any, cast
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
 from custom_components.syr_connect import sensor as sensor_module
 from custom_components.syr_connect.const import CONF_SERVICE
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
+from custom_components.syr_connect.data import SyrConnectDevice
 from custom_components.syr_connect.models import (
     MODELS,
     UNKNOWN_MODEL,
     SyrConnectModel,
     detect_model,
+)
+from custom_components.syr_connect.select import (
+    SyrConnectLanguageSelect,
+    _build_device_selects,
 )
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
@@ -99,3 +104,78 @@ def test_sensor_cnd_class_created_for_safetech_family(
 
     assert ("getCND_class" in keys) is created
     assert ("getCND_class" in entity_keys) is created
+
+
+def _language_selects(
+    hass: HomeAssistant, name: str, language: object
+) -> tuple[list[SyrConnectLanguageSelect], Any]:
+    """Return the language selects of a device of the model and its coordinator."""
+    device = cast(
+        SyrConnectDevice,
+        {
+            "id": "device1",
+            "name": "Device 1",
+            "model": _signature(name),
+            "status": {"getLNG": language},
+        },
+    )
+    coordinator: Any = _build_coordinator(hass, {"devices": [device]})
+    selects = [
+        entity
+        for entity in _build_device_selects(coordinator, device)
+        if isinstance(entity, SyrConnectLanguageSelect)
+    ]
+    return selects, coordinator
+
+
+@pytest.mark.parametrize(
+    ("name", "language", "current"),
+    [
+        pytest.param("safetechv4", "0 (0=Deutsch 1=English)", "0", id="annotated"),
+        pytest.param("safetechpluswifi", "1", "1", id="plain"),
+        pytest.param("safetechpolygonvatro", 2, "2", id="number"),
+    ],
+)
+async def test_safetech_language_select(
+    hass: HomeAssistant, name: str, language: object, current: str
+) -> None:
+    """The SafeTech sets the language of the device: German to Polish."""
+    [select], coordinator = _language_selects(hass, name, language)
+    coordinator.async_set_device_value = AsyncMock()
+
+    assert select.options == ["0", "1", "2", "3", "4"]
+    assert select.current_option == current
+
+    await select.async_select_option("4")
+
+    coordinator.async_set_device_value.assert_called_once_with("device1", "setLNG", 4)
+
+
+@pytest.mark.parametrize(
+    ("name", "language"),
+    [
+        pytest.param("safetechv4", "", id="empty"),
+        pytest.param("safetechplus", "0", id="safetechplus-1112"),
+    ],
+)
+async def test_safetech_language_select_not_created(
+    hass: HomeAssistant, name: str, language: object
+) -> None:
+    """No language select without a value, and none on the SafeTech+ with dk 1112."""
+    selects, _ = _language_selects(hass, name, language)
+
+    assert selects == []
+
+
+@pytest.mark.parametrize("gone", [False, True])
+async def test_safetech_language_select_unknown_language(
+    hass: HomeAssistant, gone: bool
+) -> None:
+    """An unknown language, or a device that is gone, shows no option."""
+    [select], coordinator = _language_selects(hass, "safetechv4", "1")
+    if gone:
+        coordinator.data["devices"].clear()
+    else:
+        coordinator.data["devices"][0]["status"]["getLNG"] = "7"
+
+    assert select.current_option is None

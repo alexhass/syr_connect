@@ -266,6 +266,16 @@
       "getiwh": {
         "name": "Ruwwaterhardheid"
       },
+      "getlng": {
+        "name": "Apparaattaal",
+        "state": {
+          "0": "Duits",
+          "1": "Engels",
+          "2": "Spaans",
+          "3": "Italiaans",
+          "4": "Pools"
+        }
+      },
       "getlot": {
         "name": "Maximale uitgaande geleidbaarheid"
       },

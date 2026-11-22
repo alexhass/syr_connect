@@ -167,6 +167,7 @@ SENSOR_SUPPORTED_KEYS = {
 }
 
 SELECT_SUPPORTED_KEYS = {
+    "getLNG",
     "getPRF",
     "getSRO",
 }

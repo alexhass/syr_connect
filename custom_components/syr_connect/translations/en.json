@@ -266,6 +266,16 @@
       "getiwh": {
         "name": "Raw water hardness"
       },
+      "getlng": {
+        "name": "Device language",
+        "state": {
+          "0": "German",
+          "1": "English",
+          "2": "Spanish",
+          "3": "Italian",
+          "4": "Polish"
+        }
+      },
       "getlot": {
         "name": "Maximum output conductivity"
       },

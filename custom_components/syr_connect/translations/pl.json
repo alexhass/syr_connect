@@ -266,6 +266,16 @@
       "getiwh": {
         "name": "Twardość wody surowej"
       },
+      "getlng": {
+        "name": "Język urządzenia",
+        "state": {
+          "0": "Niemiecki",
+          "1": "Angielski",
+          "2": "Hiszpański",
+          "3": "Włoski",
+          "4": "Polski"
+        }
+      },
       "getlot": {
         "name": "Maksymalna przewodność wyjściowa"
       },
