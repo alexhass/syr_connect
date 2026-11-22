@@ -22,6 +22,7 @@ from .aiosyrconnect import (
     SyrConnectJsonAPI,
     SyrConnectLoginFailedError,
     SyrConnectXmlAPI,
+    get_local_serial,
 )
 from .const import (
     _SYR_CONNECT_API_JSON_SCAN_INTERVAL_MINIMUM,
@@ -38,7 +39,6 @@ from .const import (
     CONF_SERVICE,
     DOMAIN,
 )
-from .helpers.device import get_local_serial
 from .helpers.integration import (
     build_user_agent,
     get_api_locale,

@@ -5,7 +5,7 @@ import logging
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
-from ..aiosyrconnect import SyrConnectStatus, is_empty_ip, to_int
+from ..aiosyrconnect import get_current_mac
 from ..const import DOMAIN
 from ..data import SyrConnectCoordinatorData, SyrConnectDevice
 from ..models import UNKNOWN_MODEL, SyrConnectModel, detect_model
@@ -168,75 +168,3 @@ def build_device_info(
         connections=connections,
         configuration_url=configuration_url,
     )
-
-
-def get_local_serial(status: SyrConnectStatus) -> str | None:
-    """Return the serial number (getSRN, else getFRN) of a device of the local API.
-
-    Args:
-        status: Status of the device from /get/all
-
-    Returns:
-        The serial number, or None if the device reports neither key
-    """
-    serial = status.get("getSRN") or status.get("getFRN")
-    return str(serial) if serial else None
-
-
-def get_current_mac(status: SyrConnectStatus) -> str | None:
-    """Return the MAC address of the active network connection.
-
-    The connections are checked in this order; the first one with an address and a
-    non-empty MAC address is used:
-    1. If `getIPA` not empty -> use `getMAC`
-    2. If `getWIP` not empty and getWFS = 2 (Wi-Fi is connected) -> use `getMAC1`
-    3. If `getEIP` not empty -> use `getMAC2`
-
-    Returns None if no connection has both.
-    """
-    if not status:
-        return None
-
-    def is_not_empty_ip(key: str) -> bool:
-        return not is_empty_ip(status.get(key))
-
-    # Priority selection for MAC address:
-    # 1. If getIPA (primary IP) is set and not empty, use getMAC (primary MAC)
-    if is_not_empty_ip("getIPA"):
-        mac_val = status.get("getMAC")
-        if mac_val is not None and str(mac_val).strip() != "":
-            return str(mac_val)
-
-    # 2. If getWIP (Wi-Fi IP) is set and not empty, only use getMAC1 (Wi-Fi MAC)
-    #    if and only if getWFS == 2 (Wi-Fi is connected).
-    #    This prevents returning a Wi-Fi MAC address when the device is not actually
-    #    connected to a Wi-Fi network, which avoids confusion and ensures that only
-    #    active/connected MAC addresses are reported.
-    if is_not_empty_ip("getWIP"):
-        wfs_val = status.get("getWFS")
-        # getWFS meaning:
-        #   2 = Wi-Fi connected
-        #   1 = Wi-Fi connecting
-        #   0 = Wi-Fi not connected
-        if wfs_val is not None:
-            try:
-                wfs_int = to_int(wfs_val)
-            except ValueError, TypeError:
-                wfs_int = None
-        else:
-            wfs_int = None
-        if wfs_int == 2:
-            # Only return the Wi-Fi MAC if Wi-Fi is confirmed to be connected
-            mac_val = status.get("getMAC1")
-            if mac_val is not None and str(mac_val).strip() != "":
-                return str(mac_val)
-        # If Wi-Fi is not connected, skip getMAC1 and continue to next fallback
-
-    # 3. If getEIP (Ethernet IP) is set and not empty, use getMAC2 (Ethernet MAC)
-    if is_not_empty_ip("getEIP"):
-        mac_val = status.get("getMAC2")
-        if mac_val is not None and str(mac_val).strip() != "":
-            return str(mac_val)
-
-    # No fallback: only return a MAC if it matches the priority rules above
-    return None

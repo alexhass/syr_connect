@@ -14,7 +14,11 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .aiosyrconnect import SyrConnectInvalidResponseError, SyrConnectJsonAPI
+from .aiosyrconnect import (
+    SyrConnectInvalidResponseError,
+    SyrConnectJsonAPI,
+    get_local_serial,
+)
 from .const import (
     _SYR_CONNECT_SERVICE_DEFAULT,
     API_TYPE_JSON,
@@ -26,7 +30,6 @@ from .const import (
     CONF_SERVICE,
     DOMAIN,
 )
-from .helpers.device import get_local_serial
 from .helpers.integration import build_user_agent, get_integration_version
 from .helpers.registry import build_entry_unique_id
 from .models import detect_model

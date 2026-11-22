@@ -13,7 +13,14 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .aiosyrconnect import SyrConnectError, build_set_ab_command, get_ab_value, to_float
+from .aiosyrconnect import (
+    SyrConnectError,
+    build_set_ab_command,
+    get_ab_value,
+    is_valve_closing,
+    is_valve_opening,
+    to_float,
+)
 from .const import DOMAIN
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
@@ -181,38 +188,18 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
     @property
     @override
     def is_opening(self) -> bool | None:
-        """Return True if valve is currently opening.
-
-        This maps `getVLV == 21` to an opening state.
-        """
+        """Return True while the valve is opening (getVLV 21), None if unknown."""
         if self._device is None:
             return None
-        status = self._status
-        vlv = status.get("getVLV")
-        if vlv is None or vlv == "":
-            return None
-        try:
-            return int(to_float(vlv)) == 21
-        except ValueError, TypeError, OverflowError:
-            return None
+        return is_valve_opening(self._status)
 
     @property
     @override
     def is_closing(self) -> bool | None:
-        """Return True if valve is currently closing.
-
-        This maps `getVLV == 11` to a closing state.
-        """
+        """Return True while the valve is closing (getVLV 11), None if unknown."""
         if self._device is None:
             return None
-        status = self._status
-        vlv = status.get("getVLV")
-        if vlv is None or vlv == "":
-            return None
-        try:
-            return int(to_float(vlv)) == 11
-        except ValueError, TypeError, OverflowError:
-            return None
+        return is_valve_closing(self._status)
 
     @override
     async def async_open_valve(self) -> None:

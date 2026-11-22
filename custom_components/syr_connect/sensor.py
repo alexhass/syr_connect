@@ -38,6 +38,7 @@ from .aiosyrconnect import (
     CAS_VALUE_MAP,
     CRS_VALUE_MAP,
     LE_VALUE_MAP,
+    LEAK_PROTECTION_PROFILES,
     T1_VALUE_MAP,
     UL_VALUE_MAP,
     SyrConnectStatus,
@@ -71,7 +72,6 @@ from .aiosyrconnect import (
     to_int,
 )
 from .binary_sensor import _SYR_CONNECT_BINARY_SENSOR_SUPPORTED_KEYS
-from .const import _SYR_CONNECT_LEAK_PROTECTION_PROFILES
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .entity import SyrConnectEntity, async_add_device_entities
@@ -569,7 +569,7 @@ def _profile_descriptions(
     """
     return tuple(
         replace(template, key=f"{template.key}{number}")
-        for number in _SYR_CONNECT_LEAK_PROTECTION_PROFILES
+        for number in LEAK_PROTECTION_PROFILES
     )
 
 
@@ -2161,7 +2161,7 @@ def _build_pa_group_sensors(
     entities: list[SensorEntity] = []
     handled_keys: set[str] = set()
 
-    for idx in _SYR_CONNECT_LEAK_PROTECTION_PROFILES:
+    for idx in LEAK_PROTECTION_PROFILES:
         pa_key = f"getPA{idx}"
         pa_val = status.get(pa_key)
         group_keys = _pa_group_keys(idx)
@@ -2271,7 +2271,7 @@ def sensor_keys_for_status(
     )
     keys = ["dst"] if status.get("dst") is not None else []
     handled_keys = model.cartridge_dependent_keys
-    for idx in _SYR_CONNECT_LEAK_PROTECTION_PROFILES:
+    for idx in LEAK_PROTECTION_PROFILES:
         group_keys = _pa_group_keys(idx)
         handled_keys.update(group_keys)
         if is_value_true(status.get(f"getPA{idx}")):

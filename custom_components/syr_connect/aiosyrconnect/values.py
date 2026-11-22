@@ -1008,3 +1008,179 @@ def parse_tmz_value(value: SyrConnectStatusValue) -> timedelta | None:
     if not -44 <= quarters <= 48:
         return None
     return timedelta(minutes=quarters * 15)
+
+
+def get_local_serial(status: SyrConnectStatus) -> str | None:
+    """Return the serial number (getSRN, else getFRN) of a device of the local API.
+
+    Args:
+        status: Status of the device from the local API (/get/all)
+
+    Returns:
+        The serial number, or None if the device reports neither key
+    """
+    serial = status.get("getSRN") or status.get("getFRN")
+    return str(serial) if serial else None
+
+
+def get_current_mac(status: SyrConnectStatus) -> str | None:
+    """Return the MAC address of the active network connection.
+
+    The connections are checked in this order; the first one with an address and a
+    non-empty MAC address is used:
+    1. If `getIPA` not empty -> use `getMAC`
+    2. If `getWIP` not empty and getWFS = 2 (Wi-Fi is connected) -> use `getMAC1`
+    3. If `getEIP` not empty -> use `getMAC2`
+
+    Returns None if no connection has both.
+    """
+    if not status:
+        return None
+
+    def is_not_empty_ip(key: str) -> bool:
+        return not is_empty_ip(status.get(key))
+
+    # Priority selection for MAC address:
+    # 1. If getIPA (primary IP) is set and not empty, use getMAC (primary MAC)
+    if is_not_empty_ip("getIPA"):
+        mac_val = status.get("getMAC")
+        if mac_val is not None and str(mac_val).strip() != "":
+            return str(mac_val)
+
+    # 2. If getWIP (Wi-Fi IP) is set and not empty, only use getMAC1 (Wi-Fi MAC)
+    #    if and only if getWFS == 2 (Wi-Fi is connected).
+    #    This prevents returning a Wi-Fi MAC address when the device is not actually
+    #    connected to a Wi-Fi network, which avoids confusion and ensures that only
+    #    active/connected MAC addresses are reported.
+    if is_not_empty_ip("getWIP"):
+        wfs_val = status.get("getWFS")
+        # getWFS meaning:
+        #   2 = Wi-Fi connected
+        #   1 = Wi-Fi connecting
+        #   0 = Wi-Fi not connected
+        if wfs_val is not None:
+            try:
+                wfs_int = to_int(wfs_val)
+            except ValueError, TypeError:
+                wfs_int = None
+        else:
+            wfs_int = None
+        if wfs_int == 2:
+            # Only return the Wi-Fi MAC if Wi-Fi is confirmed to be connected
+            mac_val = status.get("getMAC1")
+            if mac_val is not None and str(mac_val).strip() != "":
+                return str(mac_val)
+        # If Wi-Fi is not connected, skip getMAC1 and continue to next fallback
+
+    # 3. If getEIP (Ethernet IP) is set and not empty, use getMAC2 (Ethernet MAC)
+    if is_not_empty_ip("getEIP"):
+        mac_val = status.get("getMAC2")
+        if mac_val is not None and str(mac_val).strip() != "":
+            return str(mac_val)
+
+    # No fallback: only return a MAC if it matches the priority rules above
+    return None
+
+
+# Numbers of the leak protection profiles. Every profile has the same settings, keyed
+# by the setting with the number appended: getPA1-getPA8, getPN1-getPN8, ...
+LEAK_PROTECTION_PROFILES = range(1, 9)
+
+
+def get_active_leak_protection_profiles(status: SyrConnectStatus) -> dict[int, str]:
+    """Return the active leak protection profiles (getPAx) with their names (getPNx).
+
+    Formats:
+    - getPA1 "true", getPN1 "Home": {1: "Home"}
+    - getPA2 "1" without getPN2: {2: "2"}
+    - Profile not active (getPA3 "false" or missing): not in the result
+
+    Args:
+        status: Status of the device
+
+    Returns:
+        Profile number -> name, in ascending order of the number
+    """
+    profiles: dict[int, str] = {}
+    for number in LEAK_PROTECTION_PROFILES:
+        if not is_value_true(status.get(f"getPA{number}")):
+            continue
+        profiles[number] = str(status.get(f"getPN{number}") or number)
+    return profiles
+
+
+def get_current_leak_protection_profile(status: SyrConnectStatus) -> str | None:
+    """Return the name (getPNx) of the active leak protection profile (getPRF).
+
+    Formats:
+    - getPRF "1", getPN1 "Home": "Home"
+    - A name the local API reports as a number: getPN1 3 -> "3"
+    - No getPRF, no number or no name of the profile: None
+    """
+    value = status.get("getPRF")
+    if value is None or value == "":
+        return None
+    try:
+        number = int(to_float(value))
+    except ValueError, TypeError, OverflowError:
+        return None
+    name = status.get(f"getPN{number}")
+    return str(name) if name is not None else None
+
+
+# Device kind (dk) from which the devices report flags as True/False instead of 0/1.
+# With the change, the measuring sensor settings (getTSD, getPSD, getCSD) flipped their
+# meaning, see docs/syrconnect-protocol.md.
+_BOOLEAN_FLAGS_MINIMUM_DK = 1100
+
+
+def is_measuring_sensor_active(
+    signature: SyrConnectModelSignature, value: SyrConnectStatusValue
+) -> bool | None:
+    """Return whether a measuring sensor is active (getTSD, getPSD, getCSD).
+
+    Formats:
+    - dk < 1100: "0" -> active, "1" -> deactivated
+    - dk >= 1100: "True" -> active, "False" -> deactivated
+
+    Args:
+        signature: Signature of the model, for its device kind (dk)
+        value: Value of the setting
+
+    Returns:
+        True if the sensor is active, False if deactivated, None for an empty value
+    """
+    if value is None or str(value).strip() == "":
+        return None
+    dk = signature.dk
+    if dk is not None and dk >= _BOOLEAN_FLAGS_MINIMUM_DK:
+        return is_value_true(value)
+    return not is_value_true(value)
+
+
+# Valve motor states (getVLV) while the valve moves
+_VLV_CLOSING = 11
+_VLV_OPENING = 21
+
+
+def _valve_state(status: SyrConnectStatus) -> int | None:
+    """Return the valve motor state (getVLV) as number, or None."""
+    vlv = status.get("getVLV")
+    if vlv is None or vlv == "":
+        return None
+    try:
+        return int(to_float(vlv))
+    except ValueError, TypeError, OverflowError:
+        return None
+
+
+def is_valve_opening(status: SyrConnectStatus) -> bool | None:
+    """Return True while the valve opens (getVLV 21), None without a valve state."""
+    state = _valve_state(status)
+    return None if state is None else state == _VLV_OPENING
+
+
+def is_valve_closing(status: SyrConnectStatus) -> bool | None:
+    """Return True while the valve closes (getVLV 11), None without a valve state."""
+    state = _valve_state(status)
+    return None if state is None else state == _VLV_CLOSING

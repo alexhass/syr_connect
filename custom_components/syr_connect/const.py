@@ -23,8 +23,3 @@ _SYR_CONNECT_API_JSON_SCAN_INTERVAL_DEFAULT = 60  # seconds
 _SYR_CONNECT_API_XML_SCAN_INTERVAL_MINIMUM = 60  # seconds
 _SYR_CONNECT_API_JSON_SCAN_INTERVAL_MINIMUM = 10  # seconds
 _SYR_CONNECT_API_SCAN_INTERVAL_MAXIMUM = 600  # seconds
-
-
-# Numbers of the leak protection profiles. Every profile has the same settings, keyed
-# by the setting with the number appended: getPA1-getPA8, getPN1-getPN8, ...
-_SYR_CONNECT_LEAK_PROTECTION_PROFILES = range(1, 9)
