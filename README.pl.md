@@ -296,8 +296,9 @@ Integracja zapewnia kompleksowe monitorowanie urządzeń:
 
 - **Brzęczyk przy alarmie**: Włączenie lub wyłączenie brzęczyka przy alarmie.
 - **Zezwalaj na zmianę profilu na urządzeniu**: Zezwolenie lub zablokowanie zmiany profilu ochrony przed wyciekiem przyciskiem na urządzeniu.
-- **Tryb napełniania**: Włączenie lub wyłączenie automatycznego napełniania (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+).
-- **Pierwsze napełnienie**, **Ręczne napełnianie**: Uruchomienie lub zatrzymanie pierwszego napełnienia i ręcznego napełniania (All-in-One+).
+- **Tryb napełniania**: Włączenie lub wyłączenie automatycznego napełniania (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect i jego identyczne urządzenia innych marek, All-in-One+).
+- **Pierwsze napełnienie**: Uruchomienie lub zatrzymanie pierwszego napełnienia (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect i jego identyczne urządzenia innych marek, All-in-One+).
+- **Ręczne napełnianie**: Uruchomienie lub zatrzymanie ręcznego napełniania (All-in-One+).
 - **Automatyczne płukanie zwrotne**: Włączenie lub wyłączenie automatycznego płukania zwrotnego (automatyczne płukanie zwrotne RSA).
 - **Przypomnienie o płukaniu zwrotnym**: Włączenie lub wyłączenie przypomnienia o płukaniu zwrotnym (automatyczne płukanie zwrotne RSA).
 - **Płukanie stagnacyjne**, **Płukanie temperaturowe**, **Płukanie okresowe**: Włączenie lub wyłączenie trzech funkcji płukania (HygBox).
@@ -310,8 +311,8 @@ Integracja zapewnia kompleksowe monitorowanie urządzeń:
 - **Interwał regeneracji**: Ustawienie częstotliwości regeneracji (zależnie od modelu: do 3, 4 lub 99 dni).
 - **Orientacja wyświetlacza**: Ustawienie orientacji wyświetlacza (0 / 90 / 180 / 270 stopni, w urządzeniach z wyświetlaczem).
 - **Tryb regeneracji**: Wybór Standard / ECO / Power / Automatyczny (w urządzeniach, które to obsługują).
-- **Twardość wody surowej**, **Twardość wody zmiękczonej**: Ustawienie twardości wody surowej i zmiękczonej (rodzina LEX, CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+). Jednostka odpowiada jednostce twardości ustawionej w urządzeniu (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l lub mval/l).
-- **Uzdatnianie wody i napełnianie** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+): Rozmiar i typ wkładu, twardość wody zmiękczonej lub maksymalna przewodność na wyjściu (zależnie od wkładu), okres napełniania, liczba cykli napełniania, maksymalny czas i ilość napełniania, ciśnienie docelowe.
+- **Twardość wody surowej**, **Twardość wody zmiękczonej**: Ustawienie twardości wody surowej i zmiękczonej (rodzina LEX, CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect i jego identyczne urządzenia innych marek, All-in-One+). Jednostka odpowiada jednostce twardości ustawionej w urządzeniu (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l lub mval/l).
+- **Uzdatnianie wody i napełnianie** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect i jego identyczne urządzenia innych marek, All-in-One+): Rozmiar i typ wkładu, twardość wody zmiękczonej lub maksymalna przewodność na wyjściu (zależnie od wkładu), okres napełniania, liczba cykli napełniania, maksymalny czas i ilość napełniania, ciśnienie docelowe, próg ostrzeżenia o pozostałej pojemności, maksymalna objętość i czas pierwszego napełnienia.
 - **Czujnik podłogowy** (SafeFloor): Czas trwania alarmu, minimalne i maksymalne progi wilgotności i temperatury („Wył.” wyłącza próg), interwał pomiarów i interwał synchronizacji ustawień.
 - **Płukanie higieniczne** (HygBox): Rodzaj wody, czas stagnacji i objętość płukania, temperatura początkowa i końcowa, maksymalny czas płukania i liczba płukań na dzień, interwał i objętość płukania okresowego, interwał synchronizacji ustawień.
 - **Płukanie higieniczne** (moduł higieniczny, Safe-T Hygiene Module): Czas stagnacji, interwał płukania, limit temperatury, maksymalny czas i maksymalna objętość płukania przewodu wody zimnej i przewodu wody ciepłej.

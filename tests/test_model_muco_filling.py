@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock
 import pytest
 from pytest_homeassistant.common import MockConfigEntry
 
+from custom_components.syr_connect import switch as switch_module
 from custom_components.syr_connect.aiosyrconnect import SyrConnectConnectionError
 from custom_components.syr_connect.const import CONF_SERVICE
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
@@ -67,6 +68,9 @@ async def test_async_setup_entry_creates_muco_config_selects(
                     "getRVT": "100",
                     "getTPR": "18",
                     "getLOT": "7",
+                    "getCWL": "10",
+                    "getFMT": "30",
+                    "getFVT": "100",
                 },
             }
         ]
@@ -80,6 +84,9 @@ async def test_async_setup_entry_creates_muco_config_selects(
     assert {
         "getCRS",
         "getCRT",
+        "getCWL",
+        "getFMT",
+        "getFVT",
         "getRCD",
         "getRMN",
         "getRMT",
@@ -366,3 +373,90 @@ async def test_muco_filling_no_cartridge_selects_while_water_treatment_off(
     keys = {getattr(e, "_sensor_key", None) for e in entities}
     assert "getCRT" in keys
     assert keys.isdisjoint({"getOHW", "getLOT"})
+
+
+async def test_muco_filling_initial_filling_duration_steps(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+) -> None:
+    """The MuCo filling has its own steps for the maximum duration of the initial filling."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "model": _SYR_CONNECT_TEST_MUCO_FILLING_MODEL,
+                "status": {"getFMT": "30"},
+            }
+        ]
+    }
+    mock_config_entry, coordinator = create_mock_entry_with_coordinator(data)
+    coordinator.async_set_device_value = AsyncMock()
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    [select] = [e for e in entities if getattr(e, "_sensor_key", None) == "getFMT"]
+    # 1-5, 10, 15, 30 and 45 minutes, then 1-25 hours in steps of 30 minutes
+    assert select.options == [
+        f"{minutes} min"
+        for minutes in (1, 2, 3, 4, 5, 10, 15, 30, 45, *range(60, 1501, 30))
+    ]
+    assert select.current_option == "30 min"
+
+    await select.async_select_option("1 min")
+
+    coordinator.async_set_device_value.assert_called_once_with("device1", "setFMT", 1)
+
+
+@pytest.mark.parametrize(
+    ("status", "translation_key"),
+    [
+        pytest.param(
+            {"getDFI": True, "getSTA": 0},
+            "filling_blocked_by_filling_mode",
+            id="filling-mode-on",
+        ),
+        pytest.param(
+            {"getDFI": False, "getSTA": 2},
+            "filling_requires_standby",
+            id="not-standby",
+        ),
+        pytest.param({"getDFI": False, "getSTA": 0}, None, id="allowed"),
+    ],
+)
+async def test_muco_filling_initial_filling_switch(
+    create_mock_coordinator: Callable[..., MagicMock],
+    status: dict[str, Any],
+    translation_key: str | None,
+) -> None:
+    """The initial filling starts only while the filling mode is off and in standby."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "model": _SYR_CONNECT_TEST_MUCO_FILLING_MODEL,
+                "status": {"getIFL": False, **status},
+            }
+        ]
+    }
+    coordinator = create_mock_coordinator(data)
+    switch = switch_module.SyrConnectBooleanSwitch(
+        coordinator, "device1", "Device 1", "getIFL"
+    )
+
+    if translation_key is None:
+        await switch.async_turn_on()
+        coordinator.async_set_device_value.assert_awaited_once_with(
+            "device1", "setIFL", True
+        )
+        return
+    with pytest.raises(ServiceValidationError) as exc_info:
+        await switch.async_turn_on()
+    assert exc_info.value.translation_key == translation_key
+    coordinator.async_set_device_value.assert_not_awaited()

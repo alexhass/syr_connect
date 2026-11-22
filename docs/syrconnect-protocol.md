@@ -1518,7 +1518,7 @@ These properties appear in MuCo devices / Conel Clear Pro Fill / Sanibel Leak Pr
 
 #### Filling the Heating System
 
-These properties are documented on MuCo devices that expose water treatment (cartridge) and filling mode configuration, confirmed on Conel Clear Pro Fill.
+These properties are documented on MuCo devices that expose water treatment (cartridge) and filling mode configuration: the connection centre (getDFM 2, e.g. AC 3200 Connect) and the filling controller (getDFM 3, e.g. AC 3228 Connect), confirmed on Conel Clear Pro Fill. The connection centre has no `getBAR` (see the per-model validity matrix).
 
 | Property | Example | Unit | Description |
 | --- | --- | --- | --- |
@@ -1526,7 +1526,11 @@ These properties are documented on MuCo devices that expose water treatment (car
 | getCFV | "0" | L | Filling: Volume of the current filling, 0 while no filling runs. The All-in-One+ reports mL (see [known_issues_json_api.md](known_issues_json_api.md), issue 10) |
 | getCRS / setCRS | "1" | L | Water treatment: Cartridge size: 1=2.5L, 2=4L, 3=7L, 4=14L, 5=30L |
 | getCRT / setCRT | "1" | | Water treatment: Cartridge type: 0=HWE, 1=HVE, 2=HVE+, ""=none installed. While getWTR is off, no cartridge is in use, whatever getCRT reports |
+| getCWL / setCWL | "10" | % | Warning threshold of the remaining capacity. Default=10, Range in SYR GUI: 1–10 % in steps of 1 |
 | getDFI / setDFI | "True" | | Automatic filling mode: True=Enabled / False=Disabled |
+| getFMT / setFMT | "30" | min | Maximum duration of the initial filling. Default=60 on the All-in-One+, Range in SYR GUI: 1–5 min in 1 min steps, 10 min, 15 min, 30 min, 45 min, 1 h–25 h in 0.5 h steps |
+| getFVT / setFVT | "100" | L | Maximum volume of the initial filling. Default=100, Range in SYR GUI: as `getRVT` |
+| getIFL / setIFL | "False" | | Initial filling: True=Active / False=Inactive. Fills a new or existing heating system to the target pressure within the maximum volume (`getFVT`) and duration (`getFMT`) of the initial filling, then the device returns to automatic refilling. The SYR GUI only allows starting it while the automatic filling mode (`getDFI`) is off and the device is idle (`getSTA` 0). |
 | getIWH / setIWH | "18" | °dH | Water treatment: Raw water hardness, always in °dH; `getWHU` is only the unit of the display. Range in SYR GUI: 1–50 °dH, 1–65 °e, 1–90 °fH, 10–900 ppm in steps of 10, converted to °dH and rounded. A value below the soft water hardness lowers that one too. |
 | getLFT | "85" | s | Filling: Duration of the last filling |
 | getLFV | "4" | L | Filling: Volume of the last filling. The All-in-One+ reports mL, e.g. "6600" = 6.6 L (see [known_issues_json_api.md](known_issues_json_api.md), issue 10) |
@@ -1543,7 +1547,7 @@ These properties are documented on MuCo devices that expose water treatment (car
 | getTRV | "9" | L | Filling: Total volume of all fillings, also in L on the All-in-One+ |
 | getWTR / setWTR | "True" | | Water treatment: True/1 = on, False/0 = off. Set together with the cartridge type: selecting no cartridge sends setWTR off, selecting a cartridge type sends setCRT and setWTR on. The All-in-One+ reports "1"/"0" |
 
-The All-in-One+ (dk 160) uses the same cartridge and filling mode properties, with these differences: the soft water hardness is `getOWH` / `setOWH` instead of `getOHW` / `setOHW` (only visible when the cartridge type is HWE, reported in the unit of `getWHU` instead of °dH), and the device has no maximum output conductivity (`getLOT`). The maximum filling duration (`getRMT`) has other steps in the SYR GUI: 5–20 min in 5 min steps, 30–50 min in 10 min steps, 1 h–12 h in 0.5 h steps.
+The All-in-One+ (dk 160) uses the same cartridge and filling mode properties, with these differences: the soft water hardness is `getOWH` / `setOWH` instead of `getOHW` / `setOHW` (only visible when the cartridge type is HWE, reported in the unit of `getWHU` instead of °dH), and the device has no maximum output conductivity (`getLOT`). The maximum filling duration (`getRMT`) has other steps in the SYR GUI: 5–20 min in 5 min steps, 30–50 min in 10 min steps, 1 h–12 h in 0.5 h steps. The maximum duration of the initial filling (`getFMT`) has the same short steps: 5–20 min in 5 min steps, 30–50 min in 10 min steps, 1 h–25 h in 0.5 h steps.
 
 The All-in-One+ has these additional properties:
 
@@ -1554,13 +1558,9 @@ The All-in-One+ has these additional properties:
 | getIWH / setIWH | "20" | `getWHU` | Raw water hardness. Default=20, Range in SYR GUI: 1–50 °dH, 1–65 °e, 1–90 °fH, 10–900 ppm in steps of 10. A value below the soft water hardness lowers that one too |
 | getOWH / setOWH | "0" | `getWHU` | Soft water hardness, only visible when the cartridge type is HWE. Range in SYR GUI: 0–12 °dH, 0–16 °e, 0–22 °fH, 0–220 ppm in steps of 10, at most the raw water hardness |
 | getDFI / setDFI | "0" | | Automatic filling mode, inverted to the MuCo: 0=Enabled / 1=Disabled |
-| getCWL / setCWL | "10" | % | Warning threshold of the remaining capacity. Default=10, Range in SYR GUI: 1–10 % in steps of 1 |
 | getMFL / setMFL | "False" | | Manual filling: True=Active / False=Inactive. Fills the heating system to the target pressure within the maximum filling volume and duration, without counting the filling cycles; stays active until it is switched off. The SYR GUI only allows switching it while the automatic filling mode (`getDFI`) is off. |
-| getIFL / setIFL | "False" | | Initial filling: True=Active / False=Inactive. Fills a new or existing heating system to the target pressure within the maximum volume (`getFVT`) and duration (`getFMT`) of the initial filling, then the device returns to automatic refilling. The SYR GUI only allows starting it while the automatic filling mode (`getDFI`) is off and the device is idle (`getSTA` 0). |
 | getLW1 | "0" | µS/cm | Conductivity of the inlet water |
 | getLW2 | "2" | µS/cm | Conductivity of the outlet water |
-| getFVT / setFVT | "100" | L | Maximum volume of the initial filling. Default=100, Range in SYR GUI: as `getRVT` |
-| getFMT / setFMT | "60" | min | Maximum duration of the initial filling. Default=60, Range in SYR GUI: 5–20 min in 5 min steps, 30–50 min in 10 min steps, 1 h–25 h in 0.5 h steps |
 
 #### Filling cycles
 

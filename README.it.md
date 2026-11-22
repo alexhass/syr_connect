@@ -296,8 +296,9 @@ L'integrazione offre un monitoraggio completo dei dispositivi:
 
 - **Cicalino in caso di allarme**: Attivare o disattivare il cicalino in caso di allarme.
 - **Consenti cambio profilo sul dispositivo**: Consentire o bloccare il cambio del profilo protezione perdite con il tasto sul dispositivo.
-- **Modalità di riempimento**: Attivare o disattivare il riempimento automatico (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+).
-- **Riempimento iniziale**, **Riempimento manuale**: Avviare o arrestare il riempimento iniziale e il riempimento manuale (All-in-One+).
+- **Modalità di riempimento**: Attivare o disattivare il riempimento automatico (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect e i suoi dispositivi identici di altri marchi, All-in-One+).
+- **Riempimento iniziale**: Avviare o arrestare il riempimento iniziale (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect e i suoi dispositivi identici di altri marchi, All-in-One+).
+- **Riempimento manuale**: Avviare o arrestare il riempimento manuale (All-in-One+).
 - **Controlavaggio automatico**: Attivare o disattivare il controlavaggio automatico (controlavaggio automatico RSA).
 - **Promemoria controlavaggio**: Attivare o disattivare il promemoria del controlavaggio (controlavaggio automatico RSA).
 - **Risciacquo per stagnazione**, **Risciacquo per temperatura**, **Risciacquo periodico**: Attivare o disattivare le tre funzioni di risciacquo (HygBox).
@@ -310,8 +311,8 @@ L'integrazione offre un monitoraggio completo dei dispositivi:
 - **Intervallo di rigenerazione**: Impostare la frequenza della rigenerazione (a seconda del modello: fino a 3, 4 o 99 giorni).
 - **Orientamento del display**: Impostare l'orientamento del display (0 / 90 / 180 / 270 gradi, per dispositivi con display).
 - **Modalità di rigenerazione**: Selezionare Standard / ECO / Power / Automatica (per i dispositivi che la supportano).
-- **Durezza acqua grezza**, **Durezza acqua addolcita**: Impostare la durezza dell'acqua grezza e dell'acqua addolcita (famiglia LEX, CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+). L'unità segue l'unità di durezza configurata sul dispositivo (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l o mval/l).
-- **Trattamento dell'acqua e riempimento** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+): Dimensione e tipo della cartuccia, durezza dell'acqua addolcita o conducibilità massima in uscita (a seconda della cartuccia), periodo di riempimento, numero di cicli di riempimento, durata e quantità massime di riempimento, pressione di destinazione.
+- **Durezza acqua grezza**, **Durezza acqua addolcita**: Impostare la durezza dell'acqua grezza e dell'acqua addolcita (famiglia LEX, CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect e i suoi dispositivi identici di altri marchi, All-in-One+). L'unità segue l'unità di durezza configurata sul dispositivo (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l o mval/l).
+- **Trattamento dell'acqua e riempimento** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect e i suoi dispositivi identici di altri marchi, All-in-One+): Dimensione e tipo della cartuccia, durezza dell'acqua addolcita o conducibilità massima in uscita (a seconda della cartuccia), periodo di riempimento, numero di cicli di riempimento, durata e quantità massime di riempimento, pressione di destinazione, soglia di avviso della capacità residua, volume e durata massimi del riempimento iniziale.
 - **Sensore del pavimento** (SafeFloor): Durata dell'allarme, soglie minime e massime di umidità e temperatura ("Off" disattiva una soglia), intervallo di misura e intervallo di sincronizzazione delle impostazioni.
 - **Risciacquo igienico** (HygBox): Tipo d'acqua, tempo di stagnazione e volume di risciacquo, temperatura di avvio e di arresto, durata massima del risciacquo e risciacqui al giorno, intervallo e volume del risciacquo periodico, intervallo di sincronizzazione delle impostazioni.
 - **Risciacquo igienico** (modulo igienico, Safe-T Hygiene Module): Tempo di stagnazione, intervallo di risciacquo, limite di temperatura, durata massima e volume massimo di risciacquo della tubazione dell'acqua fredda e di quella dell'acqua calda.

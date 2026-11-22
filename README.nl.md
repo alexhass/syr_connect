@@ -296,8 +296,9 @@ De integratie biedt een uitgebreide bewaking van de apparaten:
 
 - **Zoemer bij alarm**: De zoemer bij een alarm in- of uitschakelen.
 - **Profielwissel op het apparaat toestaan**: Het wisselen van het lekbeschermingsprofiel met de knop op het apparaat toestaan of blokkeren.
-- **Vulmodus**: Het automatisch vullen in- of uitschakelen (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+).
-- **Eerste vulling**, **Handmatig vullen**: De eerste vulling en het handmatig vullen starten of stoppen (All-in-One+).
+- **Vulmodus**: Het automatisch vullen in- of uitschakelen (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect en zijn identieke apparaten van andere merken, All-in-One+).
+- **Eerste vulling**: De eerste vulling starten of stoppen (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect en zijn identieke apparaten van andere merken, All-in-One+).
+- **Handmatig vullen**: Het handmatig vullen starten of stoppen (All-in-One+).
 - **Automatische terugspoeling**: De automatische terugspoeling in- of uitschakelen (automatische terugspoeling RSA).
 - **Terugspoelherinnering**: De herinnering aan de terugspoeling in- of uitschakelen (automatische terugspoeling RSA).
 - **Stagnatiespoeling**, **Temperatuurspoeling**, **Periodieke spoeling**: De drie spoelfuncties in- of uitschakelen (HygBox).
@@ -310,8 +311,8 @@ De integratie biedt een uitgebreide bewaking van de apparaten:
 - **Regeneratie-interval**: Instellen hoe vaak de regeneratie plaatsvindt (afhankelijk van het model: tot 3, 4 of 99 dagen).
 - **Displayoriëntatie**: De oriëntatie van het display instellen (0 / 90 / 180 / 270 graden, bij apparaten met display).
 - **Regeneratiemodus**: Standaard / ECO / Power / Automatisch selecteren (bij apparaten die dit ondersteunen).
-- **Ruwwaterhardheid**, **Zachtwaterhardheid**: De hardheid van het ruwe en het onthard water instellen (LEX-familie, CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+). De eenheid volgt de op het apparaat ingestelde hardheidseenheid (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l of mval/l).
-- **Waterbehandeling en vullen** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+): Grootte en type van de patroon, zachtwaterhardheid of maximale uitgangsgeleidbaarheid (afhankelijk van de patroon), vulperiode, aantal vulcycli, maximale vulduur en -hoeveelheid, doeldruk.
+- **Ruwwaterhardheid**, **Zachtwaterhardheid**: De hardheid van het ruwe en het onthard water instellen (LEX-familie, CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect en zijn identieke apparaten van andere merken, All-in-One+). De eenheid volgt de op het apparaat ingestelde hardheidseenheid (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l of mval/l).
+- **Waterbehandeling en vullen** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect en zijn identieke apparaten van andere merken, All-in-One+): Grootte en type van de patroon, zachtwaterhardheid of maximale uitgangsgeleidbaarheid (afhankelijk van de patroon), vulperiode, aantal vulcycli, maximale vulduur en -hoeveelheid, doeldruk, waarschuwingsdrempel resterende capaciteit, maximaal vulvolume en maximale vulduur van de eerste vulling.
 - **Vloersensor** (SafeFloor): Alarmduur, minimale en maximale drempels voor luchtvochtigheid en temperatuur ("Uit" schakelt een drempel uit), meetinterval en synchronisatie-interval van de instellingen.
 - **Hygiënespoeling** (HygBox): Watertype, stagnatietijd en spoelvolume, start- en stoptemperatuur, maximale spoelduur en spoelingen per dag, interval en spoelvolume van de periodieke spoeling, synchronisatie-interval van de instellingen.
 - **Hygiënespoeling** (hygiënemodule, Safe-T Hygiene Module): Stagnatietijd, spoelinterval, temperatuurgrens, maximale spoelduur en maximaal spoelvolume van de koud- en de warmwaterleiding.

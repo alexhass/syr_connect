@@ -296,8 +296,9 @@ L'intégration offre une surveillance complète des appareils :
 
 - **Avertisseur en cas d'alarme** : Activer ou désactiver l'avertisseur en cas d'alarme.
 - **Autoriser le changement de profil sur l'appareil** : Autoriser ou bloquer le changement du profil de protection contre les fuites avec la touche de l'appareil.
-- **Mode de remplissage** : Activer ou désactiver le remplissage automatique (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+).
-- **Remplissage initial**, **Remplissage manuel** : Démarrer ou arrêter le remplissage initial et le remplissage manuel (All-in-One+).
+- **Mode de remplissage** : Activer ou désactiver le remplissage automatique (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect et ses appareils identiques d'autres marques, All-in-One+).
+- **Remplissage initial** : Démarrer ou arrêter le remplissage initial (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect et ses appareils identiques d'autres marques, All-in-One+).
+- **Remplissage manuel** : Démarrer ou arrêter le remplissage manuel (All-in-One+).
 - **Contre-lavage automatique** : Activer ou désactiver le contre-lavage automatique (contre-lavage automatique RSA).
 - **Rappel de contre-lavage** : Activer ou désactiver le rappel de contre-lavage (contre-lavage automatique RSA).
 - **Rinçage de stagnation**, **Rinçage de température**, **Rinçage périodique** : Activer ou désactiver les trois fonctions de rinçage (HygBox).
@@ -310,8 +311,8 @@ L'intégration offre une surveillance complète des appareils :
 - **Intervalle de régénération** : Régler la fréquence de la régénération (selon le modèle : jusqu'à 3, 4 ou 99 jours).
 - **Orientation de l'affichage** : Régler l'orientation de l'écran (0 / 90 / 180 / 270 degrés, pour les appareils avec écran).
 - **Mode de régénération** : Sélectionner Standard / ECO / Power / Automatique (pour les appareils qui le prennent en charge).
-- **Dureté de l'eau brute**, **Dureté de l'eau adoucie** : Régler la dureté de l'eau brute et de l'eau adoucie (famille LEX, CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+). L'unité suit l'unité de dureté configurée sur l'appareil (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l ou mval/l).
-- **Traitement de l'eau et remplissage** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+) : Taille et type de cartouche, dureté de l'eau adoucie ou conductivité maximale en sortie (selon la cartouche), période de remplissage, nombre de cycles de remplissage, durée et quantité maximales de remplissage, pression cible.
+- **Dureté de l'eau brute**, **Dureté de l'eau adoucie** : Régler la dureté de l'eau brute et de l'eau adoucie (famille LEX, CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect et ses appareils identiques d'autres marques, All-in-One+). L'unité suit l'unité de dureté configurée sur l'appareil (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l ou mval/l).
+- **Traitement de l'eau et remplissage** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect et ses appareils identiques d'autres marques, All-in-One+) : Taille et type de cartouche, dureté de l'eau adoucie ou conductivité maximale en sortie (selon la cartouche), période de remplissage, nombre de cycles de remplissage, durée et quantité maximales de remplissage, pression cible, seuil d'avertissement de capacité restante, volume et durée maximaux du remplissage initial.
 - **Capteur de sol** (SafeFloor) : Durée de l'alarme, seuils minimal et maximal d'humidité et de température (« Désactivé » désactive un seuil), intervalle de mesure et intervalle de synchronisation des réglages.
 - **Rinçage d'hygiène** (HygBox) : Type d'eau, temps de stagnation et volume de rinçage, température de démarrage et d'arrêt, durée maximale de rinçage et rinçages par jour, intervalle et volume du rinçage périodique, intervalle de synchronisation des réglages.
 - **Rinçage d'hygiène** (module d'hygiène, Safe-T Hygiene Module) : Temps de stagnation, intervalle de rinçage, limite de température, durée maximale et volume maximal de rinçage de la conduite d'eau froide et de celle d'eau chaude.

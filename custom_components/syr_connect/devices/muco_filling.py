@@ -92,6 +92,9 @@ SENSOR_SUPPORTED_KEYS = {
     # --- Water treatment / Filling ---
     "getCRS",
     "getCRT",
+    "getCWL",
+    "getFMT",
+    "getFVT",
     "getLOT",
     "getLRC",
     "getPRC",
@@ -118,6 +121,9 @@ SELECT_SUPPORTED_KEYS = {
     "getSRO",
     "getCRS",
     "getCRT",
+    "getCWL",
+    "getFMT",
+    "getFVT",
     "getIWH",
     "getLOT",
     "getOHW",
@@ -131,6 +137,7 @@ SELECT_SUPPORTED_KEYS = {
 SWITCH_SUPPORTED_KEYS = {
     "getBUZ",
     "getDFI",
+    "getIFL",
 }
 
 BINARY_SENSOR_SUPPORTED_KEYS = {

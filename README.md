@@ -296,8 +296,9 @@ The integration provides comprehensive monitoring of the devices:
 
 - **Buzzer on alarm**: Enable or disable the buzzer on alarm.
 - **Allow profile change on the device**: Allow or block changing the leak protection profile with the button on the device.
-- **Filling mode**: Enable or disable the automatic filling (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+).
-- **Initial filling**, **Manual filling**: Start or stop the initial and the manual filling (All-in-One+).
+- **Filling mode**: Enable or disable the automatic filling (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect and its identical devices of other brands, All-in-One+).
+- **Initial filling**: Start or stop the initial filling (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect and its identical devices of other brands, All-in-One+).
+- **Manual filling**: Start or stop the manual filling (All-in-One+).
 - **Automatic backwash**: Enable or disable the automatic backwash (automatic backwash RSA).
 - **Backwash reminder**: Enable or disable the backwash reminder (automatic backwash RSA).
 - **Stagnation flushing**, **Temperature flushing**, **Periodic flushing**: Enable or disable the three flushing functions (HygBox).
@@ -310,8 +311,8 @@ The integration provides comprehensive monitoring of the devices:
 - **Regeneration interval**: Set how often regeneration occurs (model dependent: up to 3, 4 or 99 days).
 - **Display orientation**: Set the display orientation (0 / 90 / 180 / 270 degrees, for devices with a display).
 - **Regeneration mode**: Select Standard / ECO / Power / Automatic (for devices that support it).
-- **Raw water hardness**, **Soft water hardness**: Set the raw and softened water hardness (LEX family, CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+). The unit follows the hardness unit configured on the device (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l or mval/l).
-- **Water treatment and filling** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+): Cartridge size and type, soft water hardness or maximum output conductivity (depending on the cartridge), filling period, number of filling cycles, maximum filling duration and amount, target pressure.
+- **Raw water hardness**, **Soft water hardness**: Set the raw and softened water hardness (LEX family, CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect and its identical devices of other brands, All-in-One+). The unit follows the hardness unit configured on the device (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l or mval/l).
+- **Water treatment and filling** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect and its identical devices of other brands, All-in-One+): Cartridge size and type, soft water hardness or maximum output conductivity (depending on the cartridge), filling period, number of filling cycles, maximum filling duration and amount, target pressure, remaining capacity warning threshold, maximum volume and duration of the initial filling.
 - **Floor sensor** (SafeFloor): Alarm duration, minimum and maximum humidity and temperature thresholds ("Off" disables a threshold), measurement interval and settings synchronization interval.
 - **Hygiene flushing** (HygBox): Water type, stagnation time and flushing volume, start and stop temperature, maximum flushing duration and flushings per day, interval and flushing volume of the periodic flushing, settings synchronization interval.
 - **Hygiene flushing** (hygiene module, Safe-T Hygiene module): Stagnation time, flushing interval, temperature limit, maximum flushing duration and maximum flushing volume of the cold and the hot water line.

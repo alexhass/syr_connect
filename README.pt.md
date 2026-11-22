@@ -296,8 +296,9 @@ A integração oferece uma monitorização completa dos dispositivos:
 
 - **Alarme sonoro**: Ativar ou desativar o alarme sonoro em caso de alarme.
 - **Permitir mudança de perfil no dispositivo**: Permitir ou bloquear a mudança do perfil de proteção contra fugas com o botão do dispositivo.
-- **Modo de enchimento**: Ativar ou desativar o enchimento automático (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+).
-- **Enchimento inicial**, **Enchimento manual**: Iniciar ou parar o enchimento inicial e o enchimento manual (All-in-One+).
+- **Modo de enchimento**: Ativar ou desativar o enchimento automático (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect e os seus dispositivos idênticos de outras marcas, All-in-One+).
+- **Enchimento inicial**: Iniciar ou parar o enchimento inicial (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect e os seus dispositivos idênticos de outras marcas, All-in-One+).
+- **Enchimento manual**: Iniciar ou parar o enchimento manual (All-in-One+).
 - **Retrolavagem automática**: Ativar ou desativar a retrolavagem automática (retrolavagem automática RSA).
 - **Lembrete de retrolavagem**: Ativar ou desativar o lembrete de retrolavagem (retrolavagem automática RSA).
 - **Purga por estagnação**, **Purga por temperatura**, **Purga periódica**: Ativar ou desativar as três funções de purga (HygBox).
@@ -310,8 +311,8 @@ A integração oferece uma monitorização completa dos dispositivos:
 - **Intervalo de regeneração**: Definir a frequência da regeneração (conforme o modelo: até 3, 4 ou 99 dias).
 - **Orientação do ecrã**: Definir a orientação do ecrã (0 / 90 / 180 / 270 graus, em dispositivos com ecrã).
 - **Modo de regeneração**: Selecionar Padrão / ECO / Power / Automático (nos dispositivos que o suportam).
-- **Dureza da água bruta**, **Dureza da água amaciada**: Definir a dureza da água bruta e da água amaciada (família LEX, CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+). A unidade segue a unidade de dureza configurada no dispositivo (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l ou mval/l).
-- **Tratamento da água e enchimento** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+): Tamanho e tipo do cartucho, dureza da água amaciada ou condutividade máxima à saída (conforme o cartucho), período de enchimento, número de ciclos de enchimento, duração e quantidade máximas de enchimento, pressão alvo.
+- **Dureza da água bruta**, **Dureza da água amaciada**: Definir a dureza da água bruta e da água amaciada (família LEX, CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect e os seus dispositivos idênticos de outras marcas, All-in-One+). A unidade segue a unidade de dureza configurada no dispositivo (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l ou mval/l).
+- **Tratamento da água e enchimento** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect e os seus dispositivos idênticos de outras marcas, All-in-One+): Tamanho e tipo do cartucho, dureza da água amaciada ou condutividade máxima à saída (conforme o cartucho), período de enchimento, número de ciclos de enchimento, duração e quantidade máximas de enchimento, pressão alvo, limiar de aviso da capacidade restante, volume e duração máximos do enchimento inicial.
 - **Sensor de pavimento** (SafeFloor): Duração do alarme, limiares mínimo e máximo de humidade e temperatura ("Desligado" desativa um limiar), intervalo de medição e intervalo de sincronização das definições.
 - **Purga de higiene** (HygBox): Tipo de água, tempo de estagnação e volume de purga, temperatura de início e de paragem, duração máxima da purga e purgas por dia, intervalo e volume da purga periódica, intervalo de sincronização das definições.
 - **Purga de higiene** (módulo de higiene, Safe-T Hygiene Module): Tempo de estagnação, intervalo de purga, limite de temperatura, duração máxima e volume máximo de purga da canalização de água fria e da de água quente.

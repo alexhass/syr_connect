@@ -56,7 +56,7 @@ _SYR_CONNECT_SWITCH_TYPES: tuple[SwitchEntityDescription, ...] = (
         entity_category=EntityCategory.CONFIG,
     ),
     SwitchEntityDescription(
-        key="getIFL",  # Initial filling active flag (All-in-One+)
+        key="getIFL",  # Initial filling active flag (All-in-One+, MuCo filling)
         entity_category=EntityCategory.CONFIG,
     ),
     SwitchEntityDescription(

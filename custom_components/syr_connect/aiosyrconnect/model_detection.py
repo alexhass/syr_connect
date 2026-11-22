@@ -45,8 +45,8 @@ UNKNOWN_MODEL_SIGNATURE = SyrConnectModelSignature(
     name="unknown",
 )
 
-# Cartridge type (getCRT) of the MuCo filling controller -> key with the value of that
-# cartridge
+# Cartridge type (getCRT) of the MuCo filling controller and connection centre -> key
+# with the value of that cartridge
 _CARTRIDGE_KEYS_MUCO_FILLING: Mapping[str, str] = {
     "0": "getOHW",
     "1": "getLOT",
@@ -83,10 +83,24 @@ _HARDNESS_RANGES_ALLINONEPLUS: Mapping[str, Mapping[int, tuple[int, int, int]]] 
     },
 }
 
-# Water hardness ranges of the MuCo filling controller per unit: getWHU code -> (lowest,
-# highest, step) in that unit. The device keeps both values in °dH (`hardness_in_dh`),
-# getWHU is only the unit of the display. The soft water hardness (getOHW) can be at most
-# the raw water hardness (getIWH).
+# Maximum duration of the initial filling (getFMT) of the MuCo filling controller and
+# connection centre in minutes: 1-5 in steps of 1, 10, 15, 30, 45, 60-1500 in steps of
+# 30
+_FMT_VALUES_MUCO_FILLING = sorted(
+    {
+        *range(1, 6),
+        10,
+        15,
+        30,
+        45,
+        *range(60, 1501, 30),
+    }
+)
+
+# Water hardness ranges of the MuCo filling controller and connection centre per unit:
+# getWHU code -> (lowest, highest, step) in that unit. The device keeps both values in
+# °dH (`hardness_in_dh`), getWHU is only the unit of the display. The soft water hardness
+# (getOHW) can be at most the raw water hardness (getIWH).
 _HARDNESS_RANGES_MUCO_FILLING: Mapping[str, Mapping[int, tuple[int, int, int]]] = {
     "getIWH": {
         0: (1, 50, 1),  # °dH
@@ -1466,13 +1480,19 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
+        cartridge_keys=_CARTRIDGE_KEYS_MUCO_FILLING,
         dfm=2,
         display_name="CLEAR PRO FILL",
         dk=1500,
         dkv=500,
+        hardness_in_dh=True,
+        hardness_ranges=_HARDNESS_RANGES_MUCO_FILLING,
         manufacturer="CONEL",
         name="conelclearproconnectioncentre",
         not_codes=NOT_CODES_COMMON,
+        setting_values={
+            "getFMT": _FMT_VALUES_MUCO_FILLING,
+        },
         # TODO: Untested model.
         srn_prefix="500",
         whu_units=WHU_UNITS_MUCO,
@@ -1493,6 +1513,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         manufacturer="CONEL",
         name="conelclearprofill",
         not_codes=NOT_CODES_COMMON,
+        setting_values={
+            "getFMT": _FMT_VALUES_MUCO_FILLING,
+        },
         srn_prefix="500",
         whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
@@ -1533,13 +1556,19 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
+        cartridge_keys=_CARTRIDGE_KEYS_MUCO_FILLING,
         dfm=2,
         display_name="comfort-Connection Module Plus Connect",
         dk=1501,
         dkv=501,
+        hardness_in_dh=True,
+        hardness_ranges=_HARDNESS_RANGES_MUCO_FILLING,
         manufacturer="Sanibel",
         name="sanibelconnectioncentre",
         not_codes=NOT_CODES_COMMON,
+        setting_values={
+            "getFMT": _FMT_VALUES_MUCO_FILLING,
+        },
         # TODO: Untested model.
         srn_prefix="501",
         whu_units=WHU_UNITS_MUCO,
@@ -1581,13 +1610,19 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         # DT3645 - DITECH Anschlussmodul Plus, with DT3646 - DITECH MultiControl
         alarm_clear_via_set=True,
         base_path="/trio",
+        cartridge_keys=_CARTRIDGE_KEYS_MUCO_FILLING,
         dfm=2,
         display_name="DITECH Connection Module Plus",
         dk=1502,
         dkv=502,
+        hardness_in_dh=True,
+        hardness_ranges=_HARDNESS_RANGES_MUCO_FILLING,
         manufacturer="DITECH",
         name="ditechconnectioncentre",
         not_codes=NOT_CODES_COMMON,
+        setting_values={
+            "getFMT": _FMT_VALUES_MUCO_FILLING,
+        },
         # TODO: Untested model.
         srn_prefix="502",
         whu_units=WHU_UNITS_MUCO,
@@ -1647,13 +1682,19 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
+        cartridge_keys=_CARTRIDGE_KEYS_MUCO_FILLING,
         dfm=2,
         display_name="Connection Module Plus",
         dk=1503,
         dkv=503,
+        hardness_in_dh=True,
+        hardness_ranges=_HARDNESS_RANGES_MUCO_FILLING,
         manufacturer="TAKE",
         name="takeconnectioncentre",
         not_codes=NOT_CODES_COMMON,
+        setting_values={
+            "getFMT": _FMT_VALUES_MUCO_FILLING,
+        },
         # TODO: Untested model.
         srn_prefix="503",
         whu_units=WHU_UNITS_MUCO,
@@ -1711,13 +1752,19 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
+        cartridge_keys=_CARTRIDGE_KEYS_MUCO_FILLING,
         dfm=2,
         display_name="concept 300 Connection Module Plus",
         dk=1504,
         dkv=504,
+        hardness_in_dh=True,
+        hardness_ranges=_HARDNESS_RANGES_MUCO_FILLING,
         manufacturer="CONCEPT",
         name="conceptconnectioncentre",
         not_codes=NOT_CODES_COMMON,
+        setting_values={
+            "getFMT": _FMT_VALUES_MUCO_FILLING,
+        },
         # TODO: Untested model.
         srn_prefix="504",
         whu_units=WHU_UNITS_MUCO,
@@ -1777,13 +1824,19 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
+        cartridge_keys=_CARTRIDGE_KEYS_MUCO_FILLING,
         dfm=2,
         display_name="Optima T2 Connection Module Plus",
         dk=1505,
         dkv=505,
+        hardness_in_dh=True,
+        hardness_ranges=_HARDNESS_RANGES_MUCO_FILLING,
         manufacturer="OPTIMA",
         name="optimaconnectioncentre",
         not_codes=NOT_CODES_COMMON,
+        setting_values={
+            "getFMT": _FMT_VALUES_MUCO_FILLING,
+        },
         # TODO: Untested model.
         srn_prefix="505",
         whu_units=WHU_UNITS_MUCO,
@@ -1843,13 +1896,19 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
+        cartridge_keys=_CARTRIDGE_KEYS_MUCO_FILLING,
         dfm=2,
         display_name="AC 3200 Connect",
         dk=1506,
         dkv=506,
+        hardness_in_dh=True,
+        hardness_ranges=_HARDNESS_RANGES_MUCO_FILLING,
         manufacturer="SYR",
         name="syrac3200connect",
         not_codes=NOT_CODES_COMMON,
+        setting_values={
+            "getFMT": _FMT_VALUES_MUCO_FILLING,
+        },
         # TODO: Untested model.
         srn_prefix="506",
         whu_units=WHU_UNITS_MUCO,
@@ -1869,6 +1928,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         manufacturer="SYR",
         name="syrac3228connect",
         not_codes=NOT_CODES_COMMON,
+        setting_values={
+            "getFMT": _FMT_VALUES_MUCO_FILLING,
+        },
         # TODO: Untested model.
         srn_prefix="506",
         whu_units=WHU_UNITS_MUCO,

@@ -1,29 +1,28 @@
 """Entity allowlist override for the muco_connectioncentre model.
 
-SYR AC 3200 Connect (dkv=506, getDFM=2), "Connection centre"/"Anschlusscenter" role.
+SYR AC 3200 Connect (dkv=506, getDFM=2), "Connection centre"/"Anschlusscenter" role,
+and its rebrands of the other MultiController brands.
 
-Model type: Connection Centre / "Anschlusscenter"
+Model type: Connection Centre / "Anschlusscenter": fills the heating system, with water
+treatment (cartridge) and filling limits.
 
 This is a POSITIVE list: only keys confirmed to be meaningful for this model
 are listed, unlike the shared global allowlists of the platforms which have to
 cover every supported model at once.
 
-No real-device or fixture capture exists for this variant yet - the keys
-below are taken from the official validity matrix in
-docs/syrconnect-protocol.md, which confirms getBAR2/getBAT/getBUZ/getCND/
-getFLO/getSRN/getVER are available, plus the same baseline
-connectivity/alarm/device-info/Wi-Fi keys shared by the other muco_*.py
-device files. Verify against a real device before relying on this.
+No real-device or fixture capture exists for this variant yet. The keys are taken
+from docs/syrconnect-protocol.md: the official validity matrix (getBAR2, getBAT,
+getBUZ, getCND, getFLO, getSRN, getVER and the filling values getCFT, getCFV, getLFT,
+getLFV, getNRT, getTRT, getTRV), the filling cycles (getRCC, getRCD, getRCN, getRMN)
+and the water treatment and filling settings of the "Filling the Heating System"
+section, plus the baseline connectivity/alarm/device-info/Wi-Fi keys of the other
+muco_*.py device files. Verify against a real device before relying on this.
 
 Deliberately NOT included, pending confirmation on a real device:
 - getAVO, getBAR, getCEL, getLTV, getVOL, getVPS1, getVPS2: marked X (not
   available) for this model in the validity matrix.
-- getCFT, getCFV: current filling duration (s) and current filling volume
-  (l), respectively; available for this model according to the validity
-  matrix.
 - Leak-protection-profile family (getPA-PW1-8, getPRF) and valve control
-  (getAB/getVLV): this is a "Connection centre" role (getDFM=2 =
-  "Anschlusscenter"/"Connection centre"), not a leak-protection variant.
+  (getAB): this is a "Connection centre" role, not a leak-protection variant.
 
 If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_SUPPORTED_KEYS below.
@@ -34,8 +33,9 @@ from . import SyrConnectDeviceProfile
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
     "dst",
-    # --- Flow ---
+    # --- Valve & Flow ---
     "getFLO",
+    "getVLV",
     # --- Alarm / Notification / Warning ---
     "getALA",
     "getALM",
@@ -50,8 +50,13 @@ SENSOR_SUPPORTED_KEYS = {
     "getBAT",
     # --- Water Quality ---
     "getCND",
+    "getIWH",
+    "getOHW",
+    "getWHU",
     # --- Device Status ---
     "getDFM",
+    # --- Display ---
+    "getSRO",
     # --- Device Info & Diagnostics ---
     "getEGW",
     "getEIP",
@@ -68,6 +73,22 @@ SENSOR_SUPPORTED_KEYS = {
     "getWFS",
     "getWGW",
     "getWIP",
+    # --- Water treatment / Filling ---
+    "getCRS",
+    "getCRT",
+    "getCWL",
+    "getFMT",
+    "getFVT",
+    "getLOT",
+    "getLRC",
+    "getPRC",
+    "getRCC",
+    "getRCD",
+    "getRCN",
+    "getRMN",
+    "getRMT",
+    "getRVT",
+    "getTPR",
     # --- Lock / Connection Centre ---
     "getCFT",
     "getCFV",
@@ -78,10 +99,27 @@ SENSOR_SUPPORTED_KEYS = {
     "getTRV",
 }
 
-SELECT_SUPPORTED_KEYS: set[str] = set()
+SELECT_SUPPORTED_KEYS = {
+    "getSRO",
+    "getCRS",
+    "getCRT",
+    "getCWL",
+    "getFMT",
+    "getFVT",
+    "getIWH",
+    "getLOT",
+    "getOHW",
+    "getRCD",
+    "getRMN",
+    "getRMT",
+    "getRVT",
+    "getTPR",
+}
 
 SWITCH_SUPPORTED_KEYS = {
     "getBUZ",
+    "getDFI",
+    "getIFL",
 }
 
 BINARY_SENSOR_SUPPORTED_KEYS = {

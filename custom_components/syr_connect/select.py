@@ -774,8 +774,8 @@ def _add_muco_selects(b: _SyrConnectSelectBuilder) -> None:
     # (see docs/syrconnect-protocol.md); the All-in-One+ has other getRMT steps
     b.offer_numeric_steps("getRMT")
     b.offer_numeric_steps("getRVT")
-    # Initial filling (All-in-One+): maximum volume (getFVT, same steps as getRVT) and
-    # maximum duration (getFMT)
+    # Initial filling (All-in-One+, MuCo filling): maximum volume (getFVT, same steps as
+    # getRVT) and maximum duration (getFMT, the MuCo filling has other steps)
     b.offer_numeric_steps("getFVT")
     b.offer_numeric_steps("getFMT")
     # Target pressure (getTPR): the raw value is stored as 1/10 bar

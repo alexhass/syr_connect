@@ -296,8 +296,9 @@ Die Integration bietet eine umfangreiche Überwachung der Geräte:
 
 - **Signalton bei Alarm**: Signalton bei Alarm aktivieren oder deaktivieren.
 - **Profilwechsel am Gerät erlauben**: Wechsel des Leckageschutz-Profils mit der Taste am Gerät erlauben oder sperren.
-- **Füllmodus**: Automatische Befüllung aktivieren oder deaktivieren (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+).
-- **Erstbefüllung**, **Manuelle Befüllung**: Erstbefüllung und manuelle Befüllung starten oder beenden (All-in-One+).
+- **Füllmodus**: Automatische Befüllung aktivieren oder deaktivieren (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect und baugleiche Geräte anderer Marken, All-in-One+).
+- **Erstbefüllung**: Erstbefüllung starten oder beenden (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect und baugleiche Geräte anderer Marken, All-in-One+).
+- **Manuelle Befüllung**: Manuelle Befüllung starten oder beenden (All-in-One+).
 - **Automatische Rückspülung**: Automatische Rückspülung aktivieren oder deaktivieren (Rückspülautomatik RSA).
 - **Rückspülerinnerung**: Erinnerung an die Rückspülung aktivieren oder deaktivieren (Rückspülautomatik RSA).
 - **Stagnationsspülung**, **Temperaturspülung**, **Periodische Spülung**: Die drei Spülfunktionen aktivieren oder deaktivieren (HygBox).
@@ -310,8 +311,8 @@ Die Integration bietet eine umfangreiche Überwachung der Geräte:
 - **Regenerationsintervall**: Regenerationshäufigkeit einstellen (modellabhängig: bis zu 3, 4 oder 99 Tage).
 - **Display-Orientierung**: Ausrichtung des Displays einstellen (0 / 90 / 180 / 270 Grad, für Geräte mit Display).
 - **Regenerationsmodus**: Standard / ECO / Power / Automatisch auswählen (für Geräte, die dies unterstützen).
-- **Rohwasserhärte**, **Weichwasserhärte**: Rohwasser- und Weichwasserhärte einstellen (LEX-Familie, CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+). Die Einheit folgt der am Gerät eingestellten Härteeinheit (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l oder mval/l).
-- **Wasseraufbereitung und Befüllung** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, All-in-One+): Kartuschengröße und -typ, Weichwasserhärte oder maximale Ausgangsleitfähigkeit (je nach Kartusche), Zeitraum der Füllungen, Anzahl der Füllzyklen, maximale Fülldauer und -menge, Solldruck.
+- **Rohwasserhärte**, **Weichwasserhärte**: Rohwasser- und Weichwasserhärte einstellen (LEX-Familie, CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect und baugleiche Geräte anderer Marken, All-in-One+). Die Einheit folgt der am Gerät eingestellten Härteeinheit (°dH, °fH, °e, mg/l CaCO₃, ppm, mmol/l oder mval/l).
+- **Wasseraufbereitung und Befüllung** (CLEAR PRO FILL All-in-One, AC All-in-One 3228 Connect, AC 3200 Connect und baugleiche Geräte anderer Marken, All-in-One+): Kartuschengröße und -typ, Weichwasserhärte oder maximale Ausgangsleitfähigkeit (je nach Kartusche), Zeitraum der Füllungen, Anzahl der Füllzyklen, maximale Fülldauer und -menge, Solldruck, Warnschwelle der Restkapazität, maximale Füllmenge und -dauer der Erstbefüllung.
 - **Bodensensor** (SafeFloor): Alarmdauer, minimale und maximale Schwellwerte für Luftfeuchtigkeit und Temperatur („Aus“ deaktiviert einen Schwellwert), Messintervall und Synchronisationsintervall der Einstellungen.
 - **Hygienespülung** (HygBox): Wasserart, Stagnationszeit und Spülmenge, Start- und Stopptemperatur, maximale Spüldauer und Spülungen pro Tag, Intervall und Spülmenge der periodischen Spülung, Synchronisationsintervall der Einstellungen.
 - **Hygienespülung** (Hygienemodul, Safe-T Hygienemodul): Stagnationszeit, Spülintervall, Temperaturgrenze, maximale Spüldauer und maximale Spülmenge der Kalt- und der Warmwasserleitung.
