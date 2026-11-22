@@ -319,6 +319,7 @@ Integracja zapewnia kompleksowe monitorowanie urządzeń:
 - **Płukanie higieniczne** (moduł higieniczny, Safe-T Hygiene Module): Czas stagnacji, interwał płukania, limit temperatury, maksymalny czas i maksymalna objętość płukania przewodu wody zimnej i przewodu wody ciepłej.
 - **Dozowanie** (NeoDos Connect): Rozmiar kanistra, płyn dozujący i tryb pracy.
 - **Płukanie zwrotne** (automatyczne płukanie zwrotne RSA): Interwał płukania zwrotnego i interwał przypomnienia o płukaniu zwrotnym (1–365 dni).
+- **Ochrona przed wyciekiem** (Safe-T+): Poziom ochrony przed wyciekiem przy obecności i nieobecności (poziom przy nieobecności przełącza na profil nieobecności, „Wyłączony” z powrotem na profil obecności), czas wycieku i tymczasowa dezaktywacja ochrony przed wyciekiem.
 
 #### Sterowanie zaworem
 

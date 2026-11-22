@@ -319,6 +319,7 @@ La integración ofrece una supervisión completa de los dispositivos:
 - **Purga de higiene** (módulo de higiene, Safe-T Hygiene Module): Tiempo de estancamiento, intervalo de purga, límite de temperatura, duración máxima y volumen máximo de purga de la tubería de agua fría y de la de agua caliente.
 - **Dosificación** (NeoDos Connect): Tamaño del bidón, líquido de dosificación y modo de funcionamiento.
 - **Retrolavado** (retrolavado automático RSA): Intervalo de retrolavado e intervalo de recordatorio de retrolavado (1–365 días).
+- **Protección contra fugas** (Safe-T+): Nivel de protección contra fugas en presencia y en ausencia (un nivel en ausencia activa el perfil de ausencia, «Apagado» vuelve al perfil de presencia), fuga de tiempo y desactivación temporal de la protección contra fugas.
 
 #### Control de la válvula
 

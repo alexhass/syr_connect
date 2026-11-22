@@ -319,6 +319,7 @@ A integração oferece uma monitorização completa dos dispositivos:
 - **Purga de higiene** (módulo de higiene, Safe-T Hygiene Module): Tempo de estagnação, intervalo de purga, limite de temperatura, duração máxima e volume máximo de purga da canalização de água fria e da de água quente.
 - **Doseamento** (NeoDos Connect): Tamanho do bidão, líquido de doseamento e modo de funcionamento.
 - **Retrolavagem** (retrolavagem automática RSA): Intervalo de retrolavagem e intervalo de lembrete de retrolavagem (1–365 dias).
+- **Proteção contra fugas** (Safe-T+): Nível de proteção contra fugas em presença e em ausência (um nível em ausência ativa o perfil de ausência, «Desligado» volta ao perfil de presença), tempo de fuga e desativação temporária da proteção contra fugas.
 
 #### Controlo da válvula
 

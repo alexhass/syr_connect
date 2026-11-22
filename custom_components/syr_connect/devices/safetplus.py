@@ -68,7 +68,12 @@ SENSOR_SUPPORTED_KEYS = {
 
 # No select-worthy keys present for this model (no display rotation, no
 # regeneration/filling/salt configuration, no numbered leak-protection profiles).
-SELECT_SUPPORTED_KEYS: set[str] = set()
+SELECT_SUPPORTED_KEYS = {
+    "getLE",
+    "getT1",
+    "getTMP",
+    "getUL",
+}
 
 SWITCH_SUPPORTED_KEYS = {
     "getBUZ",

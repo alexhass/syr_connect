@@ -33,6 +33,7 @@
     "Kryptobibliotheken",
     "Leckage",
     "Leckageschutz",
+    "Leckageschutzes",
     "Leckageschutzmodul",
     "Leitfähigkeitsfaktor",
     "Leitfähigkeitssensor",
@@ -66,6 +67,7 @@
     "Statistikdiagramm",
     "Stopptemperatur",
     "syrconnectapp",
-    "Triofilter"
+    "Triofilter",
+    "Zeitleckage"
   ]
 }

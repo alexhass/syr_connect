@@ -319,6 +319,7 @@ L'integrazione offre un monitoraggio completo dei dispositivi:
 - **Risciacquo igienico** (modulo igienico, Safe-T Hygiene Module): Tempo di stagnazione, intervallo di risciacquo, limite di temperatura, durata massima e volume massimo di risciacquo della tubazione dell'acqua fredda e di quella dell'acqua calda.
 - **Dosaggio** (NeoDos Connect): Dimensione della tanica, liquido di dosaggio e modalità di funzionamento.
 - **Controlavaggio** (controlavaggio automatico RSA): Intervallo di controlavaggio e intervallo promemoria controlavaggio (1–365 giorni).
+- **Protezione perdite** (Safe-T+): Livello di protezione perdite in presenza e in assenza (un livello in assenza attiva il profilo di assenza, «Disattivato» torna al profilo di presenza), tempo perdita e disattivazione temporanea della protezione perdite.
 
 #### Controllo della valvola
 

@@ -201,8 +201,28 @@ SETTING_VALUES: Mapping[str, Sequence[int]] = {
     ),
     "getSTV": _FLUSHING_VOLUMES,
     "getSWF": _HYGIENE_STAGNATION_DAYS,
+    # Leakage time while present (getT1, Safe-T+): 1-50 in steps of 1, in 30 min
+    # (0.5-25 h); off is a value of its own (`SETTING_OFF_VALUES`)
+    "getT1": range(1, 51),
+    # Temporary deactivation of the leak protection (getTMP) in seconds: 15 and 30
+    # minutes, 1, 2, 3, 6 and 12 hours and 1 day; off is a value of its own
+    # (`SETTING_OFF_VALUES`). The device reports the remaining time.
+    "getTMP": [
+        900,
+        1800,
+        3600,
+        7200,
+        10800,
+        21600,
+        43200,
+        86400,
+    ],
     # Target pressure (getTPR): raw 1/10 bar, 0.5-5.0 bar in steps of 0.1 bar
     "getTPR": range(5, 51),
+    # Leak protection level while absent (getUL, Safe-T+): 1-10 in steps of 1, in 10 l
+    # (10-100 l). A value switches to the absent profile, off (0) back to the present
+    # profile.
+    "getUL": range(1, 11),
     # Measurement interval (getWMP) in seconds: non-uniform duration steps as documented
     # in docs/syrconnect-protocol.md; at most the synchronization interval (getRCP, see
     # `SETTING_UPPER_LIMITS`)
@@ -238,6 +258,12 @@ SETTING_OFF_VALUES: Mapping[str, int] = {
     "getMIT": -400,
     # Maximum temperature threshold (getMXT): above the range
     "getMXT": 700,
+    # Leakage time while present (getT1): no time limit
+    "getT1": 0,
+    # Temporary deactivation (getTMP): reactivates the leak protection
+    "getTMP": 0,
+    # Leak protection level while absent (getUL): back to the present profile
+    "getUL": 0,
 }
 
 # Settings that are limited by another setting of the device: key -> (key of the upper

@@ -37,39 +37,6 @@ CRS_VALUE_MAP: Mapping[int, float] = {
     5: 30,
 }
 
-# Leak protection level while present (getLE): raw code -> liters
-LE_VALUE_MAP: Mapping[int, int] = {
-    2: 100,
-    3: 150,
-    4: 200,
-    5: 250,
-    6: 300,
-    7: 350,
-    8: 400,
-    9: 450,
-    10: 500,
-    11: 550,
-    12: 600,
-    13: 650,
-    14: 700,
-    15: 750,
-    16: 800,
-    17: 850,
-    18: 900,
-    19: 950,
-    20: 1000,
-    21: 1050,
-    22: 1100,
-    23: 1150,
-    24: 1200,
-    25: 1250,
-    26: 1300,
-    27: 1350,
-    28: 1400,
-    29: 1450,
-    30: 1500,
-}
-
 # Status of the regeneration (getSTA): reported text or code -> key of the meaning. The
 # devices report the status as a Polish or German text; two Polish texts carry a detail
 # that `parse_sta_value()` strips ("Płukanie regenerantem (5mA)", "Płukanie szybkie 1").
@@ -312,7 +279,7 @@ def parse_int(value: SyrConnectStatusValue) -> int | None:
 def parse_code_value[V](
     value_map: Mapping[int, V], value: SyrConnectStatusValue
 ) -> V | None:
-    """Value of a raw code in a value table (`CAS_VALUE_MAP`, `LE_VALUE_MAP`, ...).
+    """Value of a raw code in a value table (`CAS_VALUE_MAP`, `UL_VALUE_MAP`, ...).
 
     Formats:
     - Known code: "2", "2.0", 2 -> value of code 2
@@ -322,6 +289,79 @@ def parse_code_value[V](
     if number is None or not number.is_integer():
         return None
     return value_map.get(int(number))
+
+
+# Firmware version of the Safe-T+ (getVER) from which it takes the leak protection level
+# while present (getLE) in steps of 100 l instead of 50 l
+_LE_FIRMWARE_STEP_100 = (1, 29)
+
+# Firmware version of the Safe-T+ (getVER) from which the lowest step of getLE is 1
+_LE_FIRMWARE_LOWEST_STEP_1 = (1, 39)
+
+# Version number in getVER, e.g. "2.00" in "Safe-T+ V2.00e"
+_FIRMWARE_VERSION_PATTERN = re.compile(r"[Vv]([0-9]+(?:\.[0-9]+){0,3})")
+
+
+def get_firmware_version(status: SyrConnectStatus) -> tuple[int, ...] | None:
+    """Firmware version (getVER): the version number as a tuple of integers.
+
+    Formats:
+    - "Safe-T+ V2.00e" -> (2, 0)
+    - "Safe-T+ V1.29" -> (1, 29)
+    - No version number, e.g. "" -> None
+    """
+    match = _FIRMWARE_VERSION_PATTERN.search(str(status.get("getVER") or ""))
+    if match is None:
+        return None
+    return tuple(int(part) for part in match.group(1).split("."))
+
+
+def get_le_step(status: SyrConnectStatus) -> int:
+    """Liters per raw step of the leak protection level while present (getLE, Safe-T+).
+
+    Formats:
+    - Firmware below 1.29 or unknown: 50
+    - Firmware 1.29 and later: 100
+    """
+    version = get_firmware_version(status)
+    return 100 if version is not None and version >= _LE_FIRMWARE_STEP_100 else 50
+
+
+def get_le_raw_values(status: SyrConnectStatus) -> list[int]:
+    """Raw values the leak protection level while present (getLE, Safe-T+) takes.
+
+    The highest value is one below getLE_max if the device reports it, otherwise it
+    depends on the firmware.
+
+    Formats:
+    - Firmware below 1.29 or unknown: 2-30 (100-1500 l)
+    - Firmware 1.29 to below 1.39: 2-15 (200-1500 l)
+    - Firmware 1.39 and later: 1-15 (100-1500 l)
+    - getLE_max "10", firmware below 1.29: 2-9
+    """
+    version = get_firmware_version(status)
+    lowest = 1 if version is not None and version >= _LE_FIRMWARE_LOWEST_STEP_1 else 2
+    highest = 15 if get_le_step(status) == 100 else 30
+    le_max = parse_int(status.get("getLE_max"))
+    if le_max is not None and le_max > 0:
+        highest = le_max - 1
+    return list(range(lowest, highest + 1))
+
+
+def parse_le_value(
+    status: SyrConnectStatus, value: SyrConnectStatusValue
+) -> int | None:
+    """Leak protection level while present (getLE, Safe-T+): raw step -> liters.
+
+    Formats:
+    - Firmware below 1.29: "2" -> 100 l
+    - Firmware 1.29 and later: "2" -> 200 l
+    - No step: "0", "1.5", "" -> None
+    """
+    number = parse_float(value)
+    if number is None or not number.is_integer() or number < 1:
+        return None
+    return int(number) * get_le_step(status)
 
 
 def get_crs_value(status: SyrConnectStatus) -> float | None:

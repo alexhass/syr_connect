@@ -319,6 +319,7 @@ The integration provides comprehensive monitoring of the devices:
 - **Hygiene flushing** (hygiene module, Safe-T Hygiene module): Stagnation time, flushing interval, temperature limit, maximum flushing duration and maximum flushing volume of the cold and the hot water line.
 - **Dosing** (NeoDos Connect): Canister size, dosing liquid and operating mode.
 - **Backwash** (automatic backwash RSA): Backwash interval and backwash reminder interval (1–365 days).
+- **Leak protection** (Safe-T+): Leak protection level while present and while absent (a level while absent switches to the absent profile, "Off" back to the present profile), leakage time and temporary deactivation of the leak protection.
 
 #### Valve control
 

@@ -36,7 +36,6 @@ from homeassistant.util import dt as dt_util
 
 from .aiosyrconnect import (
     CAS_VALUE_MAP,
-    LE_VALUE_MAP,
     LEAK_PROTECTION_PROFILES,
     T1_VALUE_MAP,
     UL_VALUE_MAP,
@@ -63,6 +62,7 @@ from .aiosyrconnect import (
     parse_hygiene_module_value,
     parse_int,
     parse_lar_value,
+    parse_le_value,
     parse_lng_value,
     parse_mbar_value,
     parse_net_value,
@@ -302,8 +302,11 @@ def _value_lar(
 def _value_le(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
-    """Leak protection volume limit, present profile (getLE): raw code -> liters."""
-    return parse_code_value(LE_VALUE_MAP, value)
+    """Leak protection volume limit, present profile (getLE): raw step -> liters.
+
+    The liters per step depend on the firmware (`parse_le_value`).
+    """
+    return parse_le_value(status, value)
 
 
 def _value_lng(

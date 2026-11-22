@@ -319,6 +319,7 @@ Die Integration bietet eine umfangreiche Überwachung der Geräte:
 - **Hygienespülung** (Hygienemodul, Safe-T Hygienemodul): Stagnationszeit, Spülintervall, Temperaturgrenze, maximale Spüldauer und maximale Spülmenge der Kalt- und der Warmwasserleitung.
 - **Dosierung** (NeoDos Connect): Gebindegröße, Dosiermittel und Betriebsart.
 - **Rückspülung** (Rückspülautomatik RSA): Rückspülintervall und Rückspülerinnerungsintervall (1–365 Tage).
+- **Leckageschutz** (Safe-T+): Leckageschutz-Stufe bei Anwesenheit und bei Abwesenheit (eine Stufe bei Abwesenheit schaltet auf das Abwesenheitsprofil, „Aus“ zurück auf das Anwesenheitsprofil), Zeitleckage und vorübergehendes Deaktivieren des Leckageschutzes.
 
 #### Ventilsteuerung
 

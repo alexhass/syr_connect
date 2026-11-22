@@ -312,15 +312,13 @@ def test_get_model_supported_keys_safetplus_device_override() -> None:
         replace(UNKNOWN_MODEL, device_profile=safetplus.PROFILE), "sensor", global_keys
     )
     assert result == safetplus.SENSOR_SUPPORTED_KEYS
-    # Explicit empty-set override (no select-worthy keys) must be honored, not
-    # treated as "not defined".
     assert (
         get_model_supported_keys(
             replace(UNKNOWN_MODEL, device_profile=safetplus.PROFILE),
             "select",
             global_keys,
         )
-        == set()
+        == safetplus.SELECT_SUPPORTED_KEYS
     )
 
 

@@ -319,6 +319,7 @@ L'intégration offre une surveillance complète des appareils :
 - **Rinçage d'hygiène** (module d'hygiène, Safe-T Hygiene Module) : Temps de stagnation, intervalle de rinçage, limite de température, durée maximale et volume maximal de rinçage de la conduite d'eau froide et de celle d'eau chaude.
 - **Dosage** (NeoDos Connect) : Taille du bidon, liquide de dosage et mode de fonctionnement.
 - **Contre-lavage** (contre-lavage automatique RSA) : Intervalle de contre-lavage et intervalle de rappel de contre-lavage (1–365 jours).
+- **Protection contre les fuites** (Safe-T+) : Niveau de protection contre les fuites en présence et en absence (un niveau en absence active le profil d'absence, « Désactivé » revient au profil de présence), fuite de temps et désactivation temporaire de la protection contre les fuites.
 
 #### Commande de la vanne
 

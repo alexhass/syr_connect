@@ -16,8 +16,8 @@ from custom_components.syr_connect.aiosyrconnect.model_detection import (
     UNKNOWN_MODEL_SIGNATURE,
 )
 from custom_components.syr_connect.aiosyrconnect.values import (
-    LE_VALUE_MAP,
     LEAK_PROTECTION_PROFILES,
+    UL_VALUE_MAP,
     build_rtm_commands,
     build_set_ab_command,
     get_ab_value,
@@ -26,8 +26,11 @@ from custom_components.syr_connect.aiosyrconnect.values import (
     get_crs_value,
     get_current_leak_protection_profile,
     get_current_mac,
+    get_firmware_version,
     get_hardness_class,
     get_iwh_value,
+    get_le_raw_values,
+    get_le_step,
     get_rtm_value,
     get_serial_number,
     is_empty_ip,
@@ -47,6 +50,7 @@ from custom_components.syr_connect.aiosyrconnect.values import (
     parse_hygiene_module_value,
     parse_int,
     parse_lar_value,
+    parse_le_value,
     parse_lng_value,
     parse_mbar_value,
     parse_net_value,
@@ -224,9 +228,9 @@ def test_parse_float(raw: Any, expected: float | None) -> None:
 @pytest.mark.parametrize(
     ("raw", "expected"),
     [
-        ("2", 100),  # XML
-        (2, 100),  # JSON
-        ("2.0", 100),
+        ("2", 20),  # XML
+        (2, 20),  # JSON
+        ("2.0", 20),
         ("0", None),  # no known code, the same over both APIs
         (0, None),
         ("1.5", None),
@@ -237,7 +241,7 @@ def test_parse_float(raw: Any, expected: float | None) -> None:
 )
 def test_parse_code_value(raw: Any, expected: int | None) -> None:
     """A raw code is looked up only as an integer; 0 and fractions are no codes."""
-    assert parse_code_value(LE_VALUE_MAP, raw) == expected
+    assert parse_code_value(UL_VALUE_MAP, raw) == expected
 
 
 @pytest.mark.parametrize(
@@ -1149,3 +1153,64 @@ def test_valve_motion(
     status: SyrConnectStatus = {"getVLV": vlv}
     assert is_valve_opening(status) is opening
     assert is_valve_closing(status) is closing
+
+
+@pytest.mark.parametrize(
+    ("version", "expected"),
+    [
+        ("Safe-T+ V2.00e", (2, 0)),
+        ("Safe-T+ V1.29", (1, 29)),
+        ("v1.3.7", (1, 3, 7)),
+        ("Safe-T+", None),
+        ("", None),
+        (None, None),
+    ],
+)
+def test_get_firmware_version(version: Any, expected: tuple[int, ...] | None) -> None:
+    """The version number of getVER as a tuple of integers."""
+    assert get_firmware_version({"getVER": version}) == expected
+
+
+@pytest.mark.parametrize(
+    ("status", "step", "raw_values"),
+    [
+        pytest.param({}, 50, list(range(2, 31)), id="unknown-firmware"),
+        pytest.param({"getVER": "Safe-T+ V1.28"}, 50, list(range(2, 31)), id="1.28"),
+        pytest.param({"getVER": "Safe-T+ V1.29"}, 100, list(range(2, 16)), id="1.29"),
+        pytest.param({"getVER": "Safe-T+ V2.00e"}, 100, list(range(1, 16)), id="2.00"),
+        pytest.param(
+            {"getVER": "Safe-T+ V1.28", "getLE_max": "10"},
+            50,
+            list(range(2, 10)),
+            id="le-max",
+        ),
+        pytest.param(
+            {"getVER": "Safe-T+ V2.00e", "getLE_max": "0"},
+            100,
+            list(range(1, 16)),
+            id="le-max-zero",
+        ),
+    ],
+)
+def test_get_le_steps(
+    status: SyrConnectStatus, step: int, raw_values: list[int]
+) -> None:
+    """The steps of getLE follow the firmware and getLE_max."""
+    assert get_le_step(status) == step
+    assert get_le_raw_values(status) == raw_values
+
+
+@pytest.mark.parametrize(
+    ("version", "raw", "expected"),
+    [
+        ("Safe-T+ V1.28", "2", 100),
+        ("Safe-T+ V1.28", 30, 1500),
+        ("Safe-T+ V2.00e", "2", 200),
+        ("Safe-T+ V2.00e", "15", 1500),
+        ("Safe-T+ V2.00e", "0", None),
+        ("Safe-T+ V2.00e", "", None),
+    ],
+)
+def test_parse_le_value(version: str, raw: Any, expected: int | None) -> None:
+    """A step of getLE is 50 l before firmware 1.29, 100 l from 1.29 on."""
+    assert parse_le_value({"getVER": version}, raw) == expected

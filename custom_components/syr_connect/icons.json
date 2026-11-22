@@ -113,6 +113,9 @@
       "getiwh": {
         "default": "mdi:water-percent"
       },
+      "getle": {
+        "default": "mdi:water-alert"
+      },
       "getlng": {
         "default": "mdi:translate"
       },
@@ -197,11 +200,20 @@
       "getswf": {
         "default": "mdi:timer-sand"
       },
+      "gett1": {
+        "default": "mdi:timer-outline"
+      },
+      "gettmp": {
+        "default": "mdi:timer-off-outline"
+      },
       "gettpr": {
         "default": "mdi:gauge"
       },
       "getttt": {
         "default": "mdi:thermometer-chevron-up"
+      },
+      "getul": {
+        "default": "mdi:water-alert"
       },
       "getwcl": {
         "default": "mdi:thermometer-low"

@@ -995,7 +995,7 @@ These properties are only available on devices that contain leakage protection, 
 | getFLF | "10" | L/h? | | | Minimum flow filter threshold (SafeTech+) |
 | getFLL | "0 50000" | | | | Minimum and maximum flow limits — two values (Safe-T+) |
 | getLDT | "0" | s? | | | Leak detection timeout (SafeTech, SafeTech+) |
-| getLE / setLE | "4" | L | | | Leakage volume limit – present profile. Raw value mapped: 2=100L, 3=150L, 4=200L, …, 30=1500L |
+| getLE / setLE | "4" | L | | | Leakage volume limit – present profile, in steps that depend on the firmware (getVER): below 1.29 raw × 50 L, 2–30 (100–1500 L); from 1.29 raw × 100 L, 2–15 (200–1500 L); from 1.39 raw × 100 L, 1–15 (100–1500 L). With getLE_max the highest raw value is getLE_max − 1 |
 | getLWT / setLWT | "90" | % | USER | 90 | Leakage warning threshold. Range: 80–99 (LEXplus10SL, SafeTech) |
 | getNET | "" = none<br>"511" = 5.11V<br>"11,86" = 11.86V<br>"ADC:950 6,16V" = 6.16V | | USER | | Mains voltage. 4 formats exists; |
 | getNPS | "22" | s | SERVICE | | No turbine pulses since, 0–4294967295 (Trio DFR/LS, SafeTech, SafeTech+) |
@@ -1014,12 +1014,12 @@ These properties are only available on devices that contain leakage protection, 
 | getSMF / setSMF | "3500"<br>"2500" | L/h | USER | 3500 | Self-learning minimum flow: placeholder for the learned flow value. Range: 0–5000. Trio DFR/LS and SafeTech+ captures report 2500 |
 | getSOF / setSOF | "20" | % | SERVICE | 20 | Self-learning offset flow: surplus on the learned maximum flow. Range: 5–50 |
 | getSUP | "1" | | | | Supervision or supply status (Sanibel Leak Protection Module A25) |
-| getT1 / setT1 | "1" | | | | Leakage time (when present?): 1 = 0.5h, 2 = 1.0h, 3 = 1.5h, ..., 50 = 25.0h |
+| getT1 / setT1 | "1" | | | | Leakage time while present: 0 = off, 1 = 0.5h, 2 = 1.0h, 3 = 1.5h, ..., 50 = 25.0h |
 | getT2 / setT2 | "1" | min | USER | 1 | Maximum flow leakage time. Range: 0–99 |
 | getTMP / setTMP | "0" | seconds | USER | 0 | Deactivate leakage protection for n seconds, 0–4294967295; reading it returns the remaining time. All protection functions are off, except the monitoring by the floor sensor: a floor sensor leakage still triggers the alarm and closes the valve |
 | getTN / setTN | "20" | 1/10 s | FACTORY | 1 | Motor overrun after a limit switch has been reached. Range: 0–20 (0.0–2.0 s) |
 | getTTM / setTTM | "30" | days | FACTORY | 30 | Maximum time without turbine pulses (no flow); when it is exceeded, the alarm A8 (turbine blocked) is triggered. Range: 1–30 |
-| getUL / setUL | "0" | L | | | Leakage volume limit – absent profile. Raw value mapped: 1=10L, 2=20L, …, 10=100L |
+| getUL / setUL | "0" | L | | | Leakage volume limit – absent profile. Raw value mapped: 1=10L, 2=20L, …, 10=100L. A value > 0 switches the Safe-T+ to the absent profile, 0 back to the present profile. Mode of the Safe-T+: getTMP > 0 = deactivated, else getUL > 0 = absent, else getLE > 0 = present, else off |
 | getVLV | "20" | | SERVICE | | Current valve status:<br>10 = closed<br>11 = closing<br>20 = open<br>21 = opening<br>30 = "Absence leakage" (best guess from testing, not not confirmed) |
 | getVPS1 | "3360" | s | | | No turbine pulses on control head 1 since (NeoSoft 2500 / 5000). Value "" means sensor does not exist. |
 | getVPS2 | "3360" | s | | | No turbine pulses on control head 2 since (NeoSoft 5000). Value "" means sensor does not exist. |
@@ -1493,7 +1493,7 @@ These attributes are parsed from the raw XML or JSON API response but are not ex
 | getALA_ih | "0" | Last alarm inhibit flag |
 | getALA_m | "A5" | Last alarm message codes |
 | getFMO_fc | "3" | Number of filling processes (HVA) |
-| getLE_max | "30" | Highest raw value of getLE (Safe-T+); limits the volume steps of the present profile |
+| getLE_max | "30" | Limit of getLE (Safe-T+): the highest raw value of the present profile is getLE_max − 1 |
 | getUL_iis | "0" | Absent profile (Safe-T+): while > 0, switching to the absent profile is not offered. A Safe-T+ capture reports `iir=""` instead |
 | getUL_m | "" | Absent profile (Safe-T+): number that is sent back as attribute `m` of setUL; meaning unknown |
 | getUL_uled | "" | Absent profile (Safe-T+): probably the end date of a planned absence; sent back as attribute `uled` of setUL |

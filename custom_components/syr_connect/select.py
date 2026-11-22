@@ -23,10 +23,13 @@ from .aiosyrconnect import (
     build_rtm_commands,
     get_active_leak_protection_profiles,
     get_current_leak_protection_profile,
+    get_le_raw_values,
+    get_le_step,
     get_rtm_value,
     parse_float,
     parse_hygiene_module_value,
     parse_int,
+    parse_le_value,
     parse_lng_value,
     round_hardness,
     set_command,
@@ -221,6 +224,23 @@ _SYR_CONNECT_SELECT_TYPES: tuple[SyrConnectSelectEntityDescription, ...] = (
     ),
     SyrConnectSelectEntityDescription(
         key="getWTY",  # Water type (1=cold water, 2=hot water)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    # --- Leak protection (Safe-T+) ---
+    SyrConnectSelectEntityDescription(
+        key="getLE",  # Leak protection volume limit while present (l)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getT1",  # Leakage time while present (0=off, 1-50 in 30 min)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getTMP",  # Temporary deactivation of the leak protection (s, 0=off)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getUL",  # Leak protection volume limit while absent (0=off, 1-10 in 10 l)
         entity_category=EntityCategory.CONFIG,
     ),
     # --- Automatic backwash (RSA) ---
@@ -640,6 +660,7 @@ def _build_device_selects(
     _add_hygbox_selects(builder)
     _add_hygiene_module_selects(builder)
     _add_backwash_selects(builder)
+    _add_leak_protection_selects(builder)
     _add_dosing_pump_selects(builder)
     return builder.entities
 
@@ -867,6 +888,22 @@ def _add_hygiene_module_selects(b: _SyrConnectSelectBuilder) -> None:
                 off_value,
             )
         )
+
+
+def _add_leak_protection_selects(b: _SyrConnectSelectBuilder) -> None:
+    """Add the leak protection selects of the Safe-T+.
+
+    The volume limit while present (getLE), the volume limit while absent (getUL, a
+    value switches to the absent profile, off back to the present one), the leakage
+    time (getT1) and the temporary deactivation (getTMP).
+    """
+    if b.allowed("getLE", _is_integer):
+        b.entities.append(
+            SyrConnectLeakVolumeSelect(b.coordinator, b.device_id, b.device_name)
+        )
+    b.offer_codes("getUL", _is_integer)
+    b.offer_codes("getT1", _is_integer)
+    b.offer_codes("getTMP", _is_integer)
 
 
 def _add_backwash_selects(b: _SyrConnectSelectBuilder) -> None:
@@ -1255,6 +1292,45 @@ class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
                     "entity": self._entity_name,
                 },
             ) from err
+
+
+class SyrConnectLeakVolumeSelect(SyrConnectNumericSelect):
+    """Leak protection volume limit while present (getLE, Safe-T+), in liters.
+
+    The liters per step and the selectable steps depend on the firmware and getLE_max
+    (`get_le_step`, `get_le_raw_values`).
+    """
+
+    def __init__(
+        self,
+        coordinator: SyrConnectDataUpdateCoordinator,
+        device_id: str,
+        device_name: str,
+    ) -> None:
+        """Initialize the select entity; the options follow the device status."""
+        super().__init__(coordinator, device_id, device_name, "getLE", 1, 0)
+
+    @property
+    @override
+    def options(self) -> list[str]:
+        """Return the selectable volume limits."""
+        step = get_le_step(self._status)
+        unit = _option_unit("getLE")
+        return [f"{raw * step} {unit}" for raw in get_le_raw_values(self._status)]
+
+    @property
+    @override
+    def current_option(self) -> str | None:
+        """Return the current volume limit."""
+        liters = parse_le_value(self._status, self._status.get("getLE"))
+        if liters is None:
+            return None
+        return f"{liters} {_option_unit('getLE')}"
+
+    @override
+    def _raw_value(self, value: float) -> int:
+        """Return the raw step of a volume limit in liters."""
+        return round(value / get_le_step(self._status))
 
 
 class SyrConnectFlushingTemperatureSelect(SyrConnectNumericSelect):

@@ -319,6 +319,7 @@ De integratie biedt een uitgebreide bewaking van de apparaten:
 - **Hygiënespoeling** (hygiënemodule, Safe-T Hygiene Module): Stagnatietijd, spoelinterval, temperatuurgrens, maximale spoelduur en maximaal spoelvolume van de koud- en de warmwaterleiding.
 - **Dosering** (NeoDos Connect): Grootte van de jerrycan, doseervloeistof en bedrijfsmodus.
 - **Terugspoeling** (automatische terugspoeling RSA): Terugspoelinterval en terugspoelherinneringsinterval (1–365 dagen).
+- **Lekbescherming** (Safe-T+): Lekbeschermingsniveau bij aanwezigheid en bij afwezigheid (een niveau bij afwezigheid schakelt naar het afwezigheidsprofiel, „Uit” terug naar het aanwezigheidsprofiel), lektijd en tijdelijk uitschakelen van de lekbescherming.
 
 #### Klepbediening
 
