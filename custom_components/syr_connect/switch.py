@@ -9,7 +9,7 @@ from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .aiosyrconnect import SyrConnectError
+from .aiosyrconnect import SyrConnectError, is_value_true
 from .const import DOMAIN
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
@@ -17,7 +17,6 @@ from .entity import SyrConnectEntity, async_add_device_entities
 from .helpers.device import get_device_model
 from .helpers.profile import get_model_supported_keys
 from .helpers.registry import build_unique_id, registry_cleanup
-from .helpers.values import is_value_true
 
 _LOGGER = logging.getLogger(__name__)
 

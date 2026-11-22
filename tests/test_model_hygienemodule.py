@@ -9,10 +9,10 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
+from custom_components.syr_connect.aiosyrconnect import parse_hygiene_module_value
 from custom_components.syr_connect.button import SyrConnectButton, _build_device_buttons
 from custom_components.syr_connect.data import SyrConnectDevice
 from custom_components.syr_connect.helpers.profile import get_sensor_ala_map
-from custom_components.syr_connect.helpers.values import get_hygiene_module_value
 from custom_components.syr_connect.models import MODELS, SyrConnectModel
 from custom_components.syr_connect.select import (
     SyrConnectHygieneModuleSelect,
@@ -92,7 +92,7 @@ def _selects(
 )
 def test_hygiene_module_value(raw: Any, expected: int | None) -> None:
     """Only the number before a space or a "[" counts."""
-    assert get_hygiene_module_value(raw) == expected
+    assert parse_hygiene_module_value(raw) == expected
 
 
 @pytest.mark.parametrize(
