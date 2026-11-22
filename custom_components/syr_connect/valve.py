@@ -13,7 +13,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .aiosyrconnect import SyrConnectError
+from .aiosyrconnect import SyrConnectError, build_set_ab_command, get_ab_value, to_float
 from .const import DOMAIN
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
@@ -21,7 +21,6 @@ from .entity import SyrConnectEntity, async_add_device_entities
 from .helpers.device import get_device_model
 from .helpers.profile import get_model_supported_keys
 from .helpers.registry import registry_cleanup
-from .helpers.values import build_set_ab_command, get_sensor_ab_value, to_float
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -177,7 +176,7 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
             return None
         status = self._status
 
-        return get_sensor_ab_value(status)
+        return get_ab_value(status)
 
     @property
     @override
@@ -220,6 +219,12 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
         """Open the valve (send `setAB` -> open value)."""
         ab_cmd = build_set_ab_command(self._status, False)
         if ab_cmd is None:
+            _LOGGER.error(
+                "%s: unexpected getAB format %r; the command is not sent, please report"
+                " this issue",
+                self._device_name,
+                self._status.get("getAB"),
+            )
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
                 translation_key="valve_unknown_format",
@@ -246,6 +251,12 @@ class SyrConnectValve(SyrConnectEntity, ValveEntity):
         """
         ab_cmd = build_set_ab_command(self._status, True)
         if ab_cmd is None:
+            _LOGGER.error(
+                "%s: unexpected getAB format %r; the command is not sent, please report"
+                " this issue",
+                self._device_name,
+                self._status.get("getAB"),
+            )
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
                 translation_key="valve_unknown_format",

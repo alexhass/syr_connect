@@ -5,11 +5,10 @@ import logging
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
-from ..aiosyrconnect import SyrConnectStatus
+from ..aiosyrconnect import SyrConnectStatus, is_empty_ip, to_int
 from ..const import DOMAIN
 from ..data import SyrConnectCoordinatorData, SyrConnectDevice
 from ..models import UNKNOWN_MODEL, SyrConnectModel, detect_model
-from .values import is_empty_ip, to_int
 
 _LOGGER = logging.getLogger(__name__)
 

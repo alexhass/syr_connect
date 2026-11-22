@@ -132,6 +132,34 @@ code = str(status.get(signature.alarm_status_key, "")).strip().upper()
 meaning = signature.ala_codes.get(code) if signature.ala_codes is not None else None
 ```
 
+## Status values
+
+The devices report many values in formats of their own, which differ per model and
+API. `values.py` turns them into numbers and builds set commands in the format the
+device expects:
+
+| Function | Value |
+| --- | --- |
+| `is_value_true()` | Flags: `"1"`, `"True"`, `True`, `1` |
+| `parse_net_value()`, `parse_bat_value()` | Voltages: `"ADC:950 6,16V"`, `"11,86"`, `"363"` |
+| `parse_avo_value()` | Flow: `"1655mL"` -> 1.655 l |
+| `parse_vol_value()`, `parse_lng_value()` | Values with a prefix or an annotation: `"Vol[L]6530"`, `"0 (0=Deutsch 1=English)"` |
+| `parse_sta_value()` | Status of the regeneration -> key of the meaning |
+| `get_iwh_value()` | Water hardness, estimated from the conductivity when the device does not report it |
+| `get_rtm_value()`, `build_rtm_commands()` | Regeneration time as `HH:MM`, in one or two keys |
+| `get_ab_value()`, `build_set_ab_command()` | Valve state: 1/2 or true/false |
+
+The tables `CAS_VALUE_MAP`, `CRS_VALUE_MAP`, `LE_VALUE_MAP`, `T1_VALUE_MAP` and
+`UL_VALUE_MAP` map a raw code to liters or hours:
+
+```python
+from aiosyrconnect import build_set_ab_command
+
+command = build_set_ab_command(status, closed=True)
+if command is not None:
+    await client.set_device_status(device_id, [command])
+```
+
 ## Errors
 
 All errors derive from `SyrConnectError`.

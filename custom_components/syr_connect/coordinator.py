@@ -35,6 +35,7 @@ from .aiosyrconnect import (
     SyrConnectStatistic,
     SyrConnectStatus,
     SyrConnectXmlAPI,
+    get_iwh_value,
     is_code_active,
     is_device_offline,
     is_network_error,
@@ -63,7 +64,6 @@ from .helpers.registry import (
     create_issue,
     delete_issue,
 )
-from .helpers.values import get_sensor_iwh_value
 from .models import detect_model
 
 _LOGGER = logging.getLogger(__name__)
@@ -623,7 +623,7 @@ class SyrConnectDataUpdateCoordinator(
             # Compute derived sensor values (e.g. getIWH from getCND) so they
             # are available to all platforms without mutating coordinator data
             # from within platform setup code.
-            get_sensor_iwh_value(status)
+            get_iwh_value(status)
 
             # Remove "device offline" repair issues left over from older versions,
             # which created one on every failed status poll

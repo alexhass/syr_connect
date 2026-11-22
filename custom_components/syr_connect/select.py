@@ -12,7 +12,17 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .aiosyrconnect import SyrConnectError, SyrConnectStatus
+from .aiosyrconnect import (
+    CAS_VALUE_MAP,
+    CRS_VALUE_MAP,
+    SyrConnectError,
+    SyrConnectStatus,
+    build_rtm_commands,
+    get_rtm_value,
+    is_value_true,
+    parse_hygiene_module_value,
+    to_float,
+)
 from .const import (
     _SYR_CONNECT_LEAK_PROTECTION_PROFILES,
     _SYR_CONNECT_SELECT_ALD_OPTIONS,
@@ -40,8 +50,6 @@ from .const import (
     _SYR_CONNECT_SELECT_STP_OPTIONS,
     _SYR_CONNECT_SELECT_WMP_MAP,
     _SYR_CONNECT_SELECT_WTY_MAP,
-    _SYR_CONNECT_SENSOR_CAS_VALUE_MAP,
-    _SYR_CONNECT_SENSOR_CRS_VALUE_MAP,
     DOMAIN,
 )
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
@@ -59,13 +67,6 @@ from .helpers.profile import (
     round_hardness,
 )
 from .helpers.registry import find_entity_id, registry_cleanup
-from .helpers.values import (
-    get_hygiene_module_value,
-    get_sensor_rtm_value,
-    is_value_true,
-    set_sensor_rtm_value,
-    to_float,
-)
 from .models import SyrConnectModel
 from .sensor import _SYR_CONNECT_SENSOR_DESCRIPTIONS
 
@@ -326,16 +327,14 @@ def _option_unit(key: str) -> str:
 
 
 # Cartridge size (getCRS): 1=2.5L, 2=4L, 3=7L, 4=14L, 5=30L. Reuses the same
-# _SYR_CONNECT_SENSOR_CRS_VALUE_MAP as the getCRS sensor so raw <-> display stays in one place.
+# CRS_VALUE_MAP as the getCRS sensor so raw <-> display stays in one place.
 _SYR_CONNECT_SELECT_CRS_MAP = {
-    f"{v:g} {_option_unit('getCRS')}": k
-    for k, v in _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.items()
+    f"{v:g} {_option_unit('getCRS')}": k for k, v in CRS_VALUE_MAP.items()
 }
 # Canister size of the dosing pump (getCAS): 1=5 L, 2=10 L, from the same value map as the
 # getCAS sensor
 _SYR_CONNECT_SELECT_CAS_MAP = {
-    f"{v:g} {_option_unit('getCAS')}": k
-    for k, v in _SYR_CONNECT_SENSOR_CAS_VALUE_MAP.items()
+    f"{v:g} {_option_unit('getCAS')}": k for k, v in CAS_VALUE_MAP.items()
 }
 # All-in-One+: also "custom" (raw 0), whose size in liters is getFCS
 _SYR_CONNECT_SELECT_CRS_CUSTOM_MAP = {
@@ -422,9 +421,9 @@ def _is_hygiene_module_value(value: Any) -> bool:
         value: Raw value from the device status
 
     Returns:
-        True if `get_hygiene_module_value` finds a number, False otherwise
+        True if `parse_hygiene_module_value` finds a number, False otherwise
     """
-    return get_hygiene_module_value(value) is not None
+    return parse_hygiene_module_value(value) is not None
 
 
 def _unit_options(key: str, values: list[int]) -> list[str]:
@@ -1006,13 +1005,13 @@ class SyrConnectRegenerationSelect(SyrConnectEntity, SelectEntity):
         """Return the currently configured regeneration time as HH:MM."""
         if self._device is None:
             return None
-        return get_sensor_rtm_value(self._status)
+        return get_rtm_value(self._status)
 
     @override
     async def async_select_option(self, option: str) -> None:
         """Called when user selects a time option from the UI."""
         coordinator = self.coordinator
-        commands = set_sensor_rtm_value(self._status, option)
+        commands = build_rtm_commands(self._status, option)
         if not commands:
             raise ServiceValidationError(
                 translation_domain=DOMAIN,
@@ -1620,7 +1619,7 @@ class SyrConnectHygieneModuleSelect(SyrConnectDiscreteSelect):
     """Setting of a hygiene module line (getSCF, getCCF, getCCL, getCSS, getCSL and getW*).
 
     Only the number before a space or a "[" of the reported value counts, see
-    `get_hygiene_module_value`. With an "off" option, a value below the lowest other
+    `parse_hygiene_module_value`. With an "off" option, a value below the lowest other
     option is shown as "off".
     """
 
@@ -1643,7 +1642,7 @@ class SyrConnectHygieneModuleSelect(SyrConnectDiscreteSelect):
         """Return the currently selected option."""
         if self._device is None:
             return None
-        value = get_hygiene_module_value(self._status.get(self._sensor_key))
+        value = parse_hygiene_module_value(self._status.get(self._sensor_key))
         if value is None:
             return None
         for option, raw in self._options_map.items():

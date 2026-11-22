@@ -3844,7 +3844,7 @@ async def test_sensor_setup_ffm_bad_string_skipped(hass: HomeAssistant) -> None:
 def test_sensor_getab_native_value_none_when_ab_none(
     create_mock_coordinator: Callable[..., MagicMock],
 ) -> None:
-    """The getAB _compute_native_value returns None when get_sensor_ab_value returns None."""
+    """The getAB _compute_native_value returns None when get_ab_value returns None."""
     data = {"devices": [{"id": "d1", "status": {"getAB": None}}]}
     coord = create_mock_coordinator(data)
     sensor = SyrConnectSensor(coord, "d1", "D1", "getAB")

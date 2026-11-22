@@ -14,13 +14,13 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+from .aiosyrconnect import is_value_true
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .entity import SyrConnectEntity, async_add_device_entities
 from .helpers.device import get_device_model
 from .helpers.profile import get_model_supported_keys
 from .helpers.registry import registry_cleanup
-from .helpers.values import is_value_true
 from .models import SyrConnectModel
 
 _LOGGER = logging.getLogger(__name__)

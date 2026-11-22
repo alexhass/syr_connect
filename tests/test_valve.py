@@ -2,9 +2,9 @@
 
 # The unit tests in this module check private helpers and attributes directly.
 # ruff: noqa: SLF001
-
 # mypy: disable-error-code="method-assign, misc"
 from collections.abc import Callable
+import logging
 from typing import Any, cast
 from unittest.mock import AsyncMock, MagicMock, Mock
 
@@ -14,10 +14,10 @@ from pytest_homeassistant.common import MockConfigEntry
 from custom_components.syr_connect.aiosyrconnect import (
     SyrConnectConnectionError,
     SyrConnectJsonAPI,
+    build_set_ab_command,
 )
 from custom_components.syr_connect.const import CONF_SERVICE
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
-from custom_components.syr_connect.helpers.values import build_set_ab_command
 from custom_components.syr_connect.models import MODELS
 from custom_components.syr_connect.valve import SyrConnectValve, async_setup_entry
 from homeassistant.components.valve import ValveDeviceClass, ValveEntityFeature
@@ -1497,9 +1497,9 @@ async def test_open_close_command_failure_raises(
 
 @pytest.mark.parametrize("method", ["async_open_valve", "async_close_valve"])
 async def test_open_close_without_getab_raises(
-    hass: HomeAssistant, method: str
+    hass: HomeAssistant, method: str, caplog: pytest.LogCaptureFixture
 ) -> None:
-    """Without getAB the command format is unknown: nothing is sent."""
+    """Without getAB the command format is unknown: an error is logged, nothing is sent."""
     coordinator = _build_coordinator(hass, _valve_data({}))
     coordinator.async_set_device_value = AsyncMock()
     valve = SyrConnectValve(coordinator, "dev1", "Dev1")
@@ -1509,3 +1509,5 @@ async def test_open_close_without_getab_raises(
 
     assert err.value.translation_key == "valve_unknown_format"
     coordinator.async_set_device_value.assert_not_called()
+    assert "unexpected getAB format" in caplog.text
+    assert any(r.levelno == logging.ERROR for r in caplog.records)

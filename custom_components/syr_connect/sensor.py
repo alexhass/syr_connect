@@ -1,6 +1,6 @@
 """Sensor platform for SYR Connect."""
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta
 import logging
@@ -34,18 +34,33 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
-from .aiosyrconnect import SyrConnectStatus, SyrConnectStatusValue, is_code_active
-from .binary_sensor import _SYR_CONNECT_BINARY_SENSOR_SUPPORTED_KEYS
-from .const import (
-    _SYR_CONNECT_LEAK_PROTECTION_PROFILES,
-    _SYR_CONNECT_SENSOR_CAS_VALUE_MAP,
-    _SYR_CONNECT_SENSOR_CND_PER_DH,
-    _SYR_CONNECT_SENSOR_CRS_VALUE_MAP,
-    _SYR_CONNECT_SENSOR_LE_VALUE_MAP,
-    _SYR_CONNECT_SENSOR_STA_VALUE_MAP,
-    _SYR_CONNECT_SENSOR_T1_VALUE_MAP,
-    _SYR_CONNECT_SENSOR_UL_VALUE_MAP,
+from .aiosyrconnect import (
+    CAS_VALUE_MAP,
+    CND_PER_DH,
+    CRS_VALUE_MAP,
+    LE_VALUE_MAP,
+    T1_VALUE_MAP,
+    UL_VALUE_MAP,
+    SyrConnectStatus,
+    SyrConnectStatusValue,
+    get_ab_value,
+    get_iwh_value,
+    get_rtm_value,
+    is_code_active,
+    is_empty_ip,
+    is_value_true,
+    parse_avo_value,
+    parse_bat_value,
+    parse_hygiene_module_value,
+    parse_lng_value,
+    parse_net_value,
+    parse_sta_value,
+    parse_vol_value,
+    to_float,
+    to_int,
 )
+from .binary_sensor import _SYR_CONNECT_BINARY_SENSOR_SUPPORTED_KEYS
+from .const import _SYR_CONNECT_LEAK_PROTECTION_PROFILES
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .entity import SyrConnectEntity, async_add_device_entities
@@ -63,21 +78,6 @@ from .helpers.profile import (
     get_whu_unit,
 )
 from .helpers.registry import find_entity_id, registry_cleanup
-from .helpers.values import (
-    get_hygiene_module_value,
-    get_sensor_ab_value,
-    get_sensor_avo_value,
-    get_sensor_bat_value,
-    get_sensor_iwh_value,
-    get_sensor_lng_value,
-    get_sensor_net_value,
-    get_sensor_rtm_value,
-    get_sensor_vol_value,
-    is_empty_ip,
-    is_value_true,
-    to_float,
-    to_int,
-)
 from .models import SyrConnectModel
 
 _LOGGER = logging.getLogger(__name__)
@@ -118,7 +118,7 @@ def _value_ab(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
     """Valve shut-off (getAB): lowercase "true"/"false" for translations."""
-    ab = get_sensor_ab_value(status)
+    ab = get_ab_value(status)
     if ab is None:
         return None
     return "true" if ab else "false"
@@ -173,7 +173,7 @@ def _value_avo(
     """Current flow rate (getAVO): "1655mL" -> numeric value."""
     if value is None or value == "":
         return None
-    return get_sensor_avo_value(value)
+    return parse_avo_value(value)
 
 
 def _value_bap(
@@ -196,9 +196,9 @@ def _value_bap(
 
 def _battery_level_from_voltages(status: SyrConnectStatus) -> int | None:
     """Battery level from getBAT between getBMI (0 %) and getBMA (100 %), see _value_bap."""
-    bat = get_sensor_bat_value(status.get("getBAT"))
-    bma = get_sensor_bat_value(status.get("getBMA"))
-    bmi = get_sensor_bat_value(status.get("getBMI"))
+    bat = parse_bat_value(status.get("getBAT"))
+    bma = parse_bat_value(status.get("getBMA"))
+    bmi = parse_bat_value(status.get("getBMI"))
     if bat is None or bat <= 0 or bma is None or bmi is None or bmi > bma:
         return None
     if bat >= bma:
@@ -242,7 +242,7 @@ def _value_bat(
             return int(float(str(value).strip()))
         except ValueError, TypeError, OverflowError:
             return None
-    return get_sensor_bat_value(value)
+    return parse_bat_value(value)
 
 
 def _value_cnd_class(
@@ -258,7 +258,7 @@ def _value_cnd_class(
     conductivity = _to_float(status.get("getCND"))
     if conductivity is None:
         return None
-    hardness = conductivity / _SYR_CONNECT_SENSOR_CND_PER_DH
+    hardness = conductivity / CND_PER_DH
     if hardness <= 8:
         return "soft"
     if hardness <= 14:
@@ -341,7 +341,7 @@ def _value_iwh(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
     """Incoming water hardness (getIWH): explicit getIWH, otherwise derived from getCND."""
-    return sensor.numeric_value(get_sensor_iwh_value(status or {}))
+    return sensor.numeric_value(get_iwh_value(status or {}))
 
 
 def _value_net(
@@ -358,7 +358,7 @@ def _value_net(
         return None
     if not isinstance(value, (str | int | float)):
         return None
-    return get_sensor_net_value(value)
+    return parse_net_value(value)
 
 
 def _value_lar(
@@ -392,7 +392,7 @@ def _value_lar(
     return utc_time
 
 
-def _map_int(value_map: dict[int, Any], value: Any, default: int) -> Any:
+def _map_int(value_map: Mapping[int, Any], value: Any, default: int) -> Any:
     """Look up a raw integer value in a value map.
 
     A missing, empty or 0 value uses `default`. A value that is not an integer
@@ -409,7 +409,7 @@ def _value_le(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
     """Leak protection volume limit, present profile (getLE): raw value -> liters."""
-    return _map_int(_SYR_CONNECT_SENSOR_LE_VALUE_MAP, value, 2)
+    return _map_int(LE_VALUE_MAP, value, 2)
 
 
 def _value_lng(
@@ -418,7 +418,7 @@ def _value_lng(
     """Language (getLNG): strip a trailing annotation, "0 (0=Deutsch 1=English)" -> "0"."""
     if value is None or (isinstance(value, str) and value.strip() == ""):
         return None
-    return get_sensor_lng_value(value)
+    return parse_lng_value(value)
 
 
 def _value_leak_protection_flag(
@@ -437,7 +437,7 @@ def _value_rtm(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
     """Regeneration time (getRTM): "HH:MM" from getRTM, or combined from getRTH + getRTM."""
-    return get_sensor_rtm_value(status)
+    return get_rtm_value(status)
 
 
 def _value_rpw(
@@ -499,48 +499,14 @@ def _weekday_names(mask: int, language: str | None) -> str:
 def _value_sta(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
-    """Status (getSTA): map the Polish status strings to translation keys.
+    """Status (getSTA): reported text or code -> translation key.
 
     Translation placeholders are not supported for entity states in the frontend (only
     for names/labels), see https://github.com/home-assistant/frontend/issues/29064, so
-    the placeholder values are only logged.
+    the details of the status are only logged.
     """
-    # Newer models (e.g. Syr AC 3200/3228) report getSTA as an integer (0=Standby);
-    # check for None explicitly so a genuine 0 is kept.
-    raw = str(value) if value is not None else ""
-    _LOGGER.debug("getSTA entity=%s raw=%s", sensor.entity_id, raw)
-
-    m_match = re.match(r"Płukanie regenerantem \((.*?)\)", raw)
-    if m_match:
-        mapped = str(
-            _SYR_CONNECT_SENSOR_STA_VALUE_MAP.get(
-                "Płukanie regenerantem", "status_regenerant_rinse"
-            )
-        )
-        _LOGGER.debug(
-            "getSTA mapped=%s placeholders=%s",
-            mapped,
-            {"resistance_value": str(m_match.group(1) or "")},
-        )
-        return mapped
-
-    m2_match = re.match(r"Płukanie szybkie\s*(\d+)", raw)
-    if m2_match:
-        mapped = str(
-            _SYR_CONNECT_SENSOR_STA_VALUE_MAP.get(
-                "Płukanie szybkie", "status_fast_rinse"
-            )
-        )
-        _LOGGER.debug(
-            "getSTA mapped=%s placeholders=%s",
-            mapped,
-            {"rinse_round": str(m2_match.group(1) or "")},
-        )
-        return mapped
-
-    # Fallback: use the raw string as mapping key
-    mapped = str(_SYR_CONNECT_SENSOR_STA_VALUE_MAP.get(raw, raw))
-    _LOGGER.debug("getSTA mapped=%s", mapped)
+    mapped = parse_sta_value(value)
+    _LOGGER.debug("getSTA entity=%s raw=%s mapped=%s", sensor.entity_id, value, mapped)
     return mapped
 
 
@@ -548,7 +514,7 @@ def _value_t(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
     """Maximum flow duration, present / absent profile (getT1): raw value -> hours."""
-    return _map_int(_SYR_CONNECT_SENSOR_T1_VALUE_MAP, value, 1)
+    return _map_int(T1_VALUE_MAP, value, 1)
 
 
 def _value_tmz(
@@ -578,7 +544,7 @@ def _value_ul(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
     """Leak protection volume limit, absent profile (getUL): raw value -> liters."""
-    return _map_int(_SYR_CONNECT_SENSOR_UL_VALUE_MAP, value, 1)
+    return _map_int(UL_VALUE_MAP, value, 1)
 
 
 def _value_cas(
@@ -596,7 +562,7 @@ def _value_cas(
         raw = int(to_float(value))
     except ValueError, TypeError, OverflowError:
         return None
-    return _SYR_CONNECT_SENSOR_CAS_VALUE_MAP.get(raw)
+    return CAS_VALUE_MAP.get(raw)
 
 
 def _value_hygiene_module(
@@ -608,7 +574,7 @@ def _value_hygiene_module(
     - Without a suffix: "3" -> 3
     - With a suffix (assumed): "3 [1-7]" -> 3
     """
-    number = get_hygiene_module_value(value)
+    number = parse_hygiene_module_value(value)
     return sensor.numeric_value(number) if number is not None else None
 
 
@@ -629,7 +595,7 @@ def _value_crs(
         return None
     if raw == 0:
         return _to_float(status.get("getFCS"))
-    return _SYR_CONNECT_SENSOR_CRS_VALUE_MAP.get(raw)
+    return CRS_VALUE_MAP.get(raw)
 
 
 def _value_crt(
@@ -662,7 +628,7 @@ def _value_vol(
 ) -> Any:
     """Total volume (getVOL): strip a prefix like 'Vol[L]6530', then convert it as a number."""
     if value is not None:
-        value = get_sensor_vol_value(value)
+        value = parse_vol_value(value)
     return sensor.numeric_value(value)
 
 

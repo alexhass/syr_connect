@@ -1,14 +1,159 @@
-"""Parsing and formatting of device status values."""
+"""Status values of the SYR devices: parsing, value tables and commands.
 
+The devices report many values in formats of their own, which differ per model and
+API (comma decimals, unit prefixes, codes for liters or hours). The functions here turn
+them into numbers and build the set commands in the format the device expects. The
+value tables map a raw code to its value, or to the key of its meaning that the caller
+translates (`STA_VALUE_MAP`).
+"""
+
+from collections.abc import Mapping
 import ipaddress
 import logging
 import re
-from typing import Any
+from typing import Any, Final
 
-from ..aiosyrconnect import SyrConnectStatus, SyrConnectStatusValue
-from ..const import _SYR_CONNECT_SENSOR_CND_PER_DH
+from .models import SyrConnectStatus, SyrConnectStatusValue
 
 _LOGGER = logging.getLogger(__name__)
+
+# Canister size of the dosing pump (getCAS): raw code -> liters
+CAS_VALUE_MAP: Mapping[int, int] = {
+    1: 5,
+    2: 10,
+}
+
+# Conductivity (getCND) in µS/cm per °dH of water hardness, the factor SYR uses to estimate
+# the hardness from the conductivity
+CND_PER_DH: Final = 35
+
+# Cartridge size (getCRS): raw code -> liters
+CRS_VALUE_MAP: Mapping[int, float] = {
+    1: 2.5,
+    2: 4,
+    3: 7,
+    4: 14,
+    5: 30,
+}
+
+# Leak protection level while present (getLE): raw code -> liters
+LE_VALUE_MAP: Mapping[int, int] = {
+    2: 100,
+    3: 150,
+    4: 200,
+    5: 250,
+    6: 300,
+    7: 350,
+    8: 400,
+    9: 450,
+    10: 500,
+    11: 550,
+    12: 600,
+    13: 650,
+    14: 700,
+    15: 750,
+    16: 800,
+    17: 850,
+    18: 900,
+    19: 950,
+    20: 1000,
+    21: 1050,
+    22: 1100,
+    23: 1150,
+    24: 1200,
+    25: 1250,
+    26: 1300,
+    27: 1350,
+    28: 1400,
+    29: 1450,
+    30: 1500,
+}
+
+# Status of the regeneration (getSTA): reported text or code -> key of the meaning. The
+# devices report the status as a Polish or German text, often with a suffix the caller
+# strips ("Płukanie regenerantem (5mA)", "Płukanie szybkie 1"); newer models (AC 3200,
+# AC 3228, MultiController) report a number.
+STA_VALUE_MAP: Mapping[str, str] = {
+    "Płukanie wsteczne": "status_backwash",
+    "Płukanie regenerantem": "status_regenerant_rinse",
+    "Płukanie wolne": "status_slow_rinse",
+    "Płukanie szybkie": "status_fast_rinse",
+    "Napełnianie": "status_filling",
+    "Bitte Salz nachfüllen": "status_refill_salt",
+    "": "status_inactive",
+    "0": "status_standby",
+    "1": "status_initial_filling",
+    "2": "status_automatic_filling",
+    "3": "status_manual_filling",
+}
+
+# Leakage time (getT1): raw code -> hours
+T1_VALUE_MAP: Mapping[int, float] = {
+    1: 0.5,
+    2: 1.0,
+    3: 1.5,
+    4: 2.0,
+    5: 2.5,
+    6: 3.0,
+    7: 3.5,
+    8: 4.0,
+    9: 4.5,
+    10: 5.0,
+    11: 5.5,
+    12: 6.0,
+    13: 6.5,
+    14: 7.0,
+    15: 7.5,
+    16: 8.0,
+    17: 8.5,
+    18: 9.0,
+    19: 9.5,
+    20: 10.0,
+    21: 10.5,
+    22: 11.0,
+    23: 11.5,
+    24: 12.0,
+    25: 12.5,
+    26: 13.0,
+    27: 13.5,
+    28: 14.0,
+    29: 14.5,
+    30: 15.0,
+    31: 15.5,
+    32: 16.0,
+    33: 16.5,
+    34: 17.0,
+    35: 17.5,
+    36: 18.0,
+    37: 18.5,
+    38: 19.0,
+    39: 19.5,
+    40: 20.0,
+    41: 20.5,
+    42: 21.0,
+    43: 21.5,
+    44: 22.0,
+    45: 22.5,
+    46: 23.0,
+    47: 23.5,
+    48: 24.0,
+    49: 24.5,
+    50: 25.0,
+}
+
+# Leak protection level while absent (getUL): raw code -> liters
+UL_VALUE_MAP: Mapping[int, int] = {
+    1: 10,
+    2: 20,
+    3: 30,
+    4: 40,
+    5: 50,
+    6: 60,
+    7: 70,
+    8: 80,
+    9: 90,
+    10: 100,
+}
 
 
 def is_value_true(val: object) -> bool:
@@ -68,14 +213,14 @@ def is_empty_ip(value: Any) -> bool:
         return False
 
 
-def get_sensor_avo_value(value: Any) -> float | None:
+def parse_avo_value(value: Any) -> float | None:
     """Extract numeric flow value from strings like '1655mL' -> 1.655 (L).
 
-    The getAVO sensor returns flow values in the format '1655mL', '0mL', etc.
+    The device reports getAVO in the format '1655mL', '0mL', etc.
     This function extracts the numeric value, converts from mL to L, and returns it as a float.
 
     Args:
-        value: The raw sensor value (e.g., '1655mL', '0mL')
+        value: The raw value (e.g., '1655mL', '0mL')
 
     Returns:
         Numeric flow value in L (converted from mL), or None if extraction fails
@@ -136,23 +281,23 @@ def to_int(value: SyrConnectStatusValue) -> int:
     raise TypeError(f"Not a number: {value!r}")
 
 
-def get_sensor_vol_value(value: SyrConnectStatusValue) -> SyrConnectStatusValue:
-    """Clean sensor value by removing prefixes like 'Vol[L]6530' -> '6530'.
+def parse_vol_value(value: SyrConnectStatusValue) -> SyrConnectStatusValue:
+    """Clean a value by removing prefixes like 'Vol[L]6530' -> '6530'.
 
     Some devices send values with prefixes that include the parameter name
     and unit in brackets, e.g., 'Vol[L]6530', 'Temp[C]25', etc.
     This function extracts the numeric value from such strings.
 
     Examples:
-        >>> get_sensor_vol_value("")
+        >>> parse_vol_value("")
         None
-        >>> get_sensor_vol_value(6530)
+        >>> parse_vol_value(6530)
         6530
-        >>> get_sensor_vol_value("Vol[L]6530")
+        >>> parse_vol_value("Vol[L]6530")
         '6530'
 
     Args:
-        value: The raw sensor value
+        value: The raw value
 
     Returns:
         Cleaned value with prefix removed if applicable, or None for empty string
@@ -170,30 +315,30 @@ def get_sensor_vol_value(value: SyrConnectStatusValue) -> SyrConnectStatusValue:
     match = re.match(r"^[A-Za-z]+\[[^\]]+\](.+)$", value)
     if match:
         cleaned = match.group(1).strip()
-        _LOGGER.debug("Cleaned sensor value from '%s' to '%s'", value, cleaned)
+        _LOGGER.debug("Cleaned value from '%s' to '%s'", value, cleaned)
         return cleaned
 
     return value
 
 
-def get_sensor_lng_value(value: SyrConnectStatusValue) -> SyrConnectStatusValue:
+def parse_lng_value(value: SyrConnectStatusValue) -> SyrConnectStatusValue:
     """Extract the leading integer from a getLNG value.
 
     Some devices append a human-readable annotation to the numeric value,
     e.g. "0 (0=Deutsch 1=English)" instead of plain "0".
     This function returns only the leading integer token so it can be matched
-    against the translation state map.
+    against the known languages.
 
     Examples:
-        >>> get_sensor_lng_value("0 (0=Deutsch 1=English)")
+        >>> parse_lng_value("0 (0=Deutsch 1=English)")
         '0'
-        >>> get_sensor_lng_value("1")
+        >>> parse_lng_value("1")
         '1'
-        >>> get_sensor_lng_value(0)
+        >>> parse_lng_value(0)
         0
 
     Args:
-        value: The raw getLNG sensor value
+        value: The raw getLNG value
 
     Returns:
         Leading integer token as string, original value if no annotation present,
@@ -214,7 +359,7 @@ def get_sensor_lng_value(value: SyrConnectStatusValue) -> SyrConnectStatusValue:
         return token
 
 
-def get_sensor_net_value(value: Any) -> float | None:
+def parse_net_value(value: Any) -> float | None:
     """Parse mains voltage (getNET) supporting three formats.
 
     Formats supported:
@@ -272,7 +417,7 @@ def _parse_centivolts(digits: str) -> float | None:
         return None
 
 
-def get_hygiene_module_value(value: Any) -> int | None:
+def parse_hygiene_module_value(value: Any) -> int | None:
     """Setting of a hygiene module line (getSCF, getCCF, ...): raw value -> integer.
 
     Only the number before a space or a "[" counts; the cloud probably adds a suffix of
@@ -294,7 +439,7 @@ def get_hygiene_module_value(value: Any) -> int | None:
         return None
 
 
-def get_sensor_bat_value(value: Any) -> float | None:
+def parse_bat_value(value: Any) -> float | None:
     """Parse battery voltage supporting two formats.
 
     Formats supported:
@@ -327,7 +472,39 @@ def get_sensor_bat_value(value: Any) -> float | None:
     return None
 
 
-def get_sensor_rtm_value(status: SyrConnectStatus) -> str | None:
+def parse_sta_value(value: SyrConnectStatusValue) -> str:
+    """Status of the regeneration (getSTA): reported text or code -> key of the meaning.
+
+    The Polish texts of two steps carry a detail (the resistance, the rinse round),
+    which is only logged.
+
+    Formats:
+    - Text with a detail: "Płukanie regenerantem (5mA)" -> "status_regenerant_rinse"
+    - Text with a round: "Płukanie szybkie 1" -> "status_fast_rinse"
+    - Text or code of `STA_VALUE_MAP`: "Napełnianie" -> "status_filling", 0 -> "status_standby"
+    - Empty or missing: "" -> "status_inactive"
+    - Unknown: the reported text unchanged
+
+    Args:
+        value: Value of getSTA
+
+    Returns:
+        The key of the meaning, or the reported text if it is unknown
+    """
+    # A genuine 0 (standby) is kept, so None is checked explicitly
+    raw = str(value) if value is not None else ""
+    m_match = re.match(r"Płukanie regenerantem \((.*?)\)", raw)
+    if m_match:
+        _LOGGER.debug("getSTA resistance=%s", m_match.group(1))
+        return STA_VALUE_MAP["Płukanie regenerantem"]
+    m2_match = re.match(r"Płukanie szybkie\s*(\d+)", raw)
+    if m2_match:
+        _LOGGER.debug("getSTA rinse round=%s", m2_match.group(1))
+        return STA_VALUE_MAP["Płukanie szybkie"]
+    return STA_VALUE_MAP.get(raw, raw)
+
+
+def get_rtm_value(status: SyrConnectStatus) -> str | None:
     """Return regeneration time as HH:MM string or None.
 
     Handles two device representations:
@@ -370,7 +547,7 @@ def _format_hhmm(hours: int, minutes: int) -> str | None:
     return None
 
 
-def get_sensor_iwh_value(status: SyrConnectStatus) -> int | float | None:
+def get_iwh_value(status: SyrConnectStatus) -> int | float | None:
     """Compute or return incoming water hardness (getIWH).
 
     Rules:
@@ -434,15 +611,13 @@ def _iwh_from_cnd(status: SyrConnectStatus) -> int | float | None:
     status["getWHU"] = whu
 
     # Compute and persist getIWH in °dH with the factor SYR uses
-    iwh = cnd / _SYR_CONNECT_SENSOR_CND_PER_DH
+    iwh = cnd / CND_PER_DH
     iwh_out = int(iwh) if iwh.is_integer() else iwh
     status["getIWH"] = iwh_out
     return iwh_out
 
 
-def set_sensor_rtm_value(
-    status: SyrConnectStatus, option: str
-) -> list[tuple[str, Any]]:
+def build_rtm_commands(status: SyrConnectStatus, option: str) -> list[tuple[str, Any]]:
     """Build set commands for regeneration time selection.
 
     Given the current `status` and a chosen `option` string in "HH:MM" format,
@@ -486,7 +661,7 @@ def set_sensor_rtm_value(
     return commands
 
 
-def get_sensor_ab_value(status: SyrConnectStatus) -> bool | None:
+def get_ab_value(status: SyrConnectStatus) -> bool | None:
     """Parse `getAB` value from device status and return closed state as bool.
 
     Returns:
@@ -516,9 +691,8 @@ def get_sensor_ab_value(status: SyrConnectStatus) -> bool | None:
     return _parse_ab_raw(val)
 
 
-# Numeric getAB values. Safe-T: Syr seems to use 1 for open and 2 for closed, but we want
-# True=closed, False=open
-_SYR_CONNECT_VALUES_AB_NUMERIC: dict[int, bool] = {
+# Numeric getAB values -> closed. The Safe-T reports 1 for open and 2 for closed.
+_AB_NUMERIC: dict[int, bool] = {
     1: False,
     2: True,
 }
@@ -537,7 +711,7 @@ def _parse_ab_raw(val: Any) -> bool | None:
     # Numeric values (int/float or digit strings)
     try:
         if isinstance(val, (int | float)):
-            return _SYR_CONNECT_VALUES_AB_NUMERIC.get(int(float(val)))
+            return _AB_NUMERIC.get(int(float(val)))
         if isinstance(val, str):
             # Trio DFR/LS and other new devices: Normalize string and check for boolean-like values
             s = val.strip().lower()
@@ -546,7 +720,7 @@ def _parse_ab_raw(val: Any) -> bool | None:
                 return s == "true"
             # Numeric string fallback
             if s.isdigit():
-                return _SYR_CONNECT_VALUES_AB_NUMERIC.get(int(s))
+                return _AB_NUMERIC.get(int(s))
     except (ValueError, TypeError, AttributeError, OverflowError) as err:
         _LOGGER.debug("Failed to parse getAB value: %s", err)
         return None
@@ -562,7 +736,7 @@ def build_set_ab_command(
     This function mirrors the device's own format for `getAB` when sending `setAB`:
     - Native bool (`True`/`False`) or boolean strings ("true"/"false") → "true" (closed) / "false" (open)
     - Native integer or numeric string ("1"/"2") → numeric `1` (open) / `2` (closed)
-    - Unknown or absent → `None` (error is logged; caller must not send the command)
+    - Unknown or absent → `None` (the caller must not send the command)
 
     Using the device's native format prevents potential parsing errors or
     firmware issues when the device receives commands in an unexpected format.
@@ -586,12 +760,6 @@ def build_set_ab_command(
     if isinstance(raw, int | float) or (text is not None and text.isdigit()):
         return ("setAB", 2 if closed else 1)
 
-    # Unknown format — this should not happen with known device firmware.
-    # Log an error and return None so the caller knows not to send a command.
-    _LOGGER.error(
-        "build_set_ab_command: unexpected getAB format %r (type %s); "
-        "command will not be sent. Please report this issue.",
-        raw,
-        type(raw).__name__,
-    )
+    # Unknown format: the caller must not send a command
+    _LOGGER.debug("Unexpected getAB format %r (type %s)", raw, type(raw).__name__)
     return None

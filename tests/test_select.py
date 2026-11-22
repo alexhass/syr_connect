@@ -1061,7 +1061,7 @@ async def test_regeneration_select_handles_coordinator_exception(
 
 
 async def test_regeneration_select_no_commands_returns(hass: HomeAssistant) -> None:
-    """When set_sensor_rtm_value returns no commands, the option is rejected."""
+    """When build_rtm_commands returns no commands, the option is rejected."""
     data = {
         "devices": [
             {
@@ -1081,7 +1081,7 @@ async def test_regeneration_select_no_commands_returns(hass: HomeAssistant) -> N
 
     with (
         patch(
-            "custom_components.syr_connect.select.set_sensor_rtm_value", return_value=[]
+            "custom_components.syr_connect.select.build_rtm_commands", return_value=[]
         ),
         pytest.raises(ServiceValidationError),
     ):

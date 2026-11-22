@@ -19,6 +19,7 @@ from .aiosyrconnect import (
     SyrConnectJsonAPI,
     SyrConnectStatus,
     SyrConnectXmlAPI,
+    is_empty_ip,
     mask_ug_value,
 )
 from .const import API_TYPE_JSON, API_TYPE_XML, CONF_API_TYPE, CONF_MODEL, CONF_SERVICE
@@ -26,7 +27,6 @@ from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .helpers.device import get_device_model
 from .helpers.integration import build_user_agent, get_integration_version
-from .helpers.values import is_empty_ip
 from .models import SyrConnectModel
 from .sensor import sensor_keys_for_status
 

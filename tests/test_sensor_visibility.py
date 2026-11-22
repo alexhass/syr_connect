@@ -4,8 +4,7 @@
 # ruff: noqa: SLF001
 
 from custom_components.syr_connect import sensor
-from custom_components.syr_connect.aiosyrconnect import SyrConnectStatus
-from custom_components.syr_connect.helpers.values import is_value_true
+from custom_components.syr_connect.aiosyrconnect import SyrConnectStatus, is_value_true
 from custom_components.syr_connect.sensor import is_sensor_visible
 
 

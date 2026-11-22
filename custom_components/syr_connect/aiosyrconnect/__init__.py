@@ -14,6 +14,7 @@ Modules:
   warning codes of each device family
 - models: devices, status values, cloud services, statistics series and model signatures
 - model_detection: signatures of the known models and their detection
+- values: parsing of the status values, value tables and set commands of single keys
 - exceptions: errors raised by the clients
 - const: URLs, keys, client identity and the cloud services
 
@@ -49,13 +50,43 @@ from .models import (
     SyrConnectStatus,
     SyrConnectStatusValue,
 )
+from .values import (
+    CAS_VALUE_MAP,
+    CND_PER_DH,
+    CRS_VALUE_MAP,
+    LE_VALUE_MAP,
+    T1_VALUE_MAP,
+    UL_VALUE_MAP,
+    build_rtm_commands,
+    build_set_ab_command,
+    get_ab_value,
+    get_iwh_value,
+    get_rtm_value,
+    is_empty_ip,
+    is_value_true,
+    parse_avo_value,
+    parse_bat_value,
+    parse_hygiene_module_value,
+    parse_lng_value,
+    parse_net_value,
+    parse_sta_value,
+    parse_vol_value,
+    to_float,
+    to_int,
+)
 from .xml_api import SyrConnectXmlAPI
 from .xml_parser import is_device_offline
 
 __all__ = [
     "API_SERVICES",
+    "CAS_VALUE_MAP",
+    "CND_PER_DH",
+    "CRS_VALUE_MAP",
+    "LE_VALUE_MAP",
     "MODEL_SIGNATURES",
     "NO_CODE_VALUES",
+    "T1_VALUE_MAP",
+    "UL_VALUE_MAP",
     "UNKNOWN_MODEL_SIGNATURE",
     "SyrConnectApiDevice",
     "SyrConnectAuthError",
@@ -73,9 +104,25 @@ __all__ = [
     "SyrConnectStatus",
     "SyrConnectStatusValue",
     "SyrConnectXmlAPI",
+    "build_rtm_commands",
+    "build_set_ab_command",
     "detect_model_signature",
+    "get_ab_value",
+    "get_iwh_value",
+    "get_rtm_value",
     "is_code_active",
     "is_device_offline",
+    "is_empty_ip",
     "is_network_error",
+    "is_value_true",
     "mask_ug_value",
+    "parse_avo_value",
+    "parse_bat_value",
+    "parse_hygiene_module_value",
+    "parse_lng_value",
+    "parse_net_value",
+    "parse_sta_value",
+    "parse_vol_value",
+    "to_float",
+    "to_int",
 ]
