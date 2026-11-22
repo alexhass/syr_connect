@@ -882,8 +882,30 @@ async def test_sensor_string_value_numeric(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getFLO")
 
-    # getFLO has precision 0, so 123.45 is rounded to 123 (int)
-    assert sensor.native_value == 123
+    # The display precision of getFLO (0) does not round the value
+    assert sensor.native_value == 123.45
+
+
+async def test_sensor_whole_number_is_int(hass: HomeAssistant) -> None:
+    """A whole number is returned as int, also when the device reports it as float."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getFLO": "120.0",
+                },
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getFLO")
+
+    value = sensor.native_value
+    assert value == 120
+    assert type(value) is int
 
 
 async def test_sensor_string_value_non_numeric(hass: HomeAssistant) -> None:
@@ -975,8 +997,8 @@ def test_extra_getavo_and_getbar_and_getbat_and_getul(
     assert abs(float(cast(Any, avo.native_value)) - 1.655) < 0.001
 
     bar = SyrConnectSensor(coord, "dev_s", "Device S", "getBAR")
-    # 4077 mbar -> 4.077 bar -> rounded to 1 decimal -> 4.1
-    assert bar.native_value == 4.1
+    # 4077 mbar -> 4.077 bar, all digits kept
+    assert bar.native_value == 4.077
 
     bat = SyrConnectSensor(coord, "dev_s", "Device S", "getBAT")
     assert bat.native_value == 3.63
@@ -1427,8 +1449,8 @@ async def test_sensor_numeric_float_value(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getFLO")
 
-    # getFLO has precision 0, so 123.45 should be rounded to 123
-    assert sensor.native_value == 123
+    # The display precision of getFLO (0) does not round the value
+    assert sensor.native_value == 123.45
 
     # Sensor should be created when value is non-zero
     # Note: actual behavior depends on if getRS1 is in EXCLUDE_WHEN_ZERO const
@@ -2562,7 +2584,7 @@ async def test_sensor_getbar_with_unit(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
 
     bar_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAR")
-    assert bar_sensor.native_value == 4.1
+    assert bar_sensor.native_value == 4.077
 
 
 async def test_sensor_getbar_numeric_only(hass: HomeAssistant) -> None:
@@ -2582,7 +2604,7 @@ async def test_sensor_getbar_numeric_only(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
 
     bar_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getBAR")
-    assert bar_sensor.native_value == 4.1
+    assert bar_sensor.native_value == 4.077
 
 
 async def test_sensor_getbar_empty_value(hass: HomeAssistant) -> None:
@@ -3432,8 +3454,8 @@ async def test_sensor_leak_protection_getpv_float_value(hass: HomeAssistant) -> 
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getPV1")
 
-    # getPV is a number, rounded to its precision
-    assert sensor.native_value == 2
+    # getPV is a number with all its digits
+    assert sensor.native_value == 1.5
 
 
 async def test_sensor_leak_protection_getpt_zero_float(hass: HomeAssistant) -> None:
@@ -4469,11 +4491,11 @@ def test_sensor_flo_unit_depends_on_model(
 @pytest.mark.parametrize(
     ("key", "raw", "expected", "precision"),
     [
-        # The profile reports getLFV in milliliters; liters keep two decimals
+        # The profile reports getLFV in milliliters; liters are shown with two decimals
         ("getLFV", "6600", 6.6, 2),
         ("getLFV", 6600, 6.6, 2),
         ("getLFV", "10", 0.01, 2),
-        ("getLFV", "6604", 6.6, 2),
+        ("getLFV", "6604", 6.604, 2),
         # Keys without a profile divisor keep the scale of their description
         ("getCFV", "4", 4, 2),
         ("getCEL", "215", 21.5, 1),
@@ -4953,9 +4975,11 @@ def test_crs_sensor_custom_size(status: dict[str, Any], expected: float | None) 
     [
         # The MuCo filling keeps °dH; getWHU is only the unit of the display
         ("conelclearprofill", "getIWH", "0", "18", 18, "°dH"),
-        ("conelclearprofill", "getIWH", "1", "18", 23, "°e"),
-        ("conelclearprofill", "getOHW", "2", "5", 9, "°fH"),
-        ("conelclearprofill", "getOHW", 3, 5, 89, "ppm"),
+        ("conelclearprofill", "getIWH", "1", "18", 22.53894084, "°e"),
+        ("conelclearprofill", "getOHW", "2", "5", 8.92402285, "°fH"),
+        # Without binary noise of the factor: 5.354413709999999
+        ("conelclearprofill", "getOHW", "2", "3", 5.35441371, "°fH"),
+        ("conelclearprofill", "getOHW", 3, 5, 89.2402285, "ppm"),
         ("conelclearprofill", "getOHW", "7", "5", 5, "°dH"),
         # Other families report the value in the unit
         ("allinoneplus", "getIWH", "1", "18", 18, "°e"),
@@ -4967,7 +4991,7 @@ def test_sensor_hardness_converted_from_dh(
     key: str,
     whu: Any,
     raw: Any,
-    expected: int,
+    expected: float,
     unit: str,
 ) -> None:
     """A device that keeps the water hardness in °dH shows it in the unit of getWHU."""

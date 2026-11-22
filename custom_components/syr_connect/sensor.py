@@ -186,11 +186,7 @@ def _value_bar(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
     """Pressure (getBAR / getBAR2 / getIBA): "4077 mbar" -> bar."""
-    pressure_bar = parse_mbar_value(value)
-    if pressure_bar is None:
-        return None
-    precision = sensor.entity_description.suggested_display_precision
-    return round(pressure_bar, 3 if precision is None else precision)
+    return parse_mbar_value(value)
 
 
 def _value_bat(
@@ -232,11 +228,7 @@ def _value_dbd(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
     """Microleakage pressure drop (getDBD): tenths of a bar ("10" -> 1.0 bar)."""
-    pressure_bar = parse_dbd_value(value)
-    if pressure_bar is None:
-        return None
-    precision = sensor.entity_description.suggested_display_precision
-    return round(pressure_bar, 1 if precision is None else precision)
+    return parse_dbd_value(value)
 
 
 def _value_dom(
@@ -2508,26 +2500,25 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
             )
 
     def _apply_numeric_conversion(self, value: float) -> float | int:
-        """Apply sensor-specific unit conversion and precision.
+        """Apply the sensor-specific scale to a raw number.
+
+        The value keeps all its digits: the display precision only suggests how many
+        Home Assistant shows, and the user can choose more of them.
 
         Args:
             value: The raw numeric value
 
         Returns:
-            The converted value with appropriate precision
+            The scaled value; a whole number as int
         """
         # Apply the sensor-specific scale (e.g. 1/10 °C -> °C, liters -> m³)
         description = self.entity_description
         value = value / description.divide_by * description.multiply_by
-        value *= self._hardness_factor
-
-        # Apply configured precision if available
-        precision = self.entity_description.suggested_display_precision
-        if precision is not None:
-            value = round(value, precision)
-            if precision == 0:
-                return int(value)
-
+        # The factor of the water hardness unit leaves binary noise
+        # (3 °dH = 5.354413709999999 °fH), which 12 significant digits drop
+        value = float(f"{value * self._hardness_factor:.12g}")
+        if value.is_integer():
+            return int(value)
         return value
 
     @property
@@ -2580,7 +2571,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         return self.numeric_value(value)
 
     def numeric_value(self, value: Any) -> str | int | float | None:
-        """Convert a raw value to a number with the sensor's scale and precision.
+        """Convert a raw value to a number with the sensor's scale.
 
         Args:
             value: Raw value from the device status
