@@ -4975,11 +4975,9 @@ def test_crs_sensor_custom_size(status: dict[str, Any], expected: float | None) 
     [
         # The MuCo filling keeps °dH; getWHU is only the unit of the display
         ("conelclearprofill", "getIWH", "0", "18", 18, "°dH"),
-        ("conelclearprofill", "getIWH", "1", "18", 22.53894084, "°e"),
-        ("conelclearprofill", "getOHW", "2", "5", 8.92402285, "°fH"),
-        # Without binary noise of the factor: 5.354413709999999
-        ("conelclearprofill", "getOHW", "2", "3", 5.35441371, "°fH"),
-        ("conelclearprofill", "getOHW", 3, 5, 89.2402285, "ppm"),
+        ("conelclearprofill", "getIWH", "1", "18", 23, "°e"),
+        ("conelclearprofill", "getOHW", "2", "5", 9, "°fH"),
+        ("conelclearprofill", "getOHW", 3, 5, 89, "ppm"),
         ("conelclearprofill", "getOHW", "7", "5", 5, "°dH"),
         # Other families report the value in the unit
         ("allinoneplus", "getIWH", "1", "18", 18, "°e"),
@@ -4991,7 +4989,7 @@ def test_sensor_hardness_converted_from_dh(
     key: str,
     whu: Any,
     raw: Any,
-    expected: float,
+    expected: int,
     unit: str,
 ) -> None:
     """A device that keeps the water hardness in °dH shows it in the unit of getWHU."""
@@ -5003,7 +5001,10 @@ def test_sensor_hardness_converted_from_dh(
     }
     sensor = SyrConnectSensor(create_mock_coordinator(data), "d1", "D1", key)
 
-    assert sensor.native_value == expected
+    # A converted hardness is a whole number like in the select, not 8.92402285 °fH
+    value = sensor.native_value
+    assert value == expected
+    assert type(value) is int
     assert sensor.native_unit_of_measurement == unit
 
 

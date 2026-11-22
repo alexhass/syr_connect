@@ -81,7 +81,7 @@ The code that talks to the cloud and to the devices is the library `aiosyrconnec
 ## Values and XML
 
 - Check for missing values with `is None` / `is not None`. Device values can legitimately be `0`, `""` or empty collections.
-- Sensors return their values with all digits, as in Home Assistant core. `suggested_display_precision` only suggests how many digits the frontend shows, and the user can choose more in the entity settings; never round a value to it.
+- Sensors return their values with all digits, as in Home Assistant core. `suggested_display_precision` only suggests how many digits the frontend shows, and the user can choose more in the entity settings; never round a value to it. The only exception is a water hardness the device keeps in °dH: converted to the unit of getWHU, it is a whole number (`round_hardness()`), as the select and the SYR app show it.
 - Parse XML only with `defusedxml`. Build request payloads with `xml.etree.ElementTree` so that values are escaped. Never build XML by string concatenation.
 - Every XML request carries a checksum computed by `SyrChecksum`. When a request payload changes, the checksums in `tests/fixtures/xml/requests/` and in the `aiosyrconnect/xml_payload.py` docstrings change too.
 

@@ -71,6 +71,7 @@ from .aiosyrconnect import (
     parse_utc_time,
     parse_vol_value,
     parse_weekday_mask,
+    round_hardness,
     to_int,
 )
 from .binary_sensor import _SYR_CONNECT_BINARY_SENSOR_SUPPORTED_KEYS
@@ -2503,7 +2504,10 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         """Apply the sensor-specific scale to a raw number.
 
         The value keeps all its digits: the display precision only suggests how many
-        Home Assistant shows, and the user can choose more of them.
+        Home Assistant shows, and the user can choose more of them. A water hardness the
+        device keeps in °dH is the exception: converted to the unit of getWHU, it is
+        rounded to a whole number like the select and the SYR app show it, since the
+        device only knows whole °dH (5 °dH -> 9 °fH, not 8.92402285 °fH).
 
         Args:
             value: The raw numeric value
@@ -2514,9 +2518,8 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         # Apply the sensor-specific scale (e.g. 1/10 °C -> °C, liters -> m³)
         description = self.entity_description
         value = value / description.divide_by * description.multiply_by
-        # The factor of the water hardness unit leaves binary noise
-        # (3 °dH = 5.354413709999999 °fH), which 12 significant digits drop
-        value = float(f"{value * self._hardness_factor:.12g}")
+        if self._hardness_factor != 1:
+            return round_hardness(value * self._hardness_factor)
         if value.is_integer():
             return int(value)
         return value
