@@ -16,9 +16,11 @@ from custom_components.syr_connect import (
     sensor as sensor_module,
 )
 from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
+from custom_components.syr_connect.button import SyrConnectButton
 from custom_components.syr_connect.models import MODELS, SyrConnectModel, detect_model
 from custom_components.syr_connect.select import SyrConnectHardnessSelect
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ServiceValidationError
 
 
 def _signature(name: str) -> SyrConnectModel:
@@ -169,3 +171,51 @@ def test_lex_volume_thresholds(model: str, expected: set[str]) -> None:
     keys = set(sensor_module.sensor_keys_for_status(status, detect_model(status)))
 
     assert keys & {"getVS1", "getVS2", "getVS3"} == expected
+
+
+def _lex_button(
+    create_mock_coordinator: Callable[..., MagicMock], status: dict[str, Any]
+) -> tuple[SyrConnectButton, MagicMock]:
+    """Return the manual regeneration button of a LEX Plus 10 S and its coordinator."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "model": next(model for model in MODELS if model.name == "lexplus10s"),
+                "status": status,
+            }
+        ]
+    }
+    coordinator = create_mock_coordinator(data)
+    return SyrConnectButton(coordinator, "device1", "Device 1", "setSIR"), coordinator
+
+
+async def test_lex_regeneration_button_sends_setsir(
+    create_mock_coordinator: Callable[..., MagicMock],
+) -> None:
+    """The LEX starts a regeneration with setSIR, also with the cloud."""
+    button, coordinator = _lex_button(
+        create_mock_coordinator,
+        {"getRG1": "0", "getRG2": "0", "getRG3": "0", "getSIR": "1"},
+    )
+
+    await button.async_press()
+
+    coordinator.async_set_device_value.assert_awaited_once_with("device1", "setSIR", 0)
+
+
+async def test_lex_regeneration_button_refused_while_a_tank_regenerates(
+    create_mock_coordinator: Callable[..., MagicMock],
+) -> None:
+    """No regeneration is started while one of the tanks regenerates (getRG1-3)."""
+    button, coordinator = _lex_button(
+        create_mock_coordinator,
+        {"getRG1": "0", "getRG2": "1", "getRG3": "0", "getSIR": "1"},
+    )
+
+    with pytest.raises(ServiceValidationError) as exc_info:
+        await button.async_press()
+
+    assert exc_info.value.translation_key == "regeneration_running"
+    coordinator.async_set_device_value.assert_not_awaited()

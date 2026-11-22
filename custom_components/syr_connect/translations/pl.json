@@ -2022,6 +2022,9 @@
     "option_not_selectable": {
       "message": "Nie można wybrać {option} dla {entity}"
     },
+    "regeneration_running": {
+      "message": "Na urządzeniu {device} trwa już regeneracja"
+    },
     "set_value_failed": {
       "message": "Nie udało się ustawić {entity} na urządzeniu {device}"
     },

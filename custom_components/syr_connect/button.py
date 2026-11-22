@@ -46,6 +46,7 @@ from .aiosyrconnect import (
     command_status_key,
     is_code_active,
     is_microleakage_test_running,
+    is_regeneration_running,
 )
 from .const import DOMAIN
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
@@ -89,8 +90,18 @@ class SyrConnectButtonEntityDescription(ButtonEntityDescription):
 
 
 async def _async_press_sir(press: _SyrConnectButtonPress) -> None:
-    """Manual regeneration (setSIR): the value follows the format of getSIR."""
-    command, value = build_sir_command(press.status)
+    """Manual regeneration (setSIR, NeoSoft with the cloud dmSIR): start it unless one runs."""
+    if is_regeneration_running(press.model, press.status):
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="regeneration_running",
+            translation_placeholders={"device": press.device_name},
+        )
+    command, value = build_sir_command(
+        press.model,
+        press.status,
+        cloud=not isinstance(press.coordinator.api, SyrConnectJsonAPI),
+    )
     await press.coordinator.async_set_device_value(press.device_id, command, value)
 
 
@@ -262,7 +273,8 @@ def _build_device_buttons(
         ):
             continue
         # The status key of the command tells that the device has the function, e.g.
-        # getNOT for setNOT, getALM or getALA for setALA, getDSV for setDEX
+        # getNOT for setNOT, getALM or getALA for setALA, getDSV for setDEX, getSIR or
+        # getRG1 (NeoSoft, LEX family) for setSIR
         if command_status_key(model_info, command) not in status:
             continue
 

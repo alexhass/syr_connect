@@ -61,6 +61,8 @@ def command_status_key(signature: SyrConnectModelSignature, command: str) -> str
 
     Formats:
     - Alarm reset: "setALA" -> "getALM" or "getALA" (`alarm_status_key`)
+    - Manual regeneration: "setSIR" -> "getSIR", NeoSoft and LEX family "getRG1"
+      (`regeneration_status_key`)
     - Command of `COMMAND_STATUS_KEYS`: "setDEX" -> "getDSV"
     - Other commands: "setNOT" -> "getNOT"
 
@@ -73,6 +75,8 @@ def command_status_key(signature: SyrConnectModelSignature, command: str) -> str
     """
     if command == "setALA":
         return signature.alarm_status_key
+    if command == "setSIR":
+        return signature.regeneration_status_key
     return COMMAND_STATUS_KEYS.get(command, f"get{command[3:]}")
 
 
@@ -111,19 +115,30 @@ def build_reset_command(
     return command, clear_value
 
 
-def build_sir_command(status: SyrConnectStatus) -> tuple[str, int | str]:
+def build_sir_command(
+    signature: SyrConnectModelSignature, status: SyrConnectStatus, *, cloud: bool
+) -> tuple[str, int | str]:
     """Return the command that starts a manual regeneration (setSIR).
 
-    The value follows the format of getSIR:
-    - getSIR False or "false": "true"
-    - Any other getSIR (e.g. "1", 1): 0
+    With the XML API (cloud), the command is `regeneration_cloud_command` of the model;
+    the NeoSoft takes "dmSIR" with "true". setSIR takes a value in the format of
+    getSIR.
+
+    Formats:
+    - NeoSoft, cloud: ("dmSIR", "true")
+    - getSIR False or "false": ("setSIR", "true")
+    - Any other getSIR (e.g. "1", 1) or none: ("setSIR", 0)
 
     Args:
+        signature: Signature of the model
         status: Status of the device
+        cloud: True for the XML API (cloud), False for the local JSON API
 
     Returns:
-        ("setSIR", value)
+        (command, value)
     """
+    if cloud and signature.regeneration_cloud_command != "setSIR":
+        return signature.regeneration_cloud_command, "true"
     raw_sir = status.get("getSIR")
     if raw_sir is False or str(raw_sir).strip().lower() == "false":
         return "setSIR", "true"
@@ -133,6 +148,40 @@ def build_sir_command(status: SyrConnectStatus) -> tuple[str, int | str]:
 def is_microleakage_test_running(status: SyrConnectStatus) -> bool:
     """Return True if a microleakage test is running (getDSV 1)."""
     return str(status.get("getDSV")).strip() == "1"
+
+
+def is_regeneration_running(
+    signature: SyrConnectModelSignature, status: SyrConnectStatus
+) -> bool:
+    """Return True if the device reports a running regeneration (getRG1-3).
+
+    Only a model whose regeneration status key is getRG1 (NeoSoft, LEX family) tells
+    a running regeneration; getRG2 and getRG3 are the further tanks of the LEX.
+
+    Formats:
+    - getRG1 0, "0" or "False" (and getRG2, getRG3 alike): False
+    - NeoSoft, getRG1 1 or 2 (column 1 or 2 regenerates): True
+    - LEX, getRG2 "1" (tank 2 regenerates): True
+    - Models whose regeneration status key is not getRG1: False
+
+    Args:
+        signature: Signature of the model
+        status: Status of the device
+
+    Returns:
+        True while a regeneration runs
+    """
+    if signature.regeneration_status_key != "getRG1":
+        return False
+    for key in ("getRG1", "getRG2", "getRG3"):
+        value = status.get(key)
+        if value is not None and str(value).strip().lower() not in (
+            "",
+            "0",
+            "false",
+        ):
+            return True
+    return False
 
 
 def build_dex_command(status: SyrConnectStatus) -> tuple[str, int | str]:

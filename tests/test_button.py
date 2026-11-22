@@ -203,7 +203,7 @@ async def test_async_setup_entry(
                 "id": "device1",
                 "name": "Test Device",
                 "project_id": "project1",
-                "status": {"getSIR": 1, "getCNA": "LEXplus10S"},
+                "status": {"getRG1": "0", "getSIR": 1, "getCNA": "LEXplus10S"},
             }
         ]
     }
@@ -229,13 +229,13 @@ async def test_async_setup_entry_multiple_devices(
                 "id": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
-                "status": {"getSIR": 1, "getCNA": "LEXplus10S"},
+                "status": {"getRG1": "0", "getSIR": 1, "getCNA": "LEXplus10S"},
             },
             {
                 "id": "device2",
                 "name": "Device 2",
                 "project_id": "project1",
-                "status": {"getSIR": 1, "getCNA": "LEXplus10S"},
+                "status": {"getRG1": "0", "getSIR": 1, "getCNA": "LEXplus10S"},
             },
         ]
     }
@@ -407,14 +407,14 @@ async def test_async_setup_entry_skip_setsir_when_getsir_missing(
     assert len(entities) == 0
 
 
-async def test_async_setup_entry_create_setsir_when_getsir_present(
+async def test_async_setup_entry_creates_setsir_when_getrg1_present(
     hass: HomeAssistant,
     create_mock_entry_with_coordinator: Callable[
         ..., tuple[MockConfigEntry, MagicMock]
     ],
     mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
-    """Test async_setup_entry creates setSIR button when getSIR is available."""
+    """The LEX gets the setSIR button when it reports getRG1, also without getSIR."""
     data = {
         "devices": [
             {
@@ -422,8 +422,8 @@ async def test_async_setup_entry_create_setsir_when_getsir_present(
                 "name": "Test Device",
                 "project_id": "project1",
                 "status": {
-                    "getSIR": "1",  # getSIR is present - setSIR button should be created
-                    "getCNA": "LEXplus10S",  # model with maximum_regeneration_interval set
+                    "getRG1": "0",
+                    "getCNA": "LEXplus10S",
                 },
             }
         ]
@@ -463,18 +463,14 @@ async def test_async_setup_entry_no_getsir(
     assert len(entities) == 0
 
 
-async def test_async_setup_entry_creates_setsir_when_getsir_false(
+async def test_async_setup_entry_skips_setsir_without_getrg1(
     hass: HomeAssistant,
     create_mock_entry_with_coordinator: Callable[
         ..., tuple[MockConfigEntry, MagicMock]
     ],
     mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
-    """Test async_setup_entry creates a setSIR button when getSIR is 'false'.
-
-    getSIR='false' means the water softener is idle (not regenerating).
-    The button must still be created so the user can trigger a regeneration.
-    """
+    """The LEX has no setSIR button without getRG1, even if it reports getSIR."""
     data = {
         "devices": [
             {
@@ -489,7 +485,7 @@ async def test_async_setup_entry_creates_setsir_when_getsir_false(
     entities, async_add_entities = mock_add_entities()
     await async_setup_entry(hass, mock_config_entry, async_add_entities)
 
-    assert [e._command for e in entities] == ["setSIR"]
+    assert [e._command for e in entities] == []
 
 
 def _register_button(
@@ -653,7 +649,7 @@ async def test_async_setup_entry_registry_cleanup_exception_is_caught(
                 "model": _SYR_CONNECT_TEST_NEOSOFT_MODEL,
                 "name": "Device 1",
                 "project_id": "project1",
-                "status": {"getSIR": "false"},
+                "status": {"getRG1": "0", "getSIR": "false"},
             }
         ]
     }

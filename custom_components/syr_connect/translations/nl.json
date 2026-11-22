@@ -2022,6 +2022,9 @@
     "option_not_selectable": {
       "message": "{option} kan niet worden gekozen voor {entity}"
     },
+    "regeneration_running": {
+      "message": "Op het apparaat {device} loopt al een regeneratie"
+    },
     "set_value_failed": {
       "message": "{entity} kon niet worden ingesteld voor het apparaat {device}"
     },

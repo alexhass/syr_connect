@@ -180,6 +180,13 @@ class SyrConnectModelSignature:
     # Notification codes (getNOT) of the device family: raw code -> key of the meaning;
     # None means the codes are unknown
     not_codes: Mapping[str, str] | None = None
+    # Command of the manual regeneration (setSIR) with the XML API (cloud); the NeoSoft
+    # takes "dmSIR" instead
+    regeneration_cloud_command: str = "setSIR"
+    # Status key that tells the device has the manual regeneration (setSIR). The NeoSoft
+    # and the LEX family report getRG1, which also tells whether a regeneration is
+    # running (`is_regeneration_running()`).
+    regeneration_status_key: str = "getSIR"
     # Cloud API device subtype: the integer `sbt` attribute in GetProjectDeviceCollections
     # XML; only set when the subtype uniquely identifies this model within its dk/dkv family
     sbt: int | None = None

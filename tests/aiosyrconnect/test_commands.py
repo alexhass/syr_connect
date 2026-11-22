@@ -19,6 +19,7 @@ from custom_components.syr_connect.aiosyrconnect.commands import (
     filling_refusal,
     is_flag_enabled,
     is_microleakage_test_running,
+    is_regeneration_running,
     set_command,
 )
 from custom_components.syr_connect.aiosyrconnect.model_detection import (
@@ -45,6 +46,8 @@ _INVERTED_SIGNATURE = replace(
         }
     ),
 )
+_NEOSOFT_SIGNATURE = next(sig for sig in MODEL_SIGNATURES if sig.name == "neosoft2500")
+_LEX_SIGNATURE = next(sig for sig in MODEL_SIGNATURES if sig.name == "lexplus10s")
 
 
 def test_set_command() -> None:
@@ -63,6 +66,8 @@ def test_set_command() -> None:
         (UNKNOWN_MODEL_SIGNATURE, "setMFW", "getSWF"),
         (UNKNOWN_MODEL_SIGNATURE, "setNOT", "getNOT"),
         (UNKNOWN_MODEL_SIGNATURE, "setSIR", "getSIR"),
+        (_NEOSOFT_SIGNATURE, "setSIR", "getRG1"),
+        (_LEX_SIGNATURE, "setSIR", "getRG1"),
     ],
 )
 def test_command_status_key(
@@ -102,6 +107,7 @@ def test_build_reset_command() -> None:
     )
 
 
+@pytest.mark.parametrize("cloud", [False, True])
 @pytest.mark.parametrize(
     ("sir", "expected"),
     [
@@ -113,9 +119,57 @@ def test_build_reset_command() -> None:
         (None, 0),
     ],
 )
-def test_build_sir_command(sir: SyrConnectStatusValue, expected: int | str) -> None:
-    """The value of setSIR follows the format of getSIR."""
-    assert build_sir_command({"getSIR": sir}) == ("setSIR", expected)
+def test_build_sir_command(
+    sir: SyrConnectStatusValue, expected: int | str, cloud: bool
+) -> None:
+    """The value of setSIR follows the format of getSIR, with both APIs."""
+    assert build_sir_command(UNKNOWN_MODEL_SIGNATURE, {"getSIR": sir}, cloud=cloud) == (
+        "setSIR",
+        expected,
+    )
+
+
+@pytest.mark.parametrize(
+    ("status", "cloud", "expected"),
+    [
+        pytest.param({"getRG1": "0"}, True, ("dmSIR", "true"), id="cloud"),
+        pytest.param(
+            {"getRG1": 0, "getSIR": False}, False, ("setSIR", "true"), id="local"
+        ),
+        pytest.param({"getRG1": 0}, False, ("setSIR", 0), id="local-without-getsir"),
+    ],
+)
+def test_build_sir_command_neosoft(
+    status: SyrConnectStatus, cloud: bool, expected: tuple[str, int | str]
+) -> None:
+    """The NeoSoft takes dmSIR with the cloud and setSIR with the local API."""
+    assert build_sir_command(_NEOSOFT_SIGNATURE, status, cloud=cloud) == expected
+
+
+@pytest.mark.parametrize(
+    ("signature", "status", "expected"),
+    [
+        pytest.param(_NEOSOFT_SIGNATURE, {"getRG1": "0"}, False, id="idle"),
+        pytest.param(_NEOSOFT_SIGNATURE, {"getRG1": 1}, True, id="column-1"),
+        pytest.param(_NEOSOFT_SIGNATURE, {"getRG1": "2"}, True, id="column-2"),
+        pytest.param(_NEOSOFT_SIGNATURE, {"getRG1": ""}, False, id="empty"),
+        pytest.param(_NEOSOFT_SIGNATURE, {}, False, id="not-reported"),
+        pytest.param(_LEX_SIGNATURE, {"getRG1": "0", "getRG2": "1"}, True, id="lex-2"),
+        pytest.param(_LEX_SIGNATURE, {"getRG3": "True"}, True, id="lex-3"),
+        pytest.param(
+            _LEX_SIGNATURE,
+            {"getRG1": "0", "getRG2": "False", "getRG3": "0"},
+            False,
+            id="lex-idle",
+        ),
+        pytest.param(UNKNOWN_MODEL_SIGNATURE, {"getRG1": "1"}, False, id="other-model"),
+    ],
+)
+def test_is_regeneration_running(
+    signature: SyrConnectModelSignature, status: SyrConnectStatus, expected: bool
+) -> None:
+    """The NeoSoft and the LEX family tell a running regeneration in getRG1-3."""
+    assert is_regeneration_running(signature, status) is expected
 
 
 @pytest.mark.parametrize(

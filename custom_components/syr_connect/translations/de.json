@@ -2022,6 +2022,9 @@
     "option_not_selectable": {
       "message": "{option} kann für {entity} nicht gewählt werden"
     },
+    "regeneration_running": {
+      "message": "Auf dem Gerät {device} läuft bereits eine Regeneration"
+    },
     "set_value_failed": {
       "message": "Das Gerät {device} konnte {entity} nicht einstellen"
     },

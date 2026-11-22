@@ -38,6 +38,7 @@ from .commands import (
     filling_refusal,
     is_flag_enabled,
     is_microleakage_test_running,
+    is_regeneration_running,
     set_command,
 )
 from .const import API_SERVICES
@@ -172,6 +173,7 @@ __all__ = [
     "is_measuring_sensor_active",
     "is_microleakage_test_running",
     "is_network_error",
+    "is_regeneration_running",
     "is_spurious_bap",
     "is_value_true",
     "is_valve_closing",
