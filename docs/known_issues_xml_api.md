@@ -118,8 +118,8 @@ test fixtures, and in the parsing/encryption layers implemented here.
 - Impact: From the change to UTC up to this change, `_value_lar()` read the value as UTC for all devices, and the LEX showed the last regeneration one hour too late in winter time and two hours too late in summer time. Before, it read the value as local time for all devices, and the other devices showed it one or two hours too early.
 - Mitigation in this project:
   - `_value_lar()` in `custom_components/syr_connect/sensor.py` reads the value as UTC (`datetime.fromtimestamp(value, UTC)`), for the XML and the JSON API.
-  - The device profiles of the LEX Plus families (`devices/lexplus10s.py`, `devices/lexplus10sl.py`) set `local_time_timestamps`. For them, `_value_lar()` reads the value as local time in the time zone of Home Assistant, which gives the offset of that day, also across the change between summer and winter time. A LEX in another time zone than Home Assistant is shown off by the difference.
-  - Tests: `test_sensor_native_value_timestamp_is_utc`, `test_sensor_native_value_timestamp_in_local_time` and `test_lex_profiles_report_local_time_timestamps` in `tests/test_sensor.py`, `test_device_list_has_no_utc_offset` in `tests/aiosyrconnect/test_xml_parser.py`.
+  - The signatures of the LEX Plus families (`aiosyrconnect/model_detection.py`) set `local_time_timestamps`. For them, `_value_lar()` reads the value as local time in the time zone of Home Assistant, which gives the offset of that day, also across the change between summer and winter time. A LEX in another time zone than Home Assistant is shown off by the difference.
+  - Tests: `test_sensor_native_value_timestamp_is_utc`, `test_sensor_native_value_timestamp_in_local_time` and `test_lex_models_report_local_time_timestamps` in `tests/test_sensor.py`, `test_device_list_has_no_utc_offset` in `tests/aiosyrconnect/test_xml_parser.py`.
 - Not verified: devices and firmwares not listed above.
 
 ### 6. `getRTC` of the Trio DFR/LS is local time encoded as a UNIX timestamp

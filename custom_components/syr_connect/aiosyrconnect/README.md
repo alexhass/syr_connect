@@ -132,6 +132,23 @@ code = str(status.get(signature.alarm_status_key, "")).strip().upper()
 meaning = signature.ala_codes.get(code) if signature.ala_codes is not None else None
 ```
 
+## How a model reports its values
+
+Besides the detection, a signature tells how the model reports its values, so the
+caller can show them in the right unit:
+
+| Field | Meaning |
+| --- | --- |
+| `whu_units` | Water hardness unit codes (getWHU) of the family: code -> unit (`WHU_UNITS_LEX`, `WHU_UNITS_MUCO`, `WHU_UNITS_NEOSOFT`) |
+| `hardness_divisors` | The water hardness in another scale for a unit, e.g. tenths of mmol/l |
+| `hardness_in_dh` | The water hardness stays in °dH whatever getWHU is set to (`WHU_FACTORS_FROM_DH`) |
+| `value_divisors`, `value_factors` | Keys in another scale than on the other devices, e.g. ml or l/min |
+| `inverted_flags` | Flags that mean the opposite, e.g. "disabled" |
+| `local_time_timestamps` | getLAR is local wall time instead of UTC |
+| `bat_in_percent`, `bar_is_system_pressure` | getBAT in %, getBAR as the pressure of the heating system |
+| `cartridge_keys`, `cartridge_size_keys` | The key that holds the value of the installed cartridge type (getCRT) or size (getCRS) |
+| `statistics` | Measurement history series the cloud keeps (`get_statistics()`) |
+
 ## Status values
 
 The devices report many values in formats of their own, which differ per model and
