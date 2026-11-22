@@ -131,7 +131,7 @@ rules:
   
   test-coverage:
     status: done
-    comment: 3418 tests; 100 % line coverage of custom_components/syr_connect is required (pytest-cov) and reported to codecov
+    comment: 3456 tests; 100 % line coverage of custom_components/syr_connect is required (pytest-cov) and reported to codecov
 
   # GOLD TIER
   devices:

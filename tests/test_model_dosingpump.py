@@ -11,7 +11,6 @@ import pytest
 
 from custom_components.syr_connect.button import SyrConnectButton, _build_device_buttons
 from custom_components.syr_connect.data import SyrConnectDevice
-from custom_components.syr_connect.helpers.profile import get_sensor_ala_map
 from custom_components.syr_connect.models import MODELS
 from custom_components.syr_connect.select import _build_device_selects
 from custom_components.syr_connect.sensor import SyrConnectSensor
@@ -91,7 +90,7 @@ def test_dosingpump_canister_size_in_liters(
 )
 def test_dosingpump_alarm_codes(code: str, expected: str) -> None:
     """The dosing pump has its own alarm codes."""
-    assert get_sensor_ala_map(_SYR_CONNECT_TEST_DOSINGPUMP_MODEL, code)[0] == expected
+    assert _SYR_CONNECT_TEST_DOSINGPUMP_MODEL.alarm_meaning(code) == expected
 
 
 def test_dosingpump_alarm_reset_button(

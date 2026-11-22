@@ -76,18 +76,7 @@ from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .entity import SyrConnectEntity, async_add_device_entities
 from .helpers.device import get_device_model
-from .helpers.profile import (
-    get_cartridge_entity_keys,
-    get_cartridge_keys,
-    get_hardness_divisor,
-    get_hardness_factor,
-    get_model_supported_keys,
-    get_reported_cartridge_keys,
-    get_sensor_ala_map,
-    get_sensor_not_map,
-    get_sensor_wrn_map,
-    get_whu_unit,
-)
+from .helpers.profile import get_cartridge_entity_keys, get_model_supported_keys
 from .helpers.registry import find_entity_id, registry_cleanup
 from .models import SyrConnectModel
 
@@ -102,26 +91,23 @@ PARALLEL_UPDATES = 1
 # and the raw value of the sensor key and returns the native value.
 
 
-def _map_code(
-    model: SyrConnectModel, raw: Any, mapper: Any, no_code: str
-) -> str | None:
+def _map_code(raw: Any, mapped: str | None, no_code: str) -> str | None:
     """Map an alarm/notification/warning code to its translation key, else the raw code.
 
-    The codes of the device profile come first. A value they do not know that means
+    The meaning of the code for the model (`mapped`, from its code table) comes first. A value they do not know that means
     "no code" (`aiosyrconnect.is_code_active()`) is
     shown as no_code, e.g. the 255 of an acknowledgment over the JSON API, which the
     optimistic update shows until the device reports "FF". A blank value stays None.
     """
     if raw is None:
         return None
-    mapped, raw_code = mapper(model, raw)
     if mapped:
-        return str(mapped)
+        return mapped
     # A blank value stays a missing value (None), as before
     if str(raw).strip() != "" and not is_code_active(raw):
         return no_code
     # Model unknown or no mapping found: return the raw value 1:1
-    sval = str(raw_code)
+    sval = str(raw)
     return sval if sval.strip() != "" else None
 
 
@@ -139,21 +125,23 @@ def _value_ala(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
     """Alarm code (getALA): translation key based on the device model."""
-    return _map_code(sensor.device_model, value, get_sensor_ala_map, "no_alarm")
+    return _map_code(value, sensor.device_model.alarm_meaning(value), "no_alarm")
 
 
 def _value_not(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
     """Notification code (getNOT): translation key."""
-    return _map_code(sensor.device_model, value, get_sensor_not_map, "no_notification")
+    return _map_code(
+        value, sensor.device_model.notification_meaning(value), "no_notification"
+    )
 
 
 def _value_wrn(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
     """Warning code (getWRN): translation key."""
-    return _map_code(sensor.device_model, value, get_sensor_wrn_map, "no_warning")
+    return _map_code(value, sensor.device_model.warning_meaning(value), "no_warning")
 
 
 def _value_alm(
@@ -165,7 +153,7 @@ def _value_alm(
     codes of the model map it. An empty value means no alarm. Without a mapping the
     raw value is shown, the alarm memory without its prefix (`parse_alarm_memory()`).
     """
-    mapped, _ = get_sensor_ala_map(sensor.device_model, value)
+    mapped = sensor.device_model.alarm_meaning(value)
     if mapped is not None:
         return mapped
     if value is None or str(value).strip() == "":
@@ -532,7 +520,7 @@ def _value_whu(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
     """Water hardness unit (getWHU): raw value -> unit of the model's code family."""
-    return get_whu_unit(sensor.device_model, value)
+    return sensor.device_model.whu_unit(value)
 
 
 def _value_vol(
@@ -2015,7 +2003,7 @@ def _hidden_sensor_keys(status: SyrConnectStatus, model: SyrConnectModel) -> set
         key
         for key in _SYR_CONNECT_SENSOR_CONDITIONAL_KEYS
         if not is_sensor_visible(status, key, status.get(key))
-    } | (get_cartridge_keys(model) - get_reported_cartridge_keys(model, status))
+    } | (model.cartridge_dependent_keys - model.reported_cartridge_keys(status))
 
 
 async def async_setup_entry(
@@ -2092,7 +2080,7 @@ def _build_device_sensors(
     group_entities, handled_keys = _build_pa_group_sensors(
         coordinator, registry, device_id, device_name, status, supported_sensor_keys
     )
-    handled_keys |= get_cartridge_keys(model_info)
+    handled_keys |= model_info.cartridge_dependent_keys
     entities.extend(group_entities)
     sensor_count = len(group_entities)
 
@@ -2282,7 +2270,7 @@ def sensor_keys_for_status(
         model, "sensor", _SYR_CONNECT_SENSOR_SUPPORTED_KEYS
     )
     keys = ["dst"] if status.get("dst") is not None else []
-    handled_keys = get_cartridge_keys(model)
+    handled_keys = model.cartridge_dependent_keys
     for idx in _SYR_CONNECT_LEAK_PROTECTION_PROFILES:
         group_keys = _pa_group_keys(idx)
         handled_keys.update(group_keys)
@@ -2492,18 +2480,18 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         sensor_key = self._sensor_key
         # Set unit of measurement for water hardness sensors dynamically
         if sensor_key in ("getIWH", "getOWH"):
-            self._attr_native_unit_of_measurement = get_whu_unit(
-                self.device_model, self._status.get("getWHU")
+            self._attr_native_unit_of_measurement = self.device_model.whu_unit(
+                self._status.get("getWHU")
             )
 
         # A device that keeps the water hardness in °dH shows it in the unit of getWHU
         if sensor_key in ("getIWH", "getOHW"):
-            self._hardness_factor = get_hardness_factor(
-                self.device_model, self._status.get("getWHU")
+            self._hardness_factor = self.device_model.hardness_factor(
+                self._status.get("getWHU")
             )
             if self._hardness_factor != 1:
-                self._attr_native_unit_of_measurement = get_whu_unit(
-                    self.device_model, self._status.get("getWHU")
+                self._attr_native_unit_of_measurement = self.device_model.whu_unit(
+                    self._status.get("getWHU")
                 )
 
     def _apply_model_names(self) -> None:
@@ -2532,7 +2520,7 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         sensor_key = self._sensor_key
         description = self.entity_description
         hardness_divisor = (
-            get_hardness_divisor(model, self._status.get("getWHU"))
+            model.hardness_divisor(self._status.get("getWHU"))
             if sensor_key in ("getIWH", "getOWH")
             else 1
         )

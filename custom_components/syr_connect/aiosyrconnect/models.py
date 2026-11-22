@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from typing import Any, NotRequired, TypedDict
 
 from .settings import SETTING_OFF_VALUES, SETTING_VALUES
+from .units import WHU_FACTORS_FROM_DH
 
 # A value of the device status. The XML API reports text only; the local JSON API also
 # reports numbers, booleans and null, and lists or objects for a few keys (getCMS,
@@ -74,6 +75,23 @@ class SyrConnectStatistic:
     t: int
     # Unit of the measurement; the cloud answers with an empty <col /> without it
     unit: str
+
+
+def _code_meaning(codes: Mapping[str, str] | None, raw_code: Any) -> str | None:
+    """Return the meaning of a code in a code table, compared after strip().upper()."""
+    if raw_code is None or codes is None:
+        return None
+    return codes.get(str(raw_code).strip().upper())
+
+
+def _whu_code(raw_code: Any) -> int | None:
+    """Return the getWHU code as integer, or None for a missing or invalid value."""
+    if raw_code is None:
+        return None
+    try:
+        return int(float(raw_code))
+    except ValueError, TypeError, OverflowError:
+        return None
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -241,6 +259,145 @@ class SyrConnectModelSignature:
         if value is not None:
             return value
         return SETTING_OFF_VALUES.get(key)
+
+    def alarm_meaning(self, raw_code: Any) -> str | None:
+        """Return the meaning of an alarm code (getALA, getALM) of the model.
+
+        Args:
+            raw_code: The reported code, e.g. "A5", "0" or "LowSalt"; compared in upper
+                case
+
+        Returns:
+            The key of the meaning from `ala_codes`, or None for an unknown code and for
+            a model without alarm codes
+        """
+        return _code_meaning(self.ala_codes, raw_code)
+
+    def notification_meaning(self, raw_code: Any) -> str | None:
+        """Return the meaning of a notification code (getNOT) of the model.
+
+        Args:
+            raw_code: The reported code, e.g. "01" or "FF"
+
+        Returns:
+            The key of the meaning from `not_codes`, or None if it is unknown
+        """
+        return _code_meaning(self.not_codes, raw_code)
+
+    def warning_meaning(self, raw_code: Any) -> str | None:
+        """Return the meaning of a warning code (getWRN) of the model.
+
+        Args:
+            raw_code: The reported code, e.g. "01" or "FF"
+
+        Returns:
+            The key of the meaning from `wrn_codes`, or None if it is unknown
+        """
+        return _code_meaning(self.wrn_codes, raw_code)
+
+    def whu_unit(self, raw_code: Any) -> str | None:
+        """Water hardness unit (getWHU): raw code -> unit of the model's code family.
+
+        Args:
+            raw_code: The reported code, e.g. 0, "1" or "2.0"
+
+        Returns:
+            The unit (e.g. "°dH"), or None for a missing or unknown code and for a model
+            without water hardness unit codes
+        """
+        code = _whu_code(raw_code)
+        if code is None or self.whu_units is None:
+            return None
+        return self.whu_units.get(code)
+
+    def hardness_divisor(self, raw_code: Any) -> int:
+        """Divisor of the water hardness values (getIWH, getOWH) for a getWHU code.
+
+        Formats:
+        - NeoSoft, mmol/l (getWHU 1): "15" -> 1.5 mmol/l
+        - Other units and models: "15" -> 15
+
+        Args:
+            raw_code: The reported getWHU, e.g. 0, "1" or "2.0"
+
+        Returns:
+            The divisor, 1 if the device reports the values unscaled
+        """
+        code = _whu_code(raw_code)
+        if code is None:
+            return 1
+        return self.hardness_divisors.get(code, 1)
+
+    def hardness_range(self, key: str, raw_code: Any) -> tuple[int, int, int] | None:
+        """Return the range of a water hardness setting for the unit (getWHU).
+
+        Args:
+            key: The water hardness key, e.g. "getIWH"
+            raw_code: The reported getWHU, e.g. 0, "1" or "2.0"
+
+        Returns:
+            (lowest, highest, step) in the unit of the code, or None if the model has no
+            range for the key and unit
+        """
+        code = _whu_code(raw_code)
+        if code is None:
+            return None
+        return self.hardness_ranges.get(key, {}).get(code)
+
+    def hardness_factor(self, raw_code: Any) -> float:
+        """Factor from the water hardness the device keeps to the unit of getWHU.
+
+        Formats:
+        - MuCo filling, °fH (getWHU 2): 1.78480457 (the device keeps °dH)
+        - Other models, and a missing or unknown unit: 1.0 (the device keeps the unit)
+
+        Args:
+            raw_code: The reported getWHU, e.g. 0, "1" or "2.0"
+
+        Returns:
+            The number of units of getWHU per unit of the device value
+        """
+        if not self.hardness_in_dh:
+            return 1.0
+        unit = self.whu_unit(raw_code)
+        if unit is None:
+            return 1.0
+        return WHU_FACTORS_FROM_DH.get(unit, 1.0)
+
+    @property
+    def cartridge_dependent_keys(self) -> set[str]:
+        """Keys that only apply to one cartridge type or size of the model.
+
+        Formats:
+        - MuCo filling: HWE -> getOHW, HVE/HVE+ -> getLOT
+        - All-in-One+: HWE -> getOWH, custom size -> getFCS
+        """
+        return set(self.cartridge_keys.values()) | set(
+            self.cartridge_size_keys.values()
+        )
+
+    def reported_cartridge_keys(self, status: SyrConnectStatus) -> set[str]:
+        """Return the keys of the reported cartridge type (getCRT) and size (getCRS).
+
+        Args:
+            status: Status of the device
+
+        Returns:
+            The keys the model maps the reported cartridge type and size to, empty if
+            the model has no key for them
+        """
+        keys = set()
+        for status_key, key_map in (
+            ("getCRT", self.cartridge_keys),
+            ("getCRS", self.cartridge_size_keys),
+        ):
+            value = status.get(status_key)
+            if (
+                value is not None
+                and (key := key_map.get(str(value).strip())) is not None
+            ):
+                keys.add(key)
+        return keys
 
     @property
     def alarm_status_key(self) -> str:

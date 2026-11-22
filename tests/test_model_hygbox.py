@@ -11,7 +11,6 @@ import pytest
 
 from custom_components.syr_connect.button import SyrConnectButton, _build_device_buttons
 from custom_components.syr_connect.data import SyrConnectDevice
-from custom_components.syr_connect.helpers.profile import get_sensor_ala_map
 from custom_components.syr_connect.models import MODELS, SyrConnectModel
 from custom_components.syr_connect.select import (
     SyrConnectDiscreteSelect,
@@ -249,7 +248,7 @@ async def test_hygbox_inverted_switch_writes_the_opposite(
 )
 def test_hygbox_alarm_codes(code: str, expected: str) -> None:
     """The HygBox has its own alarm codes."""
-    assert get_sensor_ala_map(_SYR_CONNECT_TEST_HYGBOX_MODEL, code)[0] == expected
+    assert _SYR_CONNECT_TEST_HYGBOX_MODEL.alarm_meaning(code) == expected
 
 
 def test_hygbox_alarm_reset_button(

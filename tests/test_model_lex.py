@@ -16,7 +16,6 @@ from custom_components.syr_connect import (
     sensor as sensor_module,
 )
 from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
-from custom_components.syr_connect.helpers.profile import get_sensor_ala_map
 from custom_components.syr_connect.models import MODELS, SyrConnectModel, detect_model
 from custom_components.syr_connect.select import SyrConnectHardnessSelect
 from homeassistant.core import HomeAssistant
@@ -28,33 +27,33 @@ def _signature(name: str) -> SyrConnectModel:
 
 
 @pytest.mark.parametrize("name", ["l10", "lex100", "lexplus10", "lexplus10s"])
-def test_get_sensor_ala_map_lex_short_table(name: str) -> None:
+def test_alarm_meaning_lex_short_table(name: str) -> None:
     """i-LEX, LEX Plus 10 and LEX Plus 10 S know only the alarm codes 1-5."""
     model = _signature(name)
-    assert get_sensor_ala_map(model, "LowSalt")[0] == "alarm_salt_supply_low"
-    assert get_sensor_ala_map(model, "NoSalt")[0] == "alarm_salt_supply_empty"
-    assert get_sensor_ala_map(model, "1")[0] == "alarm_salt_supply_empty"
-    assert get_sensor_ala_map(model, "2")[0] == "alarm_pressure_too_low"
-    assert get_sensor_ala_map(model, "3")[0] == "alarm_pressure_too_high"
-    assert get_sensor_ala_map(model, "4")[0] == "alarm_pressure_sensor_faulty"
-    assert get_sensor_ala_map(model, "5")[0] == "alarm_valve_malfunction"
-    assert get_sensor_ala_map(model, "6") == (None, "6")
-    assert get_sensor_ala_map(model, "23") == (None, "23")
+    assert model.alarm_meaning("LowSalt") == "alarm_salt_supply_low"
+    assert model.alarm_meaning("NoSalt") == "alarm_salt_supply_empty"
+    assert model.alarm_meaning("1") == "alarm_salt_supply_empty"
+    assert model.alarm_meaning("2") == "alarm_pressure_too_low"
+    assert model.alarm_meaning("3") == "alarm_pressure_too_high"
+    assert model.alarm_meaning("4") == "alarm_pressure_sensor_faulty"
+    assert model.alarm_meaning("5") == "alarm_valve_malfunction"
+    assert model.alarm_meaning("6") is None
+    assert model.alarm_meaning("23") is None
 
 
-def test_get_sensor_ala_map_lex_full_table() -> None:
+def test_alarm_meaning_lex_full_table() -> None:
     """The LEX Plus 10 SL knows the full LEX alarm code table."""
     model = _signature("lexplus10sl")
-    assert get_sensor_ala_map(model, "LowSalt")[0] == "alarm_salt_supply_low"
-    assert get_sensor_ala_map(model, "NoSalt")[0] == "alarm_salt_supply_empty"
-    assert get_sensor_ala_map(model, "1")[0] == "alarm_salt_supply_empty"
-    assert get_sensor_ala_map(model, "2")[0] == "alarm_chlor_generator_fault"
-    assert get_sensor_ala_map(model, "3")[0] == "alarm_valve_malfunction"
-    assert get_sensor_ala_map(model, "4")[0] == "alarm_pressure_too_low"
-    assert get_sensor_ala_map(model, "5")[0] == "alarm_pressure_too_high"
-    assert get_sensor_ala_map(model, "6")[0] == "alarm_brine_level_low"
-    assert get_sensor_ala_map(model, "19")[0] == "alarm_pressure_sensor_faulty"
-    assert get_sensor_ala_map(model, "23")[0] == "alarm_leakage_volume_approaching"
+    assert model.alarm_meaning("LowSalt") == "alarm_salt_supply_low"
+    assert model.alarm_meaning("NoSalt") == "alarm_salt_supply_empty"
+    assert model.alarm_meaning("1") == "alarm_salt_supply_empty"
+    assert model.alarm_meaning("2") == "alarm_chlor_generator_fault"
+    assert model.alarm_meaning("3") == "alarm_valve_malfunction"
+    assert model.alarm_meaning("4") == "alarm_pressure_too_low"
+    assert model.alarm_meaning("5") == "alarm_pressure_too_high"
+    assert model.alarm_meaning("6") == "alarm_brine_level_low"
+    assert model.alarm_meaning("19") == "alarm_pressure_sensor_faulty"
+    assert model.alarm_meaning("23") == "alarm_leakage_volume_approaching"
 
 
 async def test_async_setup_entry_creates_hardness_selects_for_lex(

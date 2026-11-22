@@ -16,6 +16,7 @@ Modules:
 - models: devices, status values, cloud services, statistics series and model signatures
 - model_detection: signatures of the known models and their detection
 - settings: allowed raw values of the settings and the values that switch them off
+- units: water hardness units of the device families and their conversion
 - values: parsing of the status values, value tables and set commands of single keys
 - exceptions: errors raised by the clients
 - const: URLs, keys, client identity and the cloud services
@@ -66,13 +67,13 @@ from .models import (
     SyrConnectStatusValue,
 )
 from .settings import FLUSHING_TEMPERATURE_GAP, FLUSHING_TEMPERATURE_RANGES
+from .units import round_hardness
 from .values import (
     CAS_VALUE_MAP,
     CRS_VALUE_MAP,
     LE_VALUE_MAP,
     T1_VALUE_MAP,
     UL_VALUE_MAP,
-    WHU_FACTORS_FROM_DH,
     build_rtm_commands,
     build_set_ab_command,
     get_ab_value,
@@ -118,7 +119,6 @@ __all__ = [
     "T1_VALUE_MAP",
     "UL_VALUE_MAP",
     "UNKNOWN_MODEL_SIGNATURE",
-    "WHU_FACTORS_FROM_DH",
     "SyrConnectApiDevice",
     "SyrConnectAuthError",
     "SyrConnectConnectionError",
@@ -175,6 +175,7 @@ __all__ = [
     "parse_utc_time",
     "parse_vol_value",
     "parse_weekday_mask",
+    "round_hardness",
     "set_command",
     "to_float",
     "to_int",
