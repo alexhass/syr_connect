@@ -24,7 +24,9 @@ from .aiosyrconnect import (
     get_active_leak_protection_profiles,
     get_current_leak_protection_profile,
     get_rtm_value,
+    parse_float,
     parse_hygiene_module_value,
+    parse_int,
     parse_lng_value,
     round_hardness,
     set_command,
@@ -403,13 +405,7 @@ def _is_number(value: Any) -> bool:
     Returns:
         True for a value float() accepts, False for None, "" and anything else
     """
-    if value is None or value == "":
-        return False
-    try:
-        float(value)
-    except ValueError, TypeError:
-        return False
-    return True
+    return parse_float(value) is not None
 
 
 def _is_integer(value: Any) -> bool:
@@ -422,26 +418,9 @@ def _is_integer(value: Any) -> bool:
         value: Raw value from the device status
 
     Returns:
-        True for a value int(float()) accepts, False for None, "" and anything else
+        True for a value `parse_int()` accepts, False for None, "" and anything else
     """
-    return _to_int(value) is not None
-
-
-def _to_int(value: Any) -> int | None:
-    """Return a raw device value as an integer (e.g. "90" or "90.0" -> 90).
-
-    Args:
-        value: Raw value from the device status
-
-    Returns:
-        The integer, or None for None, "" and anything int(float()) does not accept
-    """
-    if value is None or value == "":
-        return None
-    try:
-        return int(float(value))
-    except ValueError, TypeError, OverflowError:
-        return None
+    return parse_int(value) is not None
 
 
 def _is_hygiene_module_value(value: Any) -> bool:
@@ -715,7 +694,7 @@ def _add_regeneration_selects(b: _SyrConnectSelectBuilder) -> None:
         b.add_numeric("getRPD", 1, max_rpd)
 
     # Regeneration mode (getRMO), only for a value >= 1
-    if b.allowed("getRMO", _is_integer) and int(to_float(b.status["getRMO"])) >= 1:
+    if b.allowed("getRMO", _is_integer) and (parse_int(b.status["getRMO"]) or 0) >= 1:
         b.add_discrete("getRMO", _code_options(b.model_info, "getRMO"))
 
 
@@ -1217,22 +1196,17 @@ class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
         """Return the currently selected option."""
         if self._device is None:
             return None
-        val = self._status.get(self._sensor_key)
-        if val is None or val == "":
+        num = parse_int(self._status.get(self._sensor_key))
+        if num is None:
             return None
-        try:
-            num = int(to_float(val))
-            # Return the option whose number (first token; options may carry a unit suffix,
-            # e.g. "20 s") equals the scaled display value. Same parsing as async_select_option.
-            # A prefix match would wrongly pick "20 s" for the value 2.
-            label = _format_scaled(num, self._scale)
-            for opt in self._options:
-                if opt.split(" ", 1)[0] == label:
-                    return opt
-        except ValueError, TypeError, AttributeError, OverflowError:
-            return None
-        else:
-            return label
+        # Return the option whose number (first token; options may carry a unit suffix,
+        # e.g. "20 s") equals the scaled display value. Same parsing as async_select_option.
+        # A prefix match would wrongly pick "20 s" for the value 2.
+        label = _format_scaled(num, self._scale)
+        for opt in self._options:
+            if opt.split(" ", 1)[0] == label:
+                return opt
+        return label
 
     def _raw_value(self, value: float) -> int:
         """Return the raw device value of the number of an option."""
@@ -1308,7 +1282,7 @@ class SyrConnectFlushingTemperatureSelect(SyrConnectNumericSelect):
 
     def _range(self) -> tuple[int, int] | None:
         """Return the lowest and highest temperature that can be selected now."""
-        water_type = _to_int(self._status.get("getWTY"))
+        water_type = parse_int(self._status.get("getWTY"))
         temperature_range = (
             FLUSHING_TEMPERATURE_RANGES.get(water_type)
             if water_type is not None
@@ -1318,7 +1292,7 @@ class SyrConnectFlushingTemperatureSelect(SyrConnectNumericSelect):
             return None
         low, high = temperature_range
         is_start = self._sensor_key == "getTTT"
-        other = _to_int(self._status.get("getF2W" if is_start else "getTTT"))
+        other = parse_int(self._status.get("getF2W" if is_start else "getTTT"))
         if other is not None:
             # Cold water: the start temperature is above the stop temperature; hot water:
             # below it
@@ -1342,7 +1316,7 @@ class SyrConnectFlushingTemperatureSelect(SyrConnectNumericSelect):
     @override
     def current_option(self) -> str | None:
         """Return the currently selected option."""
-        value = _to_int(self._status.get(self._sensor_key)) if self._device else None
+        value = parse_int(self._status.get(self._sensor_key)) if self._device else None
         if value is None:
             return None
         option = f"{value} {self._unit}"
@@ -1404,8 +1378,8 @@ class SyrConnectRangedHardnessSelect(SyrConnectHardnessSelect):
         if hardness_range is None:
             return []
         lowest, highest, step = hardness_range
-        if self._sensor_key != "getIWH" and _is_integer(self._status.get("getIWH")):
-            raw_water = int(to_float(self._status["getIWH"]))
+        raw_water = parse_int(self._status.get("getIWH"))
+        if self._sensor_key != "getIWH" and raw_water is not None:
             highest = min(highest, round_hardness(raw_water * self._factor()))
         unit = self._unit_label()
         return [
@@ -1450,13 +1424,12 @@ class SyrConnectRangedHardnessSelect(SyrConnectHardnessSelect):
             return
         raw_water = self._raw_value(float(option.split(maxsplit=1)[0]))
         for soft_key in ("getOHW", "getOWH"):
-            soft = self._status.get(soft_key)
+            soft = parse_int(self._status.get(soft_key))
             if (
                 self.device_model.hardness_range(soft_key, self._status.get("getWHU"))
                 is None
                 or soft is None
-                or not _is_integer(soft)
-                or int(to_float(soft)) <= raw_water
+                or soft <= raw_water
             ):
                 continue
             set_key = set_command(soft_key)
@@ -1524,18 +1497,14 @@ class SyrConnectRotationSelect(SyrConnectEntity, SelectEntity):
         """Return the currently selected option."""
         if self._device is None:
             return None
-        val = self._status.get("getSRO")
-        if val is None or val == "":
+        num = parse_int(self._status.get("getSRO"))
+        if num is None:
             return None
-        try:
-            num = int(to_float(val))
-            # Return matching raw option (string)
-            for opt in self._options:
-                if opt.startswith(f"{num}"):
-                    return opt
-            return str(num)
-        except ValueError, TypeError, AttributeError, OverflowError:
-            return None
+        # Return matching raw option (string)
+        for opt in self._options:
+            if opt.startswith(f"{num}"):
+                return opt
+        return str(num)
 
     @override
     async def async_select_option(self, option: str) -> None:
@@ -1632,9 +1601,8 @@ class SyrConnectDiscreteSelect(SyrConnectEntity, SelectEntity):
                 if mapped is None:
                     return opt
             return None
-        try:
-            num = int(to_float(val))
-        except ValueError, TypeError, OverflowError:
+        num = parse_int(val)
+        if num is None:
             return None
         for opt, mapped in self._options_map.items():
             if mapped == num:
@@ -1702,7 +1670,7 @@ class SyrConnectLanguageSelect(SyrConnectDiscreteSelect):
     @override
     def current_option(self) -> str | None:
         """Return the currently selected option, None without a known language."""
-        language = _to_int(parse_lng_value(self._status.get(self._sensor_key)))
+        language = parse_int(parse_lng_value(self._status.get(self._sensor_key)))
         for option, raw in self._options_map.items():
             if raw == language:
                 return option

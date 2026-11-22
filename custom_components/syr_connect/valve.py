@@ -19,7 +19,6 @@ from .aiosyrconnect import (
     get_ab_value,
     is_valve_closing,
     is_valve_opening,
-    to_float,
 )
 from .const import DOMAIN
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
@@ -94,28 +93,9 @@ def _build_device_valves(
     supported_valve_keys = get_model_supported_keys(
         get_device_model(device), "valve", set()
     )
-    ab_value = status.get("getAB") if "getAB" in supported_valve_keys else None
-    create = False
-    # If `getAB` looks like a control value (numeric 1/2 or boolean),
-    # treat the device as a valve that can be controlled.
-    try:
-        if ab_value is not None and ab_value != "":
-            if (
-                # Native boolean from JSON
-                isinstance(ab_value, bool)
-                # Boolean-like strings
-                or (
-                    isinstance(ab_value, str)
-                    and ab_value.strip().lower() in ("true", "false")
-                )
-                # Numeric representation (1=open, 2=closed)
-                or int(to_float(ab_value)) in (1, 2)
-            ):
-                create = True
-    except ValueError, TypeError, OverflowError:
-        create = False
-
-    if create:
+    # A getAB in one of the formats of the valve state (numeric 1/2 or boolean) means
+    # the device has a valve that can be controlled.
+    if "getAB" in supported_valve_keys and get_ab_value(status) is not None:
         entities.append(SyrConnectValve(coordinator, device_id, device_name))
     return entities
 

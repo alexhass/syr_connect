@@ -282,6 +282,60 @@ def to_int(value: SyrConnectStatusValue) -> int:
     raise TypeError(f"Not a number: {value!r}")
 
 
+def parse_float(value: SyrConnectStatusValue) -> float | None:
+    """Status value as float, or None if it is no number.
+
+    Formats:
+    - Text or number: "5.5", 5.5 -> 5.5
+    - Missing or no number: None, "", "x", [1] -> None
+    """
+    try:
+        return to_float(value)
+    except ValueError, TypeError:
+        return None
+
+
+def parse_int(value: SyrConnectStatusValue) -> int | None:
+    """Status value as integer, cut off like int(float()), or None if it is no number.
+
+    Formats:
+    - Integer: "90", "90.0", 90 -> 90
+    - Fraction: "90.5" -> 90
+    - Missing or no number: None, "", "x", "inf", [1] -> None
+    """
+    try:
+        return int(to_float(value))
+    except ValueError, TypeError, OverflowError:
+        return None
+
+
+def parse_code_value[V](
+    value_map: Mapping[int, V], value: SyrConnectStatusValue
+) -> V | None:
+    """Value of a raw code in a value table (`CAS_VALUE_MAP`, `LE_VALUE_MAP`, ...).
+
+    Formats:
+    - Known code: "2", "2.0", 2 -> value of code 2
+    - Unknown code or no integer: "0", "1.5", "", None -> None
+    """
+    number = parse_float(value)
+    if number is None or not number.is_integer():
+        return None
+    return value_map.get(int(number))
+
+
+def get_crs_value(status: SyrConnectStatus) -> float | None:
+    """Cartridge size (getCRS): raw code -> liters.
+
+    Formats:
+    - Fixed size: "3" -> 7
+    - Custom size (All-in-One+): "0" -> the liters of getFCS
+    """
+    if parse_float(status.get("getCRS")) == 0:
+        return parse_float(status.get("getFCS"))
+    return parse_code_value(CRS_VALUE_MAP, status.get("getCRS"))
+
+
 def parse_vol_value(value: SyrConnectStatusValue) -> SyrConnectStatusValue:
     """Clean a value by removing prefixes like 'Vol[L]6530' -> '6530'.
 
@@ -473,22 +527,6 @@ def parse_bat_value(value: Any) -> float | None:
     return None
 
 
-def parse_bat_percent(value: Any) -> int | None:
-    """Battery level (getBAT) of a model that reports it in % instead of a voltage.
-
-    Formats:
-    - SafeFloor: "85" -> 85
-
-    Returns None for a value that is no finite number.
-    """
-    if not isinstance(value, str | int | float):
-        return None
-    try:
-        return int(float(str(value).strip()))
-    except ValueError, OverflowError:
-        return None
-
-
 def parse_sta_value(value: SyrConnectStatusValue) -> str:
     """Status of the regeneration (getSTA): reported text or code -> key of the meaning.
 
@@ -611,21 +649,13 @@ def _iwh_from_cnd(status: SyrConnectStatus) -> int | float | None:
     written back into the status.
     """
     # Fallback: derive from getCND when available
-    raw_cnd = status.get("getCND")
-    if raw_cnd is None or raw_cnd == "":
-        return None
-    try:
-        cnd = to_float(raw_cnd)
-    except ValueError, TypeError:
+    cnd = parse_float(status.get("getCND"))
+    if cnd is None:
         return None
 
     # Normalize/ensure getWHU exists; default to 0 when missing or invalid
-    raw_whu = status.get("getWHU")
-    try:
-        whu = int(to_float(raw_whu)) if (raw_whu is not None and raw_whu != "") else 0
-    except ValueError, TypeError, OverflowError:
-        whu = 0
-    status["getWHU"] = whu
+    whu = parse_int(status.get("getWHU"))
+    status["getWHU"] = 0 if whu is None else whu
 
     # Compute and persist getIWH in °dH with the factor SYR uses
     iwh = cnd / CND_PER_DH
@@ -907,15 +937,13 @@ def parse_cyt_value(value: SyrConnectStatusValue) -> int | float | None:
     - NeoSoft, Sanibel UNO, Conel Clear Pro Soft: 45 -> 45
     - LEX, L20: "12:30" (minutes:seconds) -> 12.5
     """
-    if value is None or value == "":
-        return None
-    try:
-        if isinstance(value, str) and ":" in value:
+    if isinstance(value, str) and ":" in value:
+        try:
             minutes, seconds = value.strip().split(":")
             return int(minutes) + int(seconds) / 60
-        return int(to_float(value))
-    except ValueError, TypeError, OverflowError:
-        return None
+        except ValueError:
+            return None
+    return parse_int(value)
 
 
 def parse_dom_value(value: SyrConnectStatusValue) -> SyrConnectStatusValue:
@@ -973,14 +1001,12 @@ def parse_lar_value(
     Returns:
         The time of the last regeneration, None without one
     """
-    if value is None or value == "":
+    timestamp = parse_int(value)
+    if timestamp is None or timestamp == 0:
         return None
     try:
-        timestamp = int(to_float(value))
-        if timestamp == 0:
-            return None
         utc_time = datetime.fromtimestamp(timestamp, UTC)
-    except ValueError, TypeError, OverflowError:
+    except ValueError, OverflowError:
         return None
     if signature.local_time_timestamps:
         return utc_time.replace(tzinfo=time_zone)
@@ -995,15 +1021,7 @@ def parse_weekday_mask(value: SyrConnectStatusValue) -> int | None:
     - Not specified: "0" -> 0
     - Not a number: "", "x" -> None
     """
-    if value is None or value == "":
-        return None
-    try:
-        return int(to_float(value))
-    except ValueError, TypeError, OverflowError:
-        try:
-            return int(str(value).strip())
-        except ValueError, TypeError:
-            return None
+    return parse_int(value)
 
 
 def parse_tmz_value(value: SyrConnectStatusValue) -> timedelta | None:
@@ -1137,11 +1155,8 @@ def get_current_leak_protection_profile(status: SyrConnectStatus) -> str | None:
     - No getPRF, no number or no name of the profile: None
     """
     value = status.get("getPRF")
-    if value is None or value == "":
-        return None
-    try:
-        number = int(to_float(value))
-    except ValueError, TypeError, OverflowError:
+    number = parse_int(value)
+    if number is None:
         return None
     name = status.get(f"getPN{number}")
     return str(name) if name is not None else None
@@ -1184,13 +1199,7 @@ _VLV_OPENING = 21
 
 def _valve_state(status: SyrConnectStatus) -> int | None:
     """Return the valve motor state (getVLV) as number, or None."""
-    vlv = status.get("getVLV")
-    if vlv is None or vlv == "":
-        return None
-    try:
-        return int(to_float(vlv))
-    except ValueError, TypeError, OverflowError:
-        return None
+    return parse_int(status.get("getVLV"))
 
 
 def is_valve_opening(status: SyrConnectStatus) -> bool | None:

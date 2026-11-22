@@ -168,8 +168,8 @@ device expects:
 | Function | Value |
 | --- | --- |
 | `is_value_true()` | Flags: `"1"`, `"True"`, `True`, `1` |
+| `parse_float()`, `parse_int()` | Numbers: `"90.0"` -> 90, None instead of an error for a value that is no number |
 | `parse_net_value()`, `parse_bat_value()` | Voltages: `"ADC:950 6,16V"`, `"11,86"`, `"363"` |
-| `parse_bat_percent()` | Battery level in % instead of a voltage: `"85"` -> 85 |
 | `parse_avo_value()` | Flow: `"1655mL"` -> 1.655 l |
 | `parse_vol_value()`, `parse_lng_value()` | Values with a prefix or an annotation: `"Vol[L]6530"`, `"0 (0=Deutsch 1=English)"` |
 | `parse_sta_value()` | Status of the regeneration -> key of the meaning |
@@ -189,7 +189,17 @@ device expects:
 | `get_active_leak_protection_profiles()`, `get_current_leak_protection_profile()` | Active leak protection profiles (getPA1-8) with their names (getPN1-8), the name of getPRF |
 
 The tables `CAS_VALUE_MAP`, `CRS_VALUE_MAP`, `LE_VALUE_MAP`, `T1_VALUE_MAP` and
-`UL_VALUE_MAP` map a raw code to liters or hours:
+`UL_VALUE_MAP` map a raw code to liters or hours. `parse_code_value()` looks a reported
+code up; `get_crs_value()` also reads the custom cartridge size (getFCS) of code 0:
+
+```python
+from aiosyrconnect import LE_VALUE_MAP, parse_code_value
+
+liters = parse_code_value(LE_VALUE_MAP, status.get("getLE"))
+```
+
+`build_set_ab_command()` builds the command that opens or closes the valve, in the
+format the device reports getAB in:
 
 ```python
 from aiosyrconnect import build_set_ab_command

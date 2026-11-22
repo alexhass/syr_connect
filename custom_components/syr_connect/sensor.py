@@ -1,6 +1,6 @@
 """Sensor platform for SYR Connect."""
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 import logging
@@ -36,7 +36,6 @@ from homeassistant.util import dt as dt_util
 
 from .aiosyrconnect import (
     CAS_VALUE_MAP,
-    CRS_VALUE_MAP,
     LE_VALUE_MAP,
     LEAK_PROTECTION_PROFILES,
     T1_VALUE_MAP,
@@ -45,6 +44,7 @@ from .aiosyrconnect import (
     SyrConnectStatusValue,
     get_ab_value,
     get_battery_level,
+    get_crs_value,
     get_hardness_class,
     get_iwh_value,
     get_rtm_value,
@@ -54,12 +54,14 @@ from .aiosyrconnect import (
     is_value_true,
     parse_alarm_memory,
     parse_avo_value,
-    parse_bat_percent,
     parse_bat_value,
+    parse_code_value,
     parse_cyt_value,
     parse_dbd_value,
     parse_dom_value,
+    parse_float,
     parse_hygiene_module_value,
+    parse_int,
     parse_lar_value,
     parse_lng_value,
     parse_mbar_value,
@@ -69,7 +71,6 @@ from .aiosyrconnect import (
     parse_utc_time,
     parse_vol_value,
     parse_weekday_mask,
-    to_float,
     to_int,
 )
 from .binary_sensor import _SYR_CONNECT_BINARY_SENSOR_SUPPORTED_KEYS
@@ -166,8 +167,6 @@ def _value_avo(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
     """Current flow rate (getAVO): "1655mL" -> numeric value."""
-    if value is None or value == "":
-        return None
     return parse_avo_value(value)
 
 
@@ -207,7 +206,7 @@ def _value_bat(
     The unit is set from the model (`bat_in_percent`) in `SyrConnectSensor.__init__`.
     """
     if sensor.native_unit_of_measurement == UnitOfRatio.PERCENTAGE:
-        return parse_bat_percent(value)
+        return parse_int(value)
     return parse_bat_value(value)
 
 
@@ -286,10 +285,6 @@ def _value_net(
     - Safe-Tech+: "11,86" -> 11.86 V
     - Trio DFR/LS: "363" -> 3.63 V
     """
-    if value is None:
-        return None
-    if not isinstance(value, (str | int | float)):
-        return None
     return parse_net_value(value)
 
 
@@ -304,32 +299,17 @@ def _value_lar(
     return parse_lar_value(sensor.device_model, value, dt_util.get_default_time_zone())
 
 
-def _map_int(value_map: Mapping[int, Any], value: Any, default: int) -> Any:
-    """Look up a raw integer value in a value map.
-
-    A missing, empty or 0 value uses `default`. A value that is not an integer
-    returns None instead of raising, so a broken device value does not break the
-    sensor update (native_value then keeps the last known value).
-    """
-    try:
-        return value_map.get(int(value or default))
-    except ValueError, TypeError:
-        return None
-
-
 def _value_le(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
-    """Leak protection volume limit, present profile (getLE): raw value -> liters."""
-    return _map_int(LE_VALUE_MAP, value, 2)
+    """Leak protection volume limit, present profile (getLE): raw code -> liters."""
+    return parse_code_value(LE_VALUE_MAP, value)
 
 
 def _value_lng(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
     """Language (getLNG): strip a trailing annotation, "0 (0=Deutsch 1=English)" -> "0"."""
-    if value is None or (isinstance(value, str) and value.strip() == ""):
-        return None
     return parse_lng_value(value)
 
 
@@ -412,8 +392,8 @@ def _value_sta(
 def _value_t(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
-    """Maximum flow duration, present / absent profile (getT1): raw value -> hours."""
-    return _map_int(T1_VALUE_MAP, value, 1)
+    """Maximum flow duration, present / absent profile (getT1): raw code -> hours."""
+    return parse_code_value(T1_VALUE_MAP, value)
 
 
 def _value_tmz(
@@ -438,26 +418,20 @@ def _value_tmz(
 def _value_ul(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
-    """Leak protection volume limit, absent profile (getUL): raw value -> liters."""
-    return _map_int(UL_VALUE_MAP, value, 1)
+    """Leak protection volume limit, absent profile (getUL): raw code -> liters."""
+    return parse_code_value(UL_VALUE_MAP, value)
 
 
 def _value_cas(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
-    """Canister size (getCAS, dosing pump): raw value -> liters.
+    """Canister size (getCAS, dosing pump): raw code -> liters.
 
     Formats:
     - Known size: "2" -> 10 L
     - Not defined: "0" -> None
     """
-    if value is None or value == "":
-        return None
-    try:
-        raw = int(to_float(value))
-    except ValueError, TypeError, OverflowError:
-        return None
-    return CAS_VALUE_MAP.get(raw)
+    return parse_code_value(CAS_VALUE_MAP, value)
 
 
 def _value_hygiene_module(
@@ -476,21 +450,13 @@ def _value_hygiene_module(
 def _value_crs(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
-    """Cartridge size (getCRS): raw value -> liters.
+    """Cartridge size (getCRS): raw code -> liters (`get_crs_value()`).
 
     Formats:
     - Fixed size: "3" -> 7 L
     - Custom size (All-in-One+): "0" -> the liters of getFCS
     """
-    if value is None or value == "":
-        return None
-    try:
-        raw = int(to_float(value))
-    except ValueError, TypeError, OverflowError:
-        return None
-    if raw == 0:
-        return _to_float(status.get("getFCS"))
-    return CRS_VALUE_MAP.get(raw)
+    return get_crs_value(status)
 
 
 def _value_crt(
@@ -532,9 +498,7 @@ def _value_vol(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
     """Total volume (getVOL): strip a prefix like 'Vol[L]6530', then convert it as a number."""
-    if value is not None:
-        value = parse_vol_value(value)
-    return sensor.numeric_value(value)
+    return sensor.numeric_value(parse_vol_value(value))
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -2302,18 +2266,8 @@ def _is_cnd_class_wanted(
     """Return True if the device gets the water hardness range computed from getCND."""
     return (
         "getCND_class" in supported_sensor_keys
-        and _to_float(status.get("getCND")) is not None
+        and parse_float(status.get("getCND")) is not None
     )
-
-
-def _to_float(value: Any) -> float | None:
-    """Return the value as float, or None if it is missing or not a number."""
-    if value is None or value == "":
-        return None
-    try:
-        return float(value)
-    except ValueError, TypeError:
-        return None
 
 
 # Value rules of single keys, on the value as number (None if it is no number)
@@ -2366,7 +2320,7 @@ def _is_sensor_wanted(
         return False
 
     value_rule = _SYR_CONNECT_SENSOR_VALUE_RULES.get(key)
-    if value_rule is not None and not value_rule(_to_float(value)):
+    if value_rule is not None and not value_rule(parse_float(value)):
         return False
 
     return isinstance(value, int | float | str)

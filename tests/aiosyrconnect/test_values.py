@@ -16,12 +16,14 @@ from custom_components.syr_connect.aiosyrconnect.model_detection import (
     UNKNOWN_MODEL_SIGNATURE,
 )
 from custom_components.syr_connect.aiosyrconnect.values import (
+    LE_VALUE_MAP,
     LEAK_PROTECTION_PROFILES,
     build_rtm_commands,
     build_set_ab_command,
     get_ab_value,
     get_active_leak_protection_profiles,
     get_battery_level,
+    get_crs_value,
     get_current_leak_protection_profile,
     get_current_mac,
     get_hardness_class,
@@ -36,12 +38,14 @@ from custom_components.syr_connect.aiosyrconnect.values import (
     is_valve_opening,
     parse_alarm_memory,
     parse_avo_value,
-    parse_bat_percent,
     parse_bat_value,
+    parse_code_value,
     parse_cyt_value,
     parse_dbd_value,
     parse_dom_value,
+    parse_float,
     parse_hygiene_module_value,
+    parse_int,
     parse_lar_value,
     parse_lng_value,
     parse_mbar_value,
@@ -184,10 +188,10 @@ def test_get_sensor_bat_value_variants() -> None:
 @pytest.mark.parametrize(
     ("raw", "expected"),
     [
-        ("85", 85),  # SafeFloor (XML)
-        (" 85 ", 85),
+        ("85", 85),  # XML
         (85, 85),  # JSON
-        ("85.0", 85),
+        (" 85 ", 85),
+        ("85.9", 85),
         ("", None),
         ("not-a-number", None),
         ("inf", None),
@@ -196,9 +200,61 @@ def test_get_sensor_bat_value_variants() -> None:
         ([85], None),
     ],
 )
-def test_parse_bat_percent(raw: Any, expected: int | None) -> None:
-    """A battery level in % (getBAT) is an integer; anything else gives no value."""
-    assert parse_bat_percent(raw) == expected
+def test_parse_int(raw: Any, expected: int | None) -> None:
+    """A status value is an integer, cut off like int(float()); anything else gives None."""
+    assert parse_int(raw) == expected
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("5.5", 5.5),
+        (5, 5.0),
+        ("", None),
+        ("x", None),
+        (None, None),
+        ([5], None),
+    ],
+)
+def test_parse_float(raw: Any, expected: float | None) -> None:
+    """A status value is a float; anything else gives None instead of an error."""
+    assert parse_float(raw) == expected
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("2", 100),  # XML
+        (2, 100),  # JSON
+        ("2.0", 100),
+        ("0", None),  # no known code, the same over both APIs
+        (0, None),
+        ("1.5", None),
+        ("", None),
+        (None, None),
+        ("inf", None),
+    ],
+)
+def test_parse_code_value(raw: Any, expected: int | None) -> None:
+    """A raw code is looked up only as an integer; 0 and fractions are no codes."""
+    assert parse_code_value(LE_VALUE_MAP, raw) == expected
+
+
+@pytest.mark.parametrize(
+    ("status", "expected"),
+    [
+        ({"getCRS": "3"}, 7),
+        ({"getCRS": 3}, 7),
+        ({"getCRS": "0", "getFCS": "20"}, 20.0),
+        ({"getCRS": "0"}, None),
+        ({"getCRS": "9"}, None),
+        ({"getCRS": ""}, None),
+        ({}, None),
+    ],
+)
+def test_get_crs_value(status: SyrConnectStatus, expected: float | None) -> None:
+    """The cartridge size is the liters of the code, for code 0 the liters of getFCS."""
+    assert get_crs_value(status) == expected
 
 
 def test_get_sensor_net_value_safe_t_plus_format() -> None:
