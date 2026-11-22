@@ -147,36 +147,27 @@ def test_build_sir_command_neosoft(
 
 
 @pytest.mark.parametrize(
-    ("signature", "status", "expected"),
+    ("status", "expected"),
     [
-        pytest.param(_NEOSOFT_SIGNATURE, {"getRG1": "0"}, False, id="idle"),
-        pytest.param(_NEOSOFT_SIGNATURE, {"getRG1": 1}, True, id="column-1"),
-        pytest.param(_NEOSOFT_SIGNATURE, {"getRG1": "2"}, True, id="column-2"),
-        pytest.param(_NEOSOFT_SIGNATURE, {"getRG1": ""}, False, id="empty"),
-        pytest.param(_NEOSOFT_SIGNATURE, {}, False, id="not-reported"),
+        pytest.param({"getRG1": "0", "getSIR": "1"}, False, id="idle"),
+        pytest.param({"getRG1": "0", "getSIR": "0"}, True, id="rinsing"),
+        pytest.param({"getRG1": "1", "getSIR": "1"}, True, id="tank-1"),
+        pytest.param({"getRG1": "0", "getRG2": "1"}, True, id="tank-2"),
+        pytest.param({"getRG3": "True"}, True, id="tank-3"),
+        pytest.param({"getRG1": 1}, True, id="neosoft-column-1"),
+        pytest.param({"getRG1": "2"}, True, id="neosoft-column-2"),
         pytest.param(
-            _LEX_SIGNATURE, {"getRG1": "0", "getSIR": "1"}, False, id="lex-idle"
+            {"getRG1": "0", "getRG2": "False", "getRG3": ""}, False, id="tanks-idle"
         ),
-        pytest.param(
-            _LEX_SIGNATURE, {"getRG1": "0", "getSIR": "0"}, True, id="lex-started"
-        ),
-        pytest.param(
-            _LEX_SIGNATURE, {"getRG1": "1", "getSIR": "1"}, False, id="lex-rg1"
-        ),
-        pytest.param(_LEX_SIGNATURE, {"getRG1": "0"}, False, id="lex-not-reported"),
-        pytest.param(UNKNOWN_MODEL_SIGNATURE, {"getSIR": 0}, True, id="sir-0"),
-        pytest.param(UNKNOWN_MODEL_SIGNATURE, {"getSIR": 1}, False, id="sir-1"),
-        pytest.param(UNKNOWN_MODEL_SIGNATURE, {"getSIR": False}, False, id="sir-false"),
-        pytest.param(
-            _NEOSOFT_SIGNATURE, {"getRG1": "0", "getSIR": 0}, False, id="neosoft-sir"
-        ),
+        pytest.param({"getSIR": 0}, True, id="sir-0"),
+        pytest.param({"getSIR": 1}, False, id="sir-1"),
+        pytest.param({"getSIR": False}, False, id="sir-false"),
+        pytest.param({}, False, id="not-reported"),
     ],
 )
-def test_is_regeneration_running(
-    signature: SyrConnectModelSignature, status: SyrConnectStatus, expected: bool
-) -> None:
-    """A regeneration runs while getSIR is 0, on the NeoSoft while getRG1 is not 0."""
-    assert is_regeneration_running(signature, status) is expected
+def test_is_regeneration_running(status: SyrConnectStatus, expected: bool) -> None:
+    """A regeneration runs while getSIR is 0 (rinsing) or getRG1-3 is not 0."""
+    assert is_regeneration_running(status) is expected
 
 
 @pytest.mark.parametrize(

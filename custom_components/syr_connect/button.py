@@ -91,7 +91,7 @@ class SyrConnectButtonEntityDescription(ButtonEntityDescription):
 
 async def _async_press_sir(press: _SyrConnectButtonPress) -> None:
     """Manual regeneration (setSIR, NeoSoft with the cloud dmSIR): start it unless one runs."""
-    if is_regeneration_running(press.model, press.status):
+    if is_regeneration_running(press.status):
         raise ServiceValidationError(
             translation_domain=DOMAIN,
             translation_key="regeneration_running",

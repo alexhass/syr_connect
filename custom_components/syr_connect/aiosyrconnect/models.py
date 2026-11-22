@@ -183,8 +183,8 @@ class SyrConnectModelSignature:
     # Command of the manual regeneration (setSIR) with the XML API (cloud); the NeoSoft
     # takes "dmSIR" instead
     regeneration_cloud_command: str = "setSIR"
-    # Status key that tells the device has the manual regeneration (setSIR) and whether
-    # a regeneration is running (`is_regeneration_running()`); the NeoSoft reports getRG1
+    # Status key that tells the device has the manual regeneration (setSIR); the NeoSoft
+    # reports getRG1
     regeneration_status_key: str = "getSIR"
     # Cloud API device subtype: the integer `sbt` attribute in GetProjectDeviceCollections
     # XML; only set when the subtype uniquely identifies this model within its dk/dkv family

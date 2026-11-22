@@ -150,37 +150,37 @@ def is_microleakage_test_running(status: SyrConnectStatus) -> bool:
     return str(status.get("getDSV")).strip() == "1"
 
 
-def is_regeneration_running(
-    signature: SyrConnectModelSignature, status: SyrConnectStatus
-) -> bool:
+def is_regeneration_running(status: SyrConnectStatus) -> bool:
     """Return True if the device reports a running regeneration.
 
-    The key is `regeneration_status_key` of the model. setSIR 0 starts a regeneration,
-    and getSIR stays 0 until its end and is 1 again when it has finished; the LEX
-    family sets getRG1 only about 20 minutes after the start.
+    A regeneration started with setSIR 0 runs in two phases: the device rinses first,
+    while the cloud still reports getSIR 0 as the pending value; then it regenerates
+    and reports getRG1, getRG2 or getRG3 (tank 1, 2 or 3) until the whole process
+    has finished.
 
     Formats:
     - getSIR "0" or 0: True
-    - getSIR "1", 1 or False: False
-    - NeoSoft, getRG1 0, "0" or "False": False
-    - NeoSoft, getRG1 1 or 2 (column 1 or 2 regenerates): True
-    - Key not reported: False
+    - getRG1, getRG2 or getRG3 1 or "1" (NeoSoft also 2, column 2): True
+    - getSIR "1", 1 or False, getRG1-3 0, "0", "False" or not reported: False
 
     Args:
-        signature: Signature of the model
         status: Status of the device
 
     Returns:
         True while a regeneration runs
     """
-    key = signature.regeneration_status_key
-    value = status.get(key)
-    if value is None:
-        return False
-    text = str(value).strip().lower()
-    if key == "getSIR":
-        return text == "0"
-    return text not in ("", "0", "false")
+    sir = status.get("getSIR")
+    if sir is not None and str(sir).strip() == "0":
+        return True
+    for key in ("getRG1", "getRG2", "getRG3"):
+        value = status.get(key)
+        if value is not None and str(value).strip().lower() not in (
+            "",
+            "0",
+            "false",
+        ):
+            return True
+    return False
 
 
 def build_dex_command(status: SyrConnectStatus) -> tuple[str, int | str]:

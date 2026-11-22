@@ -205,14 +205,27 @@ async def test_lex_regeneration_button_sends_setsir(
     coordinator.async_set_device_value.assert_awaited_once_with("device1", "setSIR", 0)
 
 
-async def test_lex_regeneration_button_refused_while_getsir_is_0(
+@pytest.mark.parametrize(
+    "status",
+    [
+        # Rinsing: the cloud keeps setSIR 0 as the pending value of getSIR
+        pytest.param(
+            {"getRG1": "0", "getRG2": "0", "getRG3": "0", "getSIR": "0"},
+            id="rinsing",
+        ),
+        # Regenerating: getSIR is 1 again, getRG1 reports the regeneration
+        pytest.param(
+            {"getRG1": "1", "getRG2": "0", "getRG3": "0", "getSIR": "1"},
+            id="regenerating",
+        ),
+    ],
+)
+async def test_lex_regeneration_button_refused_while_a_regeneration_runs(
     create_mock_coordinator: Callable[..., MagicMock],
+    status: dict[str, Any],
 ) -> None:
-    """No regeneration is started while getSIR is 0, before getRG1 reports it."""
-    button, coordinator = _lex_button(
-        create_mock_coordinator,
-        {"getRG1": "0", "getRG2": "0", "getRG3": "0", "getSIR": "0"},
-    )
+    """No regeneration is started while the LEX rinses or regenerates."""
+    button, coordinator = _lex_button(create_mock_coordinator, status)
 
     with pytest.raises(ServiceValidationError) as exc_info:
         await button.async_press()
