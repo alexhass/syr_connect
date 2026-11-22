@@ -134,6 +134,7 @@ config/
       ├── manifest.json
       ├── aiosyrconnect/
       │  ├── __init__.py
+      │  ├── codes.py
       │  ├── const.py
       │  ├── exceptions.py
       │  ├── http_client.py
@@ -141,6 +142,7 @@ config/
       │  ├── model_detection.py
       │  ├── models.py
       │  ├── py.typed
+      │  ├── values.py
       │  ├── xml_api.py
       │  ├── xml_checksum.py
       │  ├── xml_encryption.py
@@ -165,8 +167,7 @@ config/
       │  ├── device.py
       │  ├── integration.py
       │  ├── profile.py
-      │  ├── registry.py
-      │  └── values.py
+      │  └── registry.py
       ├── icons.json
       ├── migrations.py
       ├── devices/
