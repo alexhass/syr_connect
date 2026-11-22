@@ -688,7 +688,12 @@ def test_get_battery_level(status: SyrConnectStatus, expected: int | None) -> No
         ({"getBAT": "363"}, 80, False),
         ({"getBAT": "0"}, 0, False),
         ({}, 0, False),
-        ({"getBAT": "6,11 4,38"}, 0, False),
+        ({"getBAT": "6,11 4,38 3,90"}, 0, True),
+        ({"getBAT": "9,36"}, "", True),
+        ({"getBAT": "0,00"}, 0, False),
+        ({"getBAT": "363"}, "0", True),
+        ({"getBAT": 645}, 0, True),
+        ({"getBAT": "n/a"}, 0, False),
     ],
 )
 def test_is_spurious_bap(

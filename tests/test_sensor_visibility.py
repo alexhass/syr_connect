@@ -100,14 +100,20 @@ def test_is_value_true_infinity_returns_false() -> None:
 
 def test_is_sensor_visible_getbap_suppressed_when_zero_and_bat_positive() -> None:
     """getBAP=0 with getBAT>0 is suppressed (firmware exposes spurious % field)."""
-    assert is_sensor_visible({"getBAT": 4.5}, "getBAP", 0) is False
+    assert is_sensor_visible({"getBAT": 645}, "getBAP", 0) is False
 
 
 def test_is_sensor_visible_getbap_suppressed_when_string_zero_and_bat_positive() -> (
     None
 ):
     """getBAP='0' (string) with getBAT>0 is also suppressed."""
-    assert is_sensor_visible({"getBAT": "3.7"}, "getBAP", "0") is False
+    assert is_sensor_visible({"getBAT": "363"}, "getBAP", "0") is False
+
+
+def test_is_sensor_visible_getbap_suppressed_with_comma_voltage() -> None:
+    """getBAP=0 next to a Safe-T+ voltage with commas (getBAT "6,11 4,38 3,90") is suppressed."""
+    assert is_sensor_visible({"getBAT": "6,11 4,38 3,90"}, "getBAP", 0) is False
+    assert is_sensor_visible({"getBAT": "9,36"}, "getBAP", "0") is False
 
 
 def test_is_sensor_visible_getbap_not_suppressed_when_bat_absent() -> None:
@@ -127,16 +133,16 @@ def test_is_sensor_visible_getbap_not_suppressed_when_bat_non_numeric() -> None:
 
 def test_is_sensor_visible_getbap_suppressed_when_value_none_and_bat_positive() -> None:
     """getBAP=None triggers the TypeError branch; bap_zero=True → suppressed when getBAT>0."""
-    assert is_sensor_visible({"getBAT": 4.5}, "getBAP", None) is False
+    assert is_sensor_visible({"getBAT": 645}, "getBAP", None) is False
 
 
 def test_is_sensor_visible_getbap_suppressed_when_value_empty_string_and_bat_positive() -> (
     None
 ):
     """getBAP='' triggers the ValueError branch; bap_zero=True → suppressed when getBAT>0."""
-    assert is_sensor_visible({"getBAT": 4.5}, "getBAP", "") is False
+    assert is_sensor_visible({"getBAT": 645}, "getBAP", "") is False
 
 
 def test_is_sensor_visible_getbap_not_suppressed_when_nonzero_value() -> None:
     """getBAP=50 (non-zero) → bap_zero=False → not suppressed regardless of getBAT."""
-    assert is_sensor_visible({"getBAT": 4.5}, "getBAP", 50) is True
+    assert is_sensor_visible({"getBAT": 645}, "getBAP", 50) is True
