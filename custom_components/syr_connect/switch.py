@@ -9,7 +9,12 @@ from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .aiosyrconnect import SyrConnectError, is_value_true
+from .aiosyrconnect import (
+    SyrConnectError,
+    build_flag_command,
+    filling_refusal,
+    is_flag_enabled,
+)
 from .const import DOMAIN
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
@@ -158,10 +163,6 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
 
         self._sensor_key = sensor_key
         self.entity_description = _SYR_CONNECT_SWITCH_DESCRIPTIONS[sensor_key]
-        # The device reports the opposite of the switch, e.g. True means the function
-        # is disabled (getFD1-3, HygBox)
-        self._inverted = sensor_key in self.device_model.inverted_flags
-
         # Use a platform-specific suffix to avoid unique_id collision with the
         # binary_sensor that represents the same underlying key (getBUZ).
         # Only lowercase device_id/key, not entry_id (a case-sensitive ULID) -
@@ -180,9 +181,9 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
         value = self._status.get(self._sensor_key)
         if value is None:
             return None
-        # A reported but unknown value (e.g. empty) is shown as off
-        enabled = is_value_true(value)
-        return not enabled if self._inverted else enabled
+        # A reported but unknown value (e.g. empty) is shown as off; a flag of
+        # inverted_flags reports the opposite (getFD1-3, HygBox)
+        return is_flag_enabled(self.device_model, self._sensor_key, value)
 
     @override
     async def async_turn_on(self, **kwargs: Any) -> None:
@@ -202,23 +203,15 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
         Raises:
             ServiceValidationError: If the filling cannot be started.
         """
-        dfi = self._status.get("getDFI")
-        if dfi is not None:
-            dfi_inverted = "getDFI" in self.device_model.inverted_flags
-            if is_value_true(dfi) is not dfi_inverted:
-                raise ServiceValidationError(
-                    translation_domain=DOMAIN,
-                    translation_key="filling_blocked_by_filling_mode",
-                    translation_placeholders={
-                        "device": self._device_name,
-                        "entity": self._entity_name,
-                    },
-                )
-        sta = self._status.get("getSTA")
-        if self._sensor_key == "getIFL" and sta is not None and str(sta) != "0":
+        refusal = filling_refusal(self.device_model, self._status, self._sensor_key)
+        if refusal is not None:
             raise ServiceValidationError(
                 translation_domain=DOMAIN,
-                translation_key="filling_requires_standby",
+                translation_key=(
+                    "filling_blocked_by_filling_mode"
+                    if refusal == "filling_mode"
+                    else "filling_requires_standby"
+                ),
                 translation_placeholders={
                     "device": self._device_name,
                     "entity": self._entity_name,
@@ -232,22 +225,11 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
 
     async def _set_value(self, state: bool) -> None:
         """Set the boolean value via API."""
-        if self._inverted:
-            state = not state
-        # Mirror the exact type of the current getter value so the setter
-        # uses the same format the device expects.
-        current = self._status.get(self._sensor_key)
-        value: bool | int | str
-        if isinstance(current, bool):
-            value = state
-        elif isinstance(current, int):
-            value = 1 if state else 0
-        elif isinstance(current, str) and current.strip() in ("0", "1"):
-            value = "1" if state else "0"
-        else:
-            value = "True" if state else "False"
-        # key for setting: remove leading 'get' and prefix with 'set'
-        set_key = f"set{self._sensor_key[3:]}"
+        # The value follows the format the device reports, inverted for a flag of
+        # inverted_flags
+        set_key, value = build_flag_command(
+            self.device_model, self._status, self._sensor_key, state
+        )
         try:
             # The coordinator shows the value at once and rolls it back if the request fails
             await self.coordinator.async_set_device_value(

@@ -16,7 +16,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
-from .aiosyrconnect import SyrConnectError
+from .aiosyrconnect import SyrConnectError, build_trigger_command
 from .const import DOMAIN
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
@@ -226,7 +226,10 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
         )
         self._install_started = dt_util.utcnow()
         try:
-            await self.coordinator.async_set_device_value(self._device_id, "setUPG", "")
+            command, value = build_trigger_command("setUPG")
+            await self.coordinator.async_set_device_value(
+                self._device_id, command, value
+            )
         except SyrConnectError as err:
             self._install_started = None
             _LOGGER.error(
