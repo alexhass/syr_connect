@@ -216,6 +216,15 @@ _SYR_CONNECT_SELECT_TYPES: tuple[SyrConnectSelectEntityDescription, ...] = (
         key="getWTY",  # Water type (1=cold water, 2=hot water)
         entity_category=EntityCategory.CONFIG,
     ),
+    # --- Automatic backwash (RSA) ---
+    SyrConnectSelectEntityDescription(
+        key="getRSA",  # Backwash interval (days)
+        entity_category=EntityCategory.CONFIG,
+    ),
+    SyrConnectSelectEntityDescription(
+        key="getRSE",  # Backwash reminder interval (days)
+        entity_category=EntityCategory.CONFIG,
+    ),
     # --- Hygiene flushing (hygiene module, cold and hot water line) ---
     SyrConnectSelectEntityDescription(
         key="getCCF",  # Periodic flushing of the cold water line (days, 0=off)
@@ -646,6 +655,7 @@ def _build_device_selects(
     _add_safefloor_selects(builder)
     _add_hygbox_selects(builder)
     _add_hygiene_module_selects(builder)
+    _add_backwash_selects(builder)
     _add_dosing_pump_selects(builder)
     return builder.entities
 
@@ -860,6 +870,12 @@ def _add_hygiene_module_selects(b: _SyrConnectSelectBuilder) -> None:
                 off_value,
             )
         )
+
+
+def _add_backwash_selects(b: _SyrConnectSelectBuilder) -> None:
+    """Add the selects of the automatic backwash (RSA): backwash and reminder interval."""
+    b.offer_numeric_steps("getRSA")
+    b.offer_numeric_steps("getRSE")
 
 
 def _add_dosing_pump_selects(b: _SyrConnectSelectBuilder) -> None:

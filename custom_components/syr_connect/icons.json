@@ -158,6 +158,12 @@
       "getrpd": {
         "default": "mdi:calendar-clock"
       },
+      "getrsa": {
+        "default": "mdi:calendar-clock"
+      },
+      "getrse": {
+        "default": "mdi:calendar-clock"
+      },
       "getrtm": {
         "default": "mdi:clock-outline"
       },

@@ -172,6 +172,10 @@ SETTING_VALUES: Mapping[str, Sequence[int]] = {
             *range(60, 721, 30),
         }
     ),
+    # Backwash interval (getRSA) and backwash reminder interval (getRSE) of the automatic
+    # backwash in days: 1-365 in steps of 1
+    "getRSA": range(1, 366),
+    "getRSE": range(1, 366),
     "getRVT": _FILLING_VOLUMES,
     "getSCF": _HYGIENE_STAGNATION_DAYS,
     # Stagnation time of the stagnation flushing (getSTP, HygBox) in minutes: 1-23 hours in

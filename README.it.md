@@ -317,6 +317,7 @@ L'integrazione offre un monitoraggio completo dei dispositivi:
 - **Risciacquo igienico** (HygBox): Tipo d'acqua, tempo di stagnazione e volume di risciacquo, temperatura di avvio e di arresto, durata massima del risciacquo e risciacqui al giorno, intervallo e volume del risciacquo periodico, intervallo di sincronizzazione delle impostazioni.
 - **Risciacquo igienico** (modulo igienico, Safe-T Hygiene Module): Tempo di stagnazione, intervallo di risciacquo, limite di temperatura, durata massima e volume massimo di risciacquo della tubazione dell'acqua fredda e di quella dell'acqua calda.
 - **Dosaggio** (NeoDos Connect): Dimensione della tanica, liquido di dosaggio e modalità di funzionamento.
+- **Controlavaggio** (controlavaggio automatico RSA): Intervallo di controlavaggio e intervallo promemoria controlavaggio (1–365 giorni).
 
 #### Controllo della valvola
 

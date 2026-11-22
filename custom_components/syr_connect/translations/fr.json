@@ -530,6 +530,12 @@
       "getrpd": {
         "name": "Intervalle de régénération"
       },
+      "getrsa": {
+        "name": "Intervalle de contre-lavage"
+      },
+      "getrse": {
+        "name": "Intervalle de rappel de contre-lavage"
+      },
       "getrtm": {
         "name": "Heure de régénération"
       },

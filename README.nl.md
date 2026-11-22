@@ -317,6 +317,7 @@ De integratie biedt een uitgebreide bewaking van de apparaten:
 - **Hygiënespoeling** (HygBox): Watertype, stagnatietijd en spoelvolume, start- en stoptemperatuur, maximale spoelduur en spoelingen per dag, interval en spoelvolume van de periodieke spoeling, synchronisatie-interval van de instellingen.
 - **Hygiënespoeling** (hygiënemodule, Safe-T Hygiene Module): Stagnatietijd, spoelinterval, temperatuurgrens, maximale spoelduur en maximaal spoelvolume van de koud- en de warmwaterleiding.
 - **Dosering** (NeoDos Connect): Grootte van de jerrycan, doseervloeistof en bedrijfsmodus.
+- **Terugspoeling** (automatische terugspoeling RSA): Terugspoelinterval en terugspoelherinneringsinterval (1–365 dagen).
 
 #### Klepbediening
 

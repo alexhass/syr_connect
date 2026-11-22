@@ -530,6 +530,12 @@
       "getrpd": {
         "name": "Interwał regeneracji"
       },
+      "getrsa": {
+        "name": "Interwał płukania zwrotnego"
+      },
+      "getrse": {
+        "name": "Interwał przypomnienia o płukaniu zwrotnym"
+      },
       "getrtm": {
         "name": "Czas regeneracji"
       },

@@ -530,6 +530,12 @@
       "getrpd": {
         "name": "Intervalo de regeneração"
       },
+      "getrsa": {
+        "name": "Intervalo de retrolavagem"
+      },
+      "getrse": {
+        "name": "Intervalo de lembrete de retrolavagem"
+      },
       "getrtm": {
         "name": "Hora de regeneração"
       },

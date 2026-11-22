@@ -317,6 +317,7 @@ La integración ofrece una supervisión completa de los dispositivos:
 - **Purga de higiene** (HygBox): Tipo de agua, tiempo de estancamiento y volumen de purga, temperatura de inicio y de parada, duración máxima de la purga y purgas por día, intervalo y volumen de la purga periódica, intervalo de sincronización de los ajustes.
 - **Purga de higiene** (módulo de higiene, Safe-T Hygiene Module): Tiempo de estancamiento, intervalo de purga, límite de temperatura, duración máxima y volumen máximo de purga de la tubería de agua fría y de la de agua caliente.
 - **Dosificación** (NeoDos Connect): Tamaño del bidón, líquido de dosificación y modo de funcionamiento.
+- **Retrolavado** (retrolavado automático RSA): Intervalo de retrolavado e intervalo de recordatorio de retrolavado (1–365 días).
 
 #### Control de la válvula
 

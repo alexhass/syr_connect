@@ -67,10 +67,11 @@ SENSOR_SUPPORTED_KEYS = {
     "getWIP",
 }
 
-# getRSA/getRSD/getRSE deliberately excluded from SELECT_SUPPORTED_KEYS: their
-# value ranges (1-365 days, 1-100 s) are too large for a usable select
-# dropdown.
-SELECT_SUPPORTED_KEYS: set[str] = set()
+# getRSD (backwash duration) deliberately excluded from SELECT_SUPPORTED_KEYS
+SELECT_SUPPORTED_KEYS = {
+    "getRSA",
+    "getRSE",
+}
 
 SWITCH_SUPPORTED_KEYS = {
     "getBUZ",

@@ -317,6 +317,7 @@ Die Integration bietet eine umfangreiche Überwachung der Geräte:
 - **Hygienespülung** (HygBox): Wasserart, Stagnationszeit und Spülmenge, Start- und Stopptemperatur, maximale Spüldauer und Spülungen pro Tag, Intervall und Spülmenge der periodischen Spülung, Synchronisationsintervall der Einstellungen.
 - **Hygienespülung** (Hygienemodul, Safe-T Hygienemodul): Stagnationszeit, Spülintervall, Temperaturgrenze, maximale Spüldauer und maximale Spülmenge der Kalt- und der Warmwasserleitung.
 - **Dosierung** (NeoDos Connect): Gebindegröße, Dosiermittel und Betriebsart.
+- **Rückspülung** (Rückspülautomatik RSA): Rückspülintervall und Rückspülerinnerungsintervall (1–365 Tage).
 
 #### Ventilsteuerung
 

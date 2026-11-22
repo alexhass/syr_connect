@@ -530,6 +530,12 @@
       "getrpd": {
         "name": "Regenerationsintervall"
       },
+      "getrsa": {
+        "name": "Rückspülintervall"
+      },
+      "getrse": {
+        "name": "Rückspülerinnerungsintervall"
+      },
       "getrtm": {
         "name": "Regenerationsuhrzeit"
       },

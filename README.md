@@ -317,6 +317,7 @@ The integration provides comprehensive monitoring of the devices:
 - **Hygiene flushing** (HygBox): Water type, stagnation time and flushing volume, start and stop temperature, maximum flushing duration and flushings per day, interval and flushing volume of the periodic flushing, settings synchronization interval.
 - **Hygiene flushing** (hygiene module, Safe-T Hygiene module): Stagnation time, flushing interval, temperature limit, maximum flushing duration and maximum flushing volume of the cold and the hot water line.
 - **Dosing** (NeoDos Connect): Canister size, dosing liquid and operating mode.
+- **Backwash** (automatic backwash RSA): Backwash interval and backwash reminder interval (1–365 days).
 
 #### Valve control
 

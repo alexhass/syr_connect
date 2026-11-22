@@ -530,6 +530,12 @@
       "getrpd": {
         "name": "Intervallo di rigenerazione"
       },
+      "getrsa": {
+        "name": "Intervallo di controlavaggio"
+      },
+      "getrse": {
+        "name": "Intervallo promemoria controlavaggio"
+      },
       "getrtm": {
         "name": "Ora di rigenerazione"
       },

@@ -317,6 +317,7 @@ Integracja zapewnia kompleksowe monitorowanie urządzeń:
 - **Płukanie higieniczne** (HygBox): Rodzaj wody, czas stagnacji i objętość płukania, temperatura początkowa i końcowa, maksymalny czas płukania i liczba płukań na dzień, interwał i objętość płukania okresowego, interwał synchronizacji ustawień.
 - **Płukanie higieniczne** (moduł higieniczny, Safe-T Hygiene Module): Czas stagnacji, interwał płukania, limit temperatury, maksymalny czas i maksymalna objętość płukania przewodu wody zimnej i przewodu wody ciepłej.
 - **Dozowanie** (NeoDos Connect): Rozmiar kanistra, płyn dozujący i tryb pracy.
+- **Płukanie zwrotne** (automatyczne płukanie zwrotne RSA): Interwał płukania zwrotnego i interwał przypomnienia o płukaniu zwrotnym (1–365 dni).
 
 #### Sterowanie zaworem
 

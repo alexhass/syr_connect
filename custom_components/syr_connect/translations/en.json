@@ -530,6 +530,12 @@
       "getrpd": {
         "name": "Regeneration interval"
       },
+      "getrsa": {
+        "name": "Backwash interval"
+      },
+      "getrse": {
+        "name": "Backwash reminder interval"
+      },
       "getrtm": {
         "name": "Regeneration time"
       },

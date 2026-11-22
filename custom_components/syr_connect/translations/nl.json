@@ -530,6 +530,12 @@
       "getrpd": {
         "name": "Regeneratie-interval"
       },
+      "getrsa": {
+        "name": "Terugspoelinterval"
+      },
+      "getrse": {
+        "name": "Terugspoelherinneringsinterval"
+      },
       "getrtm": {
         "name": "Regeneratietijd"
       },

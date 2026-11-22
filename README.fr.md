@@ -317,6 +317,7 @@ L'intégration offre une surveillance complète des appareils :
 - **Rinçage d'hygiène** (HygBox) : Type d'eau, temps de stagnation et volume de rinçage, température de démarrage et d'arrêt, durée maximale de rinçage et rinçages par jour, intervalle et volume du rinçage périodique, intervalle de synchronisation des réglages.
 - **Rinçage d'hygiène** (module d'hygiène, Safe-T Hygiene Module) : Temps de stagnation, intervalle de rinçage, limite de température, durée maximale et volume maximal de rinçage de la conduite d'eau froide et de celle d'eau chaude.
 - **Dosage** (NeoDos Connect) : Taille du bidon, liquide de dosage et mode de fonctionnement.
+- **Contre-lavage** (contre-lavage automatique RSA) : Intervalle de contre-lavage et intervalle de rappel de contre-lavage (1–365 jours).
 
 #### Commande de la vanne
 
