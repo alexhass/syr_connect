@@ -184,7 +184,7 @@ device expects:
 | `parse_alarm_memory()` | Alarm memory without the `Alarms:` prefix |
 | `is_measuring_sensor_active()` | getTSD, getPSD, getCSD: "0" means active before dk 1100, "True" from dk 1100 |
 | `is_valve_opening()`, `is_valve_closing()` | Valve motion: getVLV 21 opens, 11 closes |
-| `get_local_serial()`, `get_current_mac()` | Serial number of a local device (getSRN, else getFRN), MAC address of the active connection |
+| `get_serial_number()`, `get_current_mac()` | Serial number (getSRN), MAC address of the active connection |
 | `get_active_leak_protection_profiles()`, `get_current_leak_protection_profile()` | Active leak protection profiles (getPA1-8) with their names (getPN1-8), the name of getPRF |
 
 The tables `CAS_VALUE_MAP`, `CRS_VALUE_MAP`, `LE_VALUE_MAP`, `T1_VALUE_MAP` and
