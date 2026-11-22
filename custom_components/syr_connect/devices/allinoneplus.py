@@ -14,7 +14,7 @@ are listed, unlike the shared global allowlists of the platforms which have to
 cover every supported model at once.
 """
 
-from . import WHU_UNITS_MUCO, SyrConnectDeviceProfile
+from . import SyrConnectDeviceProfile
 
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
@@ -146,30 +146,14 @@ HARDNESS_RANGES = {
 
 
 PROFILE = SyrConnectDeviceProfile(
-    bar_is_system_pressure=True,
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
-    cartridge_keys={
-        "0": "getOWH",
-    },
-    cartridge_size_keys={
-        "0": "getFCS",
-    },
     hardness_ranges=HARDNESS_RANGES,
-    # The automatic filling mode (getDFI) is 0 = enabled, 1 = disabled
-    inverted_switches={
-        "getDFI",
-    },
     select=SELECT_SUPPORTED_KEYS,
     select_options={
         "getRMT": SELECT_RMT_OPTIONS,
     },
     sensor=SENSOR_SUPPORTED_KEYS,
-    sensor_divisors={
-        "getCFV": 1000,
-        "getLFV": 1000,
-    },
     switch=SWITCH_SUPPORTED_KEYS,
     valve=VALVE_SUPPORTED_KEYS,
-    whu_units=WHU_UNITS_MUCO,
 )

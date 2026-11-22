@@ -17,7 +17,7 @@ from custom_components.syr_connect import (
     update,
     valve,
 )
-from custom_components.syr_connect.models import MODELS
+from custom_components.syr_connect.models import MODELS, SyrConnectModel
 
 # The profiles of all device files, keyed by module name.
 _DEVICE_PROFILES = {
@@ -49,12 +49,13 @@ def test_device_file_keys_have_descriptions(device_file: str, platform: str) -> 
     assert keys <= _DESCRIBED_KEYS[platform]
 
 
-@pytest.mark.parametrize("device_file", sorted(_DEVICE_PROFILES))
-def test_device_file_statistics_belong_to_its_sensors(device_file: str) -> None:
-    """Every measurement history series of a device file is one of its sensors, once."""
-    profile = _DEVICE_PROFILES[device_file]
-    keys = [statistic.key for statistic in profile.statistics]
-    assert set(keys) <= (profile.sensor or set())
+@pytest.mark.parametrize("model", MODELS, ids=lambda model: model.name)
+def test_model_statistics_belong_to_its_sensors(model: SyrConnectModel) -> None:
+    """Every measurement history series of a model is one of its sensors, once."""
+    keys = [statistic.key for statistic in model.statistics]
+    profile = model.device_profile
+    sensors = profile.sensor if profile is not None else None
+    assert set(keys) <= (sensors or set()), model.name
     assert len(keys) == len(set(keys))
 
 

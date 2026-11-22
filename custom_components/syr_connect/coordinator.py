@@ -873,8 +873,8 @@ class SyrConnectStatisticsCoordinator(DataUpdateCoordinator[None]):
 
     A SafeFloor measures every getWMP seconds but connects to the cloud only every
     getRCP seconds (e.g. every 4 days), so its status and sensor entities only see
-    the latest measurement. The device profile lists the series the cloud keeps
-    (`SyrConnectDeviceProfile.statistics`); see "SafeFloor measurement history" in
+    the latest measurement. The model lists the series the cloud keeps
+    (`SyrConnectModelSignature.statistics`); see "SafeFloor measurement history" in
     docs/syrconnect-protocol.md.
 
     Home Assistant can not change the past states of an entity, and the recorder
@@ -933,10 +933,10 @@ class SyrConnectStatisticsCoordinator(DataUpdateCoordinator[None]):
             self.hass, self.hass.config.language, "entity", {DOMAIN}
         )
         for device in data["devices"]:
-            profile = get_device_model(device).device_profile
-            if profile is None or not profile.statistics or not device.get("available"):
+            statistics = get_device_model(device).statistics
+            if not statistics or not device.get("available"):
                 continue
-            for statistic in profile.statistics:
+            for statistic in statistics:
                 try:
                     measurements = await api.get_statistics(device["id"], statistic)
                 except SyrConnectError as err:

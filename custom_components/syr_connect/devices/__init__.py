@@ -5,8 +5,8 @@ constant per platform: `SENSOR_SUPPORTED_KEYS`, `SELECT_SUPPORTED_KEYS`,
 `SWITCH_SUPPORTED_KEYS`, `BINARY_SENSOR_SUPPORTED_KEYS`, `BUTTON_SUPPORTED_KEYS`,
 `VALVE_SUPPORTED_KEYS`. They are collected in the module's `PROFILE`, which the
 models of the family reference in `_SYR_CONNECT_MODEL_PROFILES` of `models.py`.
-A profile also lists the measurement history series the cloud keeps for the family
-(`statistics`), see "Statistics web services" in docs/syrconnect-protocol.md.
+How a device reports its values (units, scales, statistics) is part of its signature
+in the library (`aiosyrconnect/model_detection.py`).
 
 `helpers.profile.get_model_supported_keys()` uses these allowlists instead of the global
 ones, so the entities created for a device are limited to keys explicitly
@@ -20,81 +20,23 @@ in the platform modules (sensor.py, select.py, ...).
 from collections.abc import Mapping, Set as AbstractSet
 from dataclasses import dataclass, field
 
-from ..aiosyrconnect import SyrConnectStatistic
-
-# Water hardness unit codes (getWHU) of the device families: code -> unit. Each family
-# numbers the units differently, see docs/syrconnect-protocol.md.
-WHU_UNITS_LEX = {
-    0: "°dH",
-    1: "°fH",
-    2: "°e",
-    3: "mg/l CaCO₃",
-    4: "ppm",
-    5: "mmol/l",
-    6: "mval/l",
-}
-WHU_UNITS_MUCO = {
-    0: "°dH",
-    1: "°e",
-    2: "°fH",
-    3: "ppm",
-}
-WHU_UNITS_NEOSOFT = {
-    0: "°dH",
-    1: "mmol/l",
-    2: "°fH",
-}
-
-# Water hardness units as multiples of 1 °dH, for devices that keep the water hardness
-# in °dH and use getWHU only for the display (hardness_in_dh)
-WHU_FACTORS_FROM_DH = {
-    "°dH": 1.0,
-    "°e": 1.25216338,
-    "°fH": 1.78480457,
-    "ppm": 17.8480457,
-}
-
 
 @dataclass(frozen=True, kw_only=True)
 class SyrConnectDeviceProfile:
-    """Entity allowlists and statistics of a device family.
+    """Entity allowlists of a device family.
 
     Each allowlist field is named after its platform and replaces the platform's global
     allowlist completely; an empty set means "no entities of this platform", None
     keeps the global allowlist.
     """
 
-    # getBAR is the pressure of the system (heating system) instead of the inlet
-    # pressure; the device reports the inlet pressure in getIBA
-    bar_is_system_pressure: bool = False
-    # The device reports the battery (getBAT) in % instead of a voltage
-    bat_in_percent: bool = False
     binary_sensor: AbstractSet[str] | None
     button: AbstractSet[str] | None
-    # Keys that only apply to one cartridge type (getCRT): cartridge type code -> key;
-    # only the key of the reported cartridge type becomes an entity
-    cartridge_keys: Mapping[str, str] = field(default_factory=dict)
-    # Keys that only apply to one cartridge size (getCRS): cartridge size code -> key;
-    # only the key of the reported cartridge size becomes an entity
-    cartridge_size_keys: Mapping[str, str] = field(default_factory=dict)
-    # Water hardness values (getIWH, getOWH) the device reports in another scale for a
-    # getWHU code: code -> divisor, e.g. 10 for tenths of mmol/l; the display gets one
-    # decimal more per factor 10
-    hardness_divisors: Mapping[int, int] = field(default_factory=dict)
-    # The device reports and takes the water hardness (getIWH, getOHW) in °dH whatever
-    # getWHU is set to; getWHU is only the unit of the display, the values are converted
-    hardness_in_dh: bool = False
     # Water hardness selects (getIWH, getOWH) whose range depends on the unit: key ->
     # getWHU code -> (lowest, highest, step) in that unit
     hardness_ranges: Mapping[str, Mapping[int, tuple[int, int, int]]] = field(
         default_factory=dict
     )
-    # Switch keys the device reports inverted to the other devices: the reported
-    # value means the opposite of the switch state
-    inverted_switches: AbstractSet[str] = field(default_factory=frozenset)
-    # The device reports its timestamps (getLAR) as local wall time encoded as a UNIX
-    # timestamp instead of UTC, see docs/known_issues_xml_api.md, issue 5
-    local_time_timestamps: bool = False
     select: AbstractSet[str] | None
     # Select keys with an "off" option: key -> raw value written for "off"; a reported
     # value below the lowest other option is shown as "off"
@@ -103,20 +45,7 @@ class SyrConnectDeviceProfile:
     # raw values in ascending order, e.g. other durations for getRMT
     select_options: Mapping[str, list[int]] = field(default_factory=dict)
     sensor: AbstractSet[str] | None
-    # Sensor keys the device reports in another scale than the entity description:
-    # key -> divisor that replaces the description's divide_by, e.g. 1000 for
-    # milliliters instead of liters
-    sensor_divisors: Mapping[str, int] = field(default_factory=dict)
-    # Sensor keys the device reports in another scale than the entity description:
-    # key -> factor that replaces the description's multiply_by, e.g. 60 for a flow
-    # in l/min instead of l/h
-    sensor_factors: Mapping[str, int] = field(default_factory=dict)
-    # Measurement history series the cloud keeps for the device; empty means none
-    statistics: tuple[SyrConnectStatistic, ...] = ()
     switch: AbstractSet[str] | None
     # None means the global allowlist of the platform
     update: AbstractSet[str] | None = None
     valve: AbstractSet[str] | None
-    # Water hardness unit codes (getWHU) of the device family: code -> unit; None means
-    # the device has no water hardness unit
-    whu_units: Mapping[int, str] | None = None

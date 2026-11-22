@@ -708,8 +708,7 @@ async def _get_statistics(client: DebugXmlClient, args: argparse.Namespace) -> N
             dkv=target.get("dkv"),
             sbt=target.get("sbt"),
         )
-        profile = model.device_profile
-        statistics = profile.statistics if profile is not None else ()
+        statistics = model.statistics
         _LOGGER.info("Detected model: %s (%s)", model.name, model.display_name)
         if not statistics:
             _LOGGER.error(

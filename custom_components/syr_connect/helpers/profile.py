@@ -5,8 +5,7 @@ import logging
 import math
 from typing import Any
 
-from ..aiosyrconnect import SyrConnectStatus
-from ..devices import WHU_FACTORS_FROM_DH
+from ..aiosyrconnect import WHU_FACTORS_FROM_DH, SyrConnectStatus
 from ..models import SyrConnectModel
 
 _LOGGER = logging.getLogger(__name__)
@@ -98,11 +97,10 @@ def get_whu_unit(model: SyrConnectModel, raw_code: Any) -> str | None:
         The unit (e.g. "°dH"), or None for a missing or unknown code and for a model
         without water hardness unit codes.
     """
-    profile = model.device_profile
     code = _whu_code(raw_code)
-    if code is None or profile is None or profile.whu_units is None:
+    if code is None or model.whu_units is None:
         return None
-    return profile.whu_units.get(code)
+    return model.whu_units.get(code)
 
 
 def get_hardness_divisor(model: SyrConnectModel, raw_code: Any) -> int:
@@ -119,11 +117,10 @@ def get_hardness_divisor(model: SyrConnectModel, raw_code: Any) -> int:
     Returns:
         The divisor, 1 if the device reports the values unscaled.
     """
-    profile = model.device_profile
     code = _whu_code(raw_code)
-    if code is None or profile is None:
+    if code is None:
         return 1
-    return profile.hardness_divisors.get(code, 1)
+    return model.hardness_divisors.get(code, 1)
 
 
 def get_hardness_range(
@@ -155,14 +152,13 @@ def get_hardness_factor(model: SyrConnectModel, raw_code: Any) -> float:
     - Other models, and a missing or unknown unit: 1.0 (the device keeps the unit)
 
     Args:
-        model: Detected model of the device (its profile tells the unit of the values).
+        model: Detected model of the device (tells the unit of the values).
         raw_code: Raw getWHU value from the API (e.g. 0, "1", "2.0").
 
     Returns:
         The number of display units per unit of the device value.
     """
-    profile = model.device_profile
-    if profile is None or not profile.hardness_in_dh:
+    if not model.hardness_in_dh:
         return 1.0
     unit = get_whu_unit(model, raw_code)
     if unit is None:
@@ -188,7 +184,7 @@ def _whu_code(raw_code: Any) -> int | None:
 def get_cartridge_keys(model: SyrConnectModel) -> set[str]:
     """Return the keys that only apply to one cartridge type or size of the model.
 
-    The device profile maps each cartridge type (getCRT) to its key (`cartridge_keys`)
+    The model maps each cartridge type (getCRT) to its key (`cartridge_keys`)
     and each cartridge size (getCRS) to its key (`cartridge_size_keys`):
     - MuCo filling: HWE -> getOHW, HVE/HVE+ -> getLOT
     - All-in-One+: HWE -> getOWH, custom size -> getFCS
@@ -199,12 +195,7 @@ def get_cartridge_keys(model: SyrConnectModel) -> set[str]:
     Returns:
         The keys, empty for a model without cartridge types or sizes.
     """
-    profile = model.device_profile
-    if profile is None:
-        return set()
-    return set(profile.cartridge_keys.values()) | set(
-        profile.cartridge_size_keys.values()
-    )
+    return set(model.cartridge_keys.values()) | set(model.cartridge_size_keys.values())
 
 
 def get_reported_cartridge_keys(
@@ -217,16 +208,13 @@ def get_reported_cartridge_keys(
         status: The flattened device status.
 
     Returns:
-        The keys the device profile maps the reported cartridge type and size to, empty
-        if the model has no key for them.
+        The keys the model maps the reported cartridge type and size to, empty if the
+        model has no key for them.
     """
-    profile = model.device_profile
-    if profile is None:
-        return set()
     keys = set()
     for status_key, key_map in (
-        ("getCRT", profile.cartridge_keys),
-        ("getCRS", profile.cartridge_size_keys),
+        ("getCRT", model.cartridge_keys),
+        ("getCRS", model.cartridge_size_keys),
     ):
         value = status.get(status_key)
         if value is not None and (key := key_map.get(str(value).strip())) is not None:

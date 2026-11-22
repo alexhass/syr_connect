@@ -38,9 +38,8 @@ from custom_components.syr_connect.coordinator import (
     _hourly_statistics,
 )
 from custom_components.syr_connect.data import SyrConnectDevice
-from custom_components.syr_connect.devices import safefloor
 from custom_components.syr_connect.helpers.registry import clear_device_statistics
-from custom_components.syr_connect.models import UNKNOWN_MODEL
+from custom_components.syr_connect.models import MODELS, UNKNOWN_MODEL
 from homeassistant.components.recorder import Recorder
 from homeassistant.components.recorder.statistics import (
     get_metadata,
@@ -1853,7 +1852,7 @@ def _statistics_coordinator(
 async def test_statistics_coordinator_imports_every_series(
     hass: HomeAssistant,
 ) -> None:
-    """Every series of the profile is fetched and written as external statistics."""
+    """Every series of the model is fetched and written as external statistics."""
     statistics, mock_api = _statistics_coordinator(hass)
 
     with patch(
@@ -1862,7 +1861,7 @@ async def test_statistics_coordinator_imports_every_series(
         await statistics._async_update_data()
 
     assert [call.args[1] for call in mock_api.get_statistics.await_args_list] == list(
-        safefloor.STATISTICS
+        next(model for model in MODELS if model.name == "safefloor").statistics
     )
     assert mock_api.get_statistics.await_args_list[0].args[0] == _STATS_DEVICE_ID
     metadata = [call.args[1] for call in mock_add.call_args_list]

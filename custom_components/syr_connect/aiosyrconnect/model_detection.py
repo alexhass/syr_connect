@@ -9,7 +9,7 @@ such a model. The caller may pass signatures of its own that extend
 `SyrConnectModelSignature`, in the order of `MODEL_SIGNATURES`.
 """
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 import logging
 
 from .codes import (
@@ -29,7 +29,8 @@ from .codes import (
     WRN_CODES_COMMON,
     WRN_CODES_NONE,
 )
-from .models import SyrConnectModelSignature
+from .models import SyrConnectModelSignature, SyrConnectStatistic
+from .values import WHU_UNITS_LEX, WHU_UNITS_MUCO, WHU_UNITS_NEOSOFT
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -43,6 +44,44 @@ UNKNOWN_MODEL_SIGNATURE = SyrConnectModelSignature(
     manufacturer="Unknown",
     name="unknown",
 )
+
+# Cartridge type (getCRT) of the MuCo filling controller -> key with the value of that
+# cartridge
+_CARTRIDGE_KEYS_MUCO_FILLING: Mapping[str, str] = {
+    "0": "getOHW",
+    "1": "getLOT",
+    "2": "getLOT",
+}
+
+# NeoSoft reports the water hardness in tenths of mmol/l (getWHU 1)
+_HARDNESS_DIVISORS_NEOSOFT: Mapping[int, int] = {
+    1: 10,
+}
+
+# The sensor measures every getWMP seconds but uploads only every getRCP seconds, so
+# the status holds only the latest measurement. The cloud keeps the raw measurements
+# of the last 6 days (see "SafeFloor measurement history" in docs/syrconnect-protocol.md).
+_STATISTICS_SAFEFLOOR: tuple[SyrConnectStatistic, ...] = (
+    SyrConnectStatistic(
+        key="getCEL",
+        method="GetSafeFloorStatistics",
+        rtyp=4,
+        t=1,
+        unit="°C",
+    ),
+    SyrConnectStatistic(
+        key="getHMD",
+        method="GetSafeFloorStatistics",
+        rtyp=4,
+        t=2,
+        unit="%",
+    ),
+)
+
+# The LEX family reports the flow (getFLO) in l/min instead of l/h
+_VALUE_FACTORS_FLOW_PER_MINUTE: Mapping[str, int] = {
+    "getFLO": 60,
+}
 
 # Signatures of the known models, derived from fixtures and the dkv table in
 # docs/syrconnect-protocol.md. Each signature may include explicit checks (exact
@@ -170,7 +209,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_salt_volume=25,
         name="l10",
         not_codes=NOT_CODES_NONE,
+        value_factors=_VALUE_FACTORS_FLOW_PER_MINUTE,
         ver_prefix=None,
+        whu_units=WHU_UNITS_LEX,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_LEX,
@@ -185,7 +226,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_salt_volume=25,
         name="l12",
         not_codes=NOT_CODES_NONE,
+        value_factors=_VALUE_FACTORS_FLOW_PER_MINUTE,
         ver_prefix=None,
+        whu_units=WHU_UNITS_LEX,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_LEX,
@@ -200,7 +243,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_salt_volume=25,
         name="l15",
         not_codes=NOT_CODES_NONE,
+        value_factors=_VALUE_FACTORS_FLOW_PER_MINUTE,
         ver_prefix=None,
+        whu_units=WHU_UNITS_LEX,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_LEX,
@@ -215,7 +260,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_salt_volume=70,
         name="l20",
         not_codes=NOT_CODES_NONE,
+        value_factors=_VALUE_FACTORS_FLOW_PER_MINUTE,
         ver_prefix=None,
+        whu_units=WHU_UNITS_LEX,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_LEX,
@@ -230,7 +277,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_salt_volume=70,
         name="l25",
         not_codes=NOT_CODES_NONE,
+        value_factors=_VALUE_FACTORS_FLOW_PER_MINUTE,
         ver_prefix=None,
+        whu_units=WHU_UNITS_LEX,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_LEX,
@@ -245,7 +294,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_salt_volume=70,
         name="l30",
         not_codes=NOT_CODES_NONE,
+        value_factors=_VALUE_FACTORS_FLOW_PER_MINUTE,
         ver_prefix=None,
+        whu_units=WHU_UNITS_LEX,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_LEX,
@@ -260,7 +311,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_salt_volume=75,
         name="l40",
         not_codes=NOT_CODES_NONE,
+        value_factors=_VALUE_FACTORS_FLOW_PER_MINUTE,
         ver_prefix=None,
+        whu_units=WHU_UNITS_LEX,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_LEX,
@@ -275,7 +328,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_salt_volume=75,
         name="l50",
         not_codes=NOT_CODES_NONE,
+        value_factors=_VALUE_FACTORS_FLOW_PER_MINUTE,
         ver_prefix=None,
+        whu_units=WHU_UNITS_LEX,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_LEX,
@@ -290,7 +345,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_salt_volume=110,
         name="l60",
         not_codes=NOT_CODES_NONE,
+        value_factors=_VALUE_FACTORS_FLOW_PER_MINUTE,
         ver_prefix=None,
+        whu_units=WHU_UNITS_LEX,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_LEX,
@@ -305,7 +362,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_salt_volume=110,
         name="l70",
         not_codes=NOT_CODES_NONE,
+        value_factors=_VALUE_FACTORS_FLOW_PER_MINUTE,
         ver_prefix=None,
+        whu_units=WHU_UNITS_LEX,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_LEX,
@@ -320,7 +379,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_salt_volume=200,
         name="l80",
         not_codes=NOT_CODES_NONE,
+        value_factors=_VALUE_FACTORS_FLOW_PER_MINUTE,
         ver_prefix=None,
+        whu_units=WHU_UNITS_LEX,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_LEX,
@@ -335,7 +396,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_salt_volume=200,
         name="l90",
         not_codes=NOT_CODES_NONE,
+        value_factors=_VALUE_FACTORS_FLOW_PER_MINUTE,
         ver_prefix=None,
+        whu_units=WHU_UNITS_LEX,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_LEX,
@@ -350,7 +413,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_salt_volume=300,
         name="l100",
         not_codes=NOT_CODES_NONE,
+        value_factors=_VALUE_FACTORS_FLOW_PER_MINUTE,
         ver_prefix=None,
+        whu_units=WHU_UNITS_LEX,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_LEX,
@@ -366,7 +431,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         name="lex10",
         not_codes=NOT_CODES_NONE,
         sbt=1,
+        value_factors=_VALUE_FACTORS_FLOW_PER_MINUTE,
         ver_prefix=None,
+        whu_units=WHU_UNITS_LEX,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_LEX,
@@ -382,7 +449,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         name="lex20",
         not_codes=NOT_CODES_NONE,
         sbt=2,
+        value_factors=_VALUE_FACTORS_FLOW_PER_MINUTE,
         ver_prefix=None,
+        whu_units=WHU_UNITS_LEX,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_LEX,
@@ -398,7 +467,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         name="lex30",
         not_codes=NOT_CODES_NONE,
         sbt=3,
+        value_factors=_VALUE_FACTORS_FLOW_PER_MINUTE,
         ver_prefix=None,
+        whu_units=WHU_UNITS_LEX,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_LEX,
@@ -413,7 +484,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_salt_volume=75,
         name="lex40",
         not_codes=NOT_CODES_NONE,
+        value_factors=_VALUE_FACTORS_FLOW_PER_MINUTE,
         ver_prefix=None,
+        whu_units=WHU_UNITS_LEX,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_LEX,
@@ -428,7 +501,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_salt_volume=110,
         name="lex60",
         not_codes=NOT_CODES_NONE,
+        value_factors=_VALUE_FACTORS_FLOW_PER_MINUTE,
         ver_prefix=None,
+        whu_units=WHU_UNITS_LEX,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_LEX,
@@ -443,7 +518,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_salt_volume=200,
         name="lex80",
         not_codes=NOT_CODES_NONE,
+        value_factors=_VALUE_FACTORS_FLOW_PER_MINUTE,
         ver_prefix=None,
+        whu_units=WHU_UNITS_LEX,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_LEX,
@@ -458,7 +535,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_salt_volume=300,
         name="lex100",
         not_codes=NOT_CODES_NONE,
+        value_factors=_VALUE_FACTORS_FLOW_PER_MINUTE,
         ver_prefix=None,
+        whu_units=WHU_UNITS_LEX,
     ),
     # ── Hygiene module (dk=60-63) ────────────────────────────────────────────────
     SyrConnectModelSignature(
@@ -510,13 +589,16 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         display_name="LEX Plus 10 Connect",
         dk=80,
         dkv=25,
+        local_time_timestamps=True,
         manufacturer="SYR",
         maximum_regeneration_interval=4,
         maximum_salt_volume=25,
         name="lexplus10",
         not_codes=NOT_CODES_NONE,
         sbt=1,
+        value_factors=_VALUE_FACTORS_FLOW_PER_MINUTE,
         ver_prefix=None,
+        whu_units=WHU_UNITS_LEX,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_LEX,
@@ -526,13 +608,16 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         display_name="LEX Plus 10 S Connect",
         dk=80,
         dkv=25,
+        local_time_timestamps=True,
         manufacturer="SYR",
         maximum_regeneration_interval=4,
         maximum_salt_volume=25,
         name="lexplus10s",
         not_codes=NOT_CODES_NONE,
         sbt=2,
+        value_factors=_VALUE_FACTORS_FLOW_PER_MINUTE,
         ver_prefix=None,
+        whu_units=WHU_UNITS_LEX,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_LEXPLUS10SL,
@@ -544,13 +629,16 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         display_name="LEX Plus 10 SL Connect",
         dk=80,
         dkv=25,
+        local_time_timestamps=True,
         manufacturer="SYR",
         maximum_regeneration_interval=4,
         maximum_salt_volume=25,
         name="lexplus10sl",
         not_codes=NOT_CODES_NONE,
         sbt=7,
+        value_factors=_VALUE_FACTORS_FLOW_PER_MINUTE,
         ver_prefix=None,
+        whu_units=WHU_UNITS_LEX,
     ),
     # ── CONTROLICmini (dk=100) ───────────────────────────────────────────────────
     SyrConnectModelSignature(
@@ -569,6 +657,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         # dk=120/dkv=34 is shared by multiple vendors; the cloud service tells them
         # apart (`service_branding`).
         base_path=None,
+        bat_in_percent=True,
         display_name="SafeFloor Connect",
         dk=120,
         dkv=34,
@@ -606,12 +695,14 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
                 "Ditech Wireless Floor Sensor",
             ),
         },
+        statistics=_STATISTICS_SAFEFLOOR,
         ver_contains="Floorsensor",
         ver_prefix=None,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_SAFEFLOOR,
         base_path=None,
+        bat_in_percent=True,
         display_name="MultiSafe Floor Leak Sensor",
         dk=120,
         dkv=43,
@@ -619,15 +710,18 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         name="safefloorrwc",
         # TODO: Untested model.
         srn_prefix="43",
+        statistics=_STATISTICS_SAFEFLOOR,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_SAFEFLOOR,
         base_path=None,
+        bat_in_percent=True,
         display_name="SafeFloor Connect",
         dk=122,
         dkv=34,
         manufacturer="SYR",
         name="safefloor122",
+        statistics=_STATISTICS_SAFEFLOOR,
         # TODO: Untested model.
     ),
     # ── SafeTech / SafeTech+ (dk=140/141/142/145) ────────────────────────────────
@@ -756,14 +850,30 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
     # ── Specialty devices (dk=160/180/190) ───────────────────────────────────────
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_ALLINONEPLUS,
+        bar_is_system_pressure=True,
         # Product number: 3228.15.015
         base_path="/all-in-one",
+        cartridge_keys={
+            "0": "getOWH",
+        },
+        cartridge_size_keys={
+            "0": "getFCS",
+        },
         display_name="All-in-One+",
         dk=160,
         dkv=36,
+        # The automatic filling mode (getDFI) is 0 = enabled, 1 = disabled
+        inverted_flags={
+            "getDFI",
+        },
         manufacturer="SYR",
         name="allinoneplus",
+        value_divisors={
+            "getCFV": 1000,
+            "getLFV": 1000,
+        },
         ver_prefix="All-in-One+",
+        whu_units=WHU_UNITS_MUCO,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_HYGBOX,
@@ -771,6 +881,12 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         display_name="HygBox",
         dk=180,
         dkv=37,
+        # The flushings (getFD1-3) report the function as disabled
+        inverted_flags={
+            "getFD1",
+            "getFD2",
+            "getFD3",
+        },
         manufacturer="SYR",
         name="hygbox",
         service_branding={
@@ -874,12 +990,14 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         display_name="NeoSoft 5000 Connect",
         dk=1200,
         dkv=200,
+        hardness_divisors=_HARDNESS_DIVISORS_NEOSOFT,
         manufacturer="SYR",
         maximum_regeneration_interval=3,
         name="neosoft5000",
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="200",
+        whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -890,11 +1008,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         display_name="NeoSoft 2500 Connect",
         dk=1206,
         dkv=206,
+        hardness_divisors=_HARDNESS_DIVISORS_NEOSOFT,
         manufacturer="SYR",
         maximum_regeneration_interval=3,
         name="neosoft2500",
         not_codes=NOT_CODES_COMMON,
         srn_prefix="206",
+        whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -904,11 +1024,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         display_name="comfort-Softwater UNO A25",
         dk=1207,
         dkv=207,
+        hardness_divisors=_HARDNESS_DIVISORS_NEOSOFT,
         manufacturer="Sanibel",
         maximum_regeneration_interval=3,
         name="sanibelsoftwateruno",
         not_codes=NOT_CODES_COMMON,
         srn_prefix="207",
+        whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -918,12 +1040,14 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         display_name="concept Single Water Softener",
         dk=1208,
         dkv=208,
+        hardness_divisors=_HARDNESS_DIVISORS_NEOSOFT,
         manufacturer="CONCEPT",
         maximum_regeneration_interval=3,
         name="conceptsingle",
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="208",
+        whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -933,12 +1057,14 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         display_name="Optima Single Water Softener",
         dk=1209,
         dkv=209,
+        hardness_divisors=_HARDNESS_DIVISORS_NEOSOFT,
         manufacturer="OPTIMA",
         maximum_regeneration_interval=3,
         name="optimasingle",
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="209",
+        whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -948,12 +1074,14 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         display_name="concept 200 Dual Water Softener",
         dk=1210,
         dkv=210,
+        hardness_divisors=_HARDNESS_DIVISORS_NEOSOFT,
         manufacturer="CONCEPT",
         maximum_regeneration_interval=3,
         name="concept200duo",
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="210",
+        whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -964,12 +1092,14 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         display_name="Optima T2 Dual Water Softener",
         dk=1211,
         dkv=211,
+        hardness_divisors=_HARDNESS_DIVISORS_NEOSOFT,
         manufacturer="OPTIMA",
         maximum_regeneration_interval=3,
         name="optimat2duo",
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="211",
+        whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -979,12 +1109,14 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         display_name="comfort-Softwater DUO A25",
         dk=1212,
         dkv=212,
+        hardness_divisors=_HARDNESS_DIVISORS_NEOSOFT,
         manufacturer="Sanibel",
         maximum_regeneration_interval=3,
         name="sanibelsoftwaterduo",
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="212",
+        whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -994,12 +1126,14 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         display_name="Optima Dual Water Softener",
         dk=1213,
         dkv=213,
+        hardness_divisors=_HARDNESS_DIVISORS_NEOSOFT,
         manufacturer="OPTIMA",
         maximum_regeneration_interval=3,
         name="optimaduo",
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="213",
+        whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1009,11 +1143,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         display_name="CLEAR PRO SOFT TWIN",
         dk=1214,
         dkv=214,
+        hardness_divisors=_HARDNESS_DIVISORS_NEOSOFT,
         manufacturer="CONEL",
         maximum_regeneration_interval=3,
         name="conelclearprosofttwin",
         not_codes=NOT_CODES_COMMON,
         srn_prefix="214",
+        whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1023,11 +1159,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         display_name="CLEAR PRO SOFT",
         dk=1215,
         dkv=215,
+        hardness_divisors=_HARDNESS_DIVISORS_NEOSOFT,
         manufacturer="CONEL",
         maximum_regeneration_interval=3,
         name="conelclearprosoft",
         not_codes=NOT_CODES_COMMON,
         srn_prefix="215",
+        whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1038,12 +1176,14 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         display_name="concept Dual Water Softener",
         dk=1216,
         dkv=216,
+        hardness_divisors=_HARDNESS_DIVISORS_NEOSOFT,
         manufacturer="CONCEPT",
         maximum_regeneration_interval=3,
         name="conceptduo",
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="216",
+        whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1054,12 +1194,14 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         display_name="DITECH Dual Water Softener",
         dk=1217,
         dkv=217,
+        hardness_divisors=_HARDNESS_DIVISORS_NEOSOFT,
         manufacturer="DITECH",
         maximum_regeneration_interval=3,
         name="ditechduo",
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="217",
+        whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1069,12 +1211,14 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         display_name="TAKE Dual Water Softener",
         dk=1218,
         dkv=218,
+        hardness_divisors=_HARDNESS_DIVISORS_NEOSOFT,
         manufacturer="TAKE",
         maximum_regeneration_interval=3,
         name="takeduo",
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="218",
+        whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1085,12 +1229,14 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         display_name="DITECH Single Water Softener",
         dk=1219,
         dkv=219,
+        hardness_divisors=_HARDNESS_DIVISORS_NEOSOFT,
         manufacturer="DITECH",
         maximum_regeneration_interval=3,
         name="ditechsingle",
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="219",
+        whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1100,12 +1246,14 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         display_name="TAKE Single Water Softener",
         dk=1220,
         dkv=220,
+        hardness_divisors=_HARDNESS_DIVISORS_NEOSOFT,
         manufacturer="TAKE",
         maximum_regeneration_interval=3,
         name="takesingle",
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="220",
+        whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1116,12 +1264,14 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         display_name="NeoSoft Lock Connect II",
         dk=1221,
         dkv=221,
+        hardness_divisors=_HARDNESS_DIVISORS_NEOSOFT,
         manufacturer="SYR",
         maximum_regeneration_interval=3,
         name="neosoftlock2",
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="221",
+        whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1132,12 +1282,14 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         display_name="NeoSoft Lock Connect I",
         dk=1222,
         dkv=222,
+        hardness_divisors=_HARDNESS_DIVISORS_NEOSOFT,
         manufacturer="SYR",
         maximum_regeneration_interval=3,
         name="neosoftlock1",
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="222",
+        whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
     ),
     # ── MultiController platform (dk=1500-1506) ──────────────────────────────────
@@ -1159,6 +1311,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         name="conelclearproleakprotection",
         not_codes=NOT_CODES_COMMON,
         srn_prefix="500",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1174,6 +1327,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="500",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1181,14 +1335,17 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         # CLEARPFSA - Filling Station
         alarm_clear_via_set=True,
         base_path="/trio",
+        cartridge_keys=_CARTRIDGE_KEYS_MUCO_FILLING,
         dfm=3,
         display_name="CLEAR PRO FILL All-in-One",
         dk=1500,
         dkv=500,
+        hardness_in_dh=True,
         manufacturer="CONEL",
         name="conelclearprofill",
         not_codes=NOT_CODES_COMMON,
         srn_prefix="500",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1205,6 +1362,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         name="conelclearprobackwash",
         not_codes=NOT_CODES_COMMON,
         srn_prefix="500",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1219,6 +1377,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         name="sanibelleakprotect",
         not_codes=NOT_CODES_COMMON,
         srn_prefix="501",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1234,6 +1393,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="501",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1248,6 +1408,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         name="sanibelrsa",
         not_codes=NOT_CODES_COMMON,
         srn_prefix="501",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1263,6 +1424,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="502",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1279,6 +1441,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="502",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1295,6 +1458,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="502",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1311,6 +1475,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="502",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1326,6 +1491,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="503",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1341,6 +1507,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="503",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1356,6 +1523,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="503",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1371,6 +1539,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="503",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1386,6 +1555,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="504",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1401,6 +1571,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="504",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1417,6 +1588,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="504",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1433,6 +1605,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="504",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1448,6 +1621,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="505",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1463,6 +1637,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="505",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1479,6 +1654,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="505",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1495,6 +1671,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="505",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1510,6 +1687,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="506",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1525,21 +1703,25 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="506",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
         ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
+        cartridge_keys=_CARTRIDGE_KEYS_MUCO_FILLING,
         dfm=3,
         display_name="AC All-in-One 3228 Connect",
         dk=1506,
         dkv=506,
+        hardness_in_dh=True,
         manufacturer="SYR",
         name="syrac3228connect",
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="506",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1555,6 +1737,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="506",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
@@ -1569,6 +1752,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         name="syrtriolockconnect",
         not_codes=NOT_CODES_COMMON,
         srn_prefix="506",
+        whu_units=WHU_UNITS_MUCO,
         wrn_codes=WRN_CODES_COMMON,
     ),
 )
