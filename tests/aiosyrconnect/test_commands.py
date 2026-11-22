@@ -9,6 +9,7 @@ from custom_components.syr_connect.aiosyrconnect.commands import (
     COMMAND_STATUS_KEYS,
     JSON_ONLY_COMMANDS,
     TRIGGER_COMMANDS,
+    build_cartridge_type_commands,
     build_dex_command,
     build_flag_command,
     build_reset_command,
@@ -21,6 +22,7 @@ from custom_components.syr_connect.aiosyrconnect.commands import (
     set_command,
 )
 from custom_components.syr_connect.aiosyrconnect.model_detection import (
+    MODEL_SIGNATURES,
     UNKNOWN_MODEL_SIGNATURE,
 )
 from custom_components.syr_connect.aiosyrconnect.models import (
@@ -178,6 +180,85 @@ def test_build_flag_command_follows_the_format(
         "setBUZ",
         expected,
     )
+
+
+_ALLINONEPLUS_SIGNATURE = next(
+    sig for sig in MODEL_SIGNATURES if sig.name == "allinoneplus"
+)
+_MUCO_FILLING_SIGNATURE = next(
+    sig for sig in MODEL_SIGNATURES if sig.name == "conelclearprofill"
+)
+
+
+@pytest.mark.parametrize(
+    ("signature", "status", "cartridge_type", "expected"),
+    [
+        pytest.param(
+            _ALLINONEPLUS_SIGNATURE,
+            {"getCRT": "1", "getWTR": "1"},
+            None,
+            [("setWTR", "0")],
+            id="none-switches-off",
+        ),
+        pytest.param(
+            _MUCO_FILLING_SIGNATURE,
+            {"getCRT": "1", "getWTR": True},
+            None,
+            [("setWTR", False)],
+            id="none-switches-off-bool",
+        ),
+        pytest.param(
+            _MUCO_FILLING_SIGNATURE,
+            {"getCRT": ""},
+            None,
+            [],
+            id="none-without-water-treatment",
+        ),
+        pytest.param(
+            UNKNOWN_MODEL_SIGNATURE,
+            {"getCRT": "1", "getWTR": "1"},
+            None,
+            [],
+            id="none-model-without-cartridges",
+        ),
+        pytest.param(
+            _ALLINONEPLUS_SIGNATURE,
+            {"getCRT": "1", "getWTR": "1"},
+            2,
+            [("setCRT", 2)],
+            id="type-water-treatment-on",
+        ),
+        pytest.param(
+            _ALLINONEPLUS_SIGNATURE,
+            {"getCRT": "1", "getWTR": "0"},
+            0,
+            [("setCRT", 0), ("setWTR", "1")],
+            id="type-switches-on",
+        ),
+        pytest.param(
+            _MUCO_FILLING_SIGNATURE,
+            {"getCRT": "1", "getWTR": "False"},
+            2,
+            [("setCRT", 2), ("setWTR", "True")],
+            id="type-switches-on-text",
+        ),
+        pytest.param(
+            _MUCO_FILLING_SIGNATURE,
+            {"getCRT": "1"},
+            0,
+            [("setCRT", 0)],
+            id="type-without-water-treatment",
+        ),
+    ],
+)
+def test_build_cartridge_type_commands(
+    signature: SyrConnectModelSignature,
+    status: SyrConnectStatus,
+    cartridge_type: int | None,
+    expected: list[tuple[str, object]],
+) -> None:
+    """No cartridge switches the water treatment off, a type switches it on."""
+    assert build_cartridge_type_commands(signature, status, cartridge_type) == expected
 
 
 def test_build_flag_command_inverts() -> None:

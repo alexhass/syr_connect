@@ -376,8 +376,35 @@ class SyrConnectModelSignature:
             self.cartridge_size_keys.values()
         )
 
+    def is_water_treatment_off(self, status: SyrConnectStatus) -> bool:
+        """Return True if the water treatment (getWTR) of the model is switched off.
+
+        Only a model with cartridge types (`cartridge_keys`) has a water treatment.
+        While it is off, no cartridge is in use, whatever getCRT reports.
+
+        Formats:
+        - "0", "False", 0 or False -> True
+        - "1", "True", 1 or True -> False
+        - Missing or empty value -> False
+
+        Args:
+            status: Status of the device
+
+        Returns:
+            True if the model has a water treatment and the device reports it as off
+        """
+        if not self.cartridge_keys:
+            return False
+        value = status.get("getWTR")
+        if isinstance(value, bool):
+            return not value
+        return value is not None and str(value).strip().lower() in ("0", "false")
+
     def reported_cartridge_keys(self, status: SyrConnectStatus) -> set[str]:
         """Return the keys of the reported cartridge type (getCRT) and size (getCRS).
+
+        While the water treatment is off (`is_water_treatment_off()`), the cartridge type
+        has no key.
 
         Args:
             status: Status of the device
@@ -391,6 +418,8 @@ class SyrConnectModelSignature:
             ("getCRT", self.cartridge_keys),
             ("getCRS", self.cartridge_size_keys),
         ):
+            if status_key == "getCRT" and self.is_water_treatment_off(status):
+                continue
             value = status.get(status_key)
             if (
                 value is not None

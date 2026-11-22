@@ -213,6 +213,46 @@ def build_flag_command(
     return set_command(key), value
 
 
+def build_cartridge_type_commands(
+    signature: SyrConnectModelSignature,
+    status: SyrConnectStatus,
+    cartridge_type: int | None,
+) -> list[tuple[str, Any]]:
+    """Return the commands that select the cartridge type (getCRT) of the water treatment.
+
+    The water treatment (getWTR) and the cartridge type are one setting: no cartridge
+    switches the water treatment off, a cartridge type is set together with switching
+    the water treatment on. setWTR takes the format of the reported getWTR
+    (`build_flag_command()`).
+
+    Formats:
+    - No cartridge, getWTR reported: [("setWTR", "0")]
+    - No cartridge, no getWTR: [] (cannot be selected)
+    - Type 1, water treatment on: [("setCRT", 1)]
+    - Type 1, water treatment off: [("setCRT", 1), ("setWTR", "1")]
+
+    Args:
+        signature: Signature of the model
+        status: Status of the device
+        cartridge_type: Raw cartridge type (0=HWE, 1=HVE, 2=HVE+), None for no cartridge
+
+    Returns:
+        The (command, value) pairs to send together, empty if the selection cannot be
+        written
+    """
+    has_water_treatment = bool(signature.cartridge_keys) and status.get(
+        "getWTR"
+    ) not in (None, "")
+    if cartridge_type is None:
+        if not has_water_treatment:
+            return []
+        return [build_flag_command(signature, status, "getWTR", False)]
+    commands: list[tuple[str, Any]] = [(set_command("getCRT"), cartridge_type)]
+    if signature.is_water_treatment_off(status):
+        commands.append(build_flag_command(signature, status, "getWTR", True))
+    return commands
+
+
 def filling_refusal(
     signature: SyrConnectModelSignature, status: SyrConnectStatus, key: str
 ) -> str | None:

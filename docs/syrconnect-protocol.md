@@ -1515,7 +1515,6 @@ These properties appear in MuCo devices / Conel Clear Pro Fill / Sanibel Leak Pr
 | getRP3 | "" | | *unknown* |
 | getRPR | "" | | *unknown* |
 | getRSI | "" | | *unknown* |
-| getWTR | "" | | *unknown* |
 
 #### Filling the Heating System
 
@@ -1526,7 +1525,7 @@ These properties are documented on MuCo devices that expose water treatment (car
 | getCFT | "0" | s | Filling: Duration of the current filling, 0 while no filling runs |
 | getCFV | "0" | L | Filling: Volume of the current filling, 0 while no filling runs. The All-in-One+ reports mL (see [known_issues_json_api.md](known_issues_json_api.md), issue 10) |
 | getCRS / setCRS | "1" | L | Water treatment: Cartridge size: 1=2.5L, 2=4L, 3=7L, 4=14L, 5=30L |
-| getCRT / setCRT | "1" | | Water treatment: Cartridge type: 0=HWE, 1=HVE, 2=HVE+, ""=none installed |
+| getCRT / setCRT | "1" | | Water treatment: Cartridge type: 0=HWE, 1=HVE, 2=HVE+, ""=none installed. While getWTR is off, no cartridge is in use, whatever getCRT reports |
 | getDFI / setDFI | "True" | | Automatic filling mode: True=Enabled / False=Disabled |
 | getIWH / setIWH | "18" | °dH | Water treatment: Raw water hardness, always in °dH; `getWHU` is only the unit of the display. Range in SYR GUI: 1–50 °dH, 1–65 °e, 1–90 °fH, 10–900 ppm in steps of 10, converted to °dH and rounded. A value below the soft water hardness lowers that one too. |
 | getLFT | "85" | s | Filling: Duration of the last filling |
@@ -1542,6 +1541,7 @@ These properties are documented on MuCo devices that expose water treatment (car
 | getTPR / setTPR | "18" | 1/10 bar | Water treatment: Target pressure — water pressure setpoint (e.g. `18` = 1.8 bar). Range in SYR GUI: 0.5–5.0 bar in 0.1 bar steps |
 | getTRT | "130" | s | Filling: Total duration of all fillings |
 | getTRV | "9" | L | Filling: Total volume of all fillings, also in L on the All-in-One+ |
+| getWTR / setWTR | "True" | | Water treatment: True/1 = on, False/0 = off. Set together with the cartridge type: selecting no cartridge sends setWTR off, selecting a cartridge type sends setCRT and setWTR on. The All-in-One+ reports "1"/"0" |
 
 The All-in-One+ (dk 160) uses the same cartridge and filling mode properties, with these differences: the soft water hardness is `getOWH` / `setOWH` instead of `getOHW` / `setOHW` (only visible when the cartridge type is HWE, reported in the unit of `getWHU` instead of °dH), and the device has no maximum output conductivity (`getLOT`). The maximum filling duration (`getRMT`) has other steps in the SYR GUI: 5–20 min in 5 min steps, 30–50 min in 10 min steps, 1 h–12 h in 0.5 h steps.
 

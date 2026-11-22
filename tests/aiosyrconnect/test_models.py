@@ -11,6 +11,7 @@ from custom_components.syr_connect.aiosyrconnect.model_detection import (
 from custom_components.syr_connect.aiosyrconnect.models import (
     SyrConnectModelSignature,
     SyrConnectStatus,
+    SyrConnectStatusValue,
 )
 
 
@@ -107,6 +108,12 @@ def test_hardness_divisor(name: str, code: Any, expected: int) -> None:
         ("allinoneplus", {"getCRT": "1", "getCRS": "3"}, set()),
         ("conelclearprofill", {}, set()),
         ("unknown", {"getCRT": "0"}, set()),
+        ("conelclearprofill", {"getCRT": "0", "getWTR": False}, set()),
+        (
+            "allinoneplus",
+            {"getCRT": "0", "getCRS": "0", "getWTR": "0"},
+            {"getFCS"},
+        ),
     ],
 )
 def test_reported_cartridge_keys(
@@ -114,6 +121,30 @@ def test_reported_cartridge_keys(
 ) -> None:
     """The keys of the reported cartridge type and size."""
     assert _signature(name).reported_cartridge_keys(status) == expected
+
+
+@pytest.mark.parametrize(
+    ("name", "value", "expected"),
+    [
+        ("allinoneplus", "0", True),
+        ("allinoneplus", "1", False),
+        ("conelclearprofill", False, True),
+        ("conelclearprofill", True, False),
+        ("conelclearprofill", " False ", True),
+        ("conelclearprofill", "True", False),
+        ("conelclearprofill", 0, True),
+        ("conelclearprofill", "", False),
+        ("conelclearprofill", None, False),
+        ("lex30", "0", False),
+    ],
+)
+def test_is_water_treatment_off(
+    name: str, value: SyrConnectStatusValue, expected: bool
+) -> None:
+    """Only a model with cartridge types has a water treatment that can be off."""
+    status: SyrConnectStatus = {} if value is None else {"getWTR": value}
+
+    assert _signature(name).is_water_treatment_off(status) is expected
 
 
 @pytest.mark.parametrize(

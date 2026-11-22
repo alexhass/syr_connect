@@ -385,18 +385,20 @@ def test_allinoneplus_cumulative_refilled_volume_in_liters(
 
 
 @pytest.mark.parametrize(
-    ("crt", "expected"),
+    ("crt", "wtr", "expected"),
     [
-        pytest.param("0", {"getOWH"}, id="hwe"),
-        pytest.param("1", set(), id="hve"),
+        pytest.param("0", "1", {"getOWH"}, id="hwe"),
+        pytest.param("1", "1", set(), id="hve"),
+        pytest.param("0", "0", set(), id="water-treatment-off"),
     ],
 )
 def test_allinoneplus_owh_sensor_only_for_hwe_cartridge(
-    crt: str, expected: set[str]
+    crt: str, wtr: str, expected: set[str]
 ) -> None:
-    """On the All-in-One+, getOWH is the soft water hardness of the HWE cartridge."""
+    """On the All-in-One+, getOWH is the soft water hardness of the HWE cartridge in use."""
     status: SyrConnectStatus = {
         "getCRT": crt,
+        "getWTR": wtr,
         "getOWH": "5",
         "getLOT": "7",
         "getOHW": "3",
@@ -409,6 +411,35 @@ def test_allinoneplus_owh_sensor_only_for_hwe_cartridge(
     assert ("getOWH" in sensor_module._hidden_sensor_keys(status, model)) is not bool(
         expected
     )
+
+
+@pytest.mark.parametrize(
+    ("wtr", "expected"),
+    [
+        pytest.param("1", "2", id="water-treatment-on"),
+        pytest.param("0", "none", id="water-treatment-off"),
+    ],
+)
+def test_allinoneplus_cartridge_type_sensor_follows_water_treatment(
+    create_mock_coordinator: Callable[..., MagicMock], wtr: str, expected: str
+) -> None:
+    """While the water treatment (getWTR) is off, the cartridge type sensor shows "none"."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "model": _SYR_CONNECT_TEST_ALLINONEPLUS_MODEL,
+                "status": {"getCRT": "2", "getWTR": wtr},
+            }
+        ]
+    }
+    coordinator = create_mock_coordinator(data)
+
+    sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getCRT")
+
+    assert sensor.native_value == expected
 
 
 def _fixture_status(fixture: str) -> dict[str, Any]:

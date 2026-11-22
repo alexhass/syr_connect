@@ -19,6 +19,7 @@ from .aiosyrconnect import (
     FLUSHING_TEMPERATURE_RANGES,
     SyrConnectError,
     SyrConnectStatus,
+    build_cartridge_type_commands,
     build_rtm_commands,
     get_active_leak_protection_profiles,
     get_current_leak_protection_profile,
@@ -731,10 +732,20 @@ def _add_muco_selects(b: _SyrConnectSelectBuilder) -> None:
         else _SYR_CONNECT_SELECT_CRS_MAP,
         _is_integer,
     )
-    # getCRT and getRCD have an option for the empty value, so any reported value counts
-    for key in ("getCRT", "getRCD"):
-        if key in b.supported_select_keys and key in b.status:
-            b.add_discrete(key, _code_options(b.model_info, key))
+    # getCRT and getRCD have an option for the empty value, so any reported value counts.
+    # The cartridge type also switches the water treatment (getWTR).
+    if "getCRT" in b.supported_select_keys and "getCRT" in b.status:
+        b.entities.append(
+            SyrConnectCartridgeTypeSelect(
+                b.coordinator,
+                b.device_id,
+                b.device_name,
+                "getCRT",
+                _code_options(b.model_info, "getCRT"),
+            )
+        )
+    if "getRCD" in b.supported_select_keys and "getRCD" in b.status:
+        b.add_discrete("getRCD", _code_options(b.model_info, "getRCD"))
     # Remaining capacity warning threshold (getCWL) in %
     b.offer_numeric_steps("getCWL")
     # Filling processes count (getRMN)
@@ -1622,6 +1633,73 @@ class SyrConnectDiscreteSelect(SyrConnectEntity, SelectEntity):
                     "entity": self._entity_name,
                 },
             ) from err
+
+
+class SyrConnectCartridgeTypeSelect(SyrConnectDiscreteSelect):
+    """Cartridge type of the water treatment (getCRT), with "none" for no cartridge.
+
+    The water treatment (getWTR) and the cartridge type are one setting: while the water
+    treatment is off, "none" is shown whatever getCRT reports. Selecting "none" switches
+    the water treatment off, a cartridge type also switches it on (see
+    `build_cartridge_type_commands`).
+    """
+
+    @property
+    @override
+    def current_option(self) -> str | None:
+        """Return the currently selected option."""
+        if self._device is not None and self.device_model.is_water_treatment_off(
+            self._status
+        ):
+            return "none"
+        return super().current_option
+
+    @override
+    async def async_select_option(self, option: str) -> None:
+        """Write the selected cartridge type and the water treatment to the device."""
+        if option not in self._options_map:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="invalid_option",
+                translation_placeholders={
+                    "entity": self._entity_name,
+                    "option": option,
+                },
+            )
+        commands = build_cartridge_type_commands(
+            self.device_model, self._status, self._options_map[option]
+        )
+        if not commands:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="option_not_selectable",
+                translation_placeholders={
+                    "entity": self._entity_name,
+                    "option": option,
+                },
+            )
+        try:
+            # setCRT + setWTR in one call: with the XML API a single request
+            await self.coordinator.async_set_device_values(self._device_id, commands)
+        except SyrConnectError as err:
+            _LOGGER.error(
+                "Failed to set the cartridge type for device %s: %s",
+                self._device_id,
+                err,
+            )
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="set_value_failed",
+                translation_placeholders={
+                    "device": self._device_name,
+                    "entity": self._entity_name,
+                },
+            ) from err
+        _LOGGER.debug(
+            "Requested cartridge type commands for device %s: %s",
+            self._device_id,
+            commands,
+        )
 
 
 class SyrConnectHygieneModuleSelect(SyrConnectDiscreteSelect):

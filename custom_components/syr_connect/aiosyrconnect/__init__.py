@@ -28,6 +28,7 @@ README.md (tests/aiosyrconnect/test_package.py checks this).
 from .codes import NO_CODE_VALUES, is_code_active
 from .commands import (
     JSON_ONLY_COMMANDS,
+    build_cartridge_type_commands,
     build_dex_command,
     build_flag_command,
     build_reset_command,
@@ -144,6 +145,7 @@ __all__ = [
     "SyrConnectStatus",
     "SyrConnectStatusValue",
     "SyrConnectXmlAPI",
+    "build_cartridge_type_commands",
     "build_dex_command",
     "build_flag_command",
     "build_reset_command",

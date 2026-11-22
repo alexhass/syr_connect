@@ -7,15 +7,18 @@ from unittest.mock import AsyncMock, MagicMock, Mock
 import pytest
 from pytest_homeassistant.common import MockConfigEntry
 
+from custom_components.syr_connect.aiosyrconnect import SyrConnectConnectionError
 from custom_components.syr_connect.const import CONF_SERVICE
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
 from custom_components.syr_connect.models import MODELS
 from custom_components.syr_connect.select import (
+    SyrConnectCartridgeTypeSelect,
     SyrConnectRangedHardnessSelect,
     async_setup_entry,
 )
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 
 _SYR_CONNECT_TEST_MUCO_FILLING_MODEL = next(
     model for model in MODELS if model.name == "conelclearprofill"
@@ -214,3 +217,152 @@ async def test_muco_filling_hardness_select_writes_dh(
     coordinator.async_set_device_value.assert_called_once_with(
         "device1", set_key, expected
     )
+
+
+def _cartridge_type_select(
+    hass: HomeAssistant, status: dict[str, Any]
+) -> tuple[SyrConnectCartridgeTypeSelect, Any]:
+    """Return the cartridge type select of a MuCo filling with the status, and its coordinator."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "model": _SYR_CONNECT_TEST_MUCO_FILLING_MODEL,
+                "status": status,
+            }
+        ]
+    }
+    coordinator = _build_coordinator(hass, data)
+    coordinator.async_set_device_values = AsyncMock()
+    select = SyrConnectCartridgeTypeSelect(
+        coordinator,
+        "device1",
+        "Device 1",
+        "getCRT",
+        {"none": None, "0": 0, "1": 1, "2": 2},
+    )
+    return select, coordinator
+
+
+@pytest.mark.parametrize(
+    ("status", "expected"),
+    [
+        pytest.param(
+            {"getCRT": "1", "getWTR": False}, "none", id="water-treatment-off"
+        ),
+        pytest.param({"getCRT": "1", "getWTR": True}, "1", id="water-treatment-on"),
+        pytest.param({"getCRT": "", "getWTR": True}, "none", id="no-cartridge"),
+        pytest.param({"getCRT": "2"}, "2", id="without-water-treatment"),
+    ],
+)
+async def test_muco_filling_cartridge_type_follows_water_treatment(
+    hass: HomeAssistant, status: dict[str, Any], expected: str
+) -> None:
+    """While the water treatment (getWTR) is off, the cartridge type shows "none"."""
+    select, _ = _cartridge_type_select(hass, status)
+
+    assert select.current_option == expected
+
+
+@pytest.mark.parametrize(
+    ("status", "option", "expected"),
+    [
+        pytest.param(
+            {"getCRT": "1", "getWTR": True},
+            "none",
+            [("setWTR", False)],
+            id="none-switches-off",
+        ),
+        pytest.param(
+            {"getCRT": "1", "getWTR": False},
+            "2",
+            [("setCRT", 2), ("setWTR", True)],
+            id="type-switches-on",
+        ),
+        pytest.param(
+            {"getCRT": "1", "getWTR": True},
+            "0",
+            [("setCRT", 0)],
+            id="type-water-treatment-on",
+        ),
+    ],
+)
+async def test_muco_filling_cartridge_type_writes_water_treatment(
+    hass: HomeAssistant,
+    status: dict[str, Any],
+    option: str,
+    expected: list[tuple[str, Any]],
+) -> None:
+    """The cartridge type is written together with the water treatment."""
+    select, coordinator = _cartridge_type_select(hass, status)
+
+    await select.async_select_option(option)
+
+    coordinator.async_set_device_values.assert_awaited_once_with("device1", expected)
+
+
+@pytest.mark.parametrize(
+    ("status", "option", "translation_key"),
+    [
+        pytest.param({"getCRT": ""}, "none", "option_not_selectable", id="none"),
+        pytest.param({"getCRT": "1"}, "3", "invalid_option", id="unknown-option"),
+    ],
+)
+async def test_muco_filling_cartridge_type_rejects_option(
+    hass: HomeAssistant, status: dict[str, Any], option: str, translation_key: str
+) -> None:
+    """Without getWTR "none" cannot be selected; an unknown option is rejected."""
+    select, coordinator = _cartridge_type_select(hass, status)
+
+    with pytest.raises(ServiceValidationError) as exc_info:
+        await select.async_select_option(option)
+
+    assert exc_info.value.translation_key == translation_key
+    coordinator.async_set_device_values.assert_not_called()
+
+
+async def test_muco_filling_cartridge_type_write_failure(hass: HomeAssistant) -> None:
+    """A failed request raises the translated error."""
+    select, coordinator = _cartridge_type_select(hass, {"getCRT": "1", "getWTR": False})
+    coordinator.async_set_device_values.side_effect = SyrConnectConnectionError("boom")
+
+    with pytest.raises(HomeAssistantError) as exc_info:
+        await select.async_select_option("1")
+
+    assert exc_info.value.translation_key == "set_value_failed"
+
+
+async def test_muco_filling_no_cartridge_selects_while_water_treatment_off(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+) -> None:
+    """While the water treatment is off, neither getOHW nor getLOT becomes a select."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "model": _SYR_CONNECT_TEST_MUCO_FILLING_MODEL,
+                "status": {
+                    "getCRT": "0",
+                    "getWTR": False,
+                    "getOHW": "3",
+                    "getLOT": "7",
+                    "getWHU": "0",
+                },
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    keys = {getattr(e, "_sensor_key", None) for e in entities}
+    assert "getCRT" in keys
+    assert keys.isdisjoint({"getOHW", "getLOT"})

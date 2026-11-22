@@ -501,8 +501,18 @@ def _value_crs(
 def _value_crt(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
-    """Cartridge type (getCRT): empty means "no cartridge"; translation keys cannot be "", so "none"."""
-    if value is None or value == "":
+    """Cartridge type (getCRT): "none" for no cartridge (translation keys cannot be "").
+
+    Formats:
+    - Empty value: "" -> "none"
+    - Water treatment off (getWTR): "2" -> "none"
+    - Otherwise: "2" -> "2"
+    """
+    if (
+        value is None
+        or value == ""
+        or sensor.device_model.is_water_treatment_off(status)
+    ):
         return "none"
     return str(value)
 
