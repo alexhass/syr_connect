@@ -1290,6 +1290,26 @@ Alarm codes of the hygiene module (dk 60–63). "FF" = no alarm is assumed like 
 | AC | No connection to the combination module |
 | AD | Incorrect turbine table |
 
+### HVA
+
+Properties of the HVA (dk 20, dkv 19), which fills the heating system. No capture of a real device exists yet; the values are not confirmed. The examples are assumed, not captured, and marked "(assumed)"; they can be wrong. The integration does not offer these settings until a capture confirms the formats.
+
+| Property | Example | Unit | Access level | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| getBAR | "1500" (assumed) | mbar | | | Pressure of the heating system |
+| getCCT | "0" (assumed) | | | | Cartridge type: 0 = HWE, 1 = HVE, 2 = HVE+, 3 = EWC. With HVE and HVE+ there is no mixed water hardness (getMIX) |
+| getFMO / setFMO | "2" (assumed) | | | | Filling mode: 0 = off, 1 = initial filling, 2 = refilling. The attribute `fc` holds the number of filling processes (see `getFMO_fc`) |
+| getHNU | "4" (assumed) | | | | Unit of the water hardness: 0 = °dH (fixed), 1 = °e (fixed), 2 = °fH (fixed), 3 = ppm (fixed), 4 = °dH, 5 = °e, 6 = °fH, 7 = ppm, -1 = unknown |
+| getMIX | "D:8 GB:10 F:14 US:140" (assumed) | | | | Mixed water hardness in every unit: `D` = °dH, `GB` = °e, `F` = °fH, `US` = ppm, separated by spaces |
+| getRAW | "D:16 GB:20 F:29 US:285" (assumed) | | | | Raw water hardness in every unit, in the format of getMIX |
+| getSDB / setSDB | "15 [0,1bar]" (assumed) | 1/10 bar | | | Target pressure of the heating system. Range in SYR GUI: 0.5–5.5 bar in steps of 0.1 bar (raw 5–55), the suffix " [0,1bar]" is not part of the value |
+| setDHR / setDHM | | °dH | | | Raw water hardness 1–50 / mixed water hardness 0–12, in the unit °dH (getHNU 0 or 4) |
+| setEHR / setEHM | | °e | | | Raw water hardness 1–65 / mixed water hardness 0–16, in the unit °e (getHNU 1 or 5) |
+| setFHR / setFHM | | °fH | | | Raw water hardness 1–100 / mixed water hardness 0–20, in the unit °fH (getHNU 2 or 6) |
+| setUSR / setUSM | | ppm | | | Raw water hardness 1–100 / mixed water hardness 0–20, in the unit ppm (getHNU 3 or 7) |
+
+The hardness is written with the command of the unit of getHNU; the mixed water hardness only if the cartridge type (getCCT) is neither HVE nor HVE+.
+
 ### CONTROLICmini
 
 Properties of the CONTROLICmini (dk 100, dkv 27). No capture of a real device exists yet; the values are not confirmed. The examples are assumed, not captured, and marked "(assumed)"; they can be wrong and are to be replaced with the values of a capture.
