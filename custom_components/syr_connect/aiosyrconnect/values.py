@@ -8,12 +8,13 @@ translates (`STA_VALUE_MAP`).
 """
 
 from collections.abc import Mapping
+from datetime import UTC, datetime, time, timedelta, tzinfo
 import ipaddress
 import logging
 import re
 from typing import Any, Final
 
-from .models import SyrConnectStatus, SyrConnectStatusValue
+from .models import SyrConnectModelSignature, SyrConnectStatus, SyrConnectStatusValue
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -796,3 +797,244 @@ def build_set_ab_command(
     # Unknown format: the caller must not send a command
     _LOGGER.debug("Unexpected getAB format %r (type %s)", raw, type(raw).__name__)
     return None
+
+
+def parse_alarm_memory(value: SyrConnectStatusValue) -> SyrConnectStatusValue:
+    """Alarm memory (getALM): strip the "Alarms:" prefix.
+
+    The "->" before the current alarm stays, it marks the newest entry.
+
+    Formats:
+    - SafeTech: "Alarms:->A4 A4 AF AF A3" -> "->A4 A4 AF AF A3"
+    - Safe-T+: "Alarms: A5 A5 A6 ->A6 A5" -> "A5 A5 A6 ->A6 A5"
+    - Without prefix or no text: "A5" -> "A5", 3 -> 3
+    """
+    if isinstance(value, str) and value.startswith("Alarms:"):
+        return value.removeprefix("Alarms:").lstrip()
+    return value
+
+
+def get_battery_level(status: SyrConnectStatus) -> int | None:
+    """Battery level in % from the voltage (getBAT) between getBMI (0 %) and getBMA (100 %).
+
+    Formats:
+    - getBAT >= getBMA: 100
+    - getBMI < getBAT < getBMA: (getBAT - getBMI) / (getBMA - getBMI) * 100, rounded
+    - getBAT <= getBMI: 0
+
+    Returns:
+        The level, or None without a positive getBAT, without getBMA/getBMI or with
+        getBMI > getBMA
+    """
+    bat = parse_bat_value(status.get("getBAT"))
+    bma = parse_bat_value(status.get("getBMA"))
+    bmi = parse_bat_value(status.get("getBMI"))
+    if bat is None or bat <= 0 or bma is None or bmi is None or bmi > bma:
+        return None
+    if bat >= bma:
+        return 100
+    if bat > bmi:
+        return round((bat - bmi) / (bma - bmi) * 100)
+    return 0
+
+
+def is_spurious_bap(status: SyrConnectStatus, value: Any) -> bool:
+    """Return True if the battery level (getBAP) is a spurious field next to a voltage.
+
+    Workaround of a firmware bug: some devices report a getBAP of 0 or empty next to a
+    real battery voltage (getBAT > 0). Such a getBAP is no battery level.
+    """
+    try:
+        bap_zero = float(value) == 0
+    except ValueError, TypeError:
+        bap_zero = value is None or str(value).strip() == ""
+    if not bap_zero:
+        return False
+    bat_val = status.get("getBAT")
+    if bat_val is None:
+        return False
+    try:
+        return to_float(bat_val) > 0
+    except ValueError, TypeError:
+        return False
+
+
+def parse_mbar_value(value: SyrConnectStatusValue) -> float | None:
+    """Pressure (getBAR, getBAR2, getIBA): millibar -> bar.
+
+    Formats:
+    - With unit: "4077 mbar" -> 4.077
+    - Number: 4077 -> 4.077
+    """
+    if value is None or value == "":
+        return None
+    match = re.search(r"\d+", str(value))
+    if not match:
+        return None
+    return float(match.group()) / 1000
+
+
+def parse_dbd_value(value: SyrConnectStatusValue) -> float | None:
+    """Microleakage pressure drop (getDBD): tenths of a bar -> bar.
+
+    Formats:
+    - Tenths: "10" -> 1.0
+    - Negative: "-3" -> -0.3
+    """
+    if value is None or value == "":
+        return None
+    match = re.search(r"-?\d+", str(value))
+    if not match:
+        return None
+    return float(match.group()) / 10.0
+
+
+def get_hardness_class(status: SyrConnectStatus) -> str | None:
+    """Water hardness range from the conductivity (getCND): key of the range in °dH.
+
+    The hardness is estimated with `CND_PER_DH`:
+    - Up to 8 °dH: getCND "245" (7.0 °dH) -> "soft"
+    - Up to 14 °dH: getCND "384" (11.0 °dH) -> "medium"
+    - Above: getCND "608" (17.4 °dH) -> "hard"
+
+    Returns:
+        The key of the range, None without a numeric conductivity
+    """
+    raw = status.get("getCND")
+    if raw is None or raw == "":
+        return None
+    try:
+        hardness = to_float(raw) / CND_PER_DH
+    except ValueError, TypeError:
+        return None
+    if hardness <= 8:
+        return "soft"
+    if hardness <= 14:
+        return "medium"
+    return "hard"
+
+
+def parse_cyt_value(value: SyrConnectStatusValue) -> int | float | None:
+    """Remaining regeneration cycle time (getCYT): raw value -> minutes.
+
+    Formats:
+    - NeoSoft, Sanibel UNO, Conel Clear Pro Soft: 45 -> 45
+    - LEX, L20: "12:30" (minutes:seconds) -> 12.5
+    """
+    if value is None or value == "":
+        return None
+    try:
+        if isinstance(value, str) and ":" in value:
+            minutes, seconds = value.strip().split(":")
+            return int(minutes) + int(seconds) / 60
+        return int(to_float(value))
+    except ValueError, TypeError, OverflowError:
+        return None
+
+
+def parse_dom_value(value: SyrConnectStatusValue) -> SyrConnectStatusValue:
+    """Microleakage test valve open time (getDOM): a value in minutes -> seconds.
+
+    Formats:
+    - SafeTech: "60" -> "60" (seconds, unchanged)
+    - Safe-T+: "1 min" -> 60.0
+    - Not a number: "x min" -> None
+    """
+    if isinstance(value, str) and value.strip().lower().endswith("min"):
+        try:
+            return float(value.strip()[:-3].strip()) * 60
+        except ValueError:
+            return None
+    return value
+
+
+def parse_utc_time(value: SyrConnectStatusValue) -> time | None:
+    """Time of day the device stores in UTC (getDTT): "HH:MM" -> time.
+
+    Formats:
+    - Valid: "04:00" -> 04:00 UTC
+    - Invalid: "25:00", "4", "" -> None
+    """
+    try:
+        hour, minute = (int(part) for part in str(value).strip().split(":"))
+        return time(hour, minute, tzinfo=UTC)
+    except ValueError, TypeError:
+        return None
+
+
+def parse_lar_value(
+    signature: SyrConnectModelSignature,
+    value: SyrConnectStatusValue,
+    time_zone: tzinfo,
+) -> datetime | None:
+    """Last regeneration (getLAR): UNIX timestamp -> aware datetime.
+
+    The value is a UNIX timestamp in UTC on most devices. The models that set
+    `local_time_timestamps` (LEX Plus) encode their local wall time instead, see
+    docs/known_issues_xml_api.md, issue 5. Their value is read in the time zone of the
+    caller, which gives the offset that applied on that day.
+
+    Formats:
+    - Clear Pro Soft: "1794877201" -> 2026-11-17 01:00:01 UTC
+    - LEX Plus 10 S (Europe/Berlin): "1795147162" -> 2026-11-20 03:59:22 CET
+    - No regeneration yet: "0" -> None
+
+    Args:
+        signature: Signature of the model
+        value: Value of getLAR
+        time_zone: Time zone of the caller, used for local timestamps
+
+    Returns:
+        The time of the last regeneration, None without one
+    """
+    if value is None or value == "":
+        return None
+    try:
+        timestamp = int(to_float(value))
+        if timestamp == 0:
+            return None
+        utc_time = datetime.fromtimestamp(timestamp, UTC)
+    except ValueError, TypeError, OverflowError:
+        return None
+    if signature.local_time_timestamps:
+        return utc_time.replace(tzinfo=time_zone)
+    return utc_time
+
+
+def parse_weekday_mask(value: SyrConnectStatusValue) -> int | None:
+    """Permitted weekdays (getRPW): bitmask, bit 1 = Monday ... bit 7 = Sunday.
+
+    Formats:
+    - Monday and Friday: "17" -> 17
+    - Not specified: "0" -> 0
+    - Not a number: "", "x" -> None
+    """
+    if value is None or value == "":
+        return None
+    try:
+        return int(to_float(value))
+    except ValueError, TypeError, OverflowError:
+        try:
+            return int(str(value).strip())
+        except ValueError, TypeError:
+            return None
+
+
+def parse_tmz_value(value: SyrConnectStatusValue) -> timedelta | None:
+    """Time zone (getTMZ): offset in quarter hours -> offset to UTC.
+
+    The device accepts -44..48 (UTC-11:00 to UTC+12:00 in steps of 15 minutes).
+
+    Formats:
+    - Germany (CET): "4" -> +01:00
+    - India: "22" -> +05:30
+    - Newfoundland: "-14" -> -03:30
+    - Out of range or not a number: "60", "x" -> None
+    """
+    try:
+        quarters = int(str(value).strip())
+    except ValueError:
+        return None
+    if not -44 <= quarters <= 48:
+        return None
+    return timedelta(minutes=quarters * 15)

@@ -2,7 +2,7 @@
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 import logging
 import math
 import re
@@ -36,7 +36,6 @@ from homeassistant.util import dt as dt_util
 
 from .aiosyrconnect import (
     CAS_VALUE_MAP,
-    CND_PER_DH,
     CRS_VALUE_MAP,
     LE_VALUE_MAP,
     T1_VALUE_MAP,
@@ -44,18 +43,30 @@ from .aiosyrconnect import (
     SyrConnectStatus,
     SyrConnectStatusValue,
     get_ab_value,
+    get_battery_level,
+    get_hardness_class,
     get_iwh_value,
     get_rtm_value,
     is_code_active,
     is_empty_ip,
+    is_spurious_bap,
     is_value_true,
+    parse_alarm_memory,
     parse_avo_value,
     parse_bat_value,
+    parse_cyt_value,
+    parse_dbd_value,
+    parse_dom_value,
     parse_hygiene_module_value,
+    parse_lar_value,
     parse_lng_value,
+    parse_mbar_value,
     parse_net_value,
     parse_sta_value,
+    parse_tmz_value,
+    parse_utc_time,
     parse_vol_value,
+    parse_weekday_mask,
     to_float,
     to_int,
 )
@@ -152,19 +163,14 @@ def _value_alm(
 
     The LEX family reports its current alarm here ("NoSalt", "LowSalt"), the alarm
     codes of the model map it. An empty value means no alarm. Without a mapping the
-    raw value is shown. The alarm memory loses its "Alarms:" prefix; the "->" before
-    the current alarm stays, it marks the newest entry:
-    - SafeTech: "Alarms:->A4 A4 AF AF A3 AF A3 AF" -> "->A4 A4 AF AF A3 AF A3 AF"
-    - Safe-T+: "Alarms: A5 A5 A6 ->A6 A5 A5 A5 A5" -> "A5 A5 A6 ->A6 A5 A5 A5 A5"
+    raw value is shown, the alarm memory without its prefix (`parse_alarm_memory()`).
     """
     mapped, _ = get_sensor_ala_map(sensor.device_model, value)
     if mapped is not None:
         return mapped
     if value is None or str(value).strip() == "":
         return "no_alarm"
-    if isinstance(value, str) and value.startswith("Alarms:"):
-        return value.removeprefix("Alarms:").lstrip()
-    return value
+    return parse_alarm_memory(value)
 
 
 def _value_avo(
@@ -181,43 +187,20 @@ def _value_bap(
 ) -> Any:
     """Battery level (getBAP): the reported percentage, else computed from the voltages.
 
-    Without getBAP the level follows the battery voltage (getBAT) between the voltages
-    of 0 % (getBMI) and 100 % (getBMA):
-    - getBAT >= getBMA: 100 %
-    - getBMI < getBAT < getBMA: (getBAT - getBMI) / (getBMA - getBMI) * 100 %
-    - getBAT <= getBMI: 0 %
-    There is no level without a positive getBAT, without getBMA/getBMI or with
-    getBMI > getBMA.
+    Without getBAP the level follows the battery voltage (`get_battery_level()`).
     """
     if value is not None and not (isinstance(value, str) and value.strip() == ""):
         return sensor.numeric_value(value)
-    return _battery_level_from_voltages(status)
-
-
-def _battery_level_from_voltages(status: SyrConnectStatus) -> int | None:
-    """Battery level from getBAT between getBMI (0 %) and getBMA (100 %), see _value_bap."""
-    bat = parse_bat_value(status.get("getBAT"))
-    bma = parse_bat_value(status.get("getBMA"))
-    bmi = parse_bat_value(status.get("getBMI"))
-    if bat is None or bat <= 0 or bma is None or bmi is None or bmi > bma:
-        return None
-    if bat >= bma:
-        return 100
-    if bat > bmi:
-        return round((bat - bmi) / (bma - bmi) * 100)
-    return 0
+    return get_battery_level(status)
 
 
 def _value_bar(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
     """Pressure (getBAR / getBAR2 / getIBA): "4077 mbar" -> bar."""
-    if value is None or value == "":
+    pressure_bar = parse_mbar_value(value)
+    if pressure_bar is None:
         return None
-    match = re.search(r"\d+", str(value))
-    if not match:
-        return None
-    pressure_bar = float(match.group()) / 1000
     precision = sensor.entity_description.suggested_display_precision
     return round(pressure_bar, 3 if precision is None else precision)
 
@@ -248,54 +231,28 @@ def _value_bat(
 def _value_cnd_class(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
-    """Water hardness range (getCND_class): conductivity (getCND) / 35 -> range in °dH.
+    """Water hardness range (getCND_class): range of the conductivity (getCND).
 
-    Formats:
-    - getCND "245" (7.0 °dH, up to 8 °dH): "soft"
-    - getCND "384" (11.0 °dH, up to 14 °dH): "medium"
-    - getCND "608" (17.4 °dH): "hard"
+    The library estimates the range (`get_hardness_class()`): "soft", "medium" or
+    "hard", the translation keys of the states.
     """
-    conductivity = _to_float(status.get("getCND"))
-    if conductivity is None:
-        return None
-    hardness = conductivity / CND_PER_DH
-    if hardness <= 8:
-        return "soft"
-    if hardness <= 14:
-        return "medium"
-    return "hard"
+    return get_hardness_class(status)
 
 
 def _value_cyt(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
-    """Remaining regeneration cycle time (getCYT): raw value -> minutes.
-
-    Formats:
-    - NeoSoft, Sanibel UNO, Conel Clear Pro Soft: 45 -> 45 min
-    - LEX, L20: "12:30" (minutes:seconds) -> 12.5 min
-    """
-    if value is None or value == "":
-        return None
-    try:
-        if isinstance(value, str) and ":" in value:
-            minutes, seconds = value.strip().split(":")
-            return int(minutes) + int(seconds) / 60
-        return int(to_float(value))
-    except ValueError, TypeError, OverflowError:
-        return None
+    """Remaining regeneration cycle time (getCYT): raw value -> minutes (`parse_cyt_value()`)."""
+    return parse_cyt_value(value)
 
 
 def _value_dbd(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
     """Microleakage pressure drop (getDBD): tenths of a bar ("10" -> 1.0 bar)."""
-    if value is None or value == "":
+    pressure_bar = parse_dbd_value(value)
+    if pressure_bar is None:
         return None
-    match = re.search(r"-?\d+", str(value))
-    if not match:
-        return None
-    pressure_bar = float(match.group()) / 10.0
     precision = sensor.entity_description.suggested_display_precision
     return round(pressure_bar, 1 if precision is None else precision)
 
@@ -303,16 +260,8 @@ def _value_dbd(
 def _value_dom(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
-    """Microleakage test valve open time (getDOM): raw value -> seconds.
-
-    Formats:
-    - SafeTech: "60" -> 60 s
-    - Safe-T+: "1 min" -> 60 s
-    """
-    if isinstance(value, str) and value.strip().lower().endswith("min"):
-        minutes = sensor.numeric_value(value.strip()[:-3].strip())
-        return minutes * 60 if isinstance(minutes, int | float) else None
-    return sensor.numeric_value(value)
+    """Microleakage test valve open time (getDOM): raw value -> seconds (`parse_dom_value()`)."""
+    return sensor.numeric_value(parse_dom_value(value))
 
 
 def _value_dtt(
@@ -320,21 +269,21 @@ def _value_dtt(
 ) -> Any:
     """Microleakage test time (getDTT): UTC "HH:MM" -> local "HH:MM".
 
-    The device always stores the time in UTC. It is converted with the time zone of
-    Home Assistant for today's date, so the shown time follows daylight saving time.
+    The device always stores the time in UTC (`parse_utc_time()`). It is converted with
+    the time zone of Home Assistant for today's date, so the shown time follows
+    daylight saving time.
 
     Formats:
     - Germany, winter (CET): "04:00" -> "05:00"
     - Germany, summer (CEST): "04:00" -> "06:00"
     """
-    try:
-        hour, minute = (int(part) for part in str(value).strip().split(":"))
-        utc_time = dt_util.utcnow().replace(
-            hour=hour, minute=minute, second=0, microsecond=0
-        )
-    except ValueError, TypeError:
+    utc_time = parse_utc_time(value)
+    if utc_time is None:
         return None
-    return dt_util.as_local(utc_time).strftime("%H:%M")
+    today = dt_util.utcnow().replace(
+        hour=utc_time.hour, minute=utc_time.minute, second=0, microsecond=0
+    )
+    return dt_util.as_local(today).strftime("%H:%M")
 
 
 def _value_iwh(
@@ -364,31 +313,12 @@ def _value_net(
 def _value_lar(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
-    """Last regeneration (getLAR): UNIX timestamp -> aware datetime.
+    """Last regeneration (getLAR): UNIX timestamp -> aware datetime (`parse_lar_value()`).
 
-    The value is a UNIX timestamp in UTC on most devices. The devices whose profile
-    sets `local_time_timestamps` (LEX Plus) encode their local wall time instead, see
-    docs/known_issues_xml_api.md, issue 5. Their value is read in the time zone of
-    Home Assistant, which gives the offset that applied on that day, also across the
-    change between summer and winter time.
-
-    Formats:
-    - Clear Pro Soft (getRTM "02:00"): "1794877201" -> 2026-11-17 01:00:01 UTC
-    - LEX Plus 10 S (SLPS 2.3, Europe/Berlin): "1795147162" -> 2026-11-20 03:59:22 CET
+    The local timestamps of the LEX Plus are read in the time zone of Home Assistant,
+    see docs/known_issues_xml_api.md, issue 5.
     """
-    if value is None or value == "":
-        return None
-    try:
-        timestamp = int(to_float(value))
-        # 0 means that no regeneration has happened yet.
-        if timestamp == 0:
-            return None
-        utc_time = datetime.fromtimestamp(timestamp, UTC)
-    except ValueError, TypeError, OverflowError:
-        return None
-    if sensor.device_model.local_time_timestamps:
-        return utc_time.replace(tzinfo=dt_util.get_default_time_zone())
-    return utc_time
+    return parse_lar_value(sensor.device_model, value, dt_util.get_default_time_zone())
 
 
 def _map_int(value_map: Mapping[int, Any], value: Any, default: int) -> Any:
@@ -447,7 +377,7 @@ def _value_rpw(
     0 -> "0" ("Not specified" translation key), otherwise comma-separated localized
     short weekday names.
     """
-    mask = _weekday_mask(value)
+    mask = parse_weekday_mask(value)
     if mask is None:
         return None
     if mask == 0:
@@ -458,19 +388,6 @@ def _value_rpw(
     except AttributeError:
         language = None
     return _weekday_names(mask, language)
-
-
-def _weekday_mask(value: SyrConnectStatusValue) -> int | None:
-    """Return the weekday bitmask of getRPW, or None if the value is no number."""
-    if value is None or value == "":
-        return None
-    try:
-        return int(to_float(value))
-    except ValueError, TypeError, OverflowError:
-        try:
-            return int(str(value).strip())
-        except ValueError, TypeError:
-            return None
 
 
 def _weekday_names(mask: int, language: str | None) -> str:
@@ -519,23 +436,19 @@ def _value_t(
 def _value_tmz(
     sensor: SyrConnectSensor, status: SyrConnectStatus, value: SyrConnectStatusValue
 ) -> Any:
-    """Time zone (getTMZ): offset in quarter hours -> "UTC+hh:mm".
-
-    The device accepts -44..48 (UTC-11:00 to UTC+12:00 in steps of 15 minutes).
+    """Time zone (getTMZ): offset in quarter hours -> "UTC+hh:mm" (`parse_tmz_value()`).
 
     Formats:
     - Germany (CET): "4" -> "UTC+01:00"
     - India: "22" -> "UTC+05:30"
     - Newfoundland: "-14" -> "UTC-03:30"
     """
-    try:
-        quarters = int(str(value).strip())
-    except ValueError:
+    offset = parse_tmz_value(value)
+    if offset is None:
         return None
-    if not -44 <= quarters <= 48:
-        return None
-    sign = "-" if quarters < 0 else "+"
-    hours, minutes = divmod(abs(quarters) * 15, 60)
+    minutes = int(offset.total_seconds()) // 60
+    sign = "-" if minutes < 0 else "+"
+    hours, minutes = divmod(abs(minutes), 60)
     return f"UTC{sign}{hours:02d}:{minutes:02d}"
 
 
@@ -2065,32 +1978,10 @@ def is_sensor_visible(status: SyrConnectStatus, key: str, value: Any) -> bool:
     if m and not is_value_true(status.get(f"getPA{m.group(2)}")):
         return False
 
-    if key == "getBAP" and _is_spurious_bap(status, value):
+    if key == "getBAP" and is_spurious_bap(status, value):
         return False
 
     return not _is_excluded_when_empty(key, value)
-
-
-def _is_spurious_bap(status: SyrConnectStatus, value: Any) -> bool:
-    """Return True if getBAP is a spurious field next to a real battery voltage.
-
-    Firmware-bug workaround: getBAP is suppressed only when it is exactly 0/empty
-    AND getBAT reports a non-zero voltage. In that case the device exposes a
-    spurious percentage field alongside the real voltage reading.
-    """
-    try:
-        bap_zero = float(value) == 0
-    except ValueError, TypeError:
-        bap_zero = value is None or str(value).strip() == ""
-    if not bap_zero:
-        return False
-    bat_val = status.get("getBAT")
-    if bat_val is None:
-        return False
-    try:
-        return to_float(bat_val) > 0
-    except ValueError, TypeError:
-        return False
 
 
 def _is_excluded_when_empty(key: str, value: Any) -> bool:
