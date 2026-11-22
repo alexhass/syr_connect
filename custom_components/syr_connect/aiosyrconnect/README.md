@@ -121,6 +121,17 @@ if is_code_active(status.get(signature.alarm_status_key)):
     await client.set_device_status(device_id, [(command, value)])
 ```
 
+Every device family numbers its codes differently. The signature of a model names the
+tables of its family: `ala_codes` (getALA, or getALM with `alarm_style_alm`),
+`not_codes` (getNOT) and `wrn_codes` (getWRN). A table maps the code, in upper case, to
+the key of its meaning; the caller translates the key. `None` means that the codes of
+the family are unknown, so the caller shows the raw code:
+
+```python
+code = str(status.get(signature.alarm_status_key, "")).strip().upper()
+meaning = signature.ala_codes.get(code) if signature.ala_codes is not None else None
+```
+
 ## Errors
 
 All errors derive from `SyrConnectError`.
