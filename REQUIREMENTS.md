@@ -135,6 +135,7 @@ config/
       ├── aiosyrconnect/
       │  ├── __init__.py
       │  ├── codes.py
+      │  ├── commands.py
       │  ├── const.py
       │  ├── exceptions.py
       │  ├── http_client.py
