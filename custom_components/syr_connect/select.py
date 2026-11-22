@@ -23,6 +23,7 @@ from .aiosyrconnect import (
     get_rtm_value,
     is_value_true,
     parse_hygiene_module_value,
+    set_command,
     to_float,
 )
 from .const import _SYR_CONNECT_LEAK_PROTECTION_PROFILES, DOMAIN
@@ -1198,7 +1199,7 @@ class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
 
         coordinator = self.coordinator
         # key for setting: remove leading 'get' and prefix with 'set'
-        set_key = f"set{self._sensor_key[3:]}"
+        set_key = set_command(self._sensor_key)
         try:
             await coordinator.async_set_device_value(self._device_id, set_key, val)
             _LOGGER.debug(
@@ -1402,7 +1403,7 @@ class SyrConnectRangedHardnessSelect(SyrConnectHardnessSelect):
                 or int(to_float(soft)) <= raw_water
             ):
                 continue
-            set_key = f"set{soft_key[3:]}"
+            set_key = set_command(soft_key)
             try:
                 await self.coordinator.async_set_device_value(
                     self._device_id, set_key, raw_water
@@ -1607,7 +1608,7 @@ class SyrConnectDiscreteSelect(SyrConnectEntity, SelectEntity):
                 },
             )
         coordinator = self.coordinator
-        set_key = f"set{self._sensor_key[3:]}"
+        set_key = set_command(self._sensor_key)
         try:
             await coordinator.async_set_device_value(self._device_id, set_key, val)
             _LOGGER.debug(

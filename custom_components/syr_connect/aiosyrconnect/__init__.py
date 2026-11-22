@@ -10,6 +10,7 @@ Modules:
   login encryption of the cloud
 - json_api: client of the local device API (SyrConnectJsonAPI)
 - http_client: HTTP requests and size-limited reading of the answers
+- commands: set commands of the keys and the values the device takes
 - codes: values that mean "no code" and the meaning of the alarm, notification and
   warning codes of each device family
 - models: devices, status values, cloud services, statistics series and model signatures
@@ -24,6 +25,21 @@ README.md (tests/aiosyrconnect/test_package.py checks this).
 """
 
 from .codes import NO_CODE_VALUES, is_code_active
+from .commands import (
+    COMMAND_STATUS_KEYS,
+    JSON_ONLY_COMMANDS,
+    TRIGGER_COMMANDS,
+    build_dex_command,
+    build_flag_command,
+    build_reset_command,
+    build_sir_command,
+    build_trigger_command,
+    command_status_key,
+    filling_refusal,
+    is_flag_enabled,
+    is_microleakage_test_running,
+    set_command,
+)
 from .const import API_SERVICES
 from .exceptions import (
     SyrConnectAuthError,
@@ -89,15 +105,18 @@ __all__ = [
     "API_SERVICES",
     "CAS_VALUE_MAP",
     "CND_PER_DH",
+    "COMMAND_STATUS_KEYS",
     "CRS_VALUE_MAP",
     "FLUSHING_TEMPERATURE_GAP",
     "FLUSHING_TEMPERATURE_RANGES",
+    "JSON_ONLY_COMMANDS",
     "LE_VALUE_MAP",
     "MODEL_SIGNATURES",
     "NO_CODE_VALUES",
     "SETTING_OFF_VALUES",
     "SETTING_VALUES",
     "T1_VALUE_MAP",
+    "TRIGGER_COMMANDS",
     "UL_VALUE_MAP",
     "UNKNOWN_MODEL_SIGNATURE",
     "WHU_FACTORS_FROM_DH",
@@ -117,15 +136,24 @@ __all__ = [
     "SyrConnectStatus",
     "SyrConnectStatusValue",
     "SyrConnectXmlAPI",
+    "build_dex_command",
+    "build_flag_command",
+    "build_reset_command",
     "build_rtm_commands",
     "build_set_ab_command",
+    "build_sir_command",
+    "build_trigger_command",
+    "command_status_key",
     "detect_model_signature",
+    "filling_refusal",
     "get_ab_value",
     "get_iwh_value",
     "get_rtm_value",
     "is_code_active",
     "is_device_offline",
     "is_empty_ip",
+    "is_flag_enabled",
+    "is_microleakage_test_running",
     "is_network_error",
     "is_value_true",
     "mask_ug_value",
@@ -136,6 +164,7 @@ __all__ = [
     "parse_net_value",
     "parse_sta_value",
     "parse_vol_value",
+    "set_command",
     "to_float",
     "to_int",
 ]

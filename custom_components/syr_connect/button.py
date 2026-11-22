@@ -18,13 +18,15 @@ signature of the library (`alarm_status_key`, `alarm_reset_command()`):
     alarm_clear_via_set: True  → send setALA/setALM with the clear value
     alarm_clear_via_set: False → send clrALA/clrALM (the JSON API via /clr/)
 
-setNOT and setWRN send the clear value via the standard set command.
+setNOT and setWRN send the clear value via the standard set command
+(`build_reset_command()`). The values of the other commands come from the library
+(`aiosyrconnect/commands.py`).
 """
 
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 import logging
-from typing import Any, override
+from typing import override
 
 from homeassistant.components.button import ButtonEntity, ButtonEntityDescription
 from homeassistant.core import HomeAssistant
@@ -33,10 +35,17 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .aiosyrconnect import (
+    JSON_ONLY_COMMANDS,
     SyrConnectError,
     SyrConnectJsonAPI,
     SyrConnectStatus,
+    build_dex_command,
+    build_reset_command,
+    build_sir_command,
+    build_trigger_command,
+    command_status_key,
     is_code_active,
+    is_microleakage_test_running,
 )
 from .const import DOMAIN
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
@@ -80,57 +89,34 @@ class SyrConnectButtonEntityDescription(ButtonEntityDescription):
 
 
 async def _async_press_sir(press: _SyrConnectButtonPress) -> None:
-    """Manual regeneration (setSIR): the value follows the format of getSIR.
-
-    Values:
-    - getSIR False or "false": "true"
-    - Any other getSIR (e.g. "1", 1): 0
-    """
-    raw_sir = press.status.get("getSIR")
-    value_sir: int | str
-    if raw_sir is False or str(raw_sir).strip().lower() == "false":
-        value_sir = "true"
-    else:
-        value_sir = 0
-    await press.coordinator.async_set_device_value(
-        press.device_id, press.command, value_sir
-    )
-
-
-def _dex_value(typ: Any) -> int | str:
-    """Return the value that starts the microleakage test (setDEX), by device type (getTYP).
-
-    Values:
-    - getTYP below 100: 1
-    - getTYP 100 or more, absent or not numeric: "true"
-    """
-    try:
-        return 1 if int(typ) < 100 else "true"
-    except ValueError, TypeError:
-        return "true"
+    """Manual regeneration (setSIR): the value follows the format of getSIR."""
+    command, value = build_sir_command(press.status)
+    await press.coordinator.async_set_device_value(press.device_id, command, value)
 
 
 async def _async_press_dex(press: _SyrConnectButtonPress) -> None:
-    """Microleakage test (setDEX): start it unless one is running (getDSV 1)."""
-    if str(press.status.get("getDSV")).strip() == "1":
+    """Microleakage test (setDEX): start it unless one is running."""
+    if is_microleakage_test_running(press.status):
         raise ServiceValidationError(
             translation_domain=DOMAIN,
             translation_key="microleakage_test_running",
             translation_placeholders={"device": press.device_name},
         )
-    await press.coordinator.async_set_device_value(
-        press.device_id, press.command, _dex_value(press.status.get("getTYP"))
-    )
+    command, value = build_dex_command(press.status)
+    await press.coordinator.async_set_device_value(press.device_id, command, value)
 
 
 async def _async_press_flush(press: _SyrConnectButtonPress) -> None:
     """Manual flushing of a hygiene module line (setMFC, setMFW): the command has no value."""
-    await press.coordinator.async_set_device_value(press.device_id, press.command, "")
+    command, value = build_trigger_command(press.command)
+    await press.coordinator.async_set_device_value(press.device_id, command, value)
 
 
 def _has_active_code(press: _SyrConnectButtonPress) -> bool:
     """Return True if a reset button (setALA, setNOT, setWRN) has an active code to reset."""
-    return is_code_active(press.status.get(_reset_get_key(press.command, press.model)))
+    return is_code_active(
+        press.status.get(command_status_key(press.model, press.command))
+    )
 
 
 async def _async_press_ala(press: _SyrConnectButtonPress) -> None:
@@ -141,7 +127,9 @@ async def _async_press_ala(press: _SyrConnectButtonPress) -> None:
             translation_key="no_alarm_to_reset",
             translation_placeholders={"device": press.device_name},
         )
-    command, value = press.model.alarm_reset_command(press.coordinator.api.clear_value)
+    command, value = build_reset_command(
+        press.model, press.command, press.coordinator.api.clear_value
+    )
     await press.coordinator.async_set_device_value(press.device_id, command, value)
 
 
@@ -162,9 +150,10 @@ async def _async_press_not_wrn(press: _SyrConnectButtonPress) -> None:
             ),
             translation_placeholders={"device": press.device_name},
         )
-    await press.coordinator.async_set_device_value(
-        press.device_id, press.command, press.coordinator.api.clear_value
+    command, value = build_reset_command(
+        press.model, press.command, press.coordinator.api.clear_value
     )
+    await press.coordinator.async_set_device_value(press.device_id, command, value)
 
 
 # Descriptions of all buttons, in the order they are created
@@ -199,14 +188,6 @@ _SYR_CONNECT_BUTTON_TYPES: tuple[SyrConnectButtonEntityDescription, ...] = (
     ),
 )
 
-# Commands without a read key of their own: command -> status key that tells the device
-# has the function. A hygiene module reports no getMFC/getMFW; the stagnation time of the
-# line (getSCF, getSWF) shows that the line exists.
-_SYR_CONNECT_BUTTON_PRESENCE_KEYS = {
-    "setMFC": "getSCF",
-    "setMFW": "getSWF",
-}
-
 _SYR_CONNECT_BUTTON_DESCRIPTIONS: dict[str, SyrConnectButtonEntityDescription] = {
     description.key: description for description in _SYR_CONNECT_BUTTON_TYPES
 }
@@ -218,16 +199,6 @@ _SYR_CONNECT_BUTTON_ACTIVE_ICONS = {
     "setNOT": "mdi:bell-ring",
     "setWRN": "mdi:alert",
 }
-
-
-def _reset_get_key(command: str, model: SyrConnectModel) -> str:
-    """Return the status key read by a reset button (setALA, setNOT, setWRN).
-
-    For setALA the key depends on the model: getALM with alarm_style_alm, otherwise getALA.
-    """
-    if command == "setALA":
-        return model.alarm_status_key
-    return "get" + command[3:]
 
 
 async def async_setup_entry(
@@ -285,26 +256,14 @@ def _build_device_buttons(
         if command not in supported_button_keys:
             continue
 
-        # Derive the corresponding "getXYZ" key from the command name
-        # (e.g. 'setNOT' -> 'getNOT') and skip if it's not present
-        # in the device status.
-        # For setALA, the actual get-key depends on the model: devices with
-        # alarm_style_alm use getALM; all others use getALA.
-        if command == "setALA":
-            get_key = _reset_get_key(command, model_info)
-        elif command == "setDEX":
-            # No getDEX read key exists; presence is indicated by getDSV
-            # (microleakage test status), which exists on devices that support
-            # microleakage tests (Trio DFR/LS, SafeTech+).
-            # setDEX is JSON-only: skip on XML API.
-            if not isinstance(coordinator.api, SyrConnectJsonAPI):
-                continue
-            get_key = "getDSV"
-        else:
-            get_key = _SYR_CONNECT_BUTTON_PRESENCE_KEYS.get(
-                command, "get" + command[3:]
-            )
-        if get_key not in status:
+        # Only the local JSON API takes some commands (setDEX)
+        if command in JSON_ONLY_COMMANDS and not isinstance(
+            coordinator.api, SyrConnectJsonAPI
+        ):
+            continue
+        # The status key of the command tells that the device has the function, e.g.
+        # getNOT for setNOT, getALM or getALA for setALA, getDSV for setDEX
+        if command_status_key(model_info, command) not in status:
             continue
 
         entities.append(
@@ -383,7 +342,9 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
         if active_icon is None or self._device is None:
             return None
         status = self._status
-        if is_code_active(status.get(_reset_get_key(self._command, self.device_model))):
+        if is_code_active(
+            status.get(command_status_key(self.device_model, self._command))
+        ):
             return active_icon
         return None
 

@@ -177,6 +177,30 @@ if command is not None:
     await client.set_device_status(device_id, [command])
 ```
 
+## Commands
+
+A setting is written with the set command of its key (`set_command("getRMN")` ->
+`"setRMN"`). `commands.py` builds the commands whose value depends on the device:
+
+| Function | Command |
+| --- | --- |
+| `build_flag_command()` | A flag in the format the device reports (`True`, `1`, `"1"`, `"True"`), inverted for `inverted_flags` |
+| `build_reset_command()` | Reset of an alarm (`alarm_reset_command()`), a notification or a warning (`clear_value`) |
+| `build_sir_command()`, `build_dex_command()` | Manual regeneration, microleakage test |
+| `build_trigger_command()` | Commands without a value (`TRIGGER_COMMANDS`: setMFC, setMFW, setUPG) |
+
+`command_status_key()` names the status key that shows the device has the function
+of a command (getDSV for setDEX, getALM or getALA for setALA), `JSON_ONLY_COMMANDS`
+the commands only the local API takes, and `filling_refusal()` why the device does
+not start a filling now:
+
+```python
+from aiosyrconnect import build_flag_command
+
+command = build_flag_command(signature, status, "getBUZ", enabled=True)
+await client.set_device_status(device_id, [command])
+```
+
 ## Settings
 
 A device takes only certain raw values for a setting. `SETTING_VALUES` in
