@@ -182,6 +182,10 @@ device expects:
 | `parse_utc_time()`, `parse_lar_value()` | Times: getDTT in UTC, getLAR in UTC or local wall time (`local_time_timestamps`) |
 | `parse_tmz_value()`, `parse_weekday_mask()` | Time zone in quarter hours, permitted weekdays as bitmask |
 | `parse_alarm_memory()` | Alarm memory without the `Alarms:` prefix |
+| `is_measuring_sensor_active()` | getTSD, getPSD, getCSD: "0" means active before dk 1100, "True" from dk 1100 |
+| `is_valve_opening()`, `is_valve_closing()` | Valve motion: getVLV 21 opens, 11 closes |
+| `get_serial_number()`, `get_current_mac()` | Serial number (getSRN), MAC address of the active connection |
+| `get_active_leak_protection_profiles()`, `get_current_leak_protection_profile()` | Active leak protection profiles (getPA1-8) with their names (getPN1-8), the name of getPRF |
 
 The tables `CAS_VALUE_MAP`, `CRS_VALUE_MAP`, `LE_VALUE_MAP`, `T1_VALUE_MAP` and
 `UL_VALUE_MAP` map a raw code to liters or hours:

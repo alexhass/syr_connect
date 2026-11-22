@@ -503,7 +503,7 @@ Some further data about the device
 | getENV | "PROD" | | | | Deployment environment identifier (Trio DFR/LS, NeoSoft, Sanibel) |
 | getFFM | "1" | | | | Filter type, for display only. Read it, never set it: 0 = not defined, 1 = backwash filter, 2 = replaceable filter, 3 = no filter (issue #23) |
 | getFIR | "SLPS" | | | | Firmware name. Used to find the correct firmware file during firmware update |
-| getFRN | "A25032111217" | | | | Factory reference number — used internally as device ID fallback (NeoSoft, Sanibel) |
+| getFRN | "A25032111217" | | | | Factory reference number (NeoSoft, Sanibel) |
 | getHWV | "V1"<br>"35" | | USER | | Hardware version variant (NeoSoft 2500/5000, SafeTech, SafeTech+). SafeTech: version without dot, e.g. 35 = v3.5 |
 | getIDS / setIDS | "1"<br>"True" | | USER / SERVICE | 1 | Automatic daylight saving time: 0/False = disabled, 1/True = enabled |
 | getLAN | "1" | | | | Language of the UI (0=English, 1=German, 3=Spanish) |

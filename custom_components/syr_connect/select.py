@@ -20,14 +20,15 @@ from .aiosyrconnect import (
     SyrConnectError,
     SyrConnectStatus,
     build_rtm_commands,
+    get_active_leak_protection_profiles,
+    get_current_leak_protection_profile,
     get_rtm_value,
-    is_value_true,
     parse_hygiene_module_value,
     round_hardness,
     set_command,
     to_float,
 )
-from .const import _SYR_CONNECT_LEAK_PROTECTION_PROFILES, DOMAIN
+from .const import DOMAIN
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .entity import SyrConnectEntity, async_add_device_entities
@@ -631,9 +632,8 @@ def _build_device_selects(
 def _add_device_setting_selects(b: _SyrConnectSelectBuilder) -> None:
     """Add the selects for the active leak protection profile and the display rotation."""
     # Active leak-protection profile (getPRF), if any profile getPAx is active (e.g. "true" or "1")
-    if "getPRF" in b.supported_select_keys and any(
-        is_value_true(b.status.get(f"getPA{i}"))
-        for i in _SYR_CONNECT_LEAK_PROTECTION_PROFILES
+    if "getPRF" in b.supported_select_keys and get_active_leak_protection_profiles(
+        b.status
     ):
         b.entities.append(
             SyrConnectPrfSelect(b.coordinator, b.device_id, b.device_name)
@@ -1696,15 +1696,7 @@ class SyrConnectPrfSelect(SyrConnectEntity, SelectEntity):
     @override
     def options(self) -> list[str]:
         """Return the selectable options."""
-        status = self._status
-        opts: list[str] = []
-        for i in _SYR_CONNECT_LEAK_PROTECTION_PROFILES:
-            pa = status.get(f"getPA{i}")
-            if not is_value_true(pa):
-                continue
-            name = status.get(f"getPN{i}") or str(i)
-            opts.append(str(name))
-        return opts
+        return list(get_active_leak_protection_profiles(self._status).values())
 
     @property
     @override
@@ -1712,33 +1704,23 @@ class SyrConnectPrfSelect(SyrConnectEntity, SelectEntity):
         """Return the currently selected option."""
         if self._device is None:
             return None
-        status = self._status
-        val = status.get("getPRF")
-        if val is None or val == "":
-            return None
-        try:
-            idx = int(to_float(val))
-        except ValueError, TypeError, OverflowError:
-            return None
-        name = status.get(f"getPN{idx}")
-        # A name the JSON API reports as a number is compared as text, like in options
-        return str(name) if name is not None else None
+        return get_current_leak_protection_profile(self._status)
 
     @override
     async def async_select_option(self, option: str) -> None:
         """Write the selected option to the device."""
         # Find index corresponding to selected option
         coordinator = self.coordinator
-        status = self._status
-        selected_idx: int | None = None
-        for i in _SYR_CONNECT_LEAK_PROTECTION_PROFILES:
-            pa = status.get(f"getPA{i}")
-            if not is_value_true(pa):
-                continue
-            name = status.get(f"getPN{i}") or str(i)
-            if str(name) == option:
-                selected_idx = i
-                break
+        selected_idx = next(
+            (
+                number
+                for number, name in get_active_leak_protection_profiles(
+                    self._status
+                ).items()
+                if name == option
+            ),
+            None,
+        )
 
         if selected_idx is None:
             raise ServiceValidationError(

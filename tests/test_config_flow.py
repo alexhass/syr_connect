@@ -1768,7 +1768,7 @@ async def test_validate_input_json_empty_result(hass: HomeAssistant) -> None:
 
 
 async def test_validate_input_json_missing_serial_fields(hass: HomeAssistant) -> None:
-    """Test validate_input_json with missing getSRN/getFRN fields."""
+    """Test validate_input_json without the serial number (getSRN)."""
     with (
         patch(
             "custom_components.syr_connect.aiosyrconnect.json_api.SyrConnectJsonAPI.login",

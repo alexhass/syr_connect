@@ -38,7 +38,6 @@ from .const import (
     CONF_SERVICE,
     DOMAIN,
 )
-from .helpers.device import get_local_serial
 from .helpers.integration import (
     build_user_agent,
     get_api_locale,
@@ -232,11 +231,9 @@ async def _async_validate_json_device(api: SyrConnectJsonAPI) -> str:
         _LOGGER.debug("JSON API: returned empty status from get_device_status()")
         raise CannotConnectError
 
-    # Verify this is a SYR device by checking for serial number fields and extract serial
-    serial = get_local_serial(data_result)
-    if serial is None:
-        _LOGGER.debug("JSON API: response missing getSRN/getFRN - not a SYR device?")
-        raise CannotConnectError
+    # get_devices() raises SyrConnectInvalidResponseError for a device without a
+    # serial number (getSRN), which is no SYR device
+    serial = devices[0]["id"]
 
     _LOGGER.debug(
         "JSON API: Successfully validated SYR device with serial %s and %d status keys",

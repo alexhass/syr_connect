@@ -1220,8 +1220,18 @@ async def test_get_device_status_without_cache(user_agent: str) -> None:
     assert status == data
 
 
-async def test_get_devices_uses_frn_fallback(user_agent: str) -> None:
-    """Test that get_devices uses getFRN when getSRN is missing."""
+@pytest.mark.parametrize(
+    "data",
+    [
+        {"getFRN": "A25032111217", "getOther": "value"},
+        {"getSRN": "", "getOther": "value"},
+        {"getOther": "value"},
+    ],
+)
+async def test_get_devices_without_serial_number_raises(
+    user_agent: str, data: dict[str, str]
+) -> None:
+    """A device without getSRN is no SYR device; getFRN is no serial number."""
     sess = MagicMock()
     client = SyrConnectJsonAPI(
         sess,
@@ -1229,33 +1239,11 @@ async def test_get_devices_uses_frn_fallback(user_agent: str) -> None:
         user_agent=user_agent,
     )
 
-    data = {"getFRN": "67890", "getOther": "value"}  # No getSRN
-    with patch.object(client, "request_json_data", new=AsyncMock(return_value=data)):
-        devices = await client.get_devices("local")
-
-    assert len(devices) == 1
-    assert devices[0]["id"] == "67890"  # Uses getFRN
-    assert devices[0]["name"] == "67890"  # The serial number is the name
-    assert devices[0]["project_id"] == "local"
-
-
-async def test_get_devices_uses_local_device_fallback(user_agent: str) -> None:
-    """Test that get_devices uses 'local_device' when no serial available."""
-    sess = MagicMock()
-    client = SyrConnectJsonAPI(
-        sess,
-        base_url="http://test:5333/trio/",
-        user_agent=user_agent,
-    )
-
-    data = {"getOther": "value"}  # No getSRN or getFRN
-    with patch.object(client, "request_json_data", new=AsyncMock(return_value=data)):
-        devices = await client.get_devices("local")
-
-    assert len(devices) == 1
-    assert devices[0]["id"] == "local_device"
-    assert devices[0]["name"] == "local_device"
-    assert devices[0]["project_id"] == "local"
+    with (
+        patch.object(client, "request_json_data", new=AsyncMock(return_value=data)),
+        pytest.raises(SyrConnectInvalidResponseError, match="getSRN"),
+    ):
+        await client.get_devices("local")
 
 
 async def test_get_devices_calls_login_when_session_invalid(

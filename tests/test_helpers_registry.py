@@ -123,8 +123,8 @@ def test_cleanup_removed_devices_clears_statistics_of_removed_device() -> None:
 def test_build_statistic_id() -> None:
     """The ID is an external statistic ID: domain, colon, slugs only."""
     assert (
-        build_statistic_id("200AAA-56934", "getCEL")
-        == "syr_connect:200aaa_56934_getcel_history"
+        build_statistic_id("200AAA-12345", "getCEL")
+        == "syr_connect:200aaa_12345_getcel_history"
     )
 
 

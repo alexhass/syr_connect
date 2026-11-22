@@ -14,7 +14,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .aiosyrconnect import is_value_true
+from .aiosyrconnect import is_measuring_sensor_active, is_value_true
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .entity import SyrConnectEntity, async_add_device_entities
@@ -29,37 +29,9 @@ _LOGGER = logging.getLogger(__name__)
 PARALLEL_UPDATES = 1
 
 
-# Devices from this device kind (dk) on report flags as True/False instead of 0/1. With the
-# change, the sensor settings (getTSD/getPSD/getCSD) flipped their meaning, see
-# docs/syrconnect-protocol.md.
-_SYR_CONNECT_BINARY_SENSOR_BOOLEAN_API_MIN_DK = 1100
-
-
 def _is_empty(value: Any) -> bool:
     """Return True for a missing value (None or blank text)."""
     return value is None or str(value).strip() == ""
-
-
-def _sensor_active(model: SyrConnectModel, value: Any) -> bool | None:
-    """Return whether a measuring sensor is active (getTSD/getPSD/getCSD).
-
-    Formats:
-    - dk < 1100: "0" -> active, "1" -> deactivated
-    - dk >= 1100: "True" -> active, "False" -> deactivated
-
-    Args:
-        model: Detected model of the device, for its device kind (dk)
-        value: Raw value of the setting
-
-    Returns:
-        True if the sensor is active, False if deactivated, None for an empty value
-    """
-    if _is_empty(value):
-        return None
-    dk = model.dk
-    if dk is not None and dk >= _SYR_CONNECT_BINARY_SENSOR_BOOLEAN_API_MIN_DK:
-        return is_value_true(value)
-    return not is_value_true(value)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -94,7 +66,7 @@ _SYR_CONNECT_BINARY_SENSOR_TYPES: tuple[
         key="getCSD",  # Conductivity sensor active (on = active)
         entity_category=EntityCategory.DIAGNOSTIC,
         hidden_when="empty",
-        is_on_fn=_sensor_active,
+        is_on_fn=is_measuring_sensor_active,
     ),
     SyrConnectBinarySensorEntityDescription(
         key="getIDS",  # Daylight saving time enabled
@@ -106,7 +78,7 @@ _SYR_CONNECT_BINARY_SENSOR_TYPES: tuple[
         key="getPSD",  # Pressure sensor active (on = active)
         entity_category=EntityCategory.DIAGNOSTIC,
         hidden_when="empty",
-        is_on_fn=_sensor_active,
+        is_on_fn=is_measuring_sensor_active,
     ),
     SyrConnectBinarySensorEntityDescription(
         key="getSFV",  # New firmware available (checked at startup and every 6 h)
@@ -117,7 +89,7 @@ _SYR_CONNECT_BINARY_SENSOR_TYPES: tuple[
         key="getTSD",  # Temperature sensor active (on = active)
         entity_category=EntityCategory.DIAGNOSTIC,
         hidden_when="empty",
-        is_on_fn=_sensor_active,
+        is_on_fn=is_measuring_sensor_active,
     ),
     SyrConnectBinarySensorEntityDescription(
         key="getVTO",  # Valve test running
