@@ -842,7 +842,14 @@ def is_spurious_bap(status: SyrConnectStatus, value: Any) -> bool:
     """Return True if the battery level (getBAP) is a spurious field next to a voltage.
 
     Workaround of a firmware bug: some devices report a getBAP of 0 or empty next to a
-    real battery voltage (getBAT > 0). Such a getBAP is no battery level.
+    real battery voltage (getBAT > 0). Such a getBAP is no battery level. The voltage
+    is read in every format of getBAT (`parse_bat_value()`), also with a comma.
+
+    Formats of getBAT:
+    - Safe-T+: "6,11 4,38 3,90" -> voltage
+    - Safe-Tech+: "9,36" -> voltage
+    - Trio DFR/LS: "363" -> voltage
+    - Decimal point: "3.7" -> voltage
     """
     try:
         bap_zero = float(value) == 0
@@ -853,6 +860,9 @@ def is_spurious_bap(status: SyrConnectStatus, value: Any) -> bool:
     bat_val = status.get("getBAT")
     if bat_val is None:
         return False
+    voltage = parse_bat_value(bat_val)
+    if voltage is not None:
+        return voltage > 0
     try:
         return to_float(bat_val) > 0
     except ValueError, TypeError:

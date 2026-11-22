@@ -110,6 +110,12 @@ def test_is_sensor_visible_getbap_suppressed_when_string_zero_and_bat_positive()
     assert is_sensor_visible({"getBAT": "3.7"}, "getBAP", "0") is False
 
 
+def test_is_sensor_visible_getbap_suppressed_with_comma_voltage() -> None:
+    """getBAP=0 next to a Safe-T+ voltage with commas (getBAT "6,11 4,38 3,90") is suppressed."""
+    assert is_sensor_visible({"getBAT": "6,11 4,38 3,90"}, "getBAP", 0) is False
+    assert is_sensor_visible({"getBAT": "9,36"}, "getBAP", "0") is False
+
+
 def test_is_sensor_visible_getbap_not_suppressed_when_bat_absent() -> None:
     """getBAP=0 is visible when getBAT is not in status."""
     assert is_sensor_visible({}, "getBAP", 0) is True
