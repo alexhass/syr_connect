@@ -11,6 +11,7 @@ import logging
 
 from .aiosyrconnect import (
     MODEL_SIGNATURES,
+    UNKNOWN_MODEL_SIGNATURE,
     SyrConnectModelSignature,
     detect_model_signature,
 )
@@ -62,16 +63,6 @@ class SyrConnectModel(SyrConnectModelSignature):
     # allowlists and the generic alarm codes.
     device_profile: SyrConnectDeviceProfile | None = None
 
-
-# Returned by detect_model when no signature matches or input is invalid.
-UNKNOWN_MODEL = SyrConnectModel(
-    base_path=None,
-    display_name="Unknown model",
-    dk=None,
-    dkv=None,
-    manufacturer="Unknown",
-    name="unknown",
-)
 
 # Device profile of every signature of the library, by the model name; None for a
 # model without a profile. Every signature needs an entry (a missing one fails at
@@ -205,17 +196,28 @@ _SYR_CONNECT_MODEL_PROFILES: dict[str, SyrConnectDeviceProfile | None] = {
 }
 
 
-def _model(signature: SyrConnectModelSignature) -> SyrConnectModel:
+def _model(
+    signature: SyrConnectModelSignature,
+    device_profile: SyrConnectDeviceProfile | None,
+) -> SyrConnectModel:
     """Return the model of a signature of the library, with its device profile."""
     return SyrConnectModel(
         **{field.name: getattr(signature, field.name) for field in fields(signature)},
-        device_profile=_SYR_CONNECT_MODEL_PROFILES[signature.name],
+        device_profile=device_profile,
     )
+
+
+# Returned by detect_model when no signature matches or input is invalid: the unknown
+# signature of the library, with the global allowlists and the generic alarm codes.
+UNKNOWN_MODEL = _model(UNKNOWN_MODEL_SIGNATURE, None)
 
 
 # The models, in the order of the signatures of the library: the status checks of the
 # detection return the first one that matches.
-MODELS: list[SyrConnectModel] = [_model(signature) for signature in MODEL_SIGNATURES]
+MODELS: list[SyrConnectModel] = [
+    _model(signature, _SYR_CONNECT_MODEL_PROFILES[signature.name])
+    for signature in MODEL_SIGNATURES
+]
 
 
 def detect_model(

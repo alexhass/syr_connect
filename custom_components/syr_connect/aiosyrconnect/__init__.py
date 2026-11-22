@@ -10,6 +10,7 @@ Modules:
   login encryption of the cloud
 - json_api: client of the local device API (SyrConnectJsonAPI)
 - http_client: HTTP requests and size-limited reading of the answers
+- codes: values that mean "no code" for alarms, notifications and warnings
 - models: devices, status values, cloud services, statistics series and model signatures
 - model_detection: signatures of the known models and their detection
 - exceptions: errors raised by the clients
@@ -19,6 +20,7 @@ It imports only its own modules, the standard library and the requirements liste
 README.md (tests/aiosyrconnect/test_package.py checks this).
 """
 
+from .codes import NO_CODE_VALUES, is_code_active
 from .const import API_SERVICES
 from .exceptions import (
     SyrConnectAuthError,
@@ -33,7 +35,11 @@ from .exceptions import (
 )
 from .http_client import mask_ug_value
 from .json_api import SyrConnectJsonAPI
-from .model_detection import MODEL_SIGNATURES, detect_model_signature
+from .model_detection import (
+    MODEL_SIGNATURES,
+    UNKNOWN_MODEL_SIGNATURE,
+    detect_model_signature,
+)
 from .models import (
     SyrConnectApiDevice,
     SyrConnectModelSignature,
@@ -48,6 +54,8 @@ from .xml_parser import is_device_offline
 __all__ = [
     "API_SERVICES",
     "MODEL_SIGNATURES",
+    "NO_CODE_VALUES",
+    "UNKNOWN_MODEL_SIGNATURE",
     "SyrConnectApiDevice",
     "SyrConnectAuthError",
     "SyrConnectConnectionError",
@@ -65,6 +73,7 @@ __all__ = [
     "SyrConnectStatusValue",
     "SyrConnectXmlAPI",
     "detect_model_signature",
+    "is_code_active",
     "is_device_offline",
     "is_network_error",
     "mask_ug_value",

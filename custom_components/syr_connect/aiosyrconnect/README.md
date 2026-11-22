@@ -89,7 +89,7 @@ A signature also names the model (`display_name`, `manufacturer`, and per cloud 
 `service_branding`, see `branded()`) and gives the limits of its settings
 (`maximum_salt_volume`, `maximum_regeneration_interval`).
 `detect_model_signature()` returns the signature of a device, or None for an unknown
-model:
+model; `UNKNOWN_MODEL_SIGNATURE` names such a model ("Unknown model", no local path):
 
 ```python
 from aiosyrconnect import MODEL_SIGNATURES, detect_model_signature
@@ -106,6 +106,20 @@ signature = detect_model_signature(
 A caller may extend `SyrConnectModelSignature` with fields of its own and pass its
 signatures instead, in the order of `MODEL_SIGNATURES`: the status checks return the
 first signature that matches.
+
+## Alarm, notification and warning codes
+
+The devices report "no code" in getALA, getALM, getNOT and getWRN in several ways: `""`,
+`0`, `00`, `FF`, `A0X0000` and, after a reset over the JSON API, `255`
+(`NO_CODE_VALUES`). `is_code_active()` tells an active code from these values:
+
+```python
+from aiosyrconnect import is_code_active
+
+if is_code_active(status.get(signature.alarm_status_key)):
+    command, value = signature.alarm_reset_command(client.clear_value)
+    await client.set_device_status(device_id, [(command, value)])
+```
 
 ## Errors
 

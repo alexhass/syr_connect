@@ -34,11 +34,10 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
-from .aiosyrconnect import SyrConnectStatus, SyrConnectStatusValue
+from .aiosyrconnect import SyrConnectStatus, SyrConnectStatusValue, is_code_active
 from .binary_sensor import _SYR_CONNECT_BINARY_SENSOR_SUPPORTED_KEYS
 from .const import (
     _SYR_CONNECT_LEAK_PROTECTION_PROFILES,
-    _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM,
     _SYR_CONNECT_SENSOR_CAS_VALUE_MAP,
     _SYR_CONNECT_SENSOR_CND_PER_DH,
     _SYR_CONNECT_SENSOR_CRS_VALUE_MAP,
@@ -98,7 +97,7 @@ def _map_code(
     """Map an alarm/notification/warning code to its translation key, else the raw code.
 
     The codes of the device profile come first. A value they do not know that means
-    "no code" for the reset buttons (`_SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM`) is
+    "no code" (`aiosyrconnect.is_code_active()`) is
     shown as no_code, e.g. the 255 of an acknowledgment over the JSON API, which the
     optimistic update shows until the device reports "FF". A blank value stays None.
     """
@@ -107,9 +106,8 @@ def _map_code(
     mapped, raw_code = mapper(model, raw)
     if mapped:
         return str(mapped)
-    code = str(raw).strip().upper()
     # A blank value stays a missing value (None), as before
-    if code != "" and code in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM:
+    if str(raw).strip() != "" and not is_code_active(raw):
         return no_code
     # Model unknown or no mapping found: return the raw value 1:1
     sval = str(raw_code)

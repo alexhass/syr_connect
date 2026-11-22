@@ -3,10 +3,8 @@
 This module implements ButtonEntity objects for SYR Connect devices.
 
 Reset buttons (setALA, setNOT, setWRN) only trigger when the device
-reports an active code. The following values are treated as "no alarm"
-and will suppress the reset command (case-insensitive):
-
-    "", "0", "00", "ff", "a0x0000", "255"
+reports an active code (`aiosyrconnect.is_code_active()`). The values that
+mean "no code" and suppress the reset command are `aiosyrconnect.NO_CODE_VALUES`.
 
 The value that acknowledges a code comes from the client (`clear_value`):
 "FF" for the XML API, 255 for the JSON API.
@@ -34,8 +32,13 @@ from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .aiosyrconnect import SyrConnectError, SyrConnectJsonAPI, SyrConnectStatus
-from .const import _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM, DOMAIN
+from .aiosyrconnect import (
+    SyrConnectError,
+    SyrConnectJsonAPI,
+    SyrConnectStatus,
+    is_code_active,
+)
+from .const import DOMAIN
 from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .entity import SyrConnectEntity, async_add_device_entities
@@ -127,7 +130,7 @@ async def _async_press_flush(press: _SyrConnectButtonPress) -> None:
 
 def _has_active_code(press: _SyrConnectButtonPress) -> bool:
     """Return True if a reset button (setALA, setNOT, setWRN) has an active code to reset."""
-    return _is_active_code(press.status.get(_reset_get_key(press.command, press.model)))
+    return is_code_active(press.status.get(_reset_get_key(press.command, press.model)))
 
 
 async def _async_press_ala(press: _SyrConnectButtonPress) -> None:
@@ -215,17 +218,6 @@ _SYR_CONNECT_BUTTON_ACTIVE_ICONS = {
     "setNOT": "mdi:bell-ring",
     "setWRN": "mdi:alert",
 }
-
-
-def _is_active_code(raw: object) -> bool:
-    """Return True if an alarm, notification or warning code is active.
-
-    See the module docstring for the values that mean "nothing active".
-    """
-    return (
-        raw is not None
-        and str(raw).strip().upper() not in _SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM
-    )
 
 
 def _reset_get_key(command: str, model: SyrConnectModel) -> str:
@@ -391,9 +383,7 @@ class SyrConnectButton(SyrConnectEntity, ButtonEntity):
         if active_icon is None or self._device is None:
             return None
         status = self._status
-        if _is_active_code(
-            status.get(_reset_get_key(self._command, self.device_model))
-        ):
+        if is_code_active(status.get(_reset_get_key(self._command, self.device_model))):
             return active_icon
         return None
 

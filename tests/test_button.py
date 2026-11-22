@@ -979,7 +979,7 @@ async def test_button_reset_not_via_json_api_shows_no_notification_at_once(
     """After the acknowledgment with 255, the sensor shows no notification at once.
 
     The optimistic update keeps the sent 255 until the device reports "FF"; the
-    sensor shows it as no notification (_SYR_CONNECT_SENSOR_ALA_CODES_NO_ALARM).
+    sensor shows it as no notification (aiosyrconnect.NO_CODE_VALUES).
     """
     data = {
         "devices": [
