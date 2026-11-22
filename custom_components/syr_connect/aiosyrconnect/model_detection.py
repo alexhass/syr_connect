@@ -53,10 +53,112 @@ _CARTRIDGE_KEYS_MUCO_FILLING: Mapping[str, str] = {
     "2": "getLOT",
 }
 
+# Maximum temperature of the cold water line (getCCL) of the hygiene module in °C: 15-25
+_CCL_VALUES_HYGIENEMODULE = range(15, 26)
+
+# Maximum temperature of the cold water line (getCCL) of the Safe-T hygiene module in °C:
+# 2-40
+_CCL_VALUES_SAFETHYGIENEMODULE = range(2, 41)
+
 # NeoSoft reports the water hardness in tenths of mmol/l (getWHU 1)
 _HARDNESS_DIVISORS_NEOSOFT: Mapping[int, int] = {
     1: 10,
 }
+
+# Water hardness ranges of the All-in-One+ per unit: getWHU code -> (lowest, highest,
+# step) in that unit. The soft water hardness (getOWH) can be at most the raw water
+# hardness (getIWH).
+_HARDNESS_RANGES_ALLINONEPLUS: Mapping[str, Mapping[int, tuple[int, int, int]]] = {
+    "getIWH": {
+        0: (1, 50, 1),  # °dH
+        1: (1, 65, 1),  # °e
+        2: (1, 90, 1),  # °fH
+        3: (10, 900, 10),  # ppm
+    },
+    "getOWH": {
+        0: (0, 12, 1),  # °dH
+        1: (0, 16, 1),  # °e
+        2: (0, 22, 1),  # °fH
+        3: (0, 220, 10),  # ppm
+    },
+}
+
+# Water hardness ranges of the MuCo filling controller per unit: getWHU code -> (lowest,
+# highest, step) in that unit. The device keeps both values in °dH (`hardness_in_dh`),
+# getWHU is only the unit of the display. The soft water hardness (getOHW) can be at most
+# the raw water hardness (getIWH).
+_HARDNESS_RANGES_MUCO_FILLING: Mapping[str, Mapping[int, tuple[int, int, int]]] = {
+    "getIWH": {
+        0: (1, 50, 1),  # °dH
+        1: (1, 65, 1),  # °e
+        2: (1, 90, 1),  # °fH
+        3: (10, 900, 10),  # ppm
+    },
+    "getOHW": {
+        0: (0, 12, 1),  # °dH
+        1: (0, 16, 1),  # °e
+        2: (0, 22, 1),  # °fH
+        3: (0, 220, 10),  # ppm
+    },
+}
+
+# Raw values of the hygiene module written for "off": 0 days for the periodic flushing,
+# one degree below the range for the temperature limit
+_OFF_VALUES_HYGIENEMODULE: Mapping[str, int] = {
+    "getCCF": 0,
+    "getCCL": 14,
+    "getCWF": 0,
+    "getWCL": 54,
+}
+
+# Raw values of the hygiene module of the cold water line written for "off"
+_OFF_VALUES_HYGIENEMODULE_COLD: Mapping[str, int] = {
+    "getCCF": 0,
+    "getCCL": 14,
+}
+
+# Raw values of the hygiene module of the hot water line written for "off"
+_OFF_VALUES_HYGIENEMODULE_HOT: Mapping[str, int] = {
+    "getCWF": 0,
+    "getWCL": 54,
+}
+
+# Raw values of the Safe-T hygiene module written for "off": 0 days for the periodic
+# flushing
+_OFF_VALUES_SAFETHYGIENEMODULE: Mapping[str, int] = {
+    "getCCF": 0,
+    "getCWF": 0,
+}
+
+# Raw values of the Safe-T hygiene module of the cold water line written for "off"
+_OFF_VALUES_SAFETHYGIENEMODULE_COLD: Mapping[str, int] = {
+    "getCCF": 0,
+}
+
+# Synchronization interval (getRCP) of the HygBox in seconds: 6 hours to 8 days, the
+# steps of `SETTING_VALUES` within this range
+_RCP_VALUES_HYGBOX = [
+    21600,
+    43200,
+    86400,
+    172800,
+    259200,
+    345600,
+    432000,
+    518400,
+    604800,
+    691200,
+]
+
+# Maximum filling duration (getRMT) of the All-in-One+ in minutes: 5-20 in steps of 5,
+# 30-50 in steps of 10, 60-720 in steps of 30
+_RMT_VALUES_ALLINONEPLUS = sorted(
+    {
+        *range(5, 21, 5),
+        *range(30, 51, 10),
+        *range(60, 721, 30),
+    }
+)
 
 # The sensor measures every getWMP seconds but uploads only every getRCP seconds, so
 # the status holds only the latest measurement. The cloud keeps the raw measurements
@@ -82,6 +184,13 @@ _STATISTICS_SAFEFLOOR: tuple[SyrConnectStatistic, ...] = (
 _VALUE_FACTORS_FLOW_PER_MINUTE: Mapping[str, int] = {
     "getFLO": 60,
 }
+
+# Minimum temperature of the hot water line (getWCL) of the hygiene module in °C: 55-65
+_WCL_VALUES_HYGIENEMODULE = range(55, 66)
+
+# Minimum temperature of the hot water line (getWCL) of the Safe-T hygiene module in °C:
+# 50-70
+_WCL_VALUES_SAFETHYGIENEMODULE = range(50, 71)
 
 # Signatures of the known models, derived from fixtures and the dkv table in
 # docs/syrconnect-protocol.md. Each signature may include explicit checks (exact
@@ -149,6 +258,10 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=5,
         manufacturer="SYR",
         name="safethygienemodulecold",
+        setting_off_values=_OFF_VALUES_SAFETHYGIENEMODULE_COLD,
+        setting_values={
+            "getCCL": _CCL_VALUES_SAFETHYGIENEMODULE,
+        },
         # TODO: Untested model.
     ),
     SyrConnectModelSignature(
@@ -159,6 +272,11 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=11,
         manufacturer="SYR",
         name="safethygienemoduleinwall",
+        setting_off_values=_OFF_VALUES_SAFETHYGIENEMODULE,
+        setting_values={
+            "getCCL": _CCL_VALUES_SAFETHYGIENEMODULE,
+            "getWCL": _WCL_VALUES_SAFETHYGIENEMODULE,
+        },
         # TODO: Untested model.
     ),
     SyrConnectModelSignature(
@@ -169,6 +287,11 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=15,
         manufacturer="SYR",
         name="safethygienemodule",
+        setting_off_values=_OFF_VALUES_SAFETHYGIENEMODULE,
+        setting_values={
+            "getCCL": _CCL_VALUES_SAFETHYGIENEMODULE,
+            "getWCL": _WCL_VALUES_SAFETHYGIENEMODULE,
+        },
         # TODO: Untested model.
     ),
     # ── HVA (dk=20) ─────────────────────────────────────────────────────────────
@@ -548,6 +671,10 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=21,
         manufacturer="SYR",
         name="hygienemodulecold",
+        setting_off_values=_OFF_VALUES_HYGIENEMODULE_COLD,
+        setting_values={
+            "getCCL": _CCL_VALUES_HYGIENEMODULE,
+        },
         # TODO: Untested model.
     ),
     SyrConnectModelSignature(
@@ -558,6 +685,10 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=22,
         manufacturer="SYR",
         name="hygienemodulehot",
+        setting_off_values=_OFF_VALUES_HYGIENEMODULE_HOT,
+        setting_values={
+            "getWCL": _WCL_VALUES_HYGIENEMODULE,
+        },
         # TODO: Untested model.
     ),
     SyrConnectModelSignature(
@@ -568,6 +699,11 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=23,
         manufacturer="SYR",
         name="hygienemodulehotcold",
+        setting_off_values=_OFF_VALUES_HYGIENEMODULE,
+        setting_values={
+            "getCCL": _CCL_VALUES_HYGIENEMODULE,
+            "getWCL": _WCL_VALUES_HYGIENEMODULE,
+        },
         # TODO: Untested model.
     ),
     SyrConnectModelSignature(
@@ -578,6 +714,11 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=24,
         manufacturer="SYR",
         name="hygienemodulecoldhot",
+        setting_off_values=_OFF_VALUES_HYGIENEMODULE,
+        setting_values={
+            "getCCL": _CCL_VALUES_HYGIENEMODULE,
+            "getWCL": _WCL_VALUES_HYGIENEMODULE,
+        },
         # TODO: Untested model.
     ),
     # ── LEX Plus 10 (dk=80, dkv=25) ─────────────────────────────────────────────
@@ -862,12 +1003,16 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         display_name="All-in-One+",
         dk=160,
         dkv=36,
+        hardness_ranges=_HARDNESS_RANGES_ALLINONEPLUS,
         # The automatic filling mode (getDFI) is 0 = enabled, 1 = disabled
         inverted_flags={
             "getDFI",
         },
         manufacturer="SYR",
         name="allinoneplus",
+        setting_values={
+            "getRMT": _RMT_VALUES_ALLINONEPLUS,
+        },
         value_divisors={
             "getCFV": 1000,
             "getLFV": 1000,
@@ -895,6 +1040,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
                 "DITECH",
                 "DITECH Hygiene Flush Box",
             ),
+        },
+        setting_values={
+            "getRCP": _RCP_VALUES_HYGBOX,
         },
         # TODO: Untested model.
         srn_prefix="37",
@@ -1341,6 +1489,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dk=1500,
         dkv=500,
         hardness_in_dh=True,
+        hardness_ranges=_HARDNESS_RANGES_MUCO_FILLING,
         manufacturer="CONEL",
         name="conelclearprofill",
         not_codes=NOT_CODES_COMMON,
@@ -1716,6 +1865,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dk=1506,
         dkv=506,
         hardness_in_dh=True,
+        hardness_ranges=_HARDNESS_RANGES_MUCO_FILLING,
         manufacturer="SYR",
         name="syrac3228connect",
         not_codes=NOT_CODES_COMMON,

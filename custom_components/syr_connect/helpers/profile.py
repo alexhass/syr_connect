@@ -129,7 +129,7 @@ def get_hardness_range(
     """Return the range of a water hardness select for the unit (getWHU), or None.
 
     Args:
-        model: Detected model of the device (its profile holds the ranges).
+        model: Detected model of the device (holds the ranges).
         key: The water hardness key, e.g. "getIWH".
         raw_code: Raw getWHU value from the API (e.g. 0, "1", "2.0").
 
@@ -137,11 +137,10 @@ def get_hardness_range(
         (lowest, highest, step) in the unit of the code, or None if the model has no
         range for the key and unit.
     """
-    profile = model.device_profile
     code = _whu_code(raw_code)
-    if profile is None or code is None:
+    if code is None:
         return None
-    return profile.hardness_ranges.get(key, {}).get(code)
+    return model.hardness_ranges.get(key, {}).get(code)
 
 
 def get_hardness_factor(model: SyrConnectModel, raw_code: Any) -> float:

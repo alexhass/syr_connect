@@ -86,28 +86,11 @@ VALVE_SUPPORTED_KEYS = {
     "getAB",
 }
 
-# Maximum temperature of the cold water line (getCCL) in °C: 2-40
-SELECT_CCL_OPTIONS = list(range(2, 41))
-
-# Minimum temperature of the hot water line (getWCL) in °C: 50-70
-SELECT_WCL_OPTIONS = list(range(50, 71))
-
-# Raw values written for "off": 0 days for the periodic flushing
-SELECT_OFF_VALUES = {
-    "getCCF": 0,
-    "getCWF": 0,
-}
-
 
 PROFILE = SyrConnectDeviceProfile(
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
     select=SELECT_SUPPORTED_KEYS,
-    select_off_values=SELECT_OFF_VALUES,
-    select_options={
-        "getCCL": SELECT_CCL_OPTIONS,
-        "getWCL": SELECT_WCL_OPTIONS,
-    },
     sensor=SENSOR_SUPPORTED_KEYS,
     switch=SWITCH_SUPPORTED_KEYS,
     valve=VALVE_SUPPORTED_KEYS,

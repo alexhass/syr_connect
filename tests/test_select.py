@@ -115,6 +115,15 @@ def test_select_descriptions_have_unique_keys() -> None:
     assert len(keys) == len(set(keys))
 
 
+def test_setting_values_without_values_raises() -> None:
+    """A setting whose values the library does not know fails instead of offering nothing."""
+    assert list(select_module._setting_values(UNKNOWN_MODEL, "getRMN")) == list(
+        range(1, 11)
+    )
+    with pytest.raises(ValueError, match="getXYZ"):
+        select_module._setting_values(UNKNOWN_MODEL, "getXYZ")
+
+
 def test_option_unit_without_unit_raises() -> None:
     """A select key whose sensor description has no unit fails instead of labeling "30 None"."""
     assert select_module._option_unit("getRMT") == "min"
@@ -3219,7 +3228,7 @@ async def test_selects_infinite_value_counts_as_invalid(hass: HomeAssistant) -> 
         ),
     ],
 )
-async def test_rmt_select_options_follow_profile(
+async def test_rmt_select_options_follow_model(
     hass: HomeAssistant,
     create_mock_entry_with_coordinator: Callable[
         ..., tuple[MockConfigEntry, MagicMock]

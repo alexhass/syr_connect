@@ -14,6 +14,7 @@ Modules:
   warning codes of each device family
 - models: devices, status values, cloud services, statistics series and model signatures
 - model_detection: signatures of the known models and their detection
+- settings: allowed raw values of the settings and the values that switch them off
 - values: parsing of the status values, value tables and set commands of single keys
 - exceptions: errors raised by the clients
 - const: URLs, keys, client identity and the cloud services
@@ -50,6 +51,12 @@ from .models import (
     SyrConnectStatus,
     SyrConnectStatusValue,
 )
+from .settings import (
+    FLUSHING_TEMPERATURE_GAP,
+    FLUSHING_TEMPERATURE_RANGES,
+    SETTING_OFF_VALUES,
+    SETTING_VALUES,
+)
 from .values import (
     CAS_VALUE_MAP,
     CND_PER_DH,
@@ -83,9 +90,13 @@ __all__ = [
     "CAS_VALUE_MAP",
     "CND_PER_DH",
     "CRS_VALUE_MAP",
+    "FLUSHING_TEMPERATURE_GAP",
+    "FLUSHING_TEMPERATURE_RANGES",
     "LE_VALUE_MAP",
     "MODEL_SIGNATURES",
     "NO_CODE_VALUES",
+    "SETTING_OFF_VALUES",
+    "SETTING_VALUES",
     "T1_VALUE_MAP",
     "UL_VALUE_MAP",
     "UNKNOWN_MODEL_SIGNATURE",

@@ -142,6 +142,7 @@ config/
       │  ├── model_detection.py
       │  ├── models.py
       │  ├── py.typed
+      │  ├── settings.py
       │  ├── values.py
       │  ├── xml_api.py
       │  ├── xml_checksum.py

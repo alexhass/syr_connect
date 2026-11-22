@@ -14,7 +14,6 @@ cover every supported model at once.
 """
 
 from . import SyrConnectDeviceProfile
-from .safethygienemodule import SELECT_CCL_OPTIONS
 
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
@@ -61,20 +60,11 @@ VALVE_SUPPORTED_KEYS = {
     "getAB",
 }
 
-# Raw values written for "off": 0 days for the periodic flushing
-SELECT_OFF_VALUES = {
-    "getCCF": 0,
-}
-
 
 PROFILE = SyrConnectDeviceProfile(
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
     select=SELECT_SUPPORTED_KEYS,
-    select_off_values=SELECT_OFF_VALUES,
-    select_options={
-        "getCCL": SELECT_CCL_OPTIONS,
-    },
     sensor=SENSOR_SUPPORTED_KEYS,
     switch=SWITCH_SUPPORTED_KEYS,
     valve=VALVE_SUPPORTED_KEYS,

@@ -1,8 +1,10 @@
 """Data models of the SYR Connect APIs: devices, status values, services, statistics and models."""
 
-from collections.abc import Mapping, Set as AbstractSet
+from collections.abc import Mapping, Sequence, Set as AbstractSet
 from dataclasses import dataclass, field
 from typing import Any, NotRequired, TypedDict
+
+from .settings import SETTING_OFF_VALUES, SETTING_VALUES
 
 # A value of the device status. The XML API reports text only; the local JSON API also
 # reports numbers, booleans and null, and lists or objects for a few keys (getCMS,
@@ -82,7 +84,8 @@ class SyrConnectModelSignature:
     `cna_equals`, `srn_*` and `ver_*` fields are its status checks. `base_path`,
     `alarm_style_alm` and `alarm_clear_via_set` describe how the model is addressed.
     `display_name`, `manufacturer` and `service_branding` name it, and the
-    `maximum_*` fields are limits of its settings. `ala_codes`, `not_codes` and
+    `maximum_*`, `hardness_ranges`, `setting_values` and `setting_off_values` fields
+    are limits of its settings (`settings.py`). `ala_codes`, `not_codes` and
     `wrn_codes` are the code tables of its family (`codes.py`). The other fields tell
     how the model reports its values: the unit and scale of the water hardness
     (`whu_units`, `hardness_*`), keys in another scale (`value_*`), inverted flags,
@@ -128,6 +131,11 @@ class SyrConnectModelSignature:
     # Water hardness values (getIWH, getOWH) the device reports in another scale for a
     # getWHU code: code -> divisor, e.g. 10 for tenths of mmol/l
     hardness_divisors: Mapping[int, int] = field(default_factory=dict)
+    # Water hardness settings (getIWH, getOWH, getOHW) whose range depends on the unit:
+    # key -> getWHU code -> (lowest, highest, step) in that unit
+    hardness_ranges: Mapping[str, Mapping[int, tuple[int, int, int]]] = field(
+        default_factory=dict
+    )
     # The device reports and takes the water hardness (getIWH, getOHW) in °dH whatever
     # getWHU is set to; getWHU is only the unit of the display (`WHU_FACTORS_FROM_DH`)
     hardness_in_dh: bool = False
@@ -156,6 +164,12 @@ class SyrConnectModelSignature:
     # display name). Used when the same dk/dkv hardware is sold under different names
     # by different vendors; detection and addressing stay the same.
     service_branding: Mapping[str, tuple[str, str]] | None = None
+    # Raw values that switch a setting off on this model: key -> raw value; replaces
+    # the value of `SETTING_OFF_VALUES` (`off_value()`)
+    setting_off_values: Mapping[str, int] = field(default_factory=dict)
+    # Raw values of the settings that differ on this model: key -> allowed raw values in
+    # ascending order; replaces the values of `SETTING_VALUES` (`allowed_values()`)
+    setting_values: Mapping[str, Sequence[int]] = field(default_factory=dict)
     # Measurement history series the cloud keeps for the device; empty means none
     statistics: tuple[SyrConnectStatistic, ...] = ()
     # String that must immediately follow `srn_prefix`: "AAA" is the factory batch code
@@ -197,6 +211,36 @@ class SyrConnectModelSignature:
             if branding is not None:
                 return branding
         return self.manufacturer, self.display_name
+
+    def allowed_values(self, key: str) -> Sequence[int] | None:
+        """Return the raw values a setting of the model takes.
+
+        Args:
+            key: Status key of the setting, e.g. "getRMT"
+
+        Returns:
+            The raw values in ascending order from `setting_values`, else from
+            `SETTING_VALUES`; None if the values of the setting are unknown
+        """
+        values = self.setting_values.get(key)
+        if values is not None:
+            return values
+        return SETTING_VALUES.get(key)
+
+    def off_value(self, key: str) -> int | None:
+        """Return the raw value that switches a setting of the model off.
+
+        Args:
+            key: Status key of the setting, e.g. "getMIT"
+
+        Returns:
+            The raw value from `setting_off_values`, else from `SETTING_OFF_VALUES`;
+            None if the setting cannot be switched off with a value of its own
+        """
+        value = self.setting_off_values.get(key)
+        if value is not None:
+            return value
+        return SETTING_OFF_VALUES.get(key)
 
     @property
     def alarm_status_key(self) -> str:
