@@ -11,8 +11,9 @@ The expected endpoints used here are:
 - GET {BASE_URL}/get/{key}       -> returns single value: {"get{key}": value}
 
 ADM is no login with credentials, the methods are only named like those of the XML
-client. The caller sends it once: a device that answers 404 does not need it, which
-the caller can store and pass as `login_required`, and ADM is never sent to it again.
+client. The caller sends it once: a device that answers 404 or NSC does not need it,
+which the caller can store and pass as `login_required`, and ADM is never sent to it
+again.
 A device that needs it gets it again every JSON_SESSION_TIMEOUT before /get/all.
 
 Known API error codes in responses:
@@ -139,7 +140,7 @@ class SyrConnectJsonAPI:
         # Whether the device needs ADM, as the caller stored it (login_required):
         # - None: unknown (not checked yet)
         # - True: needed, sent every JSON_SESSION_TIMEOUT
-        # - False: not needed (the device answered 404), never sent
+        # - False: not needed (the device answered 404 or NSC), never sent
         self._login_required: bool | None = login_required
 
         # Project list (single-item placeholder, like the projects of the XML client)
@@ -461,8 +462,9 @@ class SyrConnectJsonAPI:
         """Send the ADM request, which some devices need to report all fields.
 
         Some older firmwares (SafeTech V4, Pontos) report all fields in /get/all only
-        after it; newer devices answer 404, which marks ADM as not needed. No credentials
-        are sent. An unexpected answer raises SyrConnectAuthError, as for the XML client.
+        after it; newer devices answer 404 or NSC, which marks ADM as not needed. No
+        credentials are sent. An unexpected answer raises SyrConnectAuthError, as for the
+        XML client.
 
         The URL is: {base}/set/ADM/(2)f
         Note: Uses literal parentheses, not URL-encoded %28 and %29
@@ -502,27 +504,30 @@ class SyrConnectJsonAPI:
                     "JSON API: Login endpoint not found (404) at %s; skipping ADM login",
                     self._build_base_url(),
                 )
-                # Mark session as valid to avoid retrying login
-                self._last_login = datetime.now(UTC)
-                # Remember that this device doesn't require ADM login
-                self._login_required = False
-                # Clear any cached data and provide projects placeholder
-                self._cached_get_all = None
-                self.projects = [{"id": "local", "name": "Local JSON API"}]
-                return True
+                return self._skip_login()
             # Other HTTP errors propagate, like connection errors
             raise
-        else:
-            # Successful HTTP call to login endpoint - record that login is required
-            self._login_required = True
+
+        # Some firmwares (NeoSoft NSR.1.82) answer HTTP 200 with
+        # {"setADM(2)f": "ERROR: NSC"} instead of 404: ADM is not needed either
+        found_key = self._find_set_response_key(response, "ADM", "(2)f")
+        if found_key is not None and response[found_key] in ("NSC", "ERROR: NSC"):
+            _LOGGER.info(
+                "JSON API: Login command unknown (NSC) at %s; skipping ADM login",
+                self._build_base_url(),
+            )
+            return self._skip_login()
 
         # Validate set-command response: {"setADM(2)f":"FACTORY"}
-        # Use shared validation logic that checks for FACTORY/OK/MIMA/NSC status codes
+        # Use shared validation logic that checks for FACTORY/OK/MIMA status codes
         try:
             self._validate_set_response(response, "ADM", "(2)f", "login", is_login=True)
         except SyrConnectInvalidResponseError as err:
             # Convert validation errors to auth errors for login context
             raise SyrConnectAuthError(f"Login failed: {err}") from err
+
+        # The device accepted ADM, so it needs it
+        self._login_required = True
 
         # Update session tracking
         self._last_login = datetime.now(UTC)
@@ -534,6 +539,21 @@ class SyrConnectJsonAPI:
         self.projects = [{"id": "local", "name": "Local JSON API"}]
 
         _LOGGER.info("JSON API: Logged in at %s", self._build_base_url())
+        return True
+
+    def _skip_login(self) -> bool:
+        """Remember that the device does not need ADM and mark the session valid.
+
+        Returns:
+            True, like a successful login
+        """
+        # Mark session as valid to avoid retrying login
+        self._last_login = datetime.now(UTC)
+        # Remember that this device doesn't require ADM login
+        self._login_required = False
+        # Clear any cached data and provide projects placeholder
+        self._cached_get_all = None
+        self.projects = [{"id": "local", "name": "Local JSON API"}]
         return True
 
     async def request_json_data(
@@ -725,6 +745,42 @@ class SyrConnectJsonAPI:
             serial_number,
         )
 
+    def _find_set_response_key(
+        self, response: dict[str, Any], cmd: str, value: Any
+    ) -> str | None:
+        """Return the key of the set-command status in the response.
+
+        Args:
+            response: JSON response from set-command
+            cmd: Command name (e.g., "ADM", "SIR", "RTM")
+            value: Value that was set
+
+        Returns:
+            The key as the device spelled it, or None if the response has none
+        """
+        response_key = self._response_key_for(cmd, value)
+
+        # BUG:
+        #   - Neosoft firmware causes "cmd" to become lowercase (e.g., "/set/sv1/15" becomes {"setsv15":"OK"}).
+        #   - Trio firmware does properly and always returns uppercase (e.g., {"setPRF1":"OK"}).
+        # This is inconsistent and seems to be a firmware bug on Neosoft devices.
+        #
+        # Perform a case-insensitive lookup for the response key so that
+        # devices returning e.g. 'setala255' or 'setALA255' are accepted.
+        found_key = next(
+            (k for k in response if k.lower() == response_key.lower()), None
+        )
+
+        # Some devices (e.g. Floorsensor) omit the "set" prefix in the response key:
+        # {"ADM(2)f":"FACTORY"} instead of {"setADM(2)f":"FACTORY"}.
+        # Fall back to a prefix-less lookup: cmd+value (case-insensitive).
+        if not found_key:
+            bare_key = f"{str(cmd).upper()}{value}"
+            found_key = next(
+                (k for k in response if k.lower() == bare_key.lower()), None
+            )
+        return found_key
+
     def _validate_set_response(
         self,
         response: dict[str, Any],
@@ -751,32 +807,14 @@ class SyrConnectJsonAPI:
                 (always raises for non-OK when is_login=True)
         """
         # Devices usually return the command portion UPPERCASE in the response
-        # key (e.g., "setABtrue": "OK"), but not all of them (see below).
+        # key (e.g., "setABtrue": "OK"), but not all of them
+        # (see _find_set_response_key).
         #
         # Construct expected response key by concatenating set + cmd + value
         # Example: cmd="sir", value="0" -> response_key="setSIR0"
         # Example: cmd="ADM", value="(2)f" -> response_key="setADM(2)f"
         response_key = self._response_key_for(cmd, value)
-
-        # BUG:
-        #   - Neosoft firmware causes "cmd" to become lowercase (e.g., "/set/sv1/15" becomes {"setsv15":"OK"}).
-        #   - Trio firmware does properly and always returns uppercase (e.g., {"setPRF1":"OK"}).
-        # This is inconsistent and seems to be a firmware bug on Neosoft devices.
-        #
-        # Perform a case-insensitive lookup for the response key so that
-        # devices returning e.g. 'setala255' or 'setALA255' are accepted.
-        found_key = next(
-            (k for k in response if k.lower() == response_key.lower()), None
-        )
-
-        # Some devices (e.g. Floorsensor) omit the "set" prefix in the response key:
-        # {"ADM(2)f":"FACTORY"} instead of {"setADM(2)f":"FACTORY"}.
-        # Fall back to a prefix-less lookup: cmd+value (case-insensitive).
-        if not found_key:
-            bare_key = f"{str(cmd).upper()}{value}"
-            found_key = next(
-                (k for k in response if k.lower() == bare_key.lower()), None
-            )
+        found_key = self._find_set_response_key(response, cmd, value)
 
         if not found_key:
             msg = f"Response missing expected key '{response_key}'"

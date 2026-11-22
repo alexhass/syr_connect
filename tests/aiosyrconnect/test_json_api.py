@@ -361,6 +361,9 @@ async def test_login_invalid_response_status(
     ):
         await client.login()
 
+    # A rejected answer tells nothing about whether the device needs ADM
+    assert client.login_required is None
+
 
 async def test_login_missing_status_key(
     user_agent: str, set_response_body: Callable[..., None]
@@ -417,16 +420,29 @@ async def test_login_mima_status(
         await client.login()
 
 
-async def test_login_nsc_status(
-    user_agent: str, set_response_body: Callable[..., None]
+@pytest.mark.parametrize(
+    "response",
+    [
+        pytest.param({"setADM(2)f": "NSC"}, id="nsc"),
+        pytest.param({"setADM(2)f": "ERROR: NSC"}, id="error-nsc"),
+        pytest.param({"ADM(2)f": "ERROR: NSC"}, id="without-set-prefix"),
+    ],
+)
+async def test_login_nsc_treated_as_not_required(
+    user_agent: str,
+    set_response_body: Callable[..., None],
+    response: dict[str, str],
 ) -> None:
-    """Test login raises exception when response status is NSC."""
+    """Test login treats an NSC answer to ADM like HTTP 404: ADM is not needed.
+
+    The NeoSoft firmware NSR.1.82 answers {"setADM(2)f": "ERROR: NSC"}.
+    """
 
     sess = MagicMock()
     mock_response = MagicMock()
     mock_response.status = 200
     mock_response.raise_for_status = MagicMock()
-    set_response_body(mock_response, json.dumps({"setADM(2)f": "NSC"}))
+    set_response_body(mock_response, json.dumps(response))
     mock_response.__aenter__ = AsyncMock(return_value=mock_response)
     mock_response.__aexit__ = AsyncMock(return_value=None)
     sess.get = MagicMock(return_value=mock_response)
@@ -434,14 +450,16 @@ async def test_login_nsc_status(
     client = SyrConnectJsonAPI(
         sess,
         host="192.168.1.100",
-        base_path="/trio",
+        base_path="/neosoft",
         user_agent=user_agent,
     )
 
-    with pytest.raises(
-        SyrConnectAuthError, match="Login failed: Command .* does not exist"
-    ):
-        await client.login()
+    result = await client.login()
+
+    assert result is True
+    assert client.login_required is False
+    assert client._last_login is not None
+    assert client.projects == [{"id": "local", "name": "Local JSON API"}]
 
 
 async def test_login_404_treated_as_not_required(user_agent: str) -> None:

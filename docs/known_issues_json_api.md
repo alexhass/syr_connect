@@ -15,7 +15,7 @@ repository.
 ## Summary of major deviations
 
 - **Missing `Content-Type: application/json` header:** Devices omit the `Content-Type` header and the `application/json` media type entirely; this is present across all devices and firmwares.
-- **ADM login optional / 404:** The `/set/ADM/(2)f` login endpoint is not implemented on all firmwares and may return HTTP 404.
+- **ADM login optional / 404 / NSC:** The `/set/ADM/(2)f` login endpoint is not implemented on all firmwares and may return HTTP 404 or the error code `NSC`.
 - **Percent-encoding issues:** Some firmwares reject percent-encoded path segments (e.g., `%3A`) and expect literal characters.
 - **Response key and URL path casing inconsistencies:** `set` response keys and `/set` path segment casing vary between devices and firmwares.
 - **Data-type inconsistencies:** Identical fields may appear as numbers, strings, or booleans depending on firmware/version.
@@ -40,16 +40,16 @@ repository.
 - Evidence / references:
   - Client: [custom_components/syr_connect/aiosyrconnect/json_api.py](custom_components/syr_connect/aiosyrconnect/json_api.py)
 
-### 2. ADM login endpoint is optional (HTTP 404)
+### 2. ADM login endpoint is optional (HTTP 404 or NSC)
 
 - To be considered as a good design change in newer devices.
-- Description: The legacy ADM login (`/set/ADM/(2)f`) is required by some older firmwares (SafeTech v4 / Pontos) but absent on all newer devices. Devices without this endpoint typically return HTTP 404.
-- Impact: Integrations must treat a 404 from the login endpoint as "login not required" instead of failing initialization.
+- Description: The legacy ADM login (`/set/ADM/(2)f`) is required by some older firmwares (SafeTech v4 / Pontos) but absent on all newer devices. Devices without this endpoint typically return HTTP 404. The NeoSoft firmware `NSR.1.82` answers HTTP 200 with `{"setADM(2)f": "ERROR: NSC"}` instead.
+- Impact: Integrations must treat a 404 or an `NSC` from the login endpoint as "login not required" instead of failing initialization.
 - Mitigation in this project:
-  - `SyrConnectJsonAPI.login()` treats 404 as "login not required" and continues.
+  - `SyrConnectJsonAPI.login()` treats 404 and `NSC` (`ERROR: NSC`) as "login not required" and continues.
 - Evidence / references:
-  - Client: [custom_components/syr_connect/aiosyrconnect/json_api.py](custom_components/syr_connect/aiosyrconnect/json_api.py) (login handles 404)
-  - Tests: [tests/aiosyrconnect/test_json_api.py](tests/aiosyrconnect/test_json_api.py) (test_login_404_treated_as_not_required)
+  - Client: [custom_components/syr_connect/aiosyrconnect/json_api.py](custom_components/syr_connect/aiosyrconnect/json_api.py) (login handles 404 and NSC)
+  - Tests: [tests/aiosyrconnect/test_json_api.py](tests/aiosyrconnect/test_json_api.py) (test_login_404_treated_as_not_required, test_login_nsc_treated_as_not_required)
 
 ### 3. Percent-encoding and literal special characters
 
@@ -211,7 +211,7 @@ Actual (expected) device response:
 ## Quick reproduction checklist
 
 ```bash
-# 1) ADM login (may return 200 or 404 depending on firmware)
+# 1) ADM login (may return 200, 200 with NSC or 404 depending on firmware)
 curl -i "http://localhost:5333/neosoft/set/ADM/(2)f"
 
 # 2) Fetch all values
