@@ -210,12 +210,6 @@ def test_get_sensor_not_map_family_codes(
     assert get_sensor_not_map(_signature(name), code) == (expected, code)
 
 
-def test_get_sensor_ala_map_every_device_profile_has_alarm_codes() -> None:
-    """Every device file names the alarm codes of its family."""
-    for name, profile in _DEVICE_PROFILES.items():
-        assert profile.ala_codes is not None, name
-
-
 @pytest.mark.parametrize(
     ("name", "code", "expected"),
     [

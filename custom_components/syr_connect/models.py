@@ -3,7 +3,7 @@
 The library (`aiosyrconnect.MODEL_SIGNATURES`) knows how a model is detected,
 addressed and named, and the limits of its settings. This module adds what Home
 Assistant offers for it, by the model name: the device profile with the entity
-allowlists and alarm codes.
+allowlists.
 """
 
 from dataclasses import dataclass, fields
@@ -57,10 +57,10 @@ class SyrConnectModel(SyrConnectModelSignature):
     """
 
     # Profile from a `devices/<name>.py` file with the per-platform entity allowlists
-    # and alarm codes of the model (see `helpers.profile.get_model_supported_keys()`). Several
+    # of the model (see `helpers.profile.get_model_supported_keys()`). Several
     # models share one profile when they are rebranded variants of the same
     # hardware (e.g. the dk=1500-1506 MultiController family). None means the global
-    # allowlists and the generic alarm codes.
+    # allowlists.
     device_profile: SyrConnectDeviceProfile | None = None
 
 
@@ -208,7 +208,7 @@ def _model(
 
 
 # Returned by detect_model when no signature matches or input is invalid: the unknown
-# signature of the library, with the global allowlists and the generic alarm codes.
+# signature of the library, with the global allowlists and without codes.
 UNKNOWN_MODEL = _model(UNKNOWN_MODEL_SIGNATURE, None)
 
 

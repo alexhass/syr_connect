@@ -82,9 +82,13 @@ class SyrConnectModelSignature:
     `cna_equals`, `srn_*` and `ver_*` fields are its status checks. `base_path`,
     `alarm_style_alm` and `alarm_clear_via_set` describe how the model is addressed.
     `display_name`, `manufacturer` and `service_branding` name it, and the
-    `maximum_*` fields are limits of its settings.
+    `maximum_*` fields are limits of its settings. `ala_codes`, `not_codes` and
+    `wrn_codes` are the code tables of its family (`codes.py`).
     """
 
+    # Alarm codes (getALA or getALM, see `alarm_style_alm`) of the device family: raw
+    # code -> key of the meaning; None means the codes are unknown
+    ala_codes: Mapping[str, str] | None = None
     # If True, the alarm/error state is cleared by sending a setter command (setALM)
     # rather than by a clrALM command. It only chooses the command: the value of the
     # set command comes from the client (`clear_value`), a clr command has none.
@@ -116,6 +120,9 @@ class SyrConnectModelSignature:
     maximum_salt_volume: int | None = None
     # Stable machine-readable model identifier (e.g. "lexplus10s")
     name: str
+    # Notification codes (getNOT) of the device family: raw code -> key of the meaning;
+    # None means the codes are unknown
+    not_codes: Mapping[str, str] | None = None
     # Cloud API device subtype: the integer `sbt` attribute in GetProjectDeviceCollections
     # XML; only set when the subtype uniquely identifies this model within its dk/dkv family
     sbt: int | None = None
@@ -133,6 +140,9 @@ class SyrConnectModelSignature:
     ver_contains: str | None = None
     # Prefix that `getVER` must start with
     ver_prefix: str | None = None
+    # Warning codes (getWRN) of the device family: raw code -> key of the meaning; None
+    # means the codes are unknown
+    wrn_codes: Mapping[str, str] | None = None
 
     def branded(self, service: str | None) -> tuple[str, str]:
         """Return the manufacturer and display name of the model for a cloud service.

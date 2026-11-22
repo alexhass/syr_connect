@@ -30,7 +30,7 @@ If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_SUPPORTED_KEYS below.
 """
 
-from . import NOT_CODES_NONE, WHU_UNITS_LEX, SyrConnectDeviceProfile
+from . import WHU_UNITS_LEX, SyrConnectDeviceProfile
 
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
@@ -220,41 +220,11 @@ VALVE_SUPPORTED_KEYS = {
     "getAB",
 }
 
-# Alarm codes of the LEX Plus 10 SL (raw API getALA -> internal translation key).
-# Longer than the table of the other LEX devices (lex.ALA_CODES), and the codes 2-5
-# mean something else there.
-ALA_CODES = {
-    "0": "no_alarm",
-    "LOWSALT": "alarm_salt_supply_low",
-    "NOSALT": "alarm_salt_supply_empty",
-    "1": "alarm_salt_supply_empty",
-    "2": "alarm_chlor_generator_fault",
-    "3": "alarm_valve_malfunction",
-    "4": "alarm_pressure_too_low",
-    "5": "alarm_pressure_too_high",
-    "6": "alarm_brine_level_low",
-    "7": "alarm_brine_level_high",
-    "11": "alarm_end_switch",
-    "12": "alarm_no_network_connection",
-    "13": "alarm_leakage_volume_reached",
-    "14": "alarm_leakage_time_reached",
-    "15": "alarm_max_flow_rate_reached",
-    "16": "alarm_microleakage_detected",
-    "17": "alarm_external_sensor_leakage_radio",
-    "18": "alarm_turbine_blocked",
-    "19": "alarm_pressure_sensor_faulty",
-    "20": "alarm_temperature_sensor_faulty",
-    "21": "fault_conductance_sensor",
-    "23": "alarm_leakage_volume_approaching",
-}
-
 
 PROFILE = SyrConnectDeviceProfile(
-    ala_codes=ALA_CODES,
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
     local_time_timestamps=True,
-    not_codes=NOT_CODES_NONE,
     select=SELECT_SUPPORTED_KEYS,
     sensor=SENSOR_SUPPORTED_KEYS,
     sensor_factors={

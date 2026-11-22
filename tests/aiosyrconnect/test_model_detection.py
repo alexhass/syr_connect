@@ -307,3 +307,11 @@ def test_unknown_model_signature_is_never_detected() -> None:
     assert UNKNOWN_MODEL_SIGNATURE.branded(None) == ("Unknown", "Unknown model")
     assert UNKNOWN_MODEL_SIGNATURE not in MODEL_SIGNATURES
     assert all(sig.name != "unknown" for sig in MODEL_SIGNATURES)
+    assert UNKNOWN_MODEL_SIGNATURE.ala_codes is None
+    assert UNKNOWN_MODEL_SIGNATURE.not_codes is None
+    assert UNKNOWN_MODEL_SIGNATURE.wrn_codes is None
+
+
+def test_every_signature_names_the_alarm_codes_of_its_family() -> None:
+    """Every known model has the alarm code table of its family."""
+    assert [sig.name for sig in MODEL_SIGNATURES if sig.ala_codes is None] == []

@@ -106,24 +106,8 @@ SELECT_RCP_OPTIONS = [
     691200,
 ]
 
-# Alarm codes of the HygBox (raw API getALA -> internal translation key). "FF" = no alarm
-# is assumed like on the other devices with the alarm codes A1-AF.
-ALA_CODES = {
-    "A1": "alarm_pressure_sensor_faulty",
-    "A2": "alarm_temperature_sensor_faulty",
-    "A3": "alarm_flow_sensor_fault",
-    "A4": "alarm_solenoid_valve_fault",
-    "A5": "alarm_drain_sensor_fault",
-    "A6": "alarm_pressure_too_low",
-    "A7": "alarm_battery_low",
-    "A8": "alarm_stagnation_flushing_time_exceeded",
-    "A9": "alarm_periodic_flushing_time_exceeded",
-    "FF": "no_alarm",
-}
-
 
 PROFILE = SyrConnectDeviceProfile(
-    ala_codes=ALA_CODES,
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
     # The flushings (getFD1-3) report the function as disabled

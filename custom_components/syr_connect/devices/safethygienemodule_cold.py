@@ -14,7 +14,7 @@ cover every supported model at once.
 """
 
 from . import SyrConnectDeviceProfile
-from .safethygienemodule import ALA_CODES, SELECT_CCL_OPTIONS
+from .safethygienemodule import SELECT_CCL_OPTIONS
 
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
@@ -68,7 +68,6 @@ SELECT_OFF_VALUES = {
 
 
 PROFILE = SyrConnectDeviceProfile(
-    ala_codes=ALA_CODES,
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
     select=SELECT_SUPPORTED_KEYS,

@@ -84,10 +84,7 @@ def get_sensor_ala_map(model: SyrConnectModel, raw_code: Any) -> tuple[str | Non
     Returns:
         Internal translation key (e.g. "no_alarm", "alarm_salt_supply_low") or None if unknown.
     """
-    profile = model.device_profile
-    return _map_family_code(
-        profile.ala_codes if profile is not None else None, raw_code
-    )
+    return _map_family_code(model.ala_codes, raw_code)
 
 
 def get_whu_unit(model: SyrConnectModel, raw_code: Any) -> str | None:
@@ -268,10 +265,7 @@ def get_sensor_not_map(model: SyrConnectModel, raw_code: Any) -> tuple[str | Non
     Returns:
         (mapped_key, raw_code) where mapped_key is internal translation key or None
     """
-    profile = model.device_profile
-    return _map_family_code(
-        profile.not_codes if profile is not None else None, raw_code
-    )
+    return _map_family_code(model.not_codes, raw_code)
 
 
 def get_sensor_wrn_map(model: SyrConnectModel, raw_code: Any) -> tuple[str | None, str]:
@@ -284,7 +278,4 @@ def get_sensor_wrn_map(model: SyrConnectModel, raw_code: Any) -> tuple[str | Non
     Returns:
         (mapped_key, raw_code) where mapped_key is internal translation key or None
     """
-    profile = model.device_profile
-    return _map_family_code(
-        profile.wrn_codes if profile is not None else None, raw_code
-    )
+    return _map_family_code(model.wrn_codes, raw_code)
