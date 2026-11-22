@@ -691,7 +691,8 @@ def test_get_battery_level(status: SyrConnectStatus, expected: int | None) -> No
         ({"getBAT": "6,11 4,38 3,90"}, 0, True),
         ({"getBAT": "9,36"}, "", True),
         ({"getBAT": "0,00"}, 0, False),
-        ({"getBAT": "3.7"}, 0, True),
+        ({"getBAT": "363"}, "0", True),
+        ({"getBAT": 645}, 0, True),
         ({"getBAT": "n/a"}, 0, False),
     ],
 )
