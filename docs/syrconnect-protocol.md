@@ -1494,6 +1494,9 @@ These attributes are parsed from the raw XML or JSON API response but are not ex
 | getALA_m | "A5" | Last alarm message codes |
 | getFMO_fc | "3" | Number of filling processes (HVA) |
 | getLE_max | "30" | Limit of getLE (Safe-T+): the highest raw value of the present profile is getLE_max − 1 |
+| getPV2_iir | "" | Meaning unknown. SafeTech+, SafeTech V4 and Trio DFR/LS report it empty in every status |
+| getRG1_iir | "1" | Meaning unknown. A CLEAR PRO SOFT (dk 1215) reports it in every answer during a regeneration (getRG1 "1") and drops it when the regeneration ends. All regenerations seen were outside the schedule (getRTM "02:00"), so it is unknown whether a scheduled regeneration carries it too. Missing in the answers of the LEX family, also during a regeneration |
+| getUL_iir | "" | Meaning unknown. The Safe-T+ reports it empty in every status |
 | getUL_iis | "0" | Absent profile (Safe-T+): while > 0, switching to the absent profile is not offered. A Safe-T+ capture reports `iir=""` instead |
 | getUL_m | "" | Absent profile (Safe-T+): number that is sent back as attribute `m` of setUL; meaning unknown |
 | getUL_uled | "" | Absent profile (Safe-T+): probably the end date of a planned absence; sent back as attribute `uled` of setUL |
