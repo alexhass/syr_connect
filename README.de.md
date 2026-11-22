@@ -285,7 +285,7 @@ Die Integration bietet eine umfangreiche Überwachung der Geräte:
 
 #### Buttons (Aktionen)
 
-- **Sofort regenerieren**: Sofortige Regeneration starten.
+- **Sofort regenerieren**: Sofortige Regeneration starten. Während einer laufenden Regeneration wird sie abgelehnt.
 - **Alarm zurücksetzen**: Aktive Alarmmeldungen löschen.
 - **Benachrichtigung zurücksetzen**: Benachrichtigungen löschen.
 - **Warnung zurücksetzen**: Warnungen löschen.

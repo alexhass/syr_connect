@@ -61,7 +61,7 @@ def command_status_key(signature: SyrConnectModelSignature, command: str) -> str
 
     Formats:
     - Alarm reset: "setALA" -> "getALM" or "getALA" (`alarm_status_key`)
-    - Manual regeneration: "setSIR" -> "getSIR", NeoSoft and LEX family "getRG1"
+    - Manual regeneration: "setSIR" -> "getSIR", NeoSoft "getRG1"
       (`regeneration_status_key`)
     - Command of `COMMAND_STATUS_KEYS`: "setDEX" -> "getDSV"
     - Other commands: "setNOT" -> "getNOT"
@@ -153,16 +153,18 @@ def is_microleakage_test_running(status: SyrConnectStatus) -> bool:
 def is_regeneration_running(
     signature: SyrConnectModelSignature, status: SyrConnectStatus
 ) -> bool:
-    """Return True if the device reports a running regeneration (getRG1-3).
+    """Return True if the device reports a running regeneration.
 
-    Only a model whose regeneration status key is getRG1 (NeoSoft, LEX family) tells
-    a running regeneration; getRG2 and getRG3 are the further tanks of the LEX.
+    The key is `regeneration_status_key` of the model. setSIR 0 starts a regeneration,
+    and getSIR stays 0 until its end and is 1 again when it has finished; the LEX
+    family sets getRG1 only about 20 minutes after the start.
 
     Formats:
-    - getRG1 0, "0" or "False" (and getRG2, getRG3 alike): False
+    - getSIR "0" or 0: True
+    - getSIR "1", 1 or False: False
+    - NeoSoft, getRG1 0, "0" or "False": False
     - NeoSoft, getRG1 1 or 2 (column 1 or 2 regenerates): True
-    - LEX, getRG2 "1" (tank 2 regenerates): True
-    - Models whose regeneration status key is not getRG1: False
+    - Key not reported: False
 
     Args:
         signature: Signature of the model
@@ -171,17 +173,14 @@ def is_regeneration_running(
     Returns:
         True while a regeneration runs
     """
-    if signature.regeneration_status_key != "getRG1":
+    key = signature.regeneration_status_key
+    value = status.get(key)
+    if value is None:
         return False
-    for key in ("getRG1", "getRG2", "getRG3"):
-        value = status.get(key)
-        if value is not None and str(value).strip().lower() not in (
-            "",
-            "0",
-            "false",
-        ):
-            return True
-    return False
+    text = str(value).strip().lower()
+    if key == "getSIR":
+        return text == "0"
+    return text not in ("", "0", "false")
 
 
 def build_dex_command(status: SyrConnectStatus) -> tuple[str, int | str]:

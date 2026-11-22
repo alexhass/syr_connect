@@ -285,7 +285,7 @@ The integration provides comprehensive monitoring of the devices:
 
 #### Buttons (Actions)
 
-- **Regenerate now**: Start an immediate regeneration.
+- **Regenerate now**: Start an immediate regeneration. It is refused while a regeneration is running.
 - **Reset alarm**: Clear active alarm messages.
 - **Reset notification**: Clear notification messages.
 - **Reset warning**: Clear warning messages.

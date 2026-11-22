@@ -274,7 +274,7 @@ def _build_device_buttons(
             continue
         # The status key of the command tells that the device has the function, e.g.
         # getNOT for setNOT, getALM or getALA for setALA, getDSV for setDEX, getSIR or
-        # getRG1 (NeoSoft, LEX family) for setSIR
+        # getRG1 (NeoSoft) for setSIR
         if command_status_key(model_info, command) not in status:
             continue
 

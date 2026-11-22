@@ -285,7 +285,7 @@ Integracja zapewnia kompleksowe monitorowanie urządzeń:
 
 #### Przyciski (akcje)
 
-- **Regeneruj teraz**: Uruchomienie natychmiastowej regeneracji.
+- **Regeneruj teraz**: Uruchomienie natychmiastowej regeneracji. Jest odrzucane, gdy trwa regeneracja.
 - **Resetuj alarm**: Usunięcie aktywnych komunikatów alarmowych.
 - **Resetuj powiadomienie**: Usunięcie powiadomień.
 - **Resetuj ostrzeżenie**: Usunięcie ostrzeżeń.

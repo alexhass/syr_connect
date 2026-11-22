@@ -67,7 +67,7 @@ def test_set_command() -> None:
         (UNKNOWN_MODEL_SIGNATURE, "setNOT", "getNOT"),
         (UNKNOWN_MODEL_SIGNATURE, "setSIR", "getSIR"),
         (_NEOSOFT_SIGNATURE, "setSIR", "getRG1"),
-        (_LEX_SIGNATURE, "setSIR", "getRG1"),
+        (_LEX_SIGNATURE, "setSIR", "getSIR"),
     ],
 )
 def test_command_status_key(
@@ -154,21 +154,28 @@ def test_build_sir_command_neosoft(
         pytest.param(_NEOSOFT_SIGNATURE, {"getRG1": "2"}, True, id="column-2"),
         pytest.param(_NEOSOFT_SIGNATURE, {"getRG1": ""}, False, id="empty"),
         pytest.param(_NEOSOFT_SIGNATURE, {}, False, id="not-reported"),
-        pytest.param(_LEX_SIGNATURE, {"getRG1": "0", "getRG2": "1"}, True, id="lex-2"),
-        pytest.param(_LEX_SIGNATURE, {"getRG3": "True"}, True, id="lex-3"),
         pytest.param(
-            _LEX_SIGNATURE,
-            {"getRG1": "0", "getRG2": "False", "getRG3": "0"},
-            False,
-            id="lex-idle",
+            _LEX_SIGNATURE, {"getRG1": "0", "getSIR": "1"}, False, id="lex-idle"
         ),
-        pytest.param(UNKNOWN_MODEL_SIGNATURE, {"getRG1": "1"}, False, id="other-model"),
+        pytest.param(
+            _LEX_SIGNATURE, {"getRG1": "0", "getSIR": "0"}, True, id="lex-started"
+        ),
+        pytest.param(
+            _LEX_SIGNATURE, {"getRG1": "1", "getSIR": "1"}, False, id="lex-rg1"
+        ),
+        pytest.param(_LEX_SIGNATURE, {"getRG1": "0"}, False, id="lex-not-reported"),
+        pytest.param(UNKNOWN_MODEL_SIGNATURE, {"getSIR": 0}, True, id="sir-0"),
+        pytest.param(UNKNOWN_MODEL_SIGNATURE, {"getSIR": 1}, False, id="sir-1"),
+        pytest.param(UNKNOWN_MODEL_SIGNATURE, {"getSIR": False}, False, id="sir-false"),
+        pytest.param(
+            _NEOSOFT_SIGNATURE, {"getRG1": "0", "getSIR": 0}, False, id="neosoft-sir"
+        ),
     ],
 )
 def test_is_regeneration_running(
     signature: SyrConnectModelSignature, status: SyrConnectStatus, expected: bool
 ) -> None:
-    """The NeoSoft and the LEX family tell a running regeneration in getRG1-3."""
+    """A regeneration runs while getSIR is 0, on the NeoSoft while getRG1 is not 0."""
     assert is_regeneration_running(signature, status) is expected
 
 

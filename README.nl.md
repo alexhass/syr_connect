@@ -285,7 +285,7 @@ De integratie biedt een uitgebreide bewaking van de apparaten:
 
 #### Knoppen (acties)
 
-- **Nu regenereren**: Een onmiddellijke regeneratie starten.
+- **Nu regenereren**: Een onmiddellijke regeneratie starten. Dit wordt geweigerd zolang er een regeneratie loopt.
 - **Alarm resetten**: Actieve alarmmeldingen wissen.
 - **Melding resetten**: Meldingen wissen.
 - **Waarschuwing resetten**: Waarschuwingen wissen.

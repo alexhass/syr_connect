@@ -285,7 +285,7 @@ L'integrazione offre un monitoraggio completo dei dispositivi:
 
 #### Pulsanti (azioni)
 
-- **Rigenera ora**: Avviare una rigenerazione immediata.
+- **Rigenera ora**: Avviare una rigenerazione immediata. Viene rifiutata mentre è in corso una rigenerazione.
 - **Reimposta allarme**: Cancellare i messaggi di allarme attivi.
 - **Reimposta notifica**: Cancellare i messaggi di notifica.
 - **Reimposta avviso**: Cancellare i messaggi di avviso.

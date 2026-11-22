@@ -922,13 +922,13 @@ The sensor settings `getTSD`, `getPSD` and `getCSD` are read with `get` and chan
 | getLAR | "1694501839" | | | | Last regeneration as UNIX timestamp (seconds since 1.1.1970); UTC on most devices, local time on the LEX, see `docs/known_issues_xml_api.md`, issue 5 |
 | getNOR | "427" | | | | Number of regeneration cycles in normal mode |
 | getNRE | "3" | | | | Number of remaining regenerations (NeoSoft 2500/5000) |
-| getRG1<br>getRG2<br>getRG3 | "0"<br>"0"<br>"0" | | | | "1" if regeneration is running for tank 1, 2 or 3. NeoSoft (getRG1 only): 0 = no regeneration, 1 = bottle 1 regenerates, 2 = bottle 2 regenerates. On the NeoSoft and the LEX family, getRG1 also tells that the device has the manual regeneration (setSIR, dmSIR); it cannot be started while getRG1, getRG2 or getRG3 reports a running regeneration |
+| getRG1<br>getRG2<br>getRG3 | "0"<br>"0"<br>"0" | | | | "1" if regeneration is running for tank 1, 2 or 3. NeoSoft (getRG1 only): 0 = no regeneration, 1 = bottle 1 regenerates, 2 = bottle 2 regenerates. On the NeoSoft, getRG1 also tells that the device has the manual regeneration (setSIR, dmSIR); it cannot be started while getRG1 reports a running regeneration. The LEX family sets getRG1 only about 20 minutes after the start of a regeneration |
 | getRST | "0" | | | | Reset device control — unclear what values trigger |
 | setRST | "1" | | SERVICE | | Restarts the device (write-only) |
 | getRTI | "00:00"<br>"3540" | | | | Total duration of the regeneration cycle. NeoSoft: time until the regeneration ends, in seconds (0–5940) |
 | getSCR | "0" | | | | *unknown, likely number of service regeneration cycles* |
 | setSDR | "1" | | | | Trigger delayed regeneration (write-only) |
-| setSIR | "1" | | | | When set to "0" a regeneration is started immediately (e.g. SYR Connect Cloud uses this), "1" stops it (LEX Plus). The NeoSoft takes dmSIR instead with the SYR Connect cloud |
+| setSIR | "1" | | | | When set to "0" a regeneration is started immediately (e.g. SYR Connect Cloud uses this), "1" stops it (LEX Plus). The LEX family reports getSIR "0" from the start until the end of the regeneration, which cannot be started again meanwhile, and "1" again when it has finished. The NeoSoft takes dmSIR instead with the SYR Connect cloud |
 | dmSIR | "true" | | | | NeoSoft: starts a regeneration immediately with the SYR Connect cloud (write-only) |
 | setSMR | "1" | | | | Trigger multi-tank regeneration (write-only) |
 | getTOR | "429" | | | | Number of total regeneration cycles |

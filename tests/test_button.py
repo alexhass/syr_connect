@@ -407,14 +407,14 @@ async def test_async_setup_entry_skip_setsir_when_getsir_missing(
     assert len(entities) == 0
 
 
-async def test_async_setup_entry_creates_setsir_when_getrg1_present(
+async def test_async_setup_entry_creates_setsir_when_getsir_present(
     hass: HomeAssistant,
     create_mock_entry_with_coordinator: Callable[
         ..., tuple[MockConfigEntry, MagicMock]
     ],
     mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
-    """The LEX gets the setSIR button when it reports getRG1, also without getSIR."""
+    """The LEX gets the setSIR button when it reports getSIR, also without getRG1."""
     data = {
         "devices": [
             {
@@ -422,7 +422,7 @@ async def test_async_setup_entry_creates_setsir_when_getrg1_present(
                 "name": "Test Device",
                 "project_id": "project1",
                 "status": {
-                    "getRG1": "0",
+                    "getSIR": "1",
                     "getCNA": "LEXplus10S",
                 },
             }
@@ -463,21 +463,21 @@ async def test_async_setup_entry_no_getsir(
     assert len(entities) == 0
 
 
-async def test_async_setup_entry_skips_setsir_without_getrg1(
+async def test_async_setup_entry_skips_setsir_without_getsir(
     hass: HomeAssistant,
     create_mock_entry_with_coordinator: Callable[
         ..., tuple[MockConfigEntry, MagicMock]
     ],
     mock_add_entities: Callable[[], tuple[list[Any], Mock]],
 ) -> None:
-    """The LEX has no setSIR button without getRG1, even if it reports getSIR."""
+    """The LEX has no setSIR button without getSIR, even if it reports getRG1."""
     data = {
         "devices": [
             {
                 "id": "device1",
                 "name": "Device 1",
                 "project_id": "project1",
-                "status": {"getSIR": "false", "getCNA": "LEXplus10S"},
+                "status": {"getRG1": "0", "getCNA": "LEXplus10S"},
             }
         ]
     }

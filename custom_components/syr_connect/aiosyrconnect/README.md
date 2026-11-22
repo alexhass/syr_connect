@@ -224,7 +224,7 @@ A setting is written with the set command of its key (`set_command("getRMN")` ->
 
 `command_status_key()` names the status key that shows the device has the function
 of a command (getDSV for setDEX, getALM or getALA for setALA, getRG1 for setSIR on the
-NeoSoft and the LEX family), `is_regeneration_running()` whether a regeneration runs, `JSON_ONLY_COMMANDS`
+NeoSoft), `is_regeneration_running()` whether a regeneration runs, `JSON_ONLY_COMMANDS`
 the commands only the local API takes, and `filling_refusal()` why the device does
 not start a filling now:
 

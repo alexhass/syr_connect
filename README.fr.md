@@ -285,7 +285,7 @@ L'intégration offre une surveillance complète des appareils :
 
 #### Boutons (actions)
 
-- **Régénérer maintenant** : Lancer une régénération immédiate.
+- **Régénérer maintenant** : Lancer une régénération immédiate. Elle est refusée pendant qu'une régénération est en cours.
 - **Réinitialiser l'alarme** : Effacer les messages d'alarme actifs.
 - **Réinitialiser la notification** : Effacer les messages de notification.
 - **Réinitialiser l'avertissement** : Effacer les messages d'avertissement.

@@ -205,13 +205,13 @@ async def test_lex_regeneration_button_sends_setsir(
     coordinator.async_set_device_value.assert_awaited_once_with("device1", "setSIR", 0)
 
 
-async def test_lex_regeneration_button_refused_while_a_tank_regenerates(
+async def test_lex_regeneration_button_refused_while_getsir_is_0(
     create_mock_coordinator: Callable[..., MagicMock],
 ) -> None:
-    """No regeneration is started while one of the tanks regenerates (getRG1-3)."""
+    """No regeneration is started while getSIR is 0, before getRG1 reports it."""
     button, coordinator = _lex_button(
         create_mock_coordinator,
-        {"getRG1": "0", "getRG2": "1", "getRG3": "0", "getSIR": "1"},
+        {"getRG1": "0", "getRG2": "0", "getRG3": "0", "getSIR": "0"},
     )
 
     with pytest.raises(ServiceValidationError) as exc_info:

@@ -285,7 +285,7 @@ A integração oferece uma monitorização completa dos dispositivos:
 
 #### Botões (ações)
 
-- **Regenerar agora**: Iniciar uma regeneração imediata.
+- **Regenerar agora**: Iniciar uma regeneração imediata. É recusada enquanto decorre uma regeneração.
 - **Repor alarme**: Apagar as mensagens de alarme ativas.
 - **Repor notificação**: Apagar as mensagens de notificação.
 - **Repor aviso**: Apagar as mensagens de aviso.

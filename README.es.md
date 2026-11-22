@@ -285,7 +285,7 @@ La integración ofrece una supervisión completa de los dispositivos:
 
 #### Botones (acciones)
 
-- **Regenerar ahora**: Iniciar una regeneración inmediata.
+- **Regenerar ahora**: Iniciar una regeneración inmediata. Se rechaza mientras hay una regeneración en curso.
 - **Restablecer alarma**: Borrar los mensajes de alarma activos.
 - **Restablecer notificación**: Borrar los mensajes de notificación.
 - **Restablecer advertencia**: Borrar los mensajes de advertencia.
