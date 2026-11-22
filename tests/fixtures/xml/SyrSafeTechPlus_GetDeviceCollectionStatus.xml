@@ -7,7 +7,7 @@
   <dvs>
     <d dg="0d2bf13e-3222-f111-8011-be3af2b6059f" sbt="" sta="2" dst="2" ast="1" so="1">
       <ci f="-" b="-" m="-" />
-      <c n="getSRN" v="112AAA123456" dt="20.03.2026 23:05:12" />
+      <c n="getSRN" v="112AAA12345" dt="20.03.2026 23:05:12" />
       <c n="getALM" v="ff" dt="20.03.2026 23:05:37" />
       <c n="getDTR" v="[0,0,0,0,0,0,0,0]" />
       <c n="getDSV" v="3" />
@@ -179,5 +179,5 @@
       <c n="getVER" v="syr001-A-B-000-176" />
     </d>
   </dvs>
-  <cs v="15E69" />
+  <cs v="15DCE" />
 </sc>
