@@ -386,8 +386,7 @@ def _value_lar(
         utc_time = datetime.fromtimestamp(timestamp, UTC)
     except ValueError, TypeError, OverflowError:
         return None
-    profile = sensor.device_model.device_profile
-    if profile is not None and profile.local_time_timestamps:
+    if sensor.device_model.local_time_timestamps:
         return utc_time.replace(tzinfo=dt_util.get_default_time_zone())
     return utc_time
 
@@ -1994,7 +1993,7 @@ _SYR_CONNECT_SENSOR_DESCRIPTIONS: dict[str, SyrConnectSensorEntityDescription] =
 
 # Sensors that only a device profile enables: computed values that the device does not
 # report itself and that apply to one family only, the keys of one cartridge type or size
-# (cartridge_keys, cartridge_size_keys of the profile), and the keys of the HygBox, the dosing pump and the
+# (cartridge_keys, cartridge_size_keys of the model), and the keys of the HygBox, the dosing pump and the
 # hygiene module, which other devices report with another meaning (getCWF, getDMO, getMTF)
 _SYR_CONNECT_SENSOR_PROFILE_ONLY_KEYS = {
     "getCAS",
@@ -2591,8 +2590,8 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
         self.entity_description = _SYR_CONNECT_SENSOR_DESCRIPTIONS[sensor_key]
 
         self._apply_hardness_unit()
-        self._apply_profile_names()
-        self._apply_profile_scale()
+        self._apply_model_names()
+        self._apply_model_scale()
 
         # Cache last non-None native value to avoid writing None when API omits values
         self._last_native_value: str | int | float | datetime | None = None
@@ -2616,45 +2615,41 @@ class SyrConnectSensor(SyrConnectEntity, SensorEntity):
                     self.device_model, self._status.get("getWHU")
                 )
 
-    def _apply_profile_names(self) -> None:
-        """Rename getBAT and getBAR for the devices whose profile gives them another meaning."""
-        profile = self.device_model.device_profile
-        if profile is None:
-            return
+    def _apply_model_names(self) -> None:
+        """Rename getBAT and getBAR for the models that give them another meaning."""
+        model = self.device_model
         # Override getBAT attributes for devices that report battery as percentage (SafeFloor).
         # The name follows the unit: "Battery level" like getBAP instead of "Battery voltage".
-        if self._sensor_key == "getBAT" and profile.bat_in_percent:
+        if self._sensor_key == "getBAT" and model.bat_in_percent:
             self._attr_native_unit_of_measurement = UnitOfRatio.PERCENTAGE
             self._attr_device_class = SensorDeviceClass.BATTERY
             self._attr_suggested_display_precision = 0
             self._attr_translation_key = "getbap"
 
         # On devices that report the inlet pressure in getIBA, getBAR is the system pressure
-        if self._sensor_key == "getBAR" and profile.bar_is_system_pressure:
+        if self._sensor_key == "getBAR" and model.bar_is_system_pressure:
             self._attr_translation_key = "getbar_system"
 
-    def _apply_profile_scale(self) -> None:
-        """Use the scale the device profile reports a key in.
+    def _apply_model_scale(self) -> None:
+        """Use the scale the model reports a key in.
 
         A device may report a key in another scale than its description, e.g. milliliters
         instead of liters or l/min instead of l/h. The value keeps the unit of the
         description, and with it its display precision.
         """
-        profile = self.device_model.device_profile
-        if profile is None:
-            return
+        model = self.device_model
         sensor_key = self._sensor_key
         description = self.entity_description
         hardness_divisor = (
-            get_hardness_divisor(self.device_model, self._status.get("getWHU"))
+            get_hardness_divisor(model, self._status.get("getWHU"))
             if sensor_key in ("getIWH", "getOWH")
             else 1
         )
         divide_by = (
-            profile.sensor_divisors.get(sensor_key, description.divide_by)
+            model.value_divisors.get(sensor_key, description.divide_by)
             * hardness_divisor
         )
-        multiply_by = profile.sensor_factors.get(sensor_key, description.multiply_by)
+        multiply_by = model.value_factors.get(sensor_key, description.multiply_by)
         # The water hardness takes the unit of getWHU instead, which can need decimals
         # the description does not have (tenths of mmol/l)
         precision = description.suggested_display_precision

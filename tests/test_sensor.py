@@ -276,15 +276,15 @@ async def test_sensor_native_value_timestamp_is_utc(
 async def test_sensor_native_value_timestamp_in_local_time(
     hass: HomeAssistant, time_zone: str, raw: str, expected: datetime
 ) -> None:
-    """Test getLAR is read as local time on a profile with local_time_timestamps (issue 5)."""
+    """Test getLAR is read as local time on a model with local_time_timestamps (issue 5)."""
     await hass.config.async_set_time_zone(time_zone)
     model = replace(
         UNKNOWN_MODEL,
+        local_time_timestamps=True,
         name="testml",
         device_profile=SyrConnectDeviceProfile(
             binary_sensor=set(),
             button=set(),
-            local_time_timestamps=True,
             select=set(),
             sensor={
                 "getLAR",
@@ -312,7 +312,7 @@ async def test_sensor_native_value_timestamp_in_local_time(
     assert sensor.native_value == expected
 
 
-def test_lex_profiles_report_local_time_timestamps() -> None:
+def test_lex_models_report_local_time_timestamps() -> None:
     """The LEX Plus families report getLAR in local time (docs/known_issues_xml_api.md, issue 5)."""
     lex_profiles = [
         lexplus10s.PROFILE,
@@ -320,10 +320,8 @@ def test_lex_profiles_report_local_time_timestamps() -> None:
     ]
     for signature in MODELS:
         profile = signature.device_profile
-        if profile is None:
-            continue
         is_lex = any(profile is lex_profile for lex_profile in lex_profiles)
-        assert profile.local_time_timestamps is is_lex, signature.name
+        assert signature.local_time_timestamps is is_lex, signature.name
 
 
 async def test_sensor_native_value_string(hass: HomeAssistant) -> None:
@@ -4488,10 +4486,13 @@ def test_sensor_profile_divide_by_replaces_description_scale(
     expected: float,
     precision: int,
 ) -> None:
-    """A device profile can report a key in another scale than its description."""
+    """A model can report a key in another scale than its description."""
     model = replace(
         UNKNOWN_MODEL,
         name="testml",
+        value_divisors={
+            "getLFV": 1000,
+        },
         device_profile=SyrConnectDeviceProfile(
             binary_sensor=set(),
             button=set(),
@@ -4500,9 +4501,6 @@ def test_sensor_profile_divide_by_replaces_description_scale(
                 "getCEL",
                 "getCFV",
                 "getLFV",
-            },
-            sensor_divisors={
-                "getLFV": 1000,
             },
             switch=set(),
             valve=set(),

@@ -160,8 +160,7 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
         self.entity_description = _SYR_CONNECT_SWITCH_DESCRIPTIONS[sensor_key]
         # The device reports the opposite of the switch, e.g. True means the function
         # is disabled (getFD1-3, HygBox)
-        profile = self.device_model.device_profile
-        self._inverted = profile is not None and sensor_key in profile.inverted_switches
+        self._inverted = sensor_key in self.device_model.inverted_flags
 
         # Use a platform-specific suffix to avoid unique_id collision with the
         # binary_sensor that represents the same underlying key (getBUZ).
@@ -205,8 +204,7 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
         """
         dfi = self._status.get("getDFI")
         if dfi is not None:
-            profile = self.device_model.device_profile
-            dfi_inverted = profile is not None and "getDFI" in profile.inverted_switches
+            dfi_inverted = "getDFI" in self.device_model.inverted_flags
             if is_value_true(dfi) is not dfi_inverted:
                 raise ServiceValidationError(
                     translation_domain=DOMAIN,

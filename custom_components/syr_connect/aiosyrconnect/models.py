@@ -1,7 +1,7 @@
 """Data models of the SYR Connect APIs: devices, status values, services, statistics and models."""
 
-from collections.abc import Mapping
-from dataclasses import dataclass
+from collections.abc import Mapping, Set as AbstractSet
+from dataclasses import dataclass, field
 from typing import Any, NotRequired, TypedDict
 
 # A value of the device status. The XML API reports text only; the local JSON API also
@@ -83,7 +83,11 @@ class SyrConnectModelSignature:
     `alarm_style_alm` and `alarm_clear_via_set` describe how the model is addressed.
     `display_name`, `manufacturer` and `service_branding` name it, and the
     `maximum_*` fields are limits of its settings. `ala_codes`, `not_codes` and
-    `wrn_codes` are the code tables of its family (`codes.py`).
+    `wrn_codes` are the code tables of its family (`codes.py`). The other fields tell
+    how the model reports its values: the unit and scale of the water hardness
+    (`whu_units`, `hardness_*`), keys in another scale (`value_*`), inverted flags,
+    local timestamps, the keys of its cartridges and the series the cloud keeps
+    (`statistics`).
     """
 
     # Alarm codes (getALA or getALM, see `alarm_style_alm`) of the device family: raw
@@ -96,8 +100,18 @@ class SyrConnectModelSignature:
     # If True, alarm commands use ALM variants (getALM/setALM/clrALM) instead of ALA
     # variants (getALA/setALA/clrALA)
     alarm_style_alm: bool = False
+    # getBAR is the pressure of the system (heating system) instead of the inlet
+    # pressure; the device reports the inlet pressure in getIBA
+    bar_is_system_pressure: bool = False
     # JSON API local access base path for the model, or None if not applicable
     base_path: str | None
+    # The device reports the battery (getBAT) in % instead of a voltage
+    bat_in_percent: bool = False
+    # Keys that only apply to one cartridge type (getCRT): cartridge type code -> key;
+    # the other keys of the map do not hold a value of the installed cartridge
+    cartridge_keys: Mapping[str, str] = field(default_factory=dict)
+    # Keys that only apply to one cartridge size (getCRS): cartridge size code -> key
+    cartridge_size_keys: Mapping[str, str] = field(default_factory=dict)
     # Exact match against the `getCNA` value
     cna_equals: str | None = None
     # MultiController role (getDFM), the subtype of dk=1500-1506. Like `sbt`, None
@@ -111,6 +125,18 @@ class SyrConnectModelSignature:
     # GetProjectDeviceCollections XML; for Azure-connected devices this also equals the
     # numeric SRN prefix of newer production units
     dkv: int | None
+    # Water hardness values (getIWH, getOWH) the device reports in another scale for a
+    # getWHU code: code -> divisor, e.g. 10 for tenths of mmol/l
+    hardness_divisors: Mapping[int, int] = field(default_factory=dict)
+    # The device reports and takes the water hardness (getIWH, getOHW) in °dH whatever
+    # getWHU is set to; getWHU is only the unit of the display (`WHU_FACTORS_FROM_DH`)
+    hardness_in_dh: bool = False
+    # Flags the device reports inverted to the other devices: the reported value means
+    # the opposite of the function being enabled
+    inverted_flags: AbstractSet[str] = field(default_factory=frozenset)
+    # The device reports its timestamps (getLAR) as local wall time encoded as a UNIX
+    # timestamp instead of UTC, see docs/known_issues_xml_api.md, issue 5
+    local_time_timestamps: bool = False
     # Human-readable name of the device manufacturer
     manufacturer: str
     # Maximum number of days between regenerations; None means no regeneration interval
@@ -130,12 +156,20 @@ class SyrConnectModelSignature:
     # display name). Used when the same dk/dkv hardware is sold under different names
     # by different vendors; detection and addressing stay the same.
     service_branding: Mapping[str, tuple[str, str]] | None = None
+    # Measurement history series the cloud keeps for the device; empty means none
+    statistics: tuple[SyrConnectStatistic, ...] = ()
     # String that must immediately follow `srn_prefix`: "AAA" is the factory batch code
     # used by all current SYR/Hansgrohe/Sanibel devices; override it if a future
     # production run changes the pattern
     srn_infix: str = "AAA"
     # Prefix that `getSRN` must start with
     srn_prefix: str | None = None
+    # Keys the device reports in another scale than the other devices: key -> divisor
+    # to the usual unit of the key, e.g. 1000 for milliliters instead of liters
+    value_divisors: Mapping[str, int] = field(default_factory=dict)
+    # Keys the device reports in another scale than the other devices: key -> factor to
+    # the usual unit of the key, e.g. 60 for a flow in l/min instead of l/h
+    value_factors: Mapping[str, int] = field(default_factory=dict)
     # String that `getVER` must contain
     ver_contains: str | None = None
     # Prefix that `getVER` must start with
@@ -143,6 +177,9 @@ class SyrConnectModelSignature:
     # Warning codes (getWRN) of the device family: raw code -> key of the meaning; None
     # means the codes are unknown
     wrn_codes: Mapping[str, str] | None = None
+    # Water hardness unit codes (getWHU) of the device family: code -> unit; None means
+    # the device has no water hardness unit
+    whu_units: Mapping[int, str] | None = None
 
     def branded(self, service: str | None) -> tuple[str, str]:
         """Return the manufacturer and display name of the model for a cloud service.

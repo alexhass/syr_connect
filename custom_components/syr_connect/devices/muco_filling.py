@@ -37,7 +37,7 @@ If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_SUPPORTED_KEYS below.
 """
 
-from . import WHU_UNITS_MUCO, SyrConnectDeviceProfile
+from . import SyrConnectDeviceProfile
 
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
@@ -153,7 +153,7 @@ VALVE_SUPPORTED_KEYS: set[str] = set()
 
 
 # Water hardness ranges per unit: getWHU code -> (lowest, highest, step) in that unit.
-# The device keeps both values in °dH (hardness_in_dh), getWHU is only the unit of the
+# The device keeps both values in °dH (hardness_in_dh of the signature), getWHU is only the unit of the
 # display. The soft water hardness (getOHW) can be at most the raw water hardness (getIWH).
 HARDNESS_RANGES = {
     "getIWH": {
@@ -174,16 +174,9 @@ HARDNESS_RANGES = {
 PROFILE = SyrConnectDeviceProfile(
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
-    cartridge_keys={
-        "0": "getOHW",
-        "1": "getLOT",
-        "2": "getLOT",
-    },
-    hardness_in_dh=True,
     hardness_ranges=HARDNESS_RANGES,
     select=SELECT_SUPPORTED_KEYS,
     sensor=SENSOR_SUPPORTED_KEYS,
     switch=SWITCH_SUPPORTED_KEYS,
     valve=VALVE_SUPPORTED_KEYS,
-    whu_units=WHU_UNITS_MUCO,
 )

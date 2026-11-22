@@ -30,7 +30,7 @@ If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_SUPPORTED_KEYS below.
 """
 
-from . import WHU_UNITS_LEX, SyrConnectDeviceProfile
+from . import SyrConnectDeviceProfile
 
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
@@ -224,13 +224,8 @@ VALVE_SUPPORTED_KEYS = {
 PROFILE = SyrConnectDeviceProfile(
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
-    local_time_timestamps=True,
     select=SELECT_SUPPORTED_KEYS,
     sensor=SENSOR_SUPPORTED_KEYS,
-    sensor_factors={
-        "getFLO": 60,
-    },
     switch=SWITCH_SUPPORTED_KEYS,
     valve=VALVE_SUPPORTED_KEYS,
-    whu_units=WHU_UNITS_LEX,
 )

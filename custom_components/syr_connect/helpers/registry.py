@@ -135,12 +135,7 @@ def clear_device_statistics(
         for domain, identifier in device_entry.identifiers
         if domain == DOMAIN
     }
-    keys = {
-        statistic.key
-        for signature in MODELS
-        if signature.device_profile is not None
-        for statistic in signature.device_profile.statistics
-    }
+    keys = {statistic.key for signature in MODELS for statistic in signature.statistics}
     statistic_ids = sorted(
         build_statistic_id(device_id, key) for device_id in device_ids for key in keys
     )

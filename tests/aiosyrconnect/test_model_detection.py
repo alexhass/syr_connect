@@ -13,6 +13,7 @@ from custom_components.syr_connect.aiosyrconnect.model_detection import (
     detect_model_signature,
 )
 from custom_components.syr_connect.aiosyrconnect.models import SyrConnectModelSignature
+from custom_components.syr_connect.aiosyrconnect.values import WHU_FACTORS_FROM_DH
 from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
 
 _FIXTURE_DIR = Path(__file__).parent.parent / "fixtures"
@@ -315,3 +316,35 @@ def test_unknown_model_signature_is_never_detected() -> None:
 def test_every_signature_names_the_alarm_codes_of_its_family() -> None:
     """Every known model has the alarm code table of its family."""
     assert [sig.name for sig in MODEL_SIGNATURES if sig.ala_codes is None] == []
+
+
+def test_water_hardness_units_of_models_in_dh_can_be_converted() -> None:
+    """A model that keeps the hardness in °dH has a factor for every unit of getWHU."""
+    for sig in MODEL_SIGNATURES:
+        if sig.hardness_in_dh:
+            assert sig.whu_units is not None, sig.name
+            assert set(sig.whu_units.values()) <= set(WHU_FACTORS_FROM_DH), sig.name
+
+
+def test_hardness_divisors_belong_to_units_of_the_model() -> None:
+    """A hardness divisor applies to a getWHU code of the model."""
+    for sig in MODEL_SIGNATURES:
+        if sig.hardness_divisors:
+            assert sig.whu_units is not None, sig.name
+            assert set(sig.hardness_divisors) <= set(sig.whu_units), sig.name
+
+
+def test_statistics_series_are_unique() -> None:
+    """Every measurement history series of a model reads another key."""
+    for sig in MODEL_SIGNATURES:
+        keys = [statistic.key for statistic in sig.statistics]
+        assert len(keys) == len(set(keys)), sig.name
+
+
+def test_safefloor_reports_temperature_and_humidity_history() -> None:
+    """The SafeFloor signatures name the series the cloud keeps."""
+    safefloors = [sig for sig in MODEL_SIGNATURES if sig.name.startswith("safefloor")]
+    assert safefloors
+    for sig in safefloors:
+        assert [statistic.key for statistic in sig.statistics] == ["getCEL", "getHMD"]
+        assert sig.bat_in_percent is True
