@@ -108,9 +108,10 @@ SETTING_VALUES: Mapping[str, Sequence[int]] = {
     # Minimum humidity threshold (getMIH): 0-95 % in steps of 5. The lower boundary 0
     # doubles as "Off" (per docs/syrconnect-protocol.md), so it has no off value.
     "getMIH": range(0, 96, 5),
-    # Minimum temperature threshold (getMIT): raw 1/10 °C, -30 to 49 °C in steps of 1 °C;
-    # off is a value of its own (`SETTING_OFF_VALUES`)
-    "getMIT": range(-300, 491, 10),
+    # Minimum temperature threshold (getMIT): raw 1/10 °C, -30 to 50 °C in steps of 1 °C,
+    # below the maximum temperature unless that is off (`SETTING_UPPER_LIMITS`); off is a
+    # value of its own (`SETTING_OFF_VALUES`)
+    "getMIT": range(-300, 501, 10),
     # Flushings per day of the temperature flushing (getMTF, HygBox): 1-50
     "getMTF": range(1, 51),
     # Maximum humidity threshold (getMXH): 5-100 % in steps of 5. The upper boundary 100
@@ -146,6 +147,10 @@ SETTING_VALUES: Mapping[str, Sequence[int]] = {
         604800,
         691200,
         777600,
+        864000,
+        950400,
+        1036800,
+        1123200,
         1209600,
     ],
     # Filling processes count (getRMN): 1-10
@@ -182,7 +187,8 @@ SETTING_VALUES: Mapping[str, Sequence[int]] = {
     # Target pressure (getTPR): raw 1/10 bar, 0.5-5.0 bar in steps of 0.1 bar
     "getTPR": range(5, 51),
     # Measurement interval (getWMP) in seconds: non-uniform duration steps as documented
-    # in docs/syrconnect-protocol.md
+    # in docs/syrconnect-protocol.md; at most the synchronization interval (getRCP, see
+    # `SETTING_UPPER_LIMITS`)
     "getWMP": [
         60,
         600,
@@ -192,7 +198,11 @@ SETTING_VALUES: Mapping[str, Sequence[int]] = {
         7200,
         10800,
         21600,
+        32400,
         43200,
+        57600,
+        72000,
+        86400,
     ],
     "getWSL": _FLUSHING_VOLUMES,
     "getWSS": _HYGIENE_STOP_TIMES,
@@ -211,6 +221,18 @@ SETTING_OFF_VALUES: Mapping[str, int] = {
     "getMIT": -400,
     # Maximum temperature threshold (getMXT): above the range
     "getMXT": 700,
+}
+
+# Settings that are limited by another setting of the device: key -> (key of the upper
+# limit, smallest distance to it). The minimum humidity (getMIH) stays below the maximum
+# humidity (getMXH), the minimum temperature (getMIT) below the maximum temperature
+# (getMXT), and the measurement interval (getWMP) at most the synchronization interval
+# (getRCP). The upper key is in turn limited by the lower one. A limit that is switched
+# off (`SETTING_OFF_VALUES`) limits nothing.
+SETTING_UPPER_LIMITS: Mapping[str, tuple[str, int]] = {
+    "getMIH": ("getMXH", 5),
+    "getMIT": ("getMXT", 10),
+    "getWMP": ("getRCP", 0),
 }
 
 # Smallest distance between the start and the stop temperature of the temperature

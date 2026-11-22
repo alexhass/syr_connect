@@ -15,6 +15,7 @@ from custom_components.syr_connect.sensor import SyrConnectSensor
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, UnitOfRatio
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ServiceValidationError
 
 
 def _signature(name: str) -> SyrConnectModel:
@@ -190,11 +191,11 @@ async def test_async_setup_entry_skips_non_numeric_safefloor_threshold_values(
         pytest.param(
             "getMIT",
             "-50",
-            # Off, then -30 to 49 °C in steps of 1 °C as 1/10 °C
+            # Off, then -30 to 50 °C in steps of 1 °C as 1/10 °C (no maximum reported)
             [
                 "off",
                 *(f"minus_{degrees * 10}" for degrees in range(30, 0, -1)),
-                *(str(degrees * 10) for degrees in range(50)),
+                *(str(degrees * 10) for degrees in range(51)),
             ],
             "minus_50",
             "minus_300",
@@ -207,7 +208,7 @@ async def test_async_setup_entry_skips_non_numeric_safefloor_threshold_values(
             [
                 "off",
                 *(f"minus_{degrees * 10}" for degrees in range(30, 0, -1)),
-                *(str(degrees * 10) for degrees in range(50)),
+                *(str(degrees * 10) for degrees in range(51)),
             ],
             "off",
             "0",
@@ -227,7 +228,7 @@ async def test_async_setup_entry_skips_non_numeric_safefloor_threshold_values(
         pytest.param(
             "getRCP",
             "43200",
-            # 1, 2, 3, 6 and 12 hours, 1-9 days and 2 weeks, in seconds
+            # 1, 2, 3, 6 and 12 hours, 1-14 days, in seconds
             [
                 "3600",
                 "7200",
@@ -243,6 +244,10 @@ async def test_async_setup_entry_skips_non_numeric_safefloor_threshold_values(
                 "604800",
                 "691200",
                 "777600",
+                "864000",
+                "950400",
+                "1036800",
+                "1123200",
                 "1209600",
             ],
             "43200",
@@ -253,7 +258,8 @@ async def test_async_setup_entry_skips_non_numeric_safefloor_threshold_values(
         pytest.param(
             "getWMP",
             "3600",
-            # 1, 10, 15 and 30 minutes, 1, 2, 3, 6 and 12 hours, in seconds
+            # 1, 10, 15 and 30 minutes, 1, 2, 3, 6, 9, 12, 16 and 20 hours and 1 day, in
+            # seconds
             [
                 "60",
                 "600",
@@ -263,11 +269,15 @@ async def test_async_setup_entry_skips_non_numeric_safefloor_threshold_values(
                 "7200",
                 "10800",
                 "21600",
+                "32400",
                 "43200",
+                "57600",
+                "72000",
+                "86400",
             ],
             "3600",
-            "60",
-            60,
+            "86400",
+            86400,
             id="measurement-interval",
         ),
     ],
@@ -311,6 +321,135 @@ async def test_safefloor_select_options_and_selection(
     coordinator.async_set_device_value.assert_called_once_with(
         "device1", f"set{key[3:]}", value
     )
+
+
+@pytest.mark.parametrize(
+    ("key", "status", "options"),
+    [
+        pytest.param(
+            "getMIH",
+            {"getMIH": "20", "getMXH": "40"},
+            ["0", "5", "10", "15", "20", "25", "30", "35"],
+            id="minimum-humidity-below-maximum",
+        ),
+        pytest.param(
+            "getMXH",
+            {"getMIH": "80", "getMXH": "100"},
+            ["85", "90", "95", "100"],
+            id="maximum-humidity-above-minimum",
+        ),
+        pytest.param(
+            "getMIT",
+            {"getMIT": "-20", "getMXT": "0"},
+            # Off, then -30 to -1 °C as 1/10 °C
+            ["off", *(f"minus_{degrees * 10}" for degrees in range(30, 0, -1))],
+            id="minimum-temperature-below-maximum",
+        ),
+        pytest.param(
+            "getMXT",
+            {"getMIT": "470", "getMXT": "490"},
+            ["480", "490", "500", "off"],
+            id="maximum-temperature-above-minimum",
+        ),
+        pytest.param(
+            "getMXT",
+            {"getMIT": "-400", "getMXT": "30"},
+            [*(str(degrees * 10) for degrees in range(1, 51)), "off"],
+            id="maximum-temperature-minimum-off",
+        ),
+        pytest.param(
+            "getWMP",
+            {"getRCP": "10800", "getWMP": "3600"},
+            ["60", "600", "900", "1800", "3600", "7200", "10800"],
+            id="measurement-at-most-synchronization",
+        ),
+        pytest.param(
+            "getRCP",
+            {"getRCP": "172800", "getWMP": "72000"},
+            [
+                "86400",
+                "172800",
+                "259200",
+                "345600",
+                "432000",
+                "518400",
+                "604800",
+                "691200",
+                "777600",
+                "864000",
+                "950400",
+                "1036800",
+                "1123200",
+                "1209600",
+            ],
+            id="synchronization-at-least-measurement",
+        ),
+    ],
+)
+async def test_safefloor_select_options_follow_limit(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+    key: str,
+    status: dict[str, str],
+    options: list[str],
+) -> None:
+    """The minimum stays below the maximum, the measurement within the synchronization."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {"getVER": _SAFEFLOOR_STATUS["getVER"], **status},
+            }
+        ]
+    }
+    mock_config_entry, _ = create_mock_entry_with_coordinator(data)
+    entities, async_add_entities = mock_add_entities()
+
+    await select_module.async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    [select] = [e for e in entities if getattr(e, "_sensor_key", None) == key]
+    assert select.options == options
+
+
+async def test_safefloor_select_rejects_option_beyond_limit(
+    hass: HomeAssistant,
+    create_mock_entry_with_coordinator: Callable[
+        ..., tuple[MockConfigEntry, MagicMock]
+    ],
+    mock_add_entities: Callable[[], tuple[list[Any], Mock]],
+) -> None:
+    """An option beyond the limit of the other setting is not sent."""
+    data = {
+        "devices": [
+            {
+                "id": "device1",
+                "name": "Device 1",
+                "project_id": "project1",
+                "status": {
+                    "getVER": _SAFEFLOOR_STATUS["getVER"],
+                    "getMIH": "20",
+                    "getMXH": "40",
+                },
+            }
+        ]
+    }
+    mock_config_entry, coordinator = create_mock_entry_with_coordinator(data)
+    coordinator.async_set_device_value = AsyncMock()
+    entities, async_add_entities = mock_add_entities()
+
+    await select_module.async_setup_entry(hass, mock_config_entry, async_add_entities)
+
+    [select] = [e for e in entities if getattr(e, "_sensor_key", None) == "getMIH"]
+    with pytest.raises(ServiceValidationError) as exc_info:
+        await select.async_select_option("40")
+
+    assert exc_info.value.translation_key == "invalid_option"
+    coordinator.async_set_device_value.assert_not_called()
 
 
 @pytest.mark.parametrize(

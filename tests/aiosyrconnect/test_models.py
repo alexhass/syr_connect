@@ -124,6 +124,72 @@ def test_reported_cartridge_keys(
 
 
 @pytest.mark.parametrize(
+    ("key", "status", "expected"),
+    [
+        pytest.param("getMIH", {"getMXH": "20"}, [0, 5, 10, 15], id="below-upper"),
+        pytest.param("getMXH", {"getMIH": "85"}, [90, 95, 100], id="above-lower"),
+        pytest.param(
+            "getMIT",
+            {"getMXT": "-250"},
+            [-300, -290, -280, -270, -260],
+            id="below-upper-distance",
+        ),
+        pytest.param(
+            "getMIT",
+            {"getMXT": "700"},
+            list(range(-300, 501, 10)),
+            id="upper-limit-off",
+        ),
+        pytest.param(
+            "getMIT",
+            {"getMXT": "500"},
+            list(range(-300, 491, 10)),
+            id="below-highest-upper",
+        ),
+        pytest.param(
+            "getMXT",
+            {"getMIT": "-400"},
+            list(range(10, 501, 10)),
+            id="lower-limit-off",
+        ),
+        pytest.param(
+            "getWMP",
+            {"getRCP": "21600"},
+            [60, 600, 900, 1800, 3600, 7200, 10800, 21600],
+            id="at-most-upper",
+        ),
+        pytest.param(
+            "getWMP",
+            {"getRCP": "abc"},
+            [
+                60,
+                600,
+                900,
+                1800,
+                3600,
+                7200,
+                10800,
+                21600,
+                32400,
+                43200,
+                57600,
+                72000,
+                86400,
+            ],
+            id="invalid-limit",
+        ),
+        pytest.param("getRMN", {}, list(range(1, 11)), id="no-limit"),
+        pytest.param("getXYZ", {}, None, id="unknown-setting"),
+    ],
+)
+def test_limited_values(
+    key: str, status: SyrConnectStatus, expected: list[int] | None
+) -> None:
+    """A setting stays within the limit that another setting of the device sets."""
+    assert _signature("safefloor").limited_values(key, status) == expected
+
+
+@pytest.mark.parametrize(
     ("name", "value", "expected"),
     [
         ("allinoneplus", "0", True),

@@ -839,15 +839,15 @@ These settings can be set by the user.
 | getFCO / setFCO | "0" | ppm | | | Iron content (always 0?) |
 | getIWH / setIWH | "14" | getWHU | | | Raw water hardness (of the untreated water), can be set from 1-100 °dH. NeoSoft: 1–85 °dH, read-only. Unit: see the water hardness unit codes below |
 | getLNG / setLNG | "0" | | USER | 0 | Language setting: 0 = German, 1 = English, 2 = Spanish, 3 = Italian, 4 = Polish |
-| getMIH / setMIH | "5" | % | | | Minimum huminity; Values: 0=Off, 0-95% (5% steps) |
-| getMIT / setMIT | "-40" | 1/10 | | | Minimum temperature, Value "-40" = "-4 degree"; Values: Off="-400", -300 = "-30 degree" to 490 = "49 degree" (1 degree steps) |
+| getMIH / setMIH | "5" | % | | | Minimum huminity; Values: 0=Off, 0-95% (5% steps), below getMXH |
+| getMIT / setMIT | "-40" | 1/10 | | | Minimum temperature, Value "-40" = "-4 degree"; Values: Off="-400", -300 = "-30 degree" to 500 = "50 degree" (1 degree steps), below getMXT unless getMXT is off |
 | getMPR / setMPR | "40" | 1/10 bar | | | The set water pressure |
-| getMXH / setMXH | "95" | % | | | Maximum huminity, Values: 100=Off, 5-100% (5% steps) |
-| getMXT / setMXT | "490" | 1/10 | | | Maximum temperature, Value "490" = "49 degree"; Values: Off="700", 10="1 degree" to 500="50 degree" (1 degree steps) |
+| getMXH / setMXH | "95" | % | | | Maximum huminity, Values: 100=Off, 5-100% (5% steps), above getMIH |
+| getMXT / setMXT | "490" | 1/10 | | | Maximum temperature, Value "490" = "49 degree"; Values: Off="700", 10="1 degree" to 500="50 degree" (1 degree steps), above getMIT unless getMIT is off |
 | getOWH / setOWH | "7" | getWHU | | | Soft water hardness (that the treated water should have), can be set from 0-100 °dH. NeoSoft: 1–85 °dH, read-only. Unit: see the water hardness unit codes below |
 | getPSD / setPSD | "0"<br>"True" | | USER / FACTORY | 0 | Pressure sensor setting. Value meaning depends on the API, see note below |
 | getPST / setPST | "1" | | | | Pressure sensor installed: 1 = not available, 2 = available |
-| getRCP / setRCP | "43200" | s | | | Settings synchronization interval (used in battery powered devices), shown in hours/days/weeks in interface e.g. 43200 = 12h; Select values: 1h/2h/3h/6h/12h/1d - 6d/1w/1w 1d/1w 2d up to 2w. HVA: different meaning, "remaining capacity" in the format `"<n> (<m>L)"`: n / 100 = remaining capacity in %, m = remaining capacity in liters |
+| getRCP / setRCP | "43200" | s | | | Settings synchronization interval (used in battery powered devices), shown in hours/days/weeks in interface e.g. 43200 = 12h; Select values: 1h/2h/3h/6h/12h/1d - 6d/1w/1w 1d/1w 2d up to 2w, at least getWMP. HVA: different meaning, "remaining capacity" in the format `"<n> (<m>L)"`: n / 100 = remaining capacity in %, m = remaining capacity in liters |
 | getRDO / setRDO | "90" | g/L | | | Salt dosage |
 | getRMO / setRMO | "1" | | | | Regeneration mode (NeoSoft): 1 = Standard, 2 = ECO, 3 = Power, 4 = Automatic (switches the mode depending on consumption) |
 | getRPD / setRPD | "4" | days | | | Regeneration interval. NeoSoft: 1–3; no effect on the NeoSoft 5000, which regenerates on its own as soon as a column is exhausted |
@@ -859,7 +859,7 @@ These settings can be set by the user.
 | getTSD / setTSD | "0"<br>"True" | | USER / FACTORY | 0 | Temperature sensor setting. Value meaning depends on the API, see note below |
 | getUNI / setUNI | "0" | | USER | 0 | Units: 0 = °C, bar, liter; 1 = °F, psi, US liquid gallon (SafeTech, Safe-T+, Sanibel) |
 | getWHU / setWHU | "0" | | | | Water hardness unit; each device family numbers the units differently, see the table below |
-| getWMP / setWMP | "3600" | s | | | Measurement interval, shown in minutes/hours in interface e.g. 3600 = 1h, Values: 1m/10m/15m/30m/1h/2h/3h/6h/12h |
+| getWMP / setWMP | "3600" | s | | | Measurement interval, shown in minutes/hours/days in interface e.g. 3600 = 1h, Values: 1m/10m/15m/30m/1h/2h/3h/6h/9h/12h/16h/20h/1d, at most getRCP |
 
 Water hardness unit codes (`getWHU`) per device family. Other device kinds have no water hardness unit. In mmol/l, the NeoSoft family reports the water hardness (`getIWH`, `getOWH`) in tenths: "15" = 1.5 mmol/l.
 

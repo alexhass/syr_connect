@@ -600,6 +600,26 @@ class _SyrConnectSelectBuilder:
         if self.allowed(key, is_valid):
             self.add_discrete(key, _code_options(self.model_info, key))
 
+    def offer_limited_codes(self, key: str) -> None:
+        """Add a select of the raw values that follow a limit if `allowed`.
+
+        Like `offer_codes`, but only the values within the limit of another setting can
+        be selected (`limited_values()`), e.g. the minimum humidity below the maximum.
+
+        Args:
+            key: Status key, e.g. "getMIH"
+        """
+        if self.allowed(key):
+            self.entities.append(
+                SyrConnectLimitedSelect(
+                    self.coordinator,
+                    self.device_id,
+                    self.device_name,
+                    key,
+                    _code_options(self.model_info, key),
+                )
+            )
+
 
 def _build_device_selects(
     coordinator: SyrConnectDataUpdateCoordinator, device: SyrConnectDevice
@@ -765,16 +785,17 @@ def _add_muco_selects(b: _SyrConnectSelectBuilder) -> None:
 def _add_safefloor_selects(b: _SyrConnectSelectBuilder) -> None:
     """Add the SafeFloor selects: alarm/humidity/temperature thresholds and sync/measurement intervals."""
     # Thresholds; the labels (including the "Off" text) come from the translation "state"
-    # map of each select
-    b.offer_codes("getMIH")
-    b.offer_codes("getMXH")
-    b.offer_codes("getMIT")
-    b.offer_codes("getMXT")
+    # map of each select. The minimum stays below the maximum.
+    b.offer_limited_codes("getMIH")
+    b.offer_limited_codes("getMXH")
+    b.offer_limited_codes("getMIT")
+    b.offer_limited_codes("getMXT")
     # Alarm duration (getALD): documented GUI Settings step list (see docs/syrconnect-protocol.md)
     b.offer_numeric_steps("getALD")
-    b.offer_codes("getWMP")
-    # Synchronization interval (getRCP); the HygBox offers a part of the steps
-    b.offer_codes("getRCP")
+    # Measurement interval (getWMP), at most the synchronization interval (getRCP); the
+    # HygBox offers a part of the getRCP steps and has no getWMP
+    b.offer_limited_codes("getWMP")
+    b.offer_limited_codes("getRCP")
 
 
 def _add_hygbox_selects(b: _SyrConnectSelectBuilder) -> None:
@@ -1633,6 +1654,41 @@ class SyrConnectDiscreteSelect(SyrConnectEntity, SelectEntity):
                     "entity": self._entity_name,
                 },
             ) from err
+
+
+class SyrConnectLimitedSelect(SyrConnectDiscreteSelect):
+    """Select whose options follow the limit of another setting (`limited_values()`).
+
+    E.g. the minimum humidity (getMIH) offers only the values below the maximum humidity
+    (getMXH). The off option can always be selected.
+    """
+
+    @property
+    @override
+    def options(self) -> list[str]:
+        """Return the options within the current limit."""
+        model = self.device_model
+        values = set(model.limited_values(self._sensor_key, self._status) or ())
+        off_value = model.off_value(self._sensor_key)
+        return [
+            option
+            for option, raw in self._options_map.items()
+            if raw is None or raw == off_value or raw in values
+        ]
+
+    @override
+    async def async_select_option(self, option: str) -> None:
+        """Write the selected option to the device if it is within the limit."""
+        if option not in self.options:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="invalid_option",
+                translation_placeholders={
+                    "entity": self._entity_name,
+                    "option": option,
+                },
+            )
+        await super().async_select_option(option)
 
 
 class SyrConnectCartridgeTypeSelect(SyrConnectDiscreteSelect):

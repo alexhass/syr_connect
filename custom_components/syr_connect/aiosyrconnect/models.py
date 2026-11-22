@@ -4,7 +4,7 @@ from collections.abc import Mapping, Sequence, Set as AbstractSet
 from dataclasses import dataclass, field
 from typing import Any, NotRequired, TypedDict
 
-from .settings import SETTING_OFF_VALUES, SETTING_VALUES
+from .settings import SETTING_OFF_VALUES, SETTING_UPPER_LIMITS, SETTING_VALUES
 from .units import WHU_FACTORS_FROM_DH
 
 # A value of the device status. The XML API reports text only; the local JSON API also
@@ -84,14 +84,19 @@ def _code_meaning(codes: Mapping[str, str] | None, raw_code: Any) -> str | None:
     return codes.get(str(raw_code).strip().upper())
 
 
-def _whu_code(raw_code: Any) -> int | None:
-    """Return the getWHU code as integer, or None for a missing or invalid value."""
-    if raw_code is None:
+def _int_value(value: Any) -> int | None:
+    """Return a reported number as integer, or None for a missing or invalid value."""
+    if value is None:
         return None
     try:
-        return int(float(raw_code))
+        return int(float(value))
     except ValueError, TypeError, OverflowError:
         return None
+
+
+def _whu_code(raw_code: Any) -> int | None:
+    """Return the getWHU code as integer, or None for a missing or invalid value."""
+    return _int_value(raw_code)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -244,6 +249,55 @@ class SyrConnectModelSignature:
         if values is not None:
             return values
         return SETTING_VALUES.get(key)
+
+    def limited_values(self, key: str, status: SyrConnectStatus) -> list[int] | None:
+        """Return the raw values a setting takes with the current value of its limit.
+
+        A setting of `SETTING_UPPER_LIMITS` stays below its upper key, the upper key
+        above it. A limit that is not reported or switched off (`off_value()`) limits
+        nothing. The off value of the setting itself is not part of the values.
+
+        Formats:
+        - getMIH with getMXH "40": 0-35 in steps of 5
+        - getMXH with getMIH "40": 45-100 in steps of 5
+        - getMXT with getMIT "-400" (off): 10-500 in steps of 10
+        - getWMP with getRCP "10800": 3600, 7200, 10800
+
+        Args:
+            key: Status key of the setting, e.g. "getMIH"
+            status: Status of the device
+
+        Returns:
+            The raw values in ascending order (see `allowed_values()`) within the
+            limits; None if the values of the setting are unknown
+        """
+        values = self.allowed_values(key)
+        if values is None:
+            return None
+        lowest: int | None = None
+        highest: int | None = None
+        for lower_key, (upper_key, distance) in SETTING_UPPER_LIMITS.items():
+            if key == lower_key:
+                limit = self._limit_value(upper_key, status)
+                if limit is not None:
+                    highest = limit - distance
+            elif key == upper_key:
+                limit = self._limit_value(lower_key, status)
+                if limit is not None:
+                    lowest = limit + distance
+        return [
+            value
+            for value in values
+            if (lowest is None or value >= lowest)
+            and (highest is None or value <= highest)
+        ]
+
+    def _limit_value(self, key: str, status: SyrConnectStatus) -> int | None:
+        """Return the reported value of a limit, None if it is missing or switched off."""
+        value = _int_value(status.get(key))
+        if value is None or value == self.off_value(key):
+            return None
+        return value
 
     def off_value(self, key: str) -> int | None:
         """Return the raw value that switches a setting of the model off.
