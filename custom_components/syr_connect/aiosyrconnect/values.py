@@ -473,6 +473,22 @@ def parse_bat_value(value: Any) -> float | None:
     return None
 
 
+def parse_bat_percent(value: Any) -> int | None:
+    """Battery level (getBAT) of a model that reports it in % instead of a voltage.
+
+    Formats:
+    - SafeFloor: "85" -> 85
+
+    Returns None for a value that is no finite number.
+    """
+    if not isinstance(value, str | int | float):
+        return None
+    try:
+        return int(float(str(value).strip()))
+    except ValueError, OverflowError:
+        return None
+
+
 def parse_sta_value(value: SyrConnectStatusValue) -> str:
     """Status of the regeneration (getSTA): reported text or code -> key of the meaning.
 

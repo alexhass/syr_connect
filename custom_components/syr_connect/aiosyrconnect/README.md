@@ -169,6 +169,7 @@ device expects:
 | --- | --- |
 | `is_value_true()` | Flags: `"1"`, `"True"`, `True`, `1` |
 | `parse_net_value()`, `parse_bat_value()` | Voltages: `"ADC:950 6,16V"`, `"11,86"`, `"363"` |
+| `parse_bat_percent()` | Battery level in % instead of a voltage: `"85"` -> 85 |
 | `parse_avo_value()` | Flow: `"1655mL"` -> 1.655 l |
 | `parse_vol_value()`, `parse_lng_value()` | Values with a prefix or an annotation: `"Vol[L]6530"`, `"0 (0=Deutsch 1=English)"` |
 | `parse_sta_value()` | Status of the regeneration -> key of the meaning |

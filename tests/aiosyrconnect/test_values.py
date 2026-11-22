@@ -36,6 +36,7 @@ from custom_components.syr_connect.aiosyrconnect.values import (
     is_valve_opening,
     parse_alarm_memory,
     parse_avo_value,
+    parse_bat_percent,
     parse_bat_value,
     parse_cyt_value,
     parse_dbd_value,
@@ -178,6 +179,26 @@ def test_get_sensor_bat_value_variants() -> None:
     assert parse_bat_value("") is None
     assert parse_bat_value(None) is None
     assert parse_bat_value("not-a-number") is None
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("85", 85),  # SafeFloor (XML)
+        (" 85 ", 85),
+        (85, 85),  # JSON
+        ("85.0", 85),
+        ("", None),
+        ("not-a-number", None),
+        ("inf", None),
+        ("nan", None),
+        (None, None),
+        ([85], None),
+    ],
+)
+def test_parse_bat_percent(raw: Any, expected: int | None) -> None:
+    """A battery level in % (getBAT) is an integer; anything else gives no value."""
+    assert parse_bat_percent(raw) == expected
 
 
 def test_get_sensor_net_value_safe_t_plus_format() -> None:

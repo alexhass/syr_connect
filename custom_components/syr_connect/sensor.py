@@ -54,6 +54,7 @@ from .aiosyrconnect import (
     is_value_true,
     parse_alarm_memory,
     parse_avo_value,
+    parse_bat_percent,
     parse_bat_value,
     parse_cyt_value,
     parse_dbd_value,
@@ -202,17 +203,11 @@ def _value_bat(
     - Safe-T+: "6,11 4,38 3,90" -> 6.11 V
     - Trio DFR/LS: "363" -> 3.63 V
     - SafeFloor: "85" -> 85 %
+
+    The unit is set from the model (`bat_in_percent`) in `SyrConnectSensor.__init__`.
     """
-    if value is None:
-        return None
-    if not isinstance(value, (str | int | float)):
-        return None
-    # SafeFloor (and similar) report battery as an integer percentage.
     if sensor.native_unit_of_measurement == UnitOfRatio.PERCENTAGE:
-        try:
-            return int(float(str(value).strip()))
-        except ValueError, TypeError, OverflowError:
-            return None
+        return parse_bat_percent(value)
     return parse_bat_value(value)
 
 
