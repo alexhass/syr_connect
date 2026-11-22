@@ -39,7 +39,7 @@
     "getERE": 19,
     "getEVL": 0,
     "getFLO": 0,
-    "getFRN": "A25032111217",
+    "getFRN": "A25032111218",
     "getFWURL": "https://function-syrconnectutils.azurewebsites.net/api/getfirmware/",
     "getHWV": "V1",
     "getIDS": "false",
