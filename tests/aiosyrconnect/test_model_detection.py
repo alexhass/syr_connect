@@ -13,7 +13,7 @@ from custom_components.syr_connect.aiosyrconnect.model_detection import (
     detect_model_signature,
 )
 from custom_components.syr_connect.aiosyrconnect.models import SyrConnectModelSignature
-from custom_components.syr_connect.aiosyrconnect.values import WHU_FACTORS_FROM_DH
+from custom_components.syr_connect.aiosyrconnect.units import WHU_FACTORS_FROM_DH
 from custom_components.syr_connect.aiosyrconnect.xml_parser import ResponseParser
 
 _FIXTURE_DIR = Path(__file__).parent.parent / "fixtures"

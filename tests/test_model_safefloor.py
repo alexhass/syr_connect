@@ -10,7 +10,6 @@ from pytest_homeassistant.common import MockConfigEntry
 from custom_components.syr_connect import select as select_module
 from custom_components.syr_connect.const import CONF_SERVICE
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
-from custom_components.syr_connect.helpers.profile import get_sensor_ala_map
 from custom_components.syr_connect.models import MODELS, SyrConnectModel
 from custom_components.syr_connect.sensor import SyrConnectSensor
 from homeassistant.components.sensor import SensorDeviceClass
@@ -54,18 +53,18 @@ def _build_coordinator(
     return coordinator
 
 
-def test_get_sensor_ala_map_safefloor_known_codes() -> None:
+def test_alarm_meaning_safefloor_known_codes() -> None:
     """SafeFloor model maps its alarm codes correctly."""
     model = _signature("safefloor")
-    mapped, raw = get_sensor_ala_map(model, "A0X0000")
-    assert mapped == "no_alarm" and raw == "A0X0000"
+    mapped = model.alarm_meaning("A0X0000")
+    assert mapped == "no_alarm"
 
-    mapped, raw = get_sensor_ala_map(model, "A0X0004")
-    assert mapped == "alarm_safefloor_flood" and raw == "A0X0004"
+    mapped = model.alarm_meaning("A0X0004")
+    assert mapped == "alarm_safefloor_flood"
 
     # Bit 8 is the low battery alarm
-    mapped, raw = get_sensor_ala_map(model, "A0x0100")
-    assert mapped == "alarm_battery_low" and raw == "A0x0100"
+    mapped = model.alarm_meaning("A0x0100")
+    assert mapped == "alarm_battery_low"
 
 
 async def test_async_setup_entry_creates_safefloor_threshold_selects(

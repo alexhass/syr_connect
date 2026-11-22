@@ -23,6 +23,7 @@ from .aiosyrconnect import (
     get_rtm_value,
     is_value_true,
     parse_hygiene_module_value,
+    round_hardness,
     set_command,
     to_float,
 )
@@ -31,16 +32,7 @@ from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .entity import SyrConnectEntity, async_add_device_entities
 from .helpers.device import get_device_model
-from .helpers.profile import (
-    get_cartridge_entity_keys,
-    get_cartridge_keys,
-    get_hardness_factor,
-    get_hardness_range,
-    get_model_supported_keys,
-    get_reported_cartridge_keys,
-    get_whu_unit,
-    round_hardness,
-)
+from .helpers.profile import get_cartridge_entity_keys, get_model_supported_keys
 from .helpers.registry import find_entity_id, registry_cleanup
 from .models import SyrConnectModel
 from .sensor import _SYR_CONNECT_SENSOR_DESCRIPTIONS
@@ -698,7 +690,7 @@ def _add_hardness_selects(b: _SyrConnectSelectBuilder) -> None:
     All-in-One+, the ranges depend on the unit, and the soft water hardness (getOHW,
     getOWH) is that of the HWE cartridge, added by _async_setup_muco_conditional_selects.
     """
-    cartridge_keys = get_cartridge_keys(b.model_info)
+    cartridge_keys = b.model_info.cartridge_dependent_keys
     for hardness_key in ("getIWH", "getOWH"):
         if not b.allowed(hardness_key) or hardness_key in cartridge_keys:
             continue
@@ -863,8 +855,8 @@ async def async_setup_entry(
         # The selects of the other cartridge types; their unique_id has the "_select" suffix
         hidden_keys=lambda status, model: {
             f"{key}_select"
-            for key in get_cartridge_keys(model)
-            - get_reported_cartridge_keys(model, status)
+            for key in model.cartridge_dependent_keys
+            - model.reported_cartridge_keys(status)
         },
     )
 
@@ -1295,7 +1287,7 @@ class SyrConnectHardnessSelect(SyrConnectNumericSelect):
     """Water hardness select (`getIWH`/`getOWH`) with the unit taken from the live `getWHU` setting."""
 
     def _unit_label(self) -> str:
-        return get_whu_unit(self.device_model, self._status.get("getWHU")) or ""
+        return self.device_model.whu_unit(self._status.get("getWHU")) or ""
 
     @property
     @override
@@ -1340,8 +1332,8 @@ class SyrConnectRangedHardnessSelect(SyrConnectHardnessSelect):
     @override
     def options(self) -> list[str]:
         """Return the selectable options for the current unit."""
-        hardness_range = get_hardness_range(
-            self.device_model, self._sensor_key, self._status.get("getWHU")
+        hardness_range = self.device_model.hardness_range(
+            self._sensor_key, self._status.get("getWHU")
         )
         if hardness_range is None:
             return []
@@ -1360,8 +1352,8 @@ class SyrConnectRangedHardnessSelect(SyrConnectHardnessSelect):
     def current_option(self) -> str | None:
         """Return the currently selected option."""
         factor = self._factor()
-        hardness_range = get_hardness_range(
-            self.device_model, self._sensor_key, self._status.get("getWHU")
+        hardness_range = self.device_model.hardness_range(
+            self._sensor_key, self._status.get("getWHU")
         )
         raw = self._status.get(self._sensor_key)
         if factor == 1 or hardness_range is None or raw is None or not _is_number(raw):
@@ -1373,7 +1365,7 @@ class SyrConnectRangedHardnessSelect(SyrConnectHardnessSelect):
         return f"{value} {self._unit_label()}"
 
     def _factor(self) -> float:
-        return get_hardness_factor(self.device_model, self._status.get("getWHU"))
+        return self.device_model.hardness_factor(self._status.get("getWHU"))
 
     @override
     def _raw_value(self, value: float) -> int:
@@ -1394,9 +1386,7 @@ class SyrConnectRangedHardnessSelect(SyrConnectHardnessSelect):
         for soft_key in ("getOHW", "getOWH"):
             soft = self._status.get(soft_key)
             if (
-                get_hardness_range(
-                    self.device_model, soft_key, self._status.get("getWHU")
-                )
+                self.device_model.hardness_range(soft_key, self._status.get("getWHU"))
                 is None
                 or soft is None
                 or not _is_integer(soft)

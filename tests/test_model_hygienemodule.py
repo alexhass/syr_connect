@@ -12,7 +12,6 @@ import pytest
 from custom_components.syr_connect.aiosyrconnect import parse_hygiene_module_value
 from custom_components.syr_connect.button import SyrConnectButton, _build_device_buttons
 from custom_components.syr_connect.data import SyrConnectDevice
-from custom_components.syr_connect.helpers.profile import get_sensor_ala_map
 from custom_components.syr_connect.models import MODELS, SyrConnectModel
 from custom_components.syr_connect.select import (
     SyrConnectHygieneModuleSelect,
@@ -351,4 +350,4 @@ def test_hygiene_module_alarm_codes(
     model: SyrConnectModel, code: str, expected: str
 ) -> None:
     """The hygiene module has its own alarm codes."""
-    assert get_sensor_ala_map(model, code)[0] == expected
+    assert model.alarm_meaning(code) == expected

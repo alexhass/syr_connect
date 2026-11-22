@@ -23,14 +23,7 @@ from custom_components.syr_connect.devices import (
 )
 from custom_components.syr_connect.helpers.profile import (
     get_cartridge_entity_keys,
-    get_cartridge_keys,
-    get_hardness_factor,
-    get_hardness_range,
     get_model_supported_keys,
-    get_sensor_ala_map,
-    get_sensor_not_map,
-    get_sensor_wrn_map,
-    round_hardness,
 )
 from custom_components.syr_connect.models import (
     MODELS,
@@ -56,17 +49,17 @@ def test_get_sensor_maps_and_visibility_additional() -> None:
     """Test get sensor maps and visibility additional."""
     # NOT/WRN mapping with the common codes
     model = _signature("neosoft2500")
-    assert get_sensor_not_map(model, "01")[0] == "new_software_available"
-    assert get_sensor_wrn_map(model, "01")[0] == "power_outage"
-    assert get_sensor_not_map(UNKNOWN_MODEL, "01") == (None, "01")
-    assert get_sensor_wrn_map(UNKNOWN_MODEL, "01") == (None, "01")
+    assert model.notification_meaning("01") == "new_software_available"
+    assert model.warning_meaning("01") == "power_outage"
+    assert UNKNOWN_MODEL.notification_meaning("01") is None
+    assert UNKNOWN_MODEL.warning_meaning("01") is None
 
     # ALA mapping with detected model
     status: SyrConnectStatus = {"getCNA": "LEXplus10"}
-    assert get_sensor_ala_map(detect_model(status), "0")[0] == "no_alarm"
+    assert detect_model(status).alarm_meaning("0") == "no_alarm"
 
     # Unknown model has no alarm codes: the raw code is kept
-    assert get_sensor_ala_map(UNKNOWN_MODEL, "A5") == (None, "A5")
+    assert UNKNOWN_MODEL.alarm_meaning("A5") is None
 
     # Visibility rules
     status = {"getPA1": "true", "getPV1": "5"}
@@ -81,76 +74,76 @@ def test_sensor_code_mappings_and_unknown_model() -> None:
 
     # ALA: LEX family (detect via getCNA)
     status_lex = {"getCNA": "LEXplus10S"}
-    mapped, raw = get_sensor_ala_map(detect_model(status_lex), "0")
-    assert mapped == "no_alarm" and raw == "0"
+    mapped = detect_model(status_lex).alarm_meaning("0")
+    assert mapped == "no_alarm"
 
     # ALA: NeoSoft family (detect via serial number prefix)
     status_neo = {"getSRN": "200AAA12345", "getVER": "NSS.V.2.028"}
-    mapped2, raw2 = get_sensor_ala_map(detect_model(status_neo), "FF")
-    assert mapped2 == "no_alarm" and raw2 == "FF"
+    mapped2 = detect_model(status_neo).alarm_meaning("FF")
+    assert mapped2 == "no_alarm"
 
     # ALA: Safe-T+ family (detect via getVER prefix)
     status_safet = {"getVER": "Safe-T+ V2.00e"}
-    mapped3, raw3 = get_sensor_ala_map(detect_model(status_safet), "A1")
-    assert mapped3 == "alarm_safet_valve_cannot_be_operated" and raw3 == "A1"
+    mapped3 = detect_model(status_safet).alarm_meaning("A1")
+    assert mapped3 == "alarm_safet_valve_cannot_be_operated"
 
     # ALA: unknown model -> no mapping
-    mapped4, raw4 = get_sensor_ala_map(UNKNOWN_MODEL, "A5")
-    assert mapped4 is None and raw4 == "A5"
+    mapped4 = UNKNOWN_MODEL.alarm_meaning("A5")
+    assert mapped4 is None
 
     # NOT mapping
     model = _signature("triols")
-    mapped_not, raw_not = get_sensor_not_map(model, "01")
-    assert mapped_not == "new_software_available" and raw_not == "01"
-    mapped_not2, raw_not2 = get_sensor_not_map(model, "")
-    assert mapped_not2 == "no_notification" and raw_not2 == ""
+    mapped_not = model.notification_meaning("01")
+    assert mapped_not == "new_software_available"
+    mapped_not2 = model.notification_meaning("")
+    assert mapped_not2 == "no_notification"
 
     # WRN mapping
-    mapped_wrn, raw_wrn = get_sensor_wrn_map(model, "02")
-    assert mapped_wrn == "salt_supply_low" and raw_wrn == "02"
-    mapped_wrn2, raw_wrn2 = get_sensor_wrn_map(UNKNOWN_MODEL, None)
-    assert mapped_wrn2 is None and raw_wrn2 == ""
+    mapped_wrn = model.warning_meaning("02")
+    assert mapped_wrn == "salt_supply_low"
+    mapped_wrn2 = UNKNOWN_MODEL.warning_meaning(None)
+    assert mapped_wrn2 is None
 
 
 def test_mapping_none_inputs() -> None:
     """Ensure mapping functions handle None/empty raw codes."""
-    mapped_ala, raw_ala = get_sensor_ala_map(UNKNOWN_MODEL, None)
-    assert mapped_ala is None and raw_ala == ""
+    mapped_ala = UNKNOWN_MODEL.alarm_meaning(None)
+    assert mapped_ala is None
 
-    mapped_not, raw_not = get_sensor_not_map(UNKNOWN_MODEL, None)
-    assert mapped_not is None and raw_not == ""
+    mapped_not = UNKNOWN_MODEL.notification_meaning(None)
+    assert mapped_not is None
 
 
-def test_get_sensor_ala_map_known_model_unmapped_codes() -> None:
+def test_alarm_meaning_known_model_unmapped_codes() -> None:
     """Known models but with unmapped raw codes should return (None, raw)."""
     model = _signature("lexplus10")
-    mapped, raw = get_sensor_ala_map(model, "ZZ")
-    assert mapped is None and raw == "ZZ"
+    mapped = model.alarm_meaning("ZZ")
+    assert mapped is None
 
     model = _signature("safetplus")
-    mapped, raw = get_sensor_ala_map(model, "ZZ")
-    assert mapped is None and raw == "ZZ"
+    mapped = model.alarm_meaning("ZZ")
+    assert mapped is None
 
     model = _signature("neosoft2500")
-    mapped, raw = get_sensor_ala_map(model, "ZZ")
-    assert mapped is None and raw == "ZZ"
+    mapped = model.alarm_meaning("ZZ")
+    assert mapped is None
 
     model = _signature("safefloor")
-    mapped, raw = get_sensor_ala_map(model, "ZZ")
-    assert mapped is None and raw == "ZZ"
+    mapped = model.alarm_meaning("ZZ")
+    assert mapped is None
 
 
-def test_get_sensor_ala_map_normalizes_case_of_raw_value() -> None:
+def test_alarm_meaning_normalizes_case_of_raw_value() -> None:
     """Raw API values are uppercased before lookup, so mixed-case codes like LowBat match."""
     model = _signature("safetplus")
-    assert get_sensor_ala_map(model, "LowBat") == ("alarm_battery_low", "LowBat")
-    assert get_sensor_ala_map(model, "weakbat") == ("alarm_battery_weak", "weakbat")
+    assert model.alarm_meaning("LowBat") == "alarm_battery_low"
+    assert model.alarm_meaning("weakbat") == "alarm_battery_weak"
 
     model = _signature("neosoft2500")
-    assert get_sensor_ala_map(model, "a1")[0] == "alarm_end_switch"
+    assert model.alarm_meaning("a1") == "alarm_end_switch"
 
 
-def test_get_sensor_ala_map_covers_all_signatures_of_known_families() -> None:
+def test_alarm_meaning_covers_all_signatures_of_known_families() -> None:
     """Every signature using a MuCo/NeoSoft/SafeTech/Trio/LEX/Safe-T+ device file gets a mapping."""
 
     families = ("muco_", "neosoft_", "safetech", "trio", "lex", "safetplus")
@@ -167,7 +160,7 @@ def test_get_sensor_ala_map_covers_all_signatures_of_known_families() -> None:
         if not device_file.startswith(families):
             continue
         code = "0" if device_file.startswith("lex") else "FF"
-        mapped, _raw = get_sensor_ala_map(signature, code)
+        mapped = signature.alarm_meaning(code)
         assert mapped == "no_alarm", signature.name
         checked += 1
     assert checked > 40
@@ -186,11 +179,11 @@ def test_get_sensor_ala_map_covers_all_signatures_of_known_families() -> None:
         ("hva", "ff", "no_warning"),
     ],
 )
-def test_get_sensor_wrn_map_family_codes(
+def test_warning_meaning_family_codes(
     name: str, code: str, expected: str | None
 ) -> None:
     """The warning codes follow the table of the device family."""
-    assert get_sensor_wrn_map(_signature(name), code) == (expected, code)
+    assert _signature(name).warning_meaning(code) == expected
 
 
 @pytest.mark.parametrize(
@@ -203,11 +196,11 @@ def test_get_sensor_wrn_map_family_codes(
         ("controlicmini", "FF", None),
     ],
 )
-def test_get_sensor_not_map_family_codes(
+def test_notification_meaning_family_codes(
     name: str, code: str, expected: str | None
 ) -> None:
     """The notification codes follow the table of the device family."""
-    assert get_sensor_not_map(_signature(name), code) == (expected, code)
+    assert _signature(name).notification_meaning(code) == expected
 
 
 @pytest.mark.parametrize(
@@ -232,29 +225,29 @@ def test_get_sensor_not_map_family_codes(
         ("safetplus", "A7", "alarm_external_sensor_leakage_in2"),
     ],
 )
-def test_get_sensor_ala_map_family_codes(name: str, code: str, expected: str) -> None:
+def test_alarm_meaning_family_codes(name: str, code: str, expected: str) -> None:
     """The alarm codes follow the table of the device family."""
-    assert get_sensor_ala_map(_signature(name), code) == (expected, code)
+    assert _signature(name).alarm_meaning(code) == expected
 
 
 def test_get_sensor_not_and_wrn_map_unmapped_and_none() -> None:
     """Test get sensor not and wrn map unmapped and none."""
     # unmapped code
-    mapped_not, raw_not = get_sensor_not_map(UNKNOWN_MODEL, "ZZ")
-    assert mapped_not is None and raw_not == "ZZ"
+    mapped_not = UNKNOWN_MODEL.notification_meaning("ZZ")
+    assert mapped_not is None
 
     # none input returns empty raw
-    mapped_not2, raw_not2 = get_sensor_not_map(UNKNOWN_MODEL, None)
-    assert mapped_not2 is None and raw_not2 == ""
+    mapped_not2 = UNKNOWN_MODEL.notification_meaning(None)
+    assert mapped_not2 is None
 
-    mapped_wrn, raw_wrn = get_sensor_wrn_map(UNKNOWN_MODEL, "ZZ")
-    assert mapped_wrn is None and raw_wrn == "ZZ"
+    mapped_wrn = UNKNOWN_MODEL.warning_meaning("ZZ")
+    assert mapped_wrn is None
 
 
-def test_get_sensor_ala_map_unrecognized_known_model() -> None:
+def test_alarm_meaning_unrecognized_known_model() -> None:
     """A model without alarm codes of its family keeps the raw code."""
     model = replace(UNKNOWN_MODEL, name="futuredevice2100")
-    assert get_sensor_ala_map(model, "FF") == (None, "FF")
+    assert model.alarm_meaning("FF") is None
 
 
 def test_get_model_supported_keys_falls_back_without_device_profile() -> None:
@@ -463,22 +456,6 @@ def test_get_model_supported_keys_trio_device_override() -> None:
     assert "getSLF" in result
 
 
-@pytest.mark.parametrize(
-    ("model", "expected"),
-    [
-        pytest.param("conelclearprofill", {"getLOT", "getOHW"}, id="muco-filling"),
-        pytest.param("allinoneplus", {"getFCS", "getOWH"}, id="allinoneplus"),
-        pytest.param("lex30", set(), id="softener"),
-        pytest.param("unknown", set(), id="no-profile"),
-    ],
-)
-def test_get_cartridge_keys(model: str, expected: set[str]) -> None:
-    """The device profile names the keys that only apply to one cartridge type or size."""
-    signature = UNKNOWN_MODEL if model == "unknown" else _signature(model)
-
-    assert get_cartridge_keys(signature) == expected
-
-
 _SYR_CONNECT_TEST_CARTRIDGE_KEYS = {"getFCS", "getLOT", "getOHW", "getOWH"}
 
 
@@ -599,57 +576,3 @@ def test_get_cartridge_entity_keys(
     signature = UNKNOWN_MODEL if model == "unknown" else _signature(model)
 
     assert get_cartridge_entity_keys(signature, status, supported_keys) == expected
-
-
-@pytest.mark.parametrize(
-    ("model", "key", "raw_code", "expected"),
-    [
-        pytest.param("allinoneplus", "getIWH", "3", (10, 900, 10), id="ppm"),
-        pytest.param("allinoneplus", "getOWH", 1, (0, 16, 1), id="e"),
-        pytest.param("allinoneplus", "getOWH", "7", None, id="unknown-unit"),
-        pytest.param("allinoneplus", "getOWH", None, None, id="no-unit"),
-        pytest.param("lex30", "getIWH", "0", None, id="fixed-range"),
-        pytest.param("unknown", "getIWH", "0", None, id="no-profile"),
-    ],
-)
-def test_get_hardness_range(
-    model: str, key: str, raw_code: Any, expected: tuple[int, int, int] | None
-) -> None:
-    """The profile names the water hardness range per unit (getWHU)."""
-    signature = UNKNOWN_MODEL if model == "unknown" else _signature(model)
-
-    assert get_hardness_range(signature, key, raw_code) == expected
-
-
-@pytest.mark.parametrize(
-    ("model", "raw_code", "expected"),
-    [
-        pytest.param("conelclearprofill", "0", 1.0, id="dh"),
-        pytest.param("conelclearprofill", 1, 1.25216338, id="e"),
-        pytest.param("conelclearprofill", "2.0", 1.78480457, id="fh"),
-        pytest.param("conelclearprofill", "3", 17.8480457, id="ppm"),
-        pytest.param("conelclearprofill", "7", 1.0, id="unknown-unit"),
-        pytest.param("conelclearprofill", None, 1.0, id="no-unit"),
-        pytest.param("allinoneplus", "3", 1.0, id="values-in-the-unit"),
-        pytest.param("unknown", "3", 1.0, id="no-profile"),
-    ],
-)
-def test_get_hardness_factor(model: str, raw_code: Any, expected: float) -> None:
-    """Only a device that keeps the water hardness in °dH converts it to the unit."""
-    signature = UNKNOWN_MODEL if model == "unknown" else _signature(model)
-
-    assert get_hardness_factor(signature, raw_code) == expected
-
-
-@pytest.mark.parametrize(
-    ("value", "expected"),
-    [
-        (0.0, 0),
-        (4.48, 4),
-        (2.5, 3),
-        (3.5, 4),
-    ],
-)
-def test_round_hardness(value: float, expected: int) -> None:
-    """A converted water hardness is rounded to a whole number, halves up."""
-    assert round_hardness(value) == expected

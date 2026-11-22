@@ -22,7 +22,7 @@ from .coordinator import SyrConnectConfigEntry, SyrConnectDataUpdateCoordinator
 from .data import SyrConnectDevice
 from .entity import SyrConnectEntity, async_add_device_entities
 from .helpers.device import get_device_model
-from .helpers.profile import get_model_supported_keys, get_sensor_not_map
+from .helpers.profile import get_model_supported_keys
 from .helpers.registry import build_unique_id, registry_cleanup
 
 _LOGGER = logging.getLogger(__name__)
@@ -170,7 +170,7 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
         unchanged (no update pending).
         """
         status = self._status
-        mapped, _raw = get_sensor_not_map(self.device_model, status.get("getNOT"))
+        mapped = self.device_model.notification_meaning(status.get("getNOT"))
         if mapped == "new_software_available":
             return _SYR_CONNECT_UPDATE_NEW_VERSION_PLACEHOLDER
         return self.installed_version
@@ -194,7 +194,7 @@ class SyrConnectFirmwareUpdate(SyrConnectEntity, UpdateEntity):
         """Finish the progress state on getNOT == "04" (new_software_installed) or timeout."""
         if self._install_started is not None:
             status = self._status
-            mapped, _raw = get_sensor_not_map(self.device_model, status.get("getNOT"))
+            mapped = self.device_model.notification_meaning(status.get("getNOT"))
             _LOGGER.debug(
                 "Firmware update %s in progress, getNOT=%s",
                 self._device_id,

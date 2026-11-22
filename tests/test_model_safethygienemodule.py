@@ -11,7 +11,6 @@ import pytest
 
 from custom_components.syr_connect.button import SyrConnectButton, _build_device_buttons
 from custom_components.syr_connect.data import SyrConnectDevice
-from custom_components.syr_connect.helpers.profile import get_sensor_ala_map
 from custom_components.syr_connect.models import MODELS, SyrConnectModel
 from custom_components.syr_connect.select import (
     SyrConnectHygieneModuleSelect,
@@ -151,6 +150,6 @@ def test_safet_hygiene_module_valve(
 def test_safet_hygiene_module_alarm_codes() -> None:
     """The Safe-T Hygiene module uses the alarm codes of the Safe-T."""
     assert (
-        get_sensor_ala_map(_SYR_CONNECT_TEST_SAFET_HYGIENE_MODULE_COLD_MODEL, "A0")[0]
+        _SYR_CONNECT_TEST_SAFET_HYGIENE_MODULE_COLD_MODEL.alarm_meaning("A0")
         == "alarm_safet_microleakage_detected"
     )

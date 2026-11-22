@@ -30,7 +30,7 @@ from .codes import (
     WRN_CODES_NONE,
 )
 from .models import SyrConnectModelSignature, SyrConnectStatistic
-from .values import WHU_UNITS_LEX, WHU_UNITS_MUCO, WHU_UNITS_NEOSOFT
+from .units import WHU_UNITS_LEX, WHU_UNITS_MUCO, WHU_UNITS_NEOSOFT
 
 _LOGGER = logging.getLogger(__name__)
 

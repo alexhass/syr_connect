@@ -11,7 +11,6 @@ import pytest
 from custom_components.syr_connect import sensor as sensor_module
 from custom_components.syr_connect.const import CONF_SERVICE
 from custom_components.syr_connect.coordinator import SyrConnectDataUpdateCoordinator
-from custom_components.syr_connect.helpers.profile import get_sensor_ala_map
 from custom_components.syr_connect.models import (
     MODELS,
     UNKNOWN_MODEL,
@@ -71,7 +70,7 @@ def test_sensor_ala_map_safetech(
     model = detect_model({"getVER": version})
 
     assert model.name == name
-    assert get_sensor_ala_map(model, raw) == (expected, raw)
+    assert model.alarm_meaning(raw) == expected
 
 
 @pytest.mark.parametrize(
