@@ -17,8 +17,8 @@ The global fallback allowlists these override are `_SYR_CONNECT_<PLATFORM>_SUPPO
 in the platform modules (sensor.py, select.py, ...).
 """
 
-from collections.abc import Mapping, Set as AbstractSet
-from dataclasses import dataclass, field
+from collections.abc import Set as AbstractSet
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -32,18 +32,7 @@ class SyrConnectDeviceProfile:
 
     binary_sensor: AbstractSet[str] | None
     button: AbstractSet[str] | None
-    # Water hardness selects (getIWH, getOWH) whose range depends on the unit: key ->
-    # getWHU code -> (lowest, highest, step) in that unit
-    hardness_ranges: Mapping[str, Mapping[int, tuple[int, int, int]]] = field(
-        default_factory=dict
-    )
     select: AbstractSet[str] | None
-    # Select keys with an "off" option: key -> raw value written for "off"; a reported
-    # value below the lowest other option is shown as "off"
-    select_off_values: Mapping[str, int] = field(default_factory=dict)
-    # Select keys whose options differ from the global step list of the platform: key ->
-    # raw values in ascending order, e.g. other durations for getRMT
-    select_options: Mapping[str, list[int]] = field(default_factory=dict)
     sensor: AbstractSet[str] | None
     switch: AbstractSet[str] | None
     # None means the global allowlist of the platform

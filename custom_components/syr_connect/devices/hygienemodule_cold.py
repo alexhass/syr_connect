@@ -14,7 +14,6 @@ cover every supported model at once.
 """
 
 from . import SyrConnectDeviceProfile
-from .hygienemodule import SELECT_CCL_OPTIONS
 
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
@@ -54,21 +53,11 @@ BUTTON_SUPPORTED_KEYS = {
 
 VALVE_SUPPORTED_KEYS: set[str] = set()
 
-# Raw values written for "off", see hygienemodule.py
-SELECT_OFF_VALUES = {
-    "getCCF": 0,
-    "getCCL": 14,
-}
-
 
 PROFILE = SyrConnectDeviceProfile(
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
     select=SELECT_SUPPORTED_KEYS,
-    select_off_values=SELECT_OFF_VALUES,
-    select_options={
-        "getCCL": SELECT_CCL_OPTIONS,
-    },
     sensor=SENSOR_SUPPORTED_KEYS,
     switch=SWITCH_SUPPORTED_KEYS,
     valve=VALVE_SUPPORTED_KEYS,

@@ -1590,7 +1590,7 @@ async def test_sensor_sta_empty_value(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
     sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getSTA")
 
-    # Empty string maps to 'status_inactive' per const.py mapping
+    # Empty string maps to 'status_inactive' per STA_VALUE_MAP of the library
     assert sensor.native_value == "status_inactive"
 
 
@@ -2762,7 +2762,7 @@ async def test_sensor_getle_value_mapping(hass: HomeAssistant) -> None:
     coordinator = _build_coordinator(hass, data)
 
     le_sensor = SyrConnectSensor(coordinator, "device1", "Device 1", "getLE")
-    # Mapped display value (matches mapping in const.py)
+    # Mapped display value (matches LE_VALUE_MAP of the library)
     assert le_sensor.native_value == 250  # Mapped display value
 
 

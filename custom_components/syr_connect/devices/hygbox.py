@@ -91,29 +91,11 @@ BUTTON_SUPPORTED_KEYS = {
 
 VALVE_SUPPORTED_KEYS: set[str] = set()
 
-# Synchronization interval (getRCP) in seconds: 6 hours to 8 days, the steps of the
-# global option map within this range
-SELECT_RCP_OPTIONS = [
-    21600,
-    43200,
-    86400,
-    172800,
-    259200,
-    345600,
-    432000,
-    518400,
-    604800,
-    691200,
-]
-
 
 PROFILE = SyrConnectDeviceProfile(
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
     select=SELECT_SUPPORTED_KEYS,
-    select_options={
-        "getRCP": SELECT_RCP_OPTIONS,
-    },
     sensor=SENSOR_SUPPORTED_KEYS,
     switch=SWITCH_SUPPORTED_KEYS,
     valve=VALVE_SUPPORTED_KEYS,
