@@ -28,7 +28,7 @@ used, move them into SENSOR_SUPPORTED_KEYS below (after adding them to the
 global sensor.py allowlist first).
 """
 
-from . import NOT_CODES_NONE, WHU_UNITS_LEX, SyrConnectDeviceProfile
+from . import WHU_UNITS_LEX, SyrConnectDeviceProfile
 
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
@@ -114,25 +114,10 @@ BUTTON_SUPPORTED_KEYS = {
 # No shutoff valve on this model (a conventional column softener).
 VALVE_SUPPORTED_KEYS: set[str] = set()
 
-# Alarm codes of i-LEX, LEX Plus 10 and LEX Plus 10 S (raw API getALM -> internal
-# translation key). The LEX Plus 10 SL has its own, longer table (lexplus10sl.ALA_CODES).
-ALA_CODES = {
-    "0": "no_alarm",
-    "LOWSALT": "alarm_salt_supply_low",
-    "NOSALT": "alarm_salt_supply_empty",
-    "1": "alarm_salt_supply_empty",
-    "2": "alarm_pressure_too_low",
-    "3": "alarm_pressure_too_high",
-    "4": "alarm_pressure_sensor_faulty",
-    "5": "alarm_valve_malfunction",
-}
-
 
 PROFILE = SyrConnectDeviceProfile(
-    ala_codes=ALA_CODES,
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
-    not_codes=NOT_CODES_NONE,
     select=SELECT_SUPPORTED_KEYS,
     sensor=SENSOR_SUPPORTED_KEYS,
     sensor_factors={

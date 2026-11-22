@@ -21,8 +21,7 @@ If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_SUPPORTED_KEYS below.
 """
 
-from . import NOT_CODES_NONE, WHU_UNITS_LEX, SyrConnectDeviceProfile
-from .lex import ALA_CODES
+from . import WHU_UNITS_LEX, SyrConnectDeviceProfile
 
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
@@ -103,11 +102,9 @@ VALVE_SUPPORTED_KEYS: set[str] = set()
 
 
 PROFILE = SyrConnectDeviceProfile(
-    ala_codes=ALA_CODES,
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
     local_time_timestamps=True,
-    not_codes=NOT_CODES_NONE,
     select=SELECT_SUPPORTED_KEYS,
     sensor=SENSOR_SUPPORTED_KEYS,
     sensor_factors={

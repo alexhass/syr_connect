@@ -91,27 +91,8 @@ VALVE_SUPPORTED_KEYS = {
     "getAB",
 }
 
-# Alarm codes of the Safe-T family (raw API getALA -> internal translation key)
-ALA_CODES = {
-    "A0": "alarm_safet_microleakage_detected",
-    "A1": "alarm_safet_valve_cannot_be_operated",
-    "A2": "alarm_safet_turbine_no_signal",
-    "A3": "alarm_safet_leakage_volume_reached",
-    "A4": "alarm_safet_flow_leakage_detected",
-    "A5": "alarm_safet_absence_leakage_detected",
-    "A6": "alarm_safefloor_flood",
-    "A7": "alarm_external_sensor_leakage_in2",
-    "A8": "alarm_safet_48h_leakage",
-    "A9": "alarm_safet_flow_time_exceeded",
-    "BA": "alarm_battery_low",
-    "FF": "no_alarm",
-    "LOWBAT": "alarm_battery_low",
-    "WEAKBAT": "alarm_battery_weak",
-}
-
 
 PROFILE = SyrConnectDeviceProfile(
-    ala_codes=ALA_CODES,
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
     select=SELECT_SUPPORTED_KEYS,

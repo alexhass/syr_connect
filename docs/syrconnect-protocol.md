@@ -549,7 +549,7 @@ The rule follows the official SYR API documentation (see [Further information](#
 
 Every device family numbers its alarm, warning and notification codes differently. There is no generic table: a model without the codes of its family shows the raw code.
 
-The common table applies to NeoSoft (dk 1200–1222), Trio DFR/LS (dk 1100, 1110, 1111, 1113), SafeTech+ (dk 1112) and the MultiController (dk 1500–1506, every getDFM role) (`devices.ALA_CODES_COMMON`). The SafeTech+ with dk 142 uses the SafeTech codes (see below).
+The common table applies to NeoSoft (dk 1200–1222), Trio DFR/LS (dk 1100, 1110, 1111, 1113), SafeTech+ (dk 1112) and the MultiController (dk 1500–1506, every getDFM role) (`ALA_CODES_COMMON` in `aiosyrconnect/codes.py`). The SafeTech+ with dk 142 uses the SafeTech codes (see below).
 
 | Code | Meaning | Translation key |
 | --- | --- | --- |
@@ -596,7 +596,7 @@ The common table applies to NeoSoft (dk 1200–1222), Trio DFR/LS (dk 1100, 1110
 
 #### Alarm codes (getALA) — SafeTech
 
-Alarm codes of the SafeTech (dk 140, 141, 145) and of the SafeTech+ with dk 142 (`safetech.ALA_CODES`). A1 and A3–AB match the common table above; A2 and AC–AF differ. The SafeTech and the SafeTech+ with dk 142 have no known warning or notification codes; only FF (none) is mapped.
+Alarm codes of the SafeTech (dk 140, 141, 145) and of the SafeTech+ with dk 142 (`ALA_CODES_SAFETECH`). A1 and A3–AB match the common table above; A2 and AC–AF differ. The SafeTech and the SafeTech+ with dk 142 have no known warning or notification codes; only FF (none) is mapped.
 
 | Code | Meaning (official) | Translation key |
 | --- | --- | --- |
@@ -621,7 +621,7 @@ Alarm codes of the SafeTech (dk 140, 141, 145) and of the SafeTech+ with dk 142 
 
 There are two tables. All numeric codes are hex-parsed (single-digit codes 1-7 decode to themselves, two-digit codes 11-23 decode to 17-35); `lowsalt`/`nosalt` are also reported as literal text instead of a numeric code on some firmware versions. Any unmatched code (including `0`) is treated as no alarm.
 
-L10-L100, LEX10-100 (dk 40) and LEXplus10/10S (dk 80, sbt 1 and 2) know only these codes (`lex.ALA_CODES`):
+L10-L100, LEX10-100 (dk 40) and LEXplus10/10S (dk 80, sbt 1 and 2) know only these codes (`ALA_CODES_LEX`):
 
 | Code | Match type | Decoded (dec) | Enum (official) | Title (official English string) | Translation key |
 | --- | --- | --- | --- | --- | --- |
@@ -635,7 +635,7 @@ L10-L100, LEX10-100 (dk 40) and LEXplus10/10S (dk 80, sbt 1 and 2) know only the
 | 5 | Hex-parse | 5 | valveMalfunction | Valve mechanism defect | `alarm_valve_malfunction` |
 | other unmatched | Hex-parse | – | – (null) | no alarm (fallback) | `no_alarm` |
 
-LEXplus10SL (dk 80, sbt 7) knows the full table (`lexplus10sl.ALA_CODES`):
+LEXplus10SL (dk 80, sbt 7) knows the full table (`ALA_CODES_LEXPLUS10SL`):
 
 | Code | Match type | Decoded (dec) | Enum (official) | Title (official English string) | Translation key |
 | --- | --- | --- | --- | --- | --- |
@@ -666,7 +666,7 @@ LEXplus10SL (dk 80, sbt 7) knows the full table (`lexplus10sl.ALA_CODES`):
 
 #### Alarm codes (getALA) — Safe-T family
 
-Alarm codes of the Safe-T+, Safe-T Master/Slave, communication module and Safe-T hygiene module (dk 1–5), also used by the Inliner-HWA 3300 (dk 25) and the CONTROLICmini (dk 100) (`safetplus.ALA_CODES`).
+Alarm codes of the Safe-T+, Safe-T Master/Slave, communication module and Safe-T hygiene module (dk 1–5), also used by the Inliner-HWA 3300 (dk 25) and the CONTROLICmini (dk 100) (`ALA_CODES_SAFETPLUS`).
 
 | Code | Meaning | Translation key |
 | --- | --- | --- |
@@ -687,7 +687,7 @@ Alarm codes of the Safe-T+, Safe-T Master/Slave, communication module and Safe-T
 
 #### Alarm codes (getALA) — All-in-One+
 
-Alarm codes of the All-in-One+ (dk 160, `allinoneplus.ALA_CODES`).
+Alarm codes of the All-in-One+ (dk 160, `ALA_CODES_ALLINONEPLUS`).
 
 | Code | Meaning | Translation key |
 | --- | --- | --- |
@@ -712,7 +712,7 @@ Alarm codes of the All-in-One+ (dk 160, `allinoneplus.ALA_CODES`).
 
 #### Alarm codes (getALA) — HVA
 
-Alarm codes of the HVA (dk 20, `hva.ALA_CODES`). The HVA has no known warning or notification codes; only FF (none) is mapped.
+Alarm codes of the HVA (dk 20, `ALA_CODES_HVA`). The HVA has no known warning or notification codes; only FF (none) is mapped.
 
 | Code | Meaning | Translation key |
 | --- | --- | --- |
@@ -732,7 +732,7 @@ Alarm codes of the HVA (dk 20, `hva.ALA_CODES`). The HVA has no known warning or
 
 #### Warning codes (getWRN) — common table
 
-Non-critical warnings of the same device families as the common alarm codes (`devices.WRN_CODES_COMMON`). The other device families have no known warning codes: the SafeTech, the SafeTech+ with dk 142 and the HVA only map FF (`devices.WRN_CODES_NONE`), every other model shows the raw code.
+Non-critical warnings of the same device families as the common alarm codes (`WRN_CODES_COMMON`). The other device families have no known warning codes: the SafeTech, the SafeTech+ with dk 142 and the HVA only map FF (`WRN_CODES_NONE`), every other model shows the raw code.
 
 | Code | Meaning | Translation key |
 | --- | --- | --- |
@@ -759,7 +759,7 @@ Non-critical warnings of the same device families as the common alarm codes (`de
 
 #### Notification codes (getNOT) — common table
 
-Notifications of the same device families as the common alarm codes (`devices.NOT_CODES_COMMON`). The other device families have no known notification codes: the SafeTech, the SafeTech+ with dk 142, the HVA and the LEX family only map FF (`devices.NOT_CODES_NONE`), every other model shows the raw code.
+Notifications of the same device families as the common alarm codes (`NOT_CODES_COMMON`). The other device families have no known notification codes: the SafeTech, the SafeTech+ with dk 142, the HVA and the LEX family only map FF (`NOT_CODES_NONE`), every other model shows the raw code.
 
 | Code | Meaning | Translation key |
 | --- | --- | --- |

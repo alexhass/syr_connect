@@ -40,12 +40,7 @@ If real-device testing shows any of the above (or other) keys are actually
 used, move them into SENSOR_SUPPORTED_KEYS below.
 """
 
-from . import (
-    ALA_CODES_COMMON,
-    NOT_CODES_COMMON,
-    WRN_CODES_COMMON,
-    SyrConnectDeviceProfile,
-)
+from . import SyrConnectDeviceProfile
 
 SENSOR_SUPPORTED_KEYS = {
     # --- Connectivity ---
@@ -220,13 +215,10 @@ VALVE_SUPPORTED_KEYS = {
 
 
 PROFILE = SyrConnectDeviceProfile(
-    ala_codes=ALA_CODES_COMMON,
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
-    not_codes=NOT_CODES_COMMON,
     select=SELECT_SUPPORTED_KEYS,
     sensor=SENSOR_SUPPORTED_KEYS,
     switch=SWITCH_SUPPORTED_KEYS,
     valve=VALVE_SUPPORTED_KEYS,
-    wrn_codes=WRN_CODES_COMMON,
 )

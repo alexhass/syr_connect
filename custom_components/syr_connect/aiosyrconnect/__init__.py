@@ -10,7 +10,8 @@ Modules:
   login encryption of the cloud
 - json_api: client of the local device API (SyrConnectJsonAPI)
 - http_client: HTTP requests and size-limited reading of the answers
-- codes: values that mean "no code" for alarms, notifications and warnings
+- codes: values that mean "no code" and the meaning of the alarm, notification and
+  warning codes of each device family
 - models: devices, status values, cloud services, statistics series and model signatures
 - model_detection: signatures of the known models and their detection
 - exceptions: errors raised by the clients

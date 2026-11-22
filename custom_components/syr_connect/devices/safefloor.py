@@ -87,21 +87,6 @@ BUTTON_SUPPORTED_KEYS = {
 # No shutoff valve on this model (a standalone sensor, not a valve controller).
 VALVE_SUPPORTED_KEYS: set[str] = set()
 
-# Alarm codes for SafeFloor devices (raw API getALA -> internal translation key)
-# Original casing in API is "A0x0000", but we normalize it for get_sensor_ala_map() lookups.
-# Codes are hexadecimal bitmask values (0x0002, 0x0004, ..., 0x0100).
-ALA_CODES = {
-    "A0X0000": "no_alarm",
-    "A0X0002": "alarm_safefloor_communication",
-    "A0X0004": "alarm_safefloor_flood",
-    "A0X0008": "alarm_safefloor_weather",
-    "A0X0010": "alarm_safefloor_low_temperature",
-    "A0X0020": "alarm_safefloor_high_temperature",
-    "A0X0040": "alarm_safefloor_low_humidity",
-    "A0X0080": "alarm_safefloor_high_humidity",
-    "A0X0100": "alarm_battery_low",
-}
-
 # The sensor measures every getWMP seconds but uploads only every getRCP seconds, so
 # the status holds only the latest measurement. The cloud keeps the raw measurements
 # of the last 6 days (see "SafeFloor measurement history" in docs/syrconnect-protocol.md).
@@ -124,7 +109,6 @@ STATISTICS = (
 
 
 PROFILE = SyrConnectDeviceProfile(
-    ala_codes=ALA_CODES,
     bat_in_percent=True,
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,

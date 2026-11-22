@@ -97,29 +97,8 @@ SELECT_OFF_VALUES = {
     "getWCL": 54,
 }
 
-# Alarm codes of the hygiene module (raw API getALA -> internal translation key). "FF" =
-# no alarm is assumed like on the other devices with the alarm codes A0-AF.
-ALA_CODES = {
-    "A0": "alarm_battery_low",
-    "A1": "alarm_safet_valve_cannot_be_operated",
-    "A2": "alarm_flow_sensor_cold_fault",
-    "A3": "alarm_flow_sensor_hot_fault",
-    "A4": "alarm_flushings_cold_exceeded",
-    "A5": "alarm_flushings_hot_exceeded",
-    "A6": "alarm_temperature_cold_exceeded",
-    "A7": "alarm_temperature_hot_exceeded",
-    "A8": "alarm_emergency_stop",
-    "A9": "alarm_drain_sensor_fault",
-    "AA": "alarm_temperature_sensor_cold_faulty",
-    "AB": "alarm_temperature_sensor_hot_faulty",
-    "AC": "alarm_combination_module_communication",
-    "AD": "alarm_turbine_table_invalid",
-    "FF": "no_alarm",
-}
-
 
 PROFILE = SyrConnectDeviceProfile(
-    ala_codes=ALA_CODES,
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
     select=SELECT_SUPPORTED_KEYS,

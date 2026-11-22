@@ -1,7 +1,8 @@
 """Device model signatures of the SYR devices and their detection.
 
 A signature tells how a model is detected (device kind of the cloud, status checks)
-and how it is addressed (local path of the JSON API, alarm commands).
+and how it is addressed (local path of the JSON API, alarm commands), and it names the
+code tables of its family (`codes.py`).
 `detect_model_signature()` selects the signature of a device from the cloud device
 kind and its status, or None for an unknown model; `UNKNOWN_MODEL_SIGNATURE` names
 such a model. The caller may pass signatures of its own that extend
@@ -11,6 +12,23 @@ such a model. The caller may pass signatures of its own that extend
 from collections.abc import Sequence
 import logging
 
+from .codes import (
+    ALA_CODES_ALLINONEPLUS,
+    ALA_CODES_COMMON,
+    ALA_CODES_DOSINGPUMP,
+    ALA_CODES_HVA,
+    ALA_CODES_HYGBOX,
+    ALA_CODES_HYGIENEMODULE,
+    ALA_CODES_LEX,
+    ALA_CODES_LEXPLUS10SL,
+    ALA_CODES_SAFEFLOOR,
+    ALA_CODES_SAFETECH,
+    ALA_CODES_SAFETPLUS,
+    NOT_CODES_COMMON,
+    NOT_CODES_NONE,
+    WRN_CODES_COMMON,
+    WRN_CODES_NONE,
+)
 from .models import SyrConnectModelSignature
 
 _LOGGER = logging.getLogger(__name__)
@@ -33,6 +51,7 @@ UNKNOWN_MODEL_SIGNATURE = SyrConnectModelSignature(
 MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
     # ── Safe-T+ (dk=1) ──────────────────────────────────────────────────────────
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_SAFETPLUS,
         base_path=None,
         display_name="Safe-T+ Connect",
         dk=1,
@@ -43,6 +62,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
     ),
     # ── Safe-T Master / Slave / Communication module (dk=2, 3, 5) ──────────────────
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_SAFETPLUS,
         base_path=None,
         display_name="Safe-T Master",
         dk=2,
@@ -52,6 +72,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         # TODO: Untested model.
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_SAFETPLUS,
         base_path=None,
         display_name="Safe-T Slave",
         dk=3,
@@ -61,6 +82,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         # TODO: Untested model.
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_SAFETPLUS,
         base_path=None,
         display_name="Safe-T Slave",
         dk=3,
@@ -70,6 +92,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         # TODO: Untested model.
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_SAFETPLUS,
         base_path=None,
         display_name="Safe-T Communication Module",
         dk=5,
@@ -80,6 +103,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
     ),
     # ── Safe-T Hygiene module (dk=4) ─────────────────────────────────────────────
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_SAFETPLUS,
         base_path=None,
         display_name="Safe-T Hygiene Module",
         dk=4,
@@ -89,6 +113,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         # TODO: Untested model.
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_SAFETPLUS,
         base_path=None,
         display_name="Safe-T Hygiene Module",
         dk=4,
@@ -98,6 +123,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         # TODO: Untested model.
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_SAFETPLUS,
         base_path=None,
         display_name="Safe-T Hygiene Module",
         dk=4,
@@ -108,16 +134,20 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
     ),
     # ── HVA (dk=20) ─────────────────────────────────────────────────────────────
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_HVA,
         base_path=None,
         display_name="HVA",
         dk=20,
         dkv=19,
         manufacturer="SYR",
         name="hva",
+        not_codes=NOT_CODES_NONE,
+        wrn_codes=WRN_CODES_NONE,
         # TODO: Untested model.
     ),
     # ── Inliner-HWA 3300 (dk=25) ─────────────────────────────────────────────────
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_SAFETPLUS,
         base_path=None,
         display_name="Inliner-HWA 3300",
         dk=25,
@@ -128,6 +158,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
     ),
     # ── i-LEX / LEX (dk=40, dkv=16) ─────────────────────────────────────────────
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_LEX,
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L10",
@@ -138,9 +169,11 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_regeneration_interval=99,
         maximum_salt_volume=25,
         name="l10",
+        not_codes=NOT_CODES_NONE,
         ver_prefix=None,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_LEX,
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L12",
@@ -151,9 +184,11 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_regeneration_interval=99,
         maximum_salt_volume=25,
         name="l12",
+        not_codes=NOT_CODES_NONE,
         ver_prefix=None,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_LEX,
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L15",
@@ -164,9 +199,11 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_regeneration_interval=99,
         maximum_salt_volume=25,
         name="l15",
+        not_codes=NOT_CODES_NONE,
         ver_prefix=None,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_LEX,
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L20",
@@ -177,9 +214,11 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_regeneration_interval=99,
         maximum_salt_volume=70,
         name="l20",
+        not_codes=NOT_CODES_NONE,
         ver_prefix=None,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_LEX,
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L25",
@@ -190,9 +229,11 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_regeneration_interval=99,
         maximum_salt_volume=70,
         name="l25",
+        not_codes=NOT_CODES_NONE,
         ver_prefix=None,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_LEX,
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L30",
@@ -203,9 +244,11 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_regeneration_interval=99,
         maximum_salt_volume=70,
         name="l30",
+        not_codes=NOT_CODES_NONE,
         ver_prefix=None,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_LEX,
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L40",
@@ -216,9 +259,11 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_regeneration_interval=99,
         maximum_salt_volume=75,
         name="l40",
+        not_codes=NOT_CODES_NONE,
         ver_prefix=None,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_LEX,
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L50",
@@ -229,9 +274,11 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_regeneration_interval=99,
         maximum_salt_volume=75,
         name="l50",
+        not_codes=NOT_CODES_NONE,
         ver_prefix=None,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_LEX,
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L60",
@@ -242,9 +289,11 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_regeneration_interval=99,
         maximum_salt_volume=110,
         name="l60",
+        not_codes=NOT_CODES_NONE,
         ver_prefix=None,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_LEX,
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L70",
@@ -255,9 +304,11 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_regeneration_interval=99,
         maximum_salt_volume=110,
         name="l70",
+        not_codes=NOT_CODES_NONE,
         ver_prefix=None,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_LEX,
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L80",
@@ -268,9 +319,11 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_regeneration_interval=99,
         maximum_salt_volume=200,
         name="l80",
+        not_codes=NOT_CODES_NONE,
         ver_prefix=None,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_LEX,
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L90",
@@ -281,9 +334,11 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_regeneration_interval=99,
         maximum_salt_volume=200,
         name="l90",
+        not_codes=NOT_CODES_NONE,
         ver_prefix=None,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_LEX,
         alarm_style_alm=True,
         base_path=None,
         cna_equals="L100",
@@ -294,9 +349,11 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_regeneration_interval=99,
         maximum_salt_volume=300,
         name="l100",
+        not_codes=NOT_CODES_NONE,
         ver_prefix=None,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_LEX,
         alarm_style_alm=True,
         base_path=None,
         cna_equals="LEX10",
@@ -307,10 +364,12 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_regeneration_interval=99,
         maximum_salt_volume=25,
         name="lex10",
+        not_codes=NOT_CODES_NONE,
         sbt=1,
         ver_prefix=None,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_LEX,
         alarm_style_alm=True,
         base_path=None,
         cna_equals="LEX20",
@@ -321,10 +380,12 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_regeneration_interval=99,
         maximum_salt_volume=70,
         name="lex20",
+        not_codes=NOT_CODES_NONE,
         sbt=2,
         ver_prefix=None,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_LEX,
         alarm_style_alm=True,
         base_path=None,
         cna_equals="LEX30",
@@ -335,10 +396,12 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_regeneration_interval=99,
         maximum_salt_volume=70,
         name="lex30",
+        not_codes=NOT_CODES_NONE,
         sbt=3,
         ver_prefix=None,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_LEX,
         alarm_style_alm=True,
         base_path=None,
         cna_equals="LEX40",
@@ -349,9 +412,11 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_regeneration_interval=99,
         maximum_salt_volume=75,
         name="lex40",
+        not_codes=NOT_CODES_NONE,
         ver_prefix=None,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_LEX,
         alarm_style_alm=True,
         base_path=None,
         cna_equals="LEX60",
@@ -362,9 +427,11 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_regeneration_interval=99,
         maximum_salt_volume=110,
         name="lex60",
+        not_codes=NOT_CODES_NONE,
         ver_prefix=None,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_LEX,
         alarm_style_alm=True,
         base_path=None,
         cna_equals="LEX80",
@@ -375,9 +442,11 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_regeneration_interval=99,
         maximum_salt_volume=200,
         name="lex80",
+        not_codes=NOT_CODES_NONE,
         ver_prefix=None,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_LEX,
         alarm_style_alm=True,
         base_path=None,
         cna_equals="LEX100",
@@ -388,10 +457,12 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_regeneration_interval=99,
         maximum_salt_volume=300,
         name="lex100",
+        not_codes=NOT_CODES_NONE,
         ver_prefix=None,
     ),
     # ── Hygiene module (dk=60-63) ────────────────────────────────────────────────
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_HYGIENEMODULE,
         base_path=None,
         display_name="Hygiene Module (cold)",
         dk=60,
@@ -401,6 +472,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         # TODO: Untested model.
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_HYGIENEMODULE,
         base_path=None,
         display_name="Hygiene Module (hot)",
         dk=61,
@@ -410,6 +482,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         # TODO: Untested model.
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_HYGIENEMODULE,
         base_path=None,
         display_name="Hygiene Module (hot and cold)",
         dk=62,
@@ -419,6 +492,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         # TODO: Untested model.
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_HYGIENEMODULE,
         base_path=None,
         display_name="Hygiene Module (cold and hot)",
         dk=63,
@@ -429,6 +503,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
     ),
     # ── LEX Plus 10 (dk=80, dkv=25) ─────────────────────────────────────────────
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_LEX,
         alarm_style_alm=True,
         base_path=None,
         cna_equals="LEXplus10",
@@ -439,10 +514,12 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_regeneration_interval=4,
         maximum_salt_volume=25,
         name="lexplus10",
+        not_codes=NOT_CODES_NONE,
         sbt=1,
         ver_prefix=None,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_LEX,
         alarm_style_alm=True,
         base_path=None,
         cna_equals="LEXplus10S",
@@ -453,10 +530,12 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_regeneration_interval=4,
         maximum_salt_volume=25,
         name="lexplus10s",
+        not_codes=NOT_CODES_NONE,
         sbt=2,
         ver_prefix=None,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_LEXPLUS10SL,
         # False (getALA), unlike its lexplus10/lexplus10s siblings: this
         # fixture reports getALA, not getALM, as the current alarm code.
         alarm_style_alm=False,
@@ -469,11 +548,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         maximum_regeneration_interval=4,
         maximum_salt_volume=25,
         name="lexplus10sl",
+        not_codes=NOT_CODES_NONE,
         sbt=7,
         ver_prefix=None,
     ),
     # ── CONTROLICmini (dk=100) ───────────────────────────────────────────────────
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_SAFETPLUS,
         base_path=None,
         display_name="CONTROLICmini",
         dk=100,
@@ -484,6 +565,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
     ),
     # ── SafeFloor (dk=120/122) ───────────────────────────────────────────────────
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_SAFEFLOOR,
         # dk=120/dkv=34 is shared by multiple vendors; the cloud service tells them
         # apart (`service_branding`).
         base_path=None,
@@ -528,6 +610,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         ver_prefix=None,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_SAFEFLOOR,
         base_path=None,
         display_name="MultiSafe Floor Leak Sensor",
         dk=120,
@@ -538,6 +621,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         srn_prefix="43",
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_SAFEFLOOR,
         base_path=None,
         display_name="SafeFloor Connect",
         dk=122,
@@ -548,35 +632,45 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
     ),
     # ── SafeTech / SafeTech+ (dk=140/141/142/145) ────────────────────────────────
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_SAFETECH,
         base_path="/trio",
         display_name="SafeTech Connect",
         dk=140,
         dkv=35,
         manufacturer="SYR",
         name="safetech",
+        not_codes=NOT_CODES_NONE,
         # TODO: Untested model. Both values are incorrect in fixture.
         srn_infix="aBC",
         srn_prefix="123",
+        wrn_codes=WRN_CODES_NONE,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_SAFETECH,
         base_path="/safe-tec",
         display_name="SafeTech V3 Connect",
         dk=140,
         dkv=35,
         manufacturer="SYR",
         name="safetechv3",
+        not_codes=NOT_CODES_NONE,
         ver_prefix="Safe-Tech V3",
+        wrn_codes=WRN_CODES_NONE,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_SAFETECH,
         base_path="/safe-tec",
         display_name="SafeTech V4 Connect",
         dk=140,
         dkv=35,
         manufacturer="SYR",
         name="safetechv4",
+        not_codes=NOT_CODES_NONE,
         ver_prefix="Safe-Tech V4",
+        wrn_codes=WRN_CODES_NONE,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_SAFETECH,
         # POLYGONVATRO sold these "SYR Safe-Tech Connect" devices together
         # with the AXA building insurance, called "Wasserwächter". Order.-No.: 2422.25.003
         base_path=None,
@@ -586,6 +680,8 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=38,
         manufacturer="POLYGONVATRO",
         name="safetechpolygonvatro",
+        not_codes=NOT_CODES_NONE,
+        wrn_codes=WRN_CODES_NONE,
         # TODO: Untested model.
         # srn_prefix="38",
         # Version string: "Safe-Tech V3.53", see https://www.youtube.com/watch?v=apdL8SLZ64Q&t=585s
@@ -593,26 +689,33 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         # ver_prefix="Safe-Tech V3",
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_SAFETECH,
         base_path="/safe-tec",
         display_name="MultiSafe Leak Detector Control Valve",
         dk=140,
         dkv=42,
         manufacturer="Reliance Valves",
         name="safetechrwc",
+        not_codes=NOT_CODES_NONE,
         # TODO: Untested model.
         srn_prefix="42",
+        wrn_codes=WRN_CODES_NONE,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_SAFETECH,
         base_path="/pontos-base",
         display_name="Pontos Base",
         dk=140,
         dkv=None,
         manufacturer="Hansgrohe",
         name="pontosbase",
+        not_codes=NOT_CODES_NONE,
         # TODO: Untested model.
         ver_prefix="PontosBase",
+        wrn_codes=WRN_CODES_NONE,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_SAFETECH,
         base_path=None,
         display_name="SafeTech Connect",
         # base_path="/safe-tec",
@@ -620,19 +723,25 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=35,
         manufacturer="SYR",
         name="safetech141",
+        not_codes=NOT_CODES_NONE,
+        wrn_codes=WRN_CODES_NONE,
         # TODO: Untested model.
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_SAFETECH,
         base_path=None,
         display_name="SafeTech+ Connect",
         dk=142,
         dkv=39,
         manufacturer="SYR",
         name="safetechpluswifi",
+        not_codes=NOT_CODES_NONE,
         # TODO: Untested model.
         srn_prefix="39",
+        wrn_codes=WRN_CODES_NONE,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_SAFETECH,
         base_path=None,
         display_name="SafeTech Connect",
         # base_path="/safe-tec",
@@ -640,10 +749,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=35,
         manufacturer="SYR",
         name="safetech145",
+        not_codes=NOT_CODES_NONE,
+        wrn_codes=WRN_CODES_NONE,
         # TODO: Untested model.
     ),
     # ── Specialty devices (dk=160/180/190) ───────────────────────────────────────
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_ALLINONEPLUS,
         # Product number: 3228.15.015
         base_path="/all-in-one",
         display_name="All-in-One+",
@@ -654,6 +766,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         ver_prefix="All-in-One+",
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_HYGBOX,
         base_path="/hygbox",
         display_name="HygBox",
         dk=180,
@@ -671,6 +784,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         srn_prefix="37",
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_DOSINGPUMP,
         base_path="/dosing-pump",
         display_name="Dosing Pump",
         dk=190,
@@ -684,6 +798,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
     ),
     # ── Trio LS platform (dk=1100-1113) ──────────────────────────────────────────
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
         display_name="Trio LS Connect",
@@ -691,10 +806,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=100,
         manufacturer="SYR",
         name="triols",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="100",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
         display_name="concept 200 Replacement Filter",
@@ -702,10 +820,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=110,
         manufacturer="CONCEPT",
         name="concept200replacementfilter",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="110",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
         display_name="Optima T Replacement Filter",
@@ -713,10 +834,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=111,
         manufacturer="OPTIMA",
         name="optimatreplacementfilter",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="111",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
         display_name="SafeTech Plus Connect",
@@ -724,9 +848,12 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=112,
         manufacturer="SYR",
         name="safetechplus",
+        not_codes=NOT_CODES_COMMON,
         srn_prefix="112",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
         display_name="Trio DFR/LS Connect",
@@ -734,10 +861,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=113,
         manufacturer="SYR",
         name="trio",
+        not_codes=NOT_CODES_COMMON,
         srn_prefix="113",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     # ── NeoSoft platform (dk=1200-1222) ──────────────────────────────────────────
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         # 5000.00.000 - SYR NeoSoft 5000 Connect
         alarm_clear_via_set=True,
         base_path="/neosoft",
@@ -747,10 +877,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         manufacturer="SYR",
         maximum_regeneration_interval=3,
         name="neosoft5000",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="200",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         # 2500.00.000 - SYR NeoSoft 2500 Connect
         alarm_clear_via_set=True,
         base_path="/neosoft",
@@ -760,9 +893,12 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         manufacturer="SYR",
         maximum_regeneration_interval=3,
         name="neosoft2500",
+        not_codes=NOT_CODES_COMMON,
         srn_prefix="206",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/neosoft",
         display_name="comfort-Softwater UNO A25",
@@ -771,9 +907,12 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         manufacturer="Sanibel",
         maximum_regeneration_interval=3,
         name="sanibelsoftwateruno",
+        not_codes=NOT_CODES_COMMON,
         srn_prefix="207",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/neosoft",
         display_name="concept Single Water Softener",
@@ -782,10 +921,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         manufacturer="CONCEPT",
         maximum_regeneration_interval=3,
         name="conceptsingle",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="208",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/neosoft",
         display_name="Optima Single Water Softener",
@@ -794,10 +936,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         manufacturer="OPTIMA",
         maximum_regeneration_interval=3,
         name="optimasingle",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="209",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/neosoft",
         display_name="concept 200 Dual Water Softener",
@@ -806,10 +951,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         manufacturer="CONCEPT",
         maximum_regeneration_interval=3,
         name="concept200duo",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="210",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         # 5000.02.700 - Optima T2.3 Doppelenthärtungsanlage, identical to the NeoSoft 5000
         alarm_clear_via_set=True,
         base_path="/neosoft",
@@ -819,10 +967,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         manufacturer="OPTIMA",
         maximum_regeneration_interval=3,
         name="optimat2duo",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="211",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/neosoft",
         display_name="comfort-Softwater DUO A25",
@@ -831,10 +982,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         manufacturer="Sanibel",
         maximum_regeneration_interval=3,
         name="sanibelsoftwaterduo",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="212",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/neosoft",
         display_name="Optima Dual Water Softener",
@@ -843,10 +997,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         manufacturer="OPTIMA",
         maximum_regeneration_interval=3,
         name="optimaduo",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="213",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/neosoft",
         display_name="CLEAR PRO SOFT TWIN",
@@ -855,9 +1012,12 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         manufacturer="CONEL",
         maximum_regeneration_interval=3,
         name="conelclearprosofttwin",
+        not_codes=NOT_CODES_COMMON,
         srn_prefix="214",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/neosoft",
         display_name="CLEAR PRO SOFT",
@@ -866,9 +1026,12 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         manufacturer="CONEL",
         maximum_regeneration_interval=3,
         name="conelclearprosoft",
+        not_codes=NOT_CODES_COMMON,
         srn_prefix="215",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         # 5000.02.100 - concept 300 Doppelenthärtungsanlage
         alarm_clear_via_set=True,
         base_path="/neosoft",
@@ -878,10 +1041,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         manufacturer="CONCEPT",
         maximum_regeneration_interval=3,
         name="conceptduo",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="216",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         # DT3674 - DITECH Doppelenthärtungsanlage
         alarm_clear_via_set=True,
         base_path="/neosoft",
@@ -891,10 +1057,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         manufacturer="DITECH",
         maximum_regeneration_interval=3,
         name="ditechduo",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="217",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/neosoft",
         display_name="TAKE Dual Water Softener",
@@ -903,10 +1072,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         manufacturer="TAKE",
         maximum_regeneration_interval=3,
         name="takeduo",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="218",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         # DT3673 - DITECH Einzelenthärtungsanlage
         alarm_clear_via_set=True,
         base_path="/neosoft",
@@ -916,10 +1088,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         manufacturer="DITECH",
         maximum_regeneration_interval=3,
         name="ditechsingle",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="219",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/neosoft",
         display_name="TAKE Single Water Softener",
@@ -928,10 +1103,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         manufacturer="TAKE",
         maximum_regeneration_interval=3,
         name="takesingle",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="220",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         # 5000.02.000 - SYR BLACKLANE - NeoSoft Lock Connect II, Doppelenthärtungsanlage
         alarm_clear_via_set=True,
         base_path="/neosoft",
@@ -941,10 +1119,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         manufacturer="SYR",
         maximum_regeneration_interval=3,
         name="neosoftlock2",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="221",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         # 2500.02.000 - SYR BLACKLANE - NeoSoft Lock Connect I, Einzelenthärtungsanlage
         alarm_clear_via_set=True,
         base_path="/neosoft",
@@ -954,8 +1135,10 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         manufacturer="SYR",
         maximum_regeneration_interval=3,
         name="neosoftlock1",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="222",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     # ── MultiController platform (dk=1500-1506) ──────────────────────────────────
     # The role of a MultiController is getDFM: 1 leak protection, 2 connection centre,
@@ -964,6 +1147,7 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
     # an unknown role: such a device stays an unknown model, so it gets reported
     # instead of silently showing the global allowlists.
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         # CLEARPNLS - Retrofit Leakage Protection
         alarm_clear_via_set=True,
         base_path="/trio",
@@ -973,9 +1157,12 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=500,
         manufacturer="CONEL",
         name="conelclearproleakprotection",
+        not_codes=NOT_CODES_COMMON,
         srn_prefix="500",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
         dfm=2,
@@ -984,10 +1171,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=500,
         manufacturer="CONEL",
         name="conelclearproconnectioncentre",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="500",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         # CLEARPFSA - Filling Station
         alarm_clear_via_set=True,
         base_path="/trio",
@@ -997,9 +1187,12 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=500,
         manufacturer="CONEL",
         name="conelclearprofill",
+        not_codes=NOT_CODES_COMMON,
         srn_prefix="500",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         # CLEARPMCK - MultiControl-Kit / Backwash System
         # TODO: Untested model.
         alarm_clear_via_set=True,
@@ -1010,9 +1203,12 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=500,
         manufacturer="CONEL",
         name="conelclearprobackwash",
+        not_codes=NOT_CODES_COMMON,
         srn_prefix="500",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
         dfm=1,
@@ -1021,9 +1217,12 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=501,
         manufacturer="Sanibel",
         name="sanibelleakprotect",
+        not_codes=NOT_CODES_COMMON,
         srn_prefix="501",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
         dfm=2,
@@ -1032,10 +1231,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=501,
         manufacturer="Sanibel",
         name="sanibelconnectioncentre",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="501",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
         dfm=4,
@@ -1044,9 +1246,12 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=501,
         manufacturer="Sanibel",
         name="sanibelrsa",
+        not_codes=NOT_CODES_COMMON,
         srn_prefix="501",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
         dfm=1,
@@ -1055,10 +1260,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=502,
         manufacturer="DITECH",
         name="ditechleakprotect",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="502",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         # DT3645 - DITECH Anschlussmodul Plus, with DT3646 - DITECH MultiControl
         alarm_clear_via_set=True,
         base_path="/trio",
@@ -1068,10 +1276,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=502,
         manufacturer="DITECH",
         name="ditechconnectioncentre",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="502",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         # DT3654 - DITECH Rückspülautomatik HWS/RF
         alarm_clear_via_set=True,
         base_path="/trio",
@@ -1081,10 +1292,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=502,
         manufacturer="DITECH",
         name="ditechbackwash",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="502",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         # DT3676 - DITECH Rückspülfilter Protect
         alarm_clear_via_set=True,
         base_path="/trio",
@@ -1094,10 +1308,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=502,
         manufacturer="DITECH",
         name="ditechbackwashfilter",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="502",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
         dfm=1,
@@ -1106,10 +1323,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=503,
         manufacturer="TAKE",
         name="takeleakprotect",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="503",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
         dfm=2,
@@ -1118,10 +1338,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=503,
         manufacturer="TAKE",
         name="takeconnectioncentre",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="503",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
         dfm=4,
@@ -1130,10 +1353,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=503,
         manufacturer="TAKE",
         name="takebackwash",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="503",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
         dfm=5,
@@ -1142,10 +1368,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=503,
         manufacturer="TAKE",
         name="takebackwashfilter",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="503",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
         dfm=1,
@@ -1154,10 +1383,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=504,
         manufacturer="CONCEPT",
         name="conceptleakprotect",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="504",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
         dfm=2,
@@ -1166,10 +1398,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=504,
         manufacturer="CONCEPT",
         name="conceptconnectioncentre",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="504",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         # 2380.01.104 - concept 300 Rückspülautomatik RSA
         alarm_clear_via_set=True,
         base_path="/trio",
@@ -1179,10 +1414,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=504,
         manufacturer="CONCEPT",
         name="conceptbackwash",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="504",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         # 2425.01.100 - concept 300 Triofilter mit Leckageschutz
         alarm_clear_via_set=True,
         base_path="/trio",
@@ -1192,10 +1430,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=504,
         manufacturer="CONCEPT",
         name="concepttriolock",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="504",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
         dfm=1,
@@ -1204,10 +1445,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=505,
         manufacturer="OPTIMA",
         name="optimaleakprotect",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="505",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
         dfm=2,
@@ -1216,10 +1460,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=505,
         manufacturer="OPTIMA",
         name="optimaconnectioncentre",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="505",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         # 2380.01.704 - Optima T2.3 Rückspülautomatik RSA
         alarm_clear_via_set=True,
         base_path="/trio",
@@ -1229,10 +1476,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=505,
         manufacturer="OPTIMA",
         name="optimabackwash",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="505",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         # 2425.01.700 - Optima T2.3 Leckageschutz und Rückspülfilter TRIO mit Druckminderer und Lock Flansch
         alarm_clear_via_set=True,
         base_path="/trio",
@@ -1242,10 +1492,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=505,
         manufacturer="OPTIMA",
         name="optimatriolock",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="505",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
         dfm=1,
@@ -1254,10 +1507,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=506,
         manufacturer="SYR",
         name="syrsafetechlockconnect",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="506",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
         dfm=2,
@@ -1266,10 +1522,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=506,
         manufacturer="SYR",
         name="syrac3200connect",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="506",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
         dfm=3,
@@ -1278,10 +1537,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=506,
         manufacturer="SYR",
         name="syrac3228connect",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="506",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
         dfm=4,
@@ -1290,10 +1552,13 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=506,
         manufacturer="SYR",
         name="syrrsaconnect",
+        not_codes=NOT_CODES_COMMON,
         # TODO: Untested model.
         srn_prefix="506",
+        wrn_codes=WRN_CODES_COMMON,
     ),
     SyrConnectModelSignature(
+        ala_codes=ALA_CODES_COMMON,
         alarm_clear_via_set=True,
         base_path="/trio",
         dfm=5,
@@ -1302,7 +1567,9 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         dkv=506,
         manufacturer="SYR",
         name="syrtriolockconnect",
+        not_codes=NOT_CODES_COMMON,
         srn_prefix="506",
+        wrn_codes=WRN_CODES_COMMON,
     ),
 )
 

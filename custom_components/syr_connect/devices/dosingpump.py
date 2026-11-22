@@ -63,18 +63,8 @@ BUTTON_SUPPORTED_KEYS = {
 
 VALVE_SUPPORTED_KEYS: set[str] = set()
 
-# Alarm codes of the dosing pump (raw API getALA -> internal translation key). "FF" = no
-# alarm is assumed like on the other devices with the alarm codes A1-AF.
-ALA_CODES = {
-    "A1": "alarm_dosing_pump_communication",
-    "A2": "alarm_dosing_liquid_low",
-    "A3": "alarm_dosing_liquid_empty",
-    "FF": "no_alarm",
-}
-
 
 PROFILE = SyrConnectDeviceProfile(
-    ala_codes=ALA_CODES,
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
     select=SELECT_SUPPORTED_KEYS,

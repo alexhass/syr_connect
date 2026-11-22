@@ -74,9 +74,8 @@ def test_alarm_codes_are_translated() -> None:
     """
     ala_states: set[str] = set()
     for model in MODELS:
-        profile = model.device_profile
-        if profile is not None and profile.ala_codes is not None:
-            ala_states.update(profile.ala_codes.values())
+        if model.ala_codes is not None:
+            ala_states.update(model.ala_codes.values())
     # An empty getALM means no alarm
     alm_states = ala_states | {"no_alarm"}
 
@@ -91,11 +90,10 @@ def test_notification_and_warning_codes_are_translated() -> None:
     not_states: set[str] = set()
     wrn_states: set[str] = set()
     for model in MODELS:
-        profile = model.device_profile
-        if profile is not None and profile.not_codes is not None:
-            not_states.update(profile.not_codes.values())
-        if profile is not None and profile.wrn_codes is not None:
-            wrn_states.update(profile.wrn_codes.values())
+        if model.not_codes is not None:
+            not_states.update(model.not_codes.values())
+        if model.wrn_codes is not None:
+            wrn_states.update(model.wrn_codes.values())
 
     for path in sorted((_INTEGRATION / "translations").glob("*.json")):
         sensors = json.loads(path.read_text(encoding="utf-8"))["entity"]["sensor"]

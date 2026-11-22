@@ -144,31 +144,8 @@ HARDNESS_RANGES = {
     },
 }
 
-# Alarm codes of the All-in-One+ (raw API getALA -> internal translation key)
-ALA_CODES = {
-    "A1": "alarm_end_switch",
-    "A2": "alarm_pressure_sensor_faulty",
-    "A3": "alarm_pressure_sensor_2_faulty",
-    "A4": "alarm_flow_sensor_fault",
-    "A5": "fault_conductance_sensor",
-    "A6": "alarm_conductivity_sensor_2_faulty",
-    "A7": "alarm_temperature_sensor_faulty",
-    "A8": "alarm_fill_cycles_exceeded",
-    "A9": "alarm_heating_fill_volume_leak",
-    "AA": "alarm_heating_fill_time_leak",
-    "AB": "alarm_cartridge_almost_exhausted",
-    "AC": "alarm_cartridge_exhausted",
-    "AD": "alarm_battery_low",
-    "AE": "alarm_sl_module_communication",
-    "AF": "alarm_pressure_too_low",
-    "B0": "alarm_target_pressure_unreachable",
-    "B1": "alarm_no_power_supply",
-    "FF": "no_alarm",
-}
-
 
 PROFILE = SyrConnectDeviceProfile(
-    ala_codes=ALA_CODES,
     bar_is_system_pressure=True,
     binary_sensor=BINARY_SENSOR_SUPPORTED_KEYS,
     button=BUTTON_SUPPORTED_KEYS,
