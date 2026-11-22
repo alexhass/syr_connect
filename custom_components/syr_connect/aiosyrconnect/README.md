@@ -128,8 +128,7 @@ the key of its meaning; the caller translates the key. `None` means that the cod
 the family are unknown, so the caller shows the raw code:
 
 ```python
-code = str(status.get(signature.alarm_status_key, "")).strip().upper()
-meaning = signature.ala_codes.get(code) if signature.ala_codes is not None else None
+meaning = signature.alarm_meaning(status.get(signature.alarm_status_key))
 ```
 
 ## How a model reports its values
@@ -148,6 +147,17 @@ caller can show them in the right unit:
 | `bat_in_percent`, `bar_is_system_pressure` | getBAT in %, getBAR as the pressure of the heating system |
 | `cartridge_keys`, `cartridge_size_keys` | The key that holds the value of the installed cartridge type (getCRT) or size (getCRS) |
 | `statistics` | Measurement history series the cloud keeps (`get_statistics()`) |
+
+The signature looks up these values itself:
+
+| Method | Result |
+| --- | --- |
+| `alarm_meaning()`, `notification_meaning()`, `warning_meaning()` | Key of the meaning of a code, compared in upper case; None if unknown |
+| `whu_unit()`, `hardness_divisor()`, `hardness_factor()`, `hardness_range()` | Unit of getWHU, scale and conversion of the water hardness, range of its setting |
+| `cartridge_dependent_keys`, `reported_cartridge_keys()` | Keys of one cartridge type or size, and those of the reported cartridge |
+
+`units.py` holds the unit tables (`WHU_UNITS_*`, `WHU_FACTORS_FROM_DH`) and
+`round_hardness()` for a converted water hardness.
 
 ## Status values
 
