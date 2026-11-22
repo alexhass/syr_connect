@@ -177,6 +177,19 @@ if command is not None:
     await client.set_device_status(device_id, [command])
 ```
 
+## Settings
+
+A device takes only certain raw values for a setting. `SETTING_VALUES` in
+`settings.py` lists them per status key in ascending order, and `SETTING_OFF_VALUES`
+the raw value that switches a setting off (getMIT, getMXT). A model whose values
+differ names them in its signature (`setting_values`, `setting_off_values`, and
+`hardness_ranges` for the water hardness per unit):
+
+```python
+signature.allowed_values("getRMT")  # [5, 10, 15, 20, 30, ...] on the All-in-One+
+signature.off_value("getMIT")  # -400
+```
+
 ## Errors
 
 All errors derive from `SyrConnectError`.
