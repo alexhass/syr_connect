@@ -26,9 +26,7 @@ README.md (tests/aiosyrconnect/test_package.py checks this).
 
 from .codes import NO_CODE_VALUES, is_code_active
 from .commands import (
-    COMMAND_STATUS_KEYS,
     JSON_ONLY_COMMANDS,
-    TRIGGER_COMMANDS,
     build_dex_command,
     build_flag_command,
     build_reset_command,
@@ -67,15 +65,9 @@ from .models import (
     SyrConnectStatus,
     SyrConnectStatusValue,
 )
-from .settings import (
-    FLUSHING_TEMPERATURE_GAP,
-    FLUSHING_TEMPERATURE_RANGES,
-    SETTING_OFF_VALUES,
-    SETTING_VALUES,
-)
+from .settings import FLUSHING_TEMPERATURE_GAP, FLUSHING_TEMPERATURE_RANGES
 from .values import (
     CAS_VALUE_MAP,
-    CND_PER_DH,
     CRS_VALUE_MAP,
     LE_VALUE_MAP,
     T1_VALUE_MAP,
@@ -116,8 +108,6 @@ from .xml_parser import is_device_offline
 __all__ = [
     "API_SERVICES",
     "CAS_VALUE_MAP",
-    "CND_PER_DH",
-    "COMMAND_STATUS_KEYS",
     "CRS_VALUE_MAP",
     "FLUSHING_TEMPERATURE_GAP",
     "FLUSHING_TEMPERATURE_RANGES",
@@ -125,10 +115,7 @@ __all__ = [
     "LE_VALUE_MAP",
     "MODEL_SIGNATURES",
     "NO_CODE_VALUES",
-    "SETTING_OFF_VALUES",
-    "SETTING_VALUES",
     "T1_VALUE_MAP",
-    "TRIGGER_COMMANDS",
     "UL_VALUE_MAP",
     "UNKNOWN_MODEL_SIGNATURE",
     "WHU_FACTORS_FROM_DH",
