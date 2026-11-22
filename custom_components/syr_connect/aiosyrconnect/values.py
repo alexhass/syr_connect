@@ -71,9 +71,9 @@ LE_VALUE_MAP: Mapping[int, int] = {
 }
 
 # Status of the regeneration (getSTA): reported text or code -> key of the meaning. The
-# devices report the status as a Polish or German text, often with a suffix the caller
-# strips ("Płukanie regenerantem (5mA)", "Płukanie szybkie 1"); newer models (AC 3200,
-# AC 3228, MultiController) report a number.
+# devices report the status as a Polish or German text; two Polish texts carry a detail
+# that `parse_sta_value()` strips ("Płukanie regenerantem (5mA)", "Płukanie szybkie 1").
+# Newer models (AC 3200, AC 3228, MultiController) report a number.
 STA_VALUE_MAP: Mapping[str, str] = {
     "Płukanie wsteczne": "status_backwash",
     "Płukanie regenerantem": "status_regenerant_rinse",
@@ -864,7 +864,6 @@ def parse_mbar_value(value: SyrConnectStatusValue) -> float | None:
 
     Formats:
     - With unit: "4077 mbar" -> 4.077
-    - Number: 4077 -> 4.077
     """
     if value is None or value == "":
         return None
