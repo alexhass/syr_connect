@@ -165,6 +165,13 @@ device expects:
 | `get_iwh_value()` | Water hardness, estimated from the conductivity when the device does not report it |
 | `get_rtm_value()`, `build_rtm_commands()` | Regeneration time as `HH:MM`, in one or two keys |
 | `get_ab_value()`, `build_set_ab_command()` | Valve state: 1/2 or true/false |
+| `parse_mbar_value()`, `parse_dbd_value()` | Pressure: `"4077 mbar"` -> 4.077 bar, tenths of a bar |
+| `get_battery_level()`, `is_spurious_bap()` | Battery level from getBAT between getBMI and getBMA, a spurious getBAP of 0 |
+| `get_hardness_class()` | Water hardness range ("soft", "medium", "hard") from the conductivity |
+| `parse_cyt_value()`, `parse_dom_value()` | Durations: `"12:30"` -> 12.5 min, `"1 min"` -> 60 s |
+| `parse_utc_time()`, `parse_lar_value()` | Times: getDTT in UTC, getLAR in UTC or local wall time (`local_time_timestamps`) |
+| `parse_tmz_value()`, `parse_weekday_mask()` | Time zone in quarter hours, permitted weekdays as bitmask |
+| `parse_alarm_memory()` | Alarm memory without the `Alarms:` prefix |
 
 The tables `CAS_VALUE_MAP`, `CRS_VALUE_MAP`, `LE_VALUE_MAP`, `T1_VALUE_MAP` and
 `UL_VALUE_MAP` map a raw code to liters or hours:

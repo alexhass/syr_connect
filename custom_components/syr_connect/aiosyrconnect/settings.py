@@ -102,7 +102,8 @@ SETTING_VALUES: Mapping[str, Sequence[int]] = {
     "getFVT": _FILLING_VOLUMES,
     # Raw water hardness (getIWH): 1-100 in steps of 1, in the unit of getWHU
     "getIWH": range(1, 101),
-    # Capacity of the HVE cartridge (getLOT): raw 0-20, in 10 l (0-200 l)
+    # Maximum output conductivity (getLOT, HVE/HVE+ cartridge): raw 0-20, in 10 µS/cm
+    # (0-200 µS/cm, 0 = off)
     "getLOT": range(21),
     # Minimum humidity threshold (getMIH): 0-95 % in steps of 5. The lower boundary 0
     # doubles as "Off" (per docs/syrconnect-protocol.md), so it has no off value.
