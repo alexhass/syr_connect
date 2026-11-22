@@ -140,7 +140,7 @@
     "getSMC": 0,
     "getSMF": 2500,
     "getSOF": 20,
-    "getSRN": "112AAA123456",
+    "getSRN": "112AAA12345",
     "getSTH": null,
     "getTMP": 0,
     "getTSE": true,
