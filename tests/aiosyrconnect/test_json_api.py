@@ -840,7 +840,7 @@ async def test_request_json_data_logs_nsc_error(
         user_agent=user_agent,
     )
 
-    with caplog.at_level(logging.WARNING):
+    with caplog.at_level(logging.DEBUG):
         result = await client.request_json_data("/get/all")
 
     assert result == {"getXYZ": "NSC", "getABC": "value"}
@@ -869,7 +869,7 @@ async def test_request_json_data_logs_mima_error(
         user_agent=user_agent,
     )
 
-    with caplog.at_level(logging.WARNING):
+    with caplog.at_level(logging.DEBUG):
         result = await client.request_json_data("/get/all")
 
     assert result == {"getPRF": "MIMA", "getABC": "value"}
@@ -1023,7 +1023,7 @@ async def test_set_device_status_missing_response_key(
         user_agent=user_agent,
     )
 
-    with caplog.at_level(logging.WARNING):
+    with caplog.at_level(logging.DEBUG):
         result = await client.set_device_status("device1", [("TEST", "123")])
 
     # Should not raise exception, just log warning and return True
@@ -1052,7 +1052,7 @@ async def test_set_device_status_unknown_status_code(
         user_agent=user_agent,
     )
 
-    with caplog.at_level(logging.WARNING):
+    with caplog.at_level(logging.DEBUG):
         result = await client.set_device_status("device1", [("UNKNOWN", "42")])
 
     # Should not raise exception, just log warning and return True
@@ -1146,20 +1146,22 @@ async def test_validate_response_errors_only_uppercase_codes(
     value: str,
     warning: str | None,
 ) -> None:
-    """Only the uppercase error codes are warned about; no value rejects the answer."""
+    """Only the uppercase error codes are logged; no value rejects the answer."""
     client = SyrConnectJsonAPI(
         MagicMock(),
         base_url="http://test:5333/trio/",
         user_agent=user_agent,
     )
 
-    with caplog.at_level(logging.WARNING):
+    with caplog.at_level(logging.DEBUG):
         client._validate_response_errors({"getWFC": value}, "http://test")
 
     if warning is None:
-        assert caplog.text == ""
+        assert "getWFC" not in caplog.text
     else:
         assert f"JSON API: 'getWFC' {warning} - URL: http://test" in caplog.text
+    # The library logs at debug level only, the caller decides what the user sees
+    assert not [record for record in caplog.records if record.levelno > logging.DEBUG]
 
 
 async def test_validate_response_errors_ignores_non_string_values(
