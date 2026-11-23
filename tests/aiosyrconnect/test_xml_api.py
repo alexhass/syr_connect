@@ -1072,3 +1072,49 @@ async def test_unknown_device_raises_before_any_request(
         await getattr(api_client, method)(*args)
 
     post.assert_not_called()
+
+
+async def test_payloads_are_logged_masked_at_debug_level(
+    api_client: SyrConnectXmlAPI, caplog: pytest.LogCaptureFixture
+) -> None:
+    """With debug logging the payloads are logged with the session token masked."""
+    api_client.session_data = "old-token"
+
+    async def _login() -> Any:
+        api_client.session_data = "new-token"
+        return True
+
+    answers = [INVALID_TOKEN_XML, "<sc><ok /></sc>", "<sc />"]
+    with (
+        caplog.at_level(logging.DEBUG, logger=_LIBRARY_LOGGER),
+        patch.object(api_client.http_client, "post", side_effect=answers),
+        patch.object(api_client, "login", side_effect=_login),
+    ):
+        await api_client.set_device_status("SN1", [("setAB", 1)])
+        await api_client.get_raw_device_list("project1")
+
+    assert "Set status payload: " in caplog.text
+    assert "Set status payload (after re-login): " in caplog.text
+    assert "Raw device list payload: " in caplog.text
+    assert "old-token" not in caplog.text
+    assert "new-token" not in caplog.text
+
+
+async def test_payloads_are_not_masked_without_debug_logging(
+    api_client: SyrConnectXmlAPI,
+) -> None:
+    """Without debug logging the payload is not masked, which would only be logged."""
+    api_client.session_data = "token"
+    logging.getLogger(_LIBRARY_LOGGER).setLevel(logging.INFO)
+    try:
+        with (
+            patch.object(api_client.http_client, "post", return_value="<sc />"),
+            patch(
+                "custom_components.syr_connect.aiosyrconnect.xml_api.mask_ug_value"
+            ) as mask,
+        ):
+            await api_client.set_device_status("SN1", [("setAB", 1)])
+    finally:
+        logging.getLogger(_LIBRARY_LOGGER).setLevel(logging.NOTSET)
+
+    mask.assert_not_called()

@@ -150,6 +150,10 @@ class SyrConnectJsonAPI:
         # is followed immediately by get_device_status()
         self._cached_get_all: dict[str, Any] | None = None
 
+        # Host and path never change, so the base URL is built once
+        self._url = self._build_base_url()
+        _LOGGER.debug("JSON API: Base URL %s", self._url)
+
     @property
     def clear_value(self) -> int:
         """Value of setALA, setNOT and setWRN that clears (acknowledges) the current code.
@@ -180,35 +184,15 @@ class SyrConnectJsonAPI:
         """
         # Option 1: explicit base_url (e.g. for tests)
         if self._base_url:
-            result = f"{self._base_url.rstrip('/')}/"
-            _LOGGER.debug("JSON API: Built base URL from explicit base_url: %s", result)
-            return result
+            return f"{self._base_url.rstrip('/')}/"
 
-        # Option 2: host + base_path (standard use)
-        _LOGGER.debug(
-            "JSON API: Attempting to build base URL - host=%r, base_path=%r",
-            self._host,
-            self._base_path,
-        )
+        # Option 2: host + base_path (standard use); without them the caller gets a
+        # ValueError from _construct_url
         if not self._host or not self._base_path:
-            # The caller gets a ValueError from _construct_url
-            _LOGGER.debug(
-                "JSON API: Cannot build base URL - host=%r, base_path=%r",
-                self._host,
-                self._base_path,
-            )
             return None
 
         host = _format_host_for_url(self._host)
-        result = f"{_SCHEME}://{host}:{_PORT}{self._base_path}"
-        _LOGGER.debug(
-            "JSON API: Built base URL from host and base_path: %s (host=%r, port=%s, base_path=%r)",
-            result,
-            self._host,
-            _PORT,
-            self._base_path,
-        )
-        return result
+        return f"{_SCHEME}://{host}:{_PORT}{self._base_path}"
 
     def is_session_valid(self) -> bool:
         """Return True if the last ADM request is less than the timeout ago.
@@ -241,18 +225,18 @@ class SyrConnectJsonAPI:
         if self.is_session_valid():
             _LOGGER.debug(
                 "JSON API: ADM session still valid; skipping login for %s",
-                self._build_base_url(),
+                self._url,
             )
             return
         if self._login_required is False:
             _LOGGER.debug(
                 "JSON API: ADM login not required; skipping login for %s",
-                self._build_base_url(),
+                self._url,
             )
         else:
             _LOGGER.debug(
                 "JSON API: ADM login required or unknown; calling login for %s",
-                self._build_base_url(),
+                self._url,
             )
             await self.login()
 
@@ -280,7 +264,7 @@ class SyrConnectJsonAPI:
         Raises:
             ValueError: If base URL is not configured
         """
-        base = self._build_base_url()
+        base = self._url
         if not base:
             raise ValueError("Base URL not configured for JSON API client")
 
@@ -484,7 +468,7 @@ class SyrConnectJsonAPI:
         if self._login_required is False:
             _LOGGER.debug(
                 "JSON API: ADM login not required; skipping login for %s",
-                self._build_base_url(),
+                self._url,
             )
             # Mark session as valid for the timeout period so callers won't retry
             self._last_login = datetime.now(UTC)
@@ -502,7 +486,7 @@ class SyrConnectJsonAPI:
             if err.status == 404:
                 _LOGGER.info(
                     "JSON API: Login endpoint not found (404) at %s; skipping ADM login",
-                    self._build_base_url(),
+                    self._url,
                 )
                 return self._skip_login()
             # Other HTTP errors propagate, like connection errors
@@ -514,7 +498,7 @@ class SyrConnectJsonAPI:
         if found_key is not None and response[found_key] in ("NSC", "ERROR: NSC"):
             _LOGGER.info(
                 "JSON API: Login command unknown (NSC) at %s; skipping ADM login",
-                self._build_base_url(),
+                self._url,
             )
             return self._skip_login()
 
@@ -538,7 +522,7 @@ class SyrConnectJsonAPI:
         # Create single-project placeholder, like the projects of the XML client
         self.projects = [{"id": "local", "name": "Local JSON API"}]
 
-        _LOGGER.info("JSON API: Logged in at %s", self._build_base_url())
+        _LOGGER.info("JSON API: Logged in at %s", self._url)
         return True
 
     def _skip_login(self) -> bool:
@@ -818,7 +802,7 @@ class SyrConnectJsonAPI:
 
         if not found_key:
             msg = f"Response missing expected key '{response_key}'"
-            _LOGGER.warning(
+            _LOGGER.debug(
                 "JSON API: %s for device %s (response: %s)",
                 msg,
                 serial_number,
@@ -857,14 +841,14 @@ class SyrConnectJsonAPI:
         msg = (
             f"Unexpected status '{status}' for command {cmd} (device: {serial_number})"
         )
-        _LOGGER.warning("JSON API: %s", msg)
+        _LOGGER.debug("JSON API: %s", msg)
         # For login, any non-OK status is a failure
         if is_login:
             raise SyrConnectInvalidResponseError(f"Device returned status '{status}'")
         # For other commands, don't fail hard on unknown status codes
 
     def _validate_response_errors(self, data: dict[str, Any], url: str) -> None:
-        """Check response for API-level error codes and log warnings.
+        """Check response for API-level error codes and log them at debug level.
 
         Even when HTTP status is 200 OK, the SYR API may return error codes
         as values in the response dictionary to indicate issues:
@@ -895,7 +879,7 @@ class SyrConnectJsonAPI:
         # documented by SYR); another case is an ordinary value, such as a Wi-Fi name.
         for key, val in data.items():
             # Skip set-command keys (e.g., "setRPD4") - these are validated by _validate_set_response()
-            # Only log warnings for get-command keys (e.g., "getRTM") with error codes
+            # Only log get-command keys (e.g., "getRTM") with error codes
             if key.lower().startswith("set"):
                 continue
 
@@ -905,11 +889,11 @@ class SyrConnectJsonAPI:
 
             # Exact uppercase match: log a warning
             if msg := error_messages.get(val):
-                _LOGGER.warning("JSON API: '%s' %s - URL: %s", key, msg, url)
+                _LOGGER.debug("JSON API: '%s' %s - URL: %s", key, msg, url)
                 continue
 
             # Accept 'ERROR: {CODE}' variants (older firmware may return this)
             if ":" in val:
                 _, _, code = val.partition(":")
                 if msg := error_messages.get(code.strip()):
-                    _LOGGER.warning("JSON API: '%s' %s - URL: %s", key, msg, url)
+                    _LOGGER.debug("JSON API: '%s' %s - URL: %s", key, msg, url)

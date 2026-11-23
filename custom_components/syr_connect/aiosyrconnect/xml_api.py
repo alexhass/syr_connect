@@ -260,7 +260,8 @@ class SyrConnectXmlAPI:
         """
         token = self.session_data
         payload = build_payload(token)
-        _LOGGER.debug("%s payload: %s", name, mask_ug_value(payload))
+        if _LOGGER.isEnabledFor(logging.DEBUG):
+            _LOGGER.debug("%s payload: %s", name, mask_ug_value(payload))
         xml_response = await self.http_client.post(url, {"xml": payload})
         _LOGGER.debug("%s XML response: %s", name, xml_response)
         try:
@@ -269,7 +270,10 @@ class SyrConnectXmlAPI:
             _LOGGER.info("%s: %s; logging in again", name, err)
         await self._relogin(token)
         payload = build_payload(self.session_data)
-        _LOGGER.debug("%s payload (after re-login): %s", name, mask_ug_value(payload))
+        if _LOGGER.isEnabledFor(logging.DEBUG):
+            _LOGGER.debug(
+                "%s payload (after re-login): %s", name, mask_ug_value(payload)
+            )
         xml_response = await self.http_client.post(url, {"xml": payload})
         _LOGGER.debug("%s XML response: %s", name, xml_response)
         return parse(xml_response)
@@ -602,7 +606,8 @@ class SyrConnectXmlAPI:
         Raises:
             SyrConnectConnectionError: If network/HTTP errors occur
         """
-        _LOGGER.debug("%s payload: %s", name, mask_ug_value(payload))
+        if _LOGGER.isEnabledFor(logging.DEBUG):
+            _LOGGER.debug("%s payload: %s", name, mask_ug_value(payload))
         try:
             return await self.http_client.post(url, {"xml": payload})
         except (aiohttp.ClientError, TimeoutError) as err:
