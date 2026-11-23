@@ -4606,8 +4606,8 @@ def test_sensor_dom_seconds(
     [
         ("SyrSafeTechV4", 0),
         ("SyrSafeTechPlus", 0),
-        # The validity matrix lists a conductivity sensor for NeoSoft 5000 only
-        ("SyrNeoSoft5000", 10),
+        # The dual-tank profile follows the Optima T2 Dual capture without getCNL
+        ("SyrNeoSoft5000", None),
         # NeoSoft 2500 reports getCNL as empty string, it measures no conductivity
         ("SyrNeoSoft2500", None),
         # TRIO Lock has no conductivity sensor

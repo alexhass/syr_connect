@@ -4,30 +4,19 @@ Dual-tank NeoSoft platform rebrands: NeoSoft 5000 and every "*duo"/"twin" siblin
 signature in dk=1200-1222 via device_profile=neosoft_duo.PROFILE. Single-tank rebrands
 use the sibling neosoft_single.py instead.
 
-getBAR/getCEL/getCND/getVPS2 are confirmed ✓ (available) for NeoSoft 5000
-specifically by the now-complete "Per-model validity" matrix in
-docs/syrconnect-protocol.md (X for NeoSoft 2500, hence neosoft_single.py
-correctly excludes them) - included below on that authority, overriding the
-earlier decision to exclude them pending fixture confirmation. getCNL
-(conductivity limit) is included with getCND, as it needs the conductivity
-sensor.
+Derived from the real capture tests/fixtures/json/OptimaT2Dual_get_all.json
+(Optima T2 Dual, firmware NSR.1.82): every getXXX key below is reported there.
+getBAR/getCEL/getCND/getVPS2 are also confirmed ✓ (available) for NeoSoft 5000
+by the "Per-model validity" matrix in docs/syrconnect-protocol.md.
 
-No genuine real-device evidence exists yet for the remaining second-tank
-keys (getRE2/getSS2/getSV2), which aren't covered by the matrix at all. The
-only fixtures with dual-tank data,
-tests/fixtures/xml/SyrNeoSoft5000_GetDeviceCollectionStatus.xml and
-tests/fixtures/json/SyrNeoSoft5000_get_all.json, are generated from the
-NeoSoft 2500 fixtures and not real captures (see their comments), so they are
-NOT treated as proof:
-- getRE2: has a real-looking, distinct non-zero value (999 vs getRE1=773)
-  in that synthetic fixture, but the fixture itself is unverified - pending
-  a real dual-tank capture.
-- getSS2, getSV2: not present at all, even in the synthetic fixture.
+The capture reports the reserve capacity of both resin tanks (getRE1/getRE2),
+but not the regeneration-running flag of the second one (getRG2). The device
+has only one salt tank, so the second set of salt keys (getSS2/getSV2) is not
+included.
 
-If a real dual-tank device capture confirms getRE2/getSS2/getSV2 (or getRG2,
-the tank-2 regeneration-running flag already in sensor.py's global
-allowlist) with a genuine non-empty value, move it into SENSOR_SUPPORTED_KEYS
-below.
+Deliberately NOT included:
+- getNPS: 260 in the capture, but confirmed X (not available) for NeoSoft
+  5000 by the "Per-model validity" matrix.
 """
 
 from . import SyrConnectDeviceProfile
@@ -47,10 +36,11 @@ SENSOR_SUPPORTED_KEYS = {
     "getWRN",
     # --- Pressure ---
     "getBAR",
+    # --- Voltage ---
+    "getNET",
     # --- Water Quality ---
     "getCEL",
     "getCND",
-    "getCNL",
     "getIWH",
     "getOWH",
     "getWHU",
@@ -59,6 +49,7 @@ SENSOR_SUPPORTED_KEYS = {
     "getVOL",
     # --- Salt / Reserve Capacity ---
     "getRE1",
+    "getRE2",
     "getSS1",
     "getSV1",
     # --- Regeneration ---
@@ -70,10 +61,6 @@ SENSOR_SUPPORTED_KEYS = {
     "getRPD",
     "getRPW",
     "getRTI",
-    "getRTM",
-    # --- Maintenance ---
-    "getSRH",
-    "getSRV",
     # --- Turbine / Pulse Monitoring ---
     "getVPS1",
     "getVPS2",
@@ -99,7 +86,6 @@ SENSOR_SUPPORTED_KEYS = {
 SELECT_SUPPORTED_KEYS = {
     "getRPD",
     "getRMO",
-    "getRTM",
 }
 
 # getDFI (Conel Clear Pro Fill filling mode) deliberately excluded - no filling
