@@ -3,6 +3,7 @@
 from collections.abc import Callable
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
+from functools import lru_cache
 import logging
 import math
 import re
@@ -349,6 +350,9 @@ def _value_rpw(
     return _weekday_names(mask, language)
 
 
+# Babel takes about 1.5 ms for the names of a full week, at every update of the sensor;
+# there are only 128 masks per language
+@lru_cache(maxsize=256)
 def _weekday_names(mask: int, language: str | None) -> str:
     """Return the comma-separated short weekday names of a bitmask (bit 1 = Monday).
 
