@@ -3,7 +3,7 @@
 # The unit tests in this module check private helpers and attributes directly.
 # ruff: noqa: SLF001
 
-from collections.abc import Callable
+from collections.abc import Callable, Generator
 from dataclasses import replace
 from datetime import UTC, datetime
 import json
@@ -5008,6 +5008,14 @@ def test_sensor_hardness_converted_from_dh(
     assert sensor.native_unit_of_measurement == unit
 
 
+@pytest.fixture(autouse=True)
+def clear_weekday_names_cache() -> Generator[None]:
+    """Start every test without cached weekday names, as tests patch Babel."""
+    sensor_module._weekday_names.cache_clear()
+    yield
+    sensor_module._weekday_names.cache_clear()
+
+
 def _rpw_sensor(
     create_mock_coordinator: Callable[..., MagicMock],
     raw: object,
@@ -5076,6 +5084,22 @@ def test_sensor_rpw_weekdays_before_added_to_hass(
         {"locale": None},
         {"locale": None},
     ]
+
+
+def test_sensor_rpw_weekdays_are_formatted_once_per_mask_and_language(
+    create_mock_coordinator: Callable[..., MagicMock],
+) -> None:
+    """Babel formats the names of a mask once; the next updates take them from the cache."""
+    sensor = _rpw_sensor(create_mock_coordinator, 3)
+
+    with patch(
+        "custom_components.syr_connect.sensor.format_datetime", return_value="day"
+    ) as mock_format:
+        assert sensor.native_value == "day,day"
+        assert sensor.native_value == "day,day"
+        assert mock_format.call_count == 2
+        assert _rpw_sensor(create_mock_coordinator, 3, "de").native_value == "day,day"
+        assert mock_format.call_count == 4
 
 
 def test_sensor_rpw_weekdays_without_babel_locale(

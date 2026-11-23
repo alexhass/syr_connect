@@ -1202,17 +1202,21 @@ class SyrConnectNumericSelect(SyrConnectEntity, SelectEntity):
             self._sensor_key
         ].native_unit_of_measurement
 
-        opts: list[str] = []
-        v = min_value
-        while v <= max_value:
-            label = _format_scaled(v, self._scale)
-            if unit_label:
-                opts.append(f"{label} {unit_label}")
-            else:
-                opts.append(label)
-            v += step
-        # Explicit option labels replace the generated range (e.g. non-uniform steps)
-        self._options = options if options is not None else opts
+        # Explicit option labels replace the generated range (e.g. non-uniform steps);
+        # the range is only generated without them, as it can have tens of thousands
+        # of values between the lowest and the highest step (getSTP)
+        if options is not None:
+            self._options = options
+        else:
+            self._options = []
+            v = min_value
+            while v <= max_value:
+                label = _format_scaled(v, self._scale)
+                if unit_label:
+                    self._options.append(f"{label} {unit_label}")
+                else:
+                    self._options.append(label)
+                v += step
 
         _LOGGER.debug(
             "Created SyrConnectNumericSelect object: device=%s key=%s unique_id=%s",
