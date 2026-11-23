@@ -250,4 +250,9 @@ class SyrConnectBooleanSwitch(SyrConnectEntity, SwitchEntity):
                     "entity": self._entity_name,
                 },
             ) from err
+        # Deliberately only for switches: an accepted request does not mean that the
+        # device applied the value (the cloud sends no confirmation). The refresh right
+        # away shows a value the device did not take within seconds, as the switch flips
+        # back in the frontend, instead of only after the next poll. For a cloud entry
+        # it fetches the status of all devices of the account.
         await self.coordinator.async_request_refresh()
