@@ -1159,7 +1159,6 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         regeneration_cloud_command="dmSIR",
         regeneration_status_key="getRG1",
-        # TODO: Untested model.
         srn_prefix="200",
         whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
@@ -1215,7 +1214,6 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         regeneration_cloud_command="dmSIR",
         regeneration_status_key="getRG1",
-        # TODO: Untested model.
         srn_prefix="208",
         whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
@@ -1234,7 +1232,6 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         regeneration_cloud_command="dmSIR",
         regeneration_status_key="getRG1",
-        # TODO: Untested model.
         srn_prefix="209",
         whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
@@ -1253,7 +1250,6 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         regeneration_cloud_command="dmSIR",
         regeneration_status_key="getRG1",
-        # TODO: Untested model.
         srn_prefix="210",
         whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
@@ -1273,7 +1269,6 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         regeneration_cloud_command="dmSIR",
         regeneration_status_key="getRG1",
-        # TODO: Untested model.
         srn_prefix="211",
         whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
@@ -1292,7 +1287,6 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         regeneration_cloud_command="dmSIR",
         regeneration_status_key="getRG1",
-        # TODO: Untested model.
         srn_prefix="212",
         whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
@@ -1311,7 +1305,6 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         regeneration_cloud_command="dmSIR",
         regeneration_status_key="getRG1",
-        # TODO: Untested model.
         srn_prefix="213",
         whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
@@ -1367,7 +1360,6 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         regeneration_cloud_command="dmSIR",
         regeneration_status_key="getRG1",
-        # TODO: Untested model.
         srn_prefix="216",
         whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
@@ -1387,7 +1379,6 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         regeneration_cloud_command="dmSIR",
         regeneration_status_key="getRG1",
-        # TODO: Untested model.
         srn_prefix="217",
         whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
@@ -1406,7 +1397,6 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         regeneration_cloud_command="dmSIR",
         regeneration_status_key="getRG1",
-        # TODO: Untested model.
         srn_prefix="218",
         whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
@@ -1426,7 +1416,6 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         regeneration_cloud_command="dmSIR",
         regeneration_status_key="getRG1",
-        # TODO: Untested model.
         srn_prefix="219",
         whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
@@ -1445,7 +1434,6 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         regeneration_cloud_command="dmSIR",
         regeneration_status_key="getRG1",
-        # TODO: Untested model.
         srn_prefix="220",
         whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
@@ -1465,7 +1453,6 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         regeneration_cloud_command="dmSIR",
         regeneration_status_key="getRG1",
-        # TODO: Untested model.
         srn_prefix="221",
         whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,
@@ -1485,7 +1472,6 @@ MODEL_SIGNATURES: tuple[SyrConnectModelSignature, ...] = (
         not_codes=NOT_CODES_COMMON,
         regeneration_cloud_command="dmSIR",
         regeneration_status_key="getRG1",
-        # TODO: Untested model.
         srn_prefix="222",
         whu_units=WHU_UNITS_NEOSOFT,
         wrn_codes=WRN_CODES_COMMON,

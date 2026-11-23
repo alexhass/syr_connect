@@ -107,11 +107,21 @@ Testados e comunicados como funcionais:
 - CONEL CLEAR PRO Floor Sensor
 - CONEL CLEAR PRO LEAKAGE PROTECTION
 - CONEL CLEAR PRO SOFT
+- CONEL CLEAR PRO SOFT TWIN
+- concept 200 Dual Water Softener
+- concept Dual Water Softener
+- concept Single Water Softener
 - concept SafeFloor Floor Sensor
+- DITECH Dual Water Softener
+- DITECH Single Water Softener
 - DITECH Wireless Floor Sensor
+- Optima Dual Water Softener
+- Optima Single Water Softener
+- Optima T2 Dual Water Softener
 - Optima T2 Floor Sensor
 - POLYGONVATRO Wireless Floor Sensor
 - Sanibel Leak Protection Module A25
+- Sanibel Softwater DUO A25
 - Sanibel Softwater UNO A25
 - Sanibel Wireless Floor Sensor A25
 - SYR All-in-One+
@@ -120,6 +130,9 @@ Testados e comunicados como funcionais:
 - SYR LEX Plus 10 S Connect
 - SYR LEX Plus 10 SL Connect
 - SYR NeoSoft 2500 Connect
+- SYR NeoSoft 5000 Connect
+- SYR NeoSoft Lock Connect I
+- SYR NeoSoft Lock Connect II
 - SYR SafeFloor Connect
 - SYR Safe-T+ Connect
 - SYR SafeTech Connect
@@ -129,33 +142,25 @@ Testados e comunicados como funcionais:
 - SYR TRIO DFR/LS Connect 2425
 - SYR TRIO Lock Connect
 - SYR Oceanic i-LEX / Limex iQ Single (L10/L12/L15/L20/L25/L30/L40/L50/L60/L70/L80/L90/L100)
+- TAKE Dual Water Softener
+- TAKE Single Water Softener
 
 Outros dispositivos também são de interesse, mas podem ter de ser integrados ou pelo menos testados (agradecem-se os relatos):
 
 - CONEL CLEAR PRO MULTICONTROL-KIT
-- CONEL CLEAR PRO SOFT TWIN
-- concept 200 Dual Water Softener
 - concept 200 Replacement Filter
 - concept 300 Automatic Backwash RSA
 - concept 300 Trio Filter with Leak Protection
-- concept Dual Water Softener
-- concept Single Water Softener
 - DITECH Automatic Backwash HWS/RF
 - DITECH Backwash Filter Protect
 - DITECH Connection Module Plus
-- DITECH Dual Water Softener
 - DITECH Hygiene Flush Box
-- DITECH Single Water Softener
 - Hansgrohe PontosBase
-- Optima Dual Water Softener
-- Optima Single Water Softener
 - Optima T Replacement Filter
-- Optima T2 Dual Water Softener
 - POLYGONVATRO SafeTech Connect (vendido com o seguro de habitação da AXA como "Wasserwächter")
 - RWC MultiSafe Floor Leak Sensor
 - RWC MultiSafe Leak Detector Control Valve
 - Sanibel Automatic Backwash System RSA A25
-- Sanibel Softwater DUO A25
 - SYR AC 3200 Connect
 - SYR AC All-in-One 3228 Connect
 - SYR CONTROLICmini
@@ -168,16 +173,12 @@ Outros dispositivos também são de interesse, mas podem ter de ser integrados o
 - SYR LEX 1500 Connect Duplex
 - SYR LEX 1500 Connect Triple
 - SYR NeoDos Connect
-- SYR NeoSoft 5000 Connect
-- SYR NeoSoft Lock Connect I / II
 - SYR RSA Connect
 - SYR Safe-T Communication Module
 - SYR Safe-T Hygiene Module
 - SYR Safe-T Master / Slave
 - SYR SafeTech Lock Connect
 - SYR Trio LS Connect
-- TAKE Dual Water Softener
-- TAKE Single Water Softener
 
 **Nota**: Se um dispositivo estiver visível na conta SYR Connect, a integração deteta-o e cria as entidades automaticamente. Para um "dispositivo não testado", a partilha dos diagnósticos ajuda a encontrar valores desconhecidos e a verificar se tudo funciona como previsto. Assim, a lista de dispositivos testados também pode ser alargada.
 

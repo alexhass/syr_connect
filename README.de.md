@@ -107,12 +107,22 @@ Getestet und gemeldet als funktionierend:
 - CONEL CLEAR PRO FILL
 - CONEL CLEAR PRO LEAKAGE PROTECTION
 - CONEL CLEAR PRO SOFT
+- CONEL CLEAR PRO SOFT TWIN
+- concept 200 Doppelenthärtungsanlage
+- concept Doppelenthärtungsanlage
+- concept Einzelenthärtungsanlage
 - concept SafeFloor Bodensensor
+- DITECH Doppelenthärtungsanlage
+- DITECH Einzelenthärtungsanlage
 - DITECH Funk-Bodensensor
+- Optima Doppelenthärtungsanlage
+- Optima Einzelenthärtungsanlage
 - Optima T2 Bodensensor
+- Optima T2 Doppelenthärtungsanlage
 - POLYGONVATRO Funk-Bodensensor
 - Sanibel Funk-Bodensensor A25
 - Sanibel Leckageschutzmodul A25
+- Sanibel Softwater DUO A25
 - Sanibel Softwater UNO A25
 - SYR All-in-One+
 - SYR LEX 1500 Connect Einzel (LEX10/LEX20/LEX30/LEX40/LEX60/LEX80/LEX100)
@@ -120,6 +130,9 @@ Getestet und gemeldet als funktionierend:
 - SYR LEX Plus 10 S Connect
 - SYR LEX Plus 10 SL Connect
 - SYR NeoSoft 2500 Connect
+- SYR NeoSoft 5000 Connect
+- SYR NeoSoft Lock Connect I
+- SYR NeoSoft Lock Connect II
 - SYR SafeFloor Connect
 - SYR Safe-T+ Connect
 - SYR SafeTech Connect
@@ -129,33 +142,25 @@ Getestet und gemeldet als funktionierend:
 - SYR TRIO DFR/LS Connect 2425
 - SYR TRIO Lock Connect
 - SYR Oceanic i-LEX / Limex iQ Einzel (L10/L12/L15/L20/L25/L30/L40/L50/L60/L70/L80/L90/L100)
+- TAKE Doppelenthärtungsanlage
+- TAKE Einzelenthärtungsanlage
 
 Andere Geräte sind auch interessant, müssen aber noch integriert oder zumindest getestet werden (bitte melden):
 
 - CONEL CLEAR PRO MULTICONTROL-KIT
-- CONEL CLEAR PRO SOFT TWIN
-- concept 200 Doppelenthärtungsanlage
 - concept 200 Ersatzfilter
 - concept 300 Rückspülautomatik RSA
 - concept 300 Triofilter mit Leckageschutz
-- concept Doppelenthärtungsanlage
-- concept Einzelenthärtungsanlage
 - DITECH Anschlussmodul Plus
-- DITECH Doppelenthärtungsanlage
-- DITECH Einzelenthärtungsanlage
 - DITECH Hygienespülbox
 - DITECH Rückspülautomatik HWS/RF
 - DITECH Rückspülfilter Protect
 - Hansgrohe PontosBase
-- Optima Doppelenthärtungsanlage
-- Optima Einzelenthärtungsanlage
 - Optima T Ersatzfilter
-- Optima T2 Doppelenthärtungsanlage
 - POLYGONVATRO SafeTech Connect (über die AXA Gebäudeversicherung als „Wasserwächter“ vertrieben)
 - RWC MultiSafe Floor Leak Sensor
 - RWC MultiSafe Leak Detector Control Valve
 - Sanibel Automatische Rückspülanlage RSA A25
-- Sanibel Softwater DUO A25
 - SYR AC 3200 Connect
 - SYR AC All-in-One 3228 Connect
 - SYR CONTROLICmini
@@ -168,16 +173,12 @@ Andere Geräte sind auch interessant, müssen aber noch integriert oder zumindes
 - SYR LEX 1500 Connect Dreifach
 - SYR LEX 1500 Connect Pendel
 - SYR NeoDos Connect
-- SYR NeoSoft 5000 Connect
-- SYR NeoSoft Lock Connect I / II
 - SYR RSA Connect
 - SYR Safe-T Hygienemodul
 - SYR Safe-T Kommunikationsmodul
 - SYR Safe-T Master / Slave
 - SYR SafeTech Lock Connect
 - SYR Trio LS Connect
-- TAKE Doppelenthärtungsanlage
-- TAKE Einzelenthärtungsanlage
 
 **Hinweis**: Wenn ein Gerät im SYR Connect-Konto sichtbar ist, entdeckt die Integration es automatisch und erstellt die Entitäten. Bei einem „ungetesteten Gerät“ helfen die geteilten Diagnosedaten, unbekannte Werte zu analysieren und die Liste getesteter Geräte zu erweitern.
 
