@@ -26,6 +26,7 @@ repository.
 - **SafeTech+ pressure key:** The official documentation lists `getBAR2` for the SafeTech+; the devices report the pressure in `getBAR`.
 - **All-in-One+ filling volumes:** The official documentation gives the filling volumes `getCFV` and `getLFV` and the last tapped volume `getLTV` in liters; the All-in-One+ reports them in milliliters. The cumulative refilled volume `getTRV` is in liters.
 - **All-in-One+ reports `getCNF` twice:** The `/get/all` answer of the All-in-One+ contains the key `getCNF` twice; JSON objects should not repeat a key.
+- **Optima T2 Dual reports `getAPT` and `getVER` twice:** The `/get/all` answer of the Optima T2 Dual (firmware `NSR.1.82`) contains the keys `getAPT` and `getVER` twice; JSON objects should not repeat a key.
 
 ## Detailed deviations, impacts, and references
 
@@ -198,6 +199,17 @@ Actual (expected) device response:
   - Report: [issue #64](https://github.com/alexhass/syr_connect/issues/64)
   - Client: [custom_components/syr_connect/aiosyrconnect/json_api.py](custom_components/syr_connect/aiosyrconnect/json_api.py)
   - The anonymized fixture [tests/fixtures/json/SyrAllInOnePlus_get_all.json](tests/fixtures/json/SyrAllInOnePlus_get_all.json) contains `getCNF` only once.
+
+### 12. Optima T2 Dual reports `getAPT` and `getVER` twice in `/get/all`
+
+- Tentatively be considered a bug in current device firmware.
+- Description: The `/get/all` answer of the Optima T2 Dual (firmware `NSR.1.82`) contains the keys `getAPT` and `getVER` (firmware version) twice, each time as two consecutive entries with the same value (`getAPT` 0, `getVER` "NSR.1.82").
+- Rationale (RFC): RFC 8259 says that the names within a JSON object SHOULD be unique; with duplicate names, the behavior of a parser is unpredictable. Many parsers keep the last value, others the first one or reject the answer.
+- Impact: None while both values are equal. If the firmware ever reported two different values, the integration would silently use the last one.
+- Mitigation in this project: None needed. The client parses the answer with `json.loads()` (`_execute_http_get`), which keeps the last value of a repeated key.
+- Evidence / references:
+  - Client: [custom_components/syr_connect/aiosyrconnect/json_api.py](custom_components/syr_connect/aiosyrconnect/json_api.py)
+  - Fixture: [tests/fixtures/json/OptimaT2Dual_get_all.json](tests/fixtures/json/OptimaT2Dual_get_all.json)
 
 ## Recommendations
 
