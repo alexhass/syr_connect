@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Generated, not a real capture: SyrNeoSoft2500_GetDeviceCollectionStatus.xml with the values of a dual-tank NeoSoft 5000 (getCNL, getRE2, getSRN, getWFC). Just for model tests; a real device is needed to verify. -->
+<!-- Generated, not a real capture: SyrNeoSoft2500_GetDeviceCollectionStatus.xml with the keys and values of SyrNeoSoft5000_get_all.json (local JSON API of a dual-tank NeoSoft 5000). Just for model tests; a real device is needed to verify. -->
 <sc>
   <col>
     <dcl dclg="01a81a2b-7ca0-49c8-80b9-c8e7839254b6" sta="2" dst="2" ast="1" clb="1" nrdt="16.02.2026 21:18:56" nrs="0" />
@@ -9,82 +9,76 @@
     <d dg="6f6f9069-1bcb-4c23-ba99-b406ea699696" sbt="" sta="2" dst="2" ast="1" so="1">
       <ci f="-" b="-" m="-" />
       <c n="getSRN" v="200AAA12345" dt="16.02.2026 21:18:56" />
-      <c n="getALM" v="ff,ff,ff,ff,ff,ff,ff,ff" dt="16.02.2026 21:19:03" />
-      <c n="getALN" v="ff,ff,ff,ff,ff,ff,ff,ff" />
-      <c n="getALW" v="ff,ff,ff,ff,ff,ff,ff,ff" />
-      <c n="getBMX" v="" />
+      <c n="getALM" v="02,02,02,02,02,02,02,02" dt="16.02.2026 21:19:03" />
+      <c n="getALN" v="04,04,02,03,01,02,01,01" />
+      <c n="getALW" v="02,02,4e,ff,ff,ff,4e,ff" />
       <c n="getCYN" v="0" />
-      <c n="getEGW" v="" />
-      <c n="getEIP" v="" />
-      <c n="getERE" v="0" />
-      <c n="getLAR" v="1771200000" />
-      <c n="getLDF" v="" />
-      <c n="getLMS" v="[0,0,0,0,0,0,0,0,0,0,0,0]" />
+      <c n="getEGW" v="192.168.178.1" />
+      <c n="getEIP" v="192.168.178.20" />
+      <c n="getERE" v="78" />
+      <c n="getLAR" v="1795348970" />
+      <c n="getLDF" v="443,1040,567,829,746,876,683" />
+      <c n="getLMS" v="[2069,1823,2248,1916,1627,1824,1623,1555,1892,1734,1536,1467]" />
       <c n="getMAC1" v="c4:98:94:XX:XX:XX" />
       <c n="getMAC2" v="c4:98:94:XX:XX:XY" />
-      <c n="getNRE" v="1" />
-      <c n="getOHF" v="" />
+      <c n="getNRE" v="330" />
+      <c n="getOHF" v="13,1,0,1,15,1,36,41,94,59,202,70,27,0,0,0,0,0,0,0,0,0,0,0" />
       <c n="getOWH" v="7" />
       <c n="getPRE" v="0" />
-      <c n="getSRE" v="0" />
-      <c n="getVRE1" v="" />
-      <c n="getVRE2" v="" />
+      <c n="getSRE" v="68" />
+      <c n="getVRE1" v="266" />
+      <c n="getVRE2" v="142" />
       <c n="getWFC" v="syr-neosoft5000-wifi1" />
-      <c n="getWFS" v="2" />
-      <c n="getWGW" v="192.168.178.1" />
-      <c n="getWIP" v="192.168.178.20" />
-      <c n="getYHF" v="" />
-      <c n="getHWV" v="V1" />
-      <c n="getAPT" v="600" />
+      <c n="getWFS" v="0" />
+      <c n="getWGW" v="0.0.0.0" />
+      <c n="getWIP" v="0.0.0.0" />
+      <c n="getYHF" v="10,11,2,0,0,0,0,17,22,50,36,68,39,147,43,24,26,33,54,23,26,38,10,4" />
+      <c n="getHWV" v="2.0" />
+      <c n="getAPT" v="0" />
       <c n="getBUZ" v="True" />
-      <c n="getCNF" v="" />
-      <c n="getCSD" v="" />
-      <c n="getEVL" v="0" />
-      <c n="getIDS" v="False" />
-      <c n="getIWH" v="19" />
+      <c n="getIDS" v="True" />
+      <c n="getIWH" v="18" />
       <c n="getLNG" v="0" />
-      <c n="getPSD" v="" />
-      <c n="getRMO" v="4" />
-      <c n="getRPD" v="2" />
+      <c n="getRMO" v="1" />
+      <c n="getRPD" v="3" />
       <c n="getRPW" v="0" />
-      <c n="getRTM" v="01:00" />
-      <c n="getRTC" v="" />
-      <c n="getRURL" v="" />
-      <c n="getSRH" v="15.08.2026" />
-      <c n="getSRV" v="14.02.2027" />
+      <c n="getRTC" v="1795433448" />
       <c n="getTMZ" v="4" />
-      <c n="getTSD" v="" />
-      <c n="getTURL" v="" />
-      <c n="getWAD" v="False" />
+      <c n="getWAD" v="True" />
       <c n="getWHU" v="0" />
-      <c n="getWTI" v="1740" />
-      <c n="getALA" v="FF" dt="16.02.2026 21:19:03" />
+      <c n="getWTI" v="1750" />
+      <c n="getALA" v="ff" dt="16.02.2026 21:19:03" />
       <c n="getAVO" v="0" />
-      <c n="getBAR" v="" />
-      <c n="getCEL" v="" />
-      <c n="getCND" v="" />
+      <c n="getBAR" v="4860" />
+      <c n="getCEL" v="110" />
+      <c n="getCND" v="1093" />
       <c n="getCYT" v="0" />
       <c n="getFLO" v="0" />
-      <c n="getLTV" v="5" />
-      <c n="getNOT" v="FF" />
-      <c n="getNPS" v="" />
-      <c n="getRE1" v="773" />
-      <c n="getRE2" v="999" />
+      <c n="getLTV" v="8" />
+      <c n="getNOT" v="ff" />
+      <c n="getNPS" v="260" />
+      <c n="getRE1" v="92" />
+      <c n="getRE2" v="382" />
       <c n="getRG1" v="0" />
       <c n="getRTI" v="0" />
-      <c n="getSS1" v="17" />
-      <c n="getSV1" v="24" />
-      <c n="getVOL" v="1019" />
-      <c n="getVPS1" v="3360" />
-      <c n="getVPS2" v="" />
-      <c n="getWFR" v="100" />
-      <c n="getWRN" v="FF" />
-      <c n="getALD" v="" />
-      <c n="getCNL" v="10" />
-      <c n="getWAH" v="" />
-      <c n="getNET" v="" />
-      <c n="getVER" v="NSS.V.2.028" />
+      <c n="getSS1" v="12" />
+      <c n="getSV1" v="35" />
+      <c n="getVOL" v="309489" />
+      <c n="getVPS1" v="260" />
+      <c n="getVPS2" v="260" />
+      <c n="getWFR" v="0" />
+      <c n="getWRN" v="ff" />
+      <c n="getNET" v="1200" />
+      <c n="getVER" v="NSR.1.82" />
+      <c n="getCDF" v="560,0,0,0,0,0,0" />
+      <c n="getCMS" v="[9612,10464,13183,13833,17729,9342,23540,17840,13732,11452,9291,1287]" />
+      <c n="getFRN" v="NS233301266" />
+      <c n="getLMW" v="1726,1475,1544,1740,2071,1739,2078,1748,1993,1474,2256,1831" />
+      <c n="getMTF" v="20822,23285,27712,32871,36929,32633,49208,37309,26339,21082,18677,1208" />
+      <c n="getNIC" v="2" />
+      <c n="getRFB" v="1547" />
+      <c n="getSFV" v="False" />
     </d>
   </dvs>
-  <cs v="CF2A" />
+  <cs v="18D91" />
 </sc>

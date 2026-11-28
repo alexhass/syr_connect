@@ -787,6 +787,7 @@ Notifications of the same device families as the common alarm codes (`NOT_CODES_
 | getMQT / setMQT | "1" | | USER | 1 | Protokoll: 0 = no MQTT (HTTPS), 1 = MQTT |
 | getMRT / setMRT | "5" | min | SERVICE | 10 | MQTT reconnect time after a disconnect: 0 = disabled (the device then uses 7 h), 1–60 min |
 | getMSC / setMSC | "0" | | SERVICE | 0 | Connection to the maintenance server (Husty): 0 = disabled, 1 = enabled |
+| getNIC | "1" | | | | Active network interface card: 1 = MAC1 (getMAC1), 2 = MAC2 (getMAC2) (JSON API only; assumed, not yet confirmed by the official API documentation) |
 | getSNM | "255.255.255.0" | | | | Subnet mask |
 | getWAD / setWAD | "False" | | SERVICE | 0 | Wi-Fi access point disabled: 0/False = not disabled, 1/True = disabled |
 | getWAH / setWAH | "false" | | SERVICE | 0 | Wi-Fi access point hidden: 0/False = visible, 1/True = hidden |
@@ -1406,8 +1407,9 @@ The NeoSoft family measures the salt amount (getSV1) with a built-in salt level 
 | getBMX | "" | | *unknown* |
 | getCLC | "500" | | *unknown* |
 | getCLM | "370" | | *unknown* |
-| getDVL | "501AAA12345" | | *unknown* — possibly device volume label |
+| getDVL | "501AAA12345" | | *unknown* possibly - serial number of connected leak protection device |
 | getEVL | "0" | | *unknown* — possibly event level |
+| getRFB | "1547" | | *unknown* — possibly capacity of a full bottle (JSON API only) |
 | getTURL | "" | | *unknown* — possibly test URL |
 
 ### Trio DFR/LS
@@ -1449,7 +1451,6 @@ The NeoSoft family measures the salt amount (getSV1) with a built-in salt level 
 | Property | Example | Unit | Description |
 | --- | --- | --- | --- |
 | getARS | "0" | | *unknown* (JSON API only) |
-| getNIC | "1" | | *unknown* (JSON API only) |
 
 ### Protocol Response Structure Attributes
 
