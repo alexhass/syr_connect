@@ -1409,7 +1409,7 @@ The NeoSoft family measures the salt amount (getSV1) with a built-in salt level 
 | getCLM | "370" | | *unknown* |
 | getDVL | "501AAA12345" | | *unknown* possibly - serial number of connected leak protection device |
 | getEVL | "0" | | *unknown* — possibly event level |
-| getRFB | "1547" | | *unknown* — possibly capacity of a full bottle (JSON API only) |
+| getRFB | "1547" | | *unknown* — possibly capacity of a full bottle / guessed as "Reserve Full Bottle" ? (JSON API only) |
 | getTURL | "" | | *unknown* — possibly test URL |
 
 ### Trio DFR/LS
